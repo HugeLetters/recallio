@@ -40,7 +40,7 @@ export default function Home() {
         },
         (e, err) => console.error("scan error", e, err)
       )
-      .catch((e) => console.error("scanner start error", e));
+      .catch((e) => console.error("scanner start error ", e));
   }
 
   return (
