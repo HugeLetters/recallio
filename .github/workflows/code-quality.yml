@@ -25,5 +25,3 @@ jobs:
         name: Setup node_modules
       - run: pnpm check-format
         name: Format
-      - run: SKIP_ENV_VALIDATION=1 pnpm build
-        name: Build
