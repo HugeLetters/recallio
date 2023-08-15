@@ -2,7 +2,8 @@ import { api } from "@/utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
 
 export default function Home() {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -10,22 +11,36 @@ export default function Home() {
   const camera = useRef<HTMLVideoElement>(null);
   function handleMedia() {
     if (!camera.current) return;
+
     if (camera.current.srcObject) {
-      if (camera.current.srcObject instanceof MediaStream) {
-        console.log(camera.current.srcObject.getTracks());
-      }
       camera.current.srcObject = null;
       return;
     }
 
     navigator.mediaDevices
-      .getUserMedia({ video: true, audio: false })
+      .getUserMedia({ video: { facingMode: "environment" }, audio: false })
       .then((stream) => {
         if (!camera.current) return;
         camera.current.srcObject = stream;
-        console.log(stream.getTracks());
       })
       .catch(console.error);
+  }
+
+  const [scanResult, setScanResult] = useState("QR scan result");
+  function handleScanner() {
+    setScanResult("scanning...");
+    const html5QrCode = new Html5Qrcode("qr-container");
+    html5QrCode
+      .start(
+        { facingMode: "environment" },
+        { fps: 20, aspectRatio: 1 },
+        (code) => {
+          setScanResult(code);
+          html5QrCode.stop().catch((e) => console.error("scanner stop error", e));
+        },
+        (e, err) => console.error("scan error", e, err)
+      )
+      .catch((e) => console.error("scanner start error", e));
   }
 
   return (
@@ -46,15 +61,17 @@ export default function Home() {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
-          <label className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300">
-            TAKE A SELFIE
-            <input
-              type="file"
-              capture="environment"
-              accept="image/*"
-              className="hidden"
-            />
-          </label>
+          <button
+            className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300"
+            onClick={handleScanner}
+          >
+            HTML5QR SCANNER START
+          </button>
+          <div className="text-white">{scanResult}</div>
+          <div
+            id="qr-container"
+            className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300"
+          />
           <button
             className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300"
             onClick={handleMedia}
@@ -64,7 +81,7 @@ export default function Home() {
           <video
             ref={camera}
             autoPlay
-            className="aspect-square h-56 rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300 "
+            className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
@@ -88,7 +105,7 @@ export default function Home() {
                 Learn more about Create T3 App, the libraries it uses, and how to deploy it.
               </div>
             </Link>
-            b vid
+            b vid div
           </div>
           <div className="flex flex-col items-center gap-2">
             <p className="text-2xl text-white">

@@ -23,6 +23,9 @@ dependencies:
   '@trpc/server':
     specifier: ^10.34.0
     version: 10.34.0
+  html5-qrcode:
+    specifier: ^2.3.8
+    version: 2.3.8
   next:
     specifier: ^13.4.2
     version: 13.4.2(react-dom@18.2.0)(react@18.2.0)
@@ -1715,6 +1718,10 @@ packages:
     dependencies:
       function-bind: 1.1.1
     dev: true
+
+  /html5-qrcode@2.3.8:
+    resolution: {integrity: sha512-jsr4vafJhwoLVEDW3n1KvPnCCXWaQfRng0/EEYk1vNcQGcG/htAdhJX0be8YyqMoSz7+hZvOZSTAepsabiuhiQ==}
+    dev: false
 
   /ignore@5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
