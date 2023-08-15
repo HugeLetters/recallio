@@ -4,10 +4,13 @@
   "private": true,
   "packageManager": "pnpm@8.6.12",
   "scripts": {
-    "build": "next build",
     "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint",
-    "start": "next start"
+    "typecheck": "nuxt typecheck",
+    "check-format": "prettier . -c",
+    "format": "pnpm check-format -w"
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.3.1",

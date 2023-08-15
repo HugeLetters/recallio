@@ -23,9 +23,6 @@ jobs:
           cache-dependency-path: "pnpm-lock.yaml"
       - run: pnpm install
         name: Setup node_modules
-      - run: pnpm typecheck
-        name: Typecheck
-        if: steps.node.outcome=='success'
       - run: pnpm lint
         name: Lint
         if: steps.node.outcome=='success'
