@@ -1,45 +1,41 @@
 import { api } from "@/utils/api";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useState } from "react";
 
 export default function Home() {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
-  const camera = useRef<HTMLVideoElement>(null);
-  function handleMedia() {
-    if (!camera.current) return;
-
-    if (camera.current.srcObject) {
-      const a: number = "da";
-      camera.current.srcObject = null;
-      return;
-    }
-
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-      .then((stream) => {
-        if (!camera.current) return;
-        camera.current.srcObject = stream;
-      })
-      .catch(console.error);
-  }
+  const [html5QrCodeScanner, setHtml5QrCodeScanner] = useState<InstanceType<typeof Html5Qrcode>>();
 
   const [scanResult, setScanResult] = useState("QR scan result");
   function handleScanner() {
+    let html5QrCode = html5QrCodeScanner;
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode("qr-container", {
+        useBarCodeDetectorIfSupported: true,
+        verbose: false,
+      });
+      setHtml5QrCodeScanner(html5QrCode);
+    }
+
+    if (html5QrCode.getState() === Html5QrcodeScannerState.SCANNING) {
+      html5QrCode.stop().catch((e) => console.error("scanner stop error", e));
+      setScanResult("QR scan result");
+      return;
+    }
+
     setScanResult("scanning...");
-    const html5QrCode = new Html5Qrcode("qr-container");
     html5QrCode
       .start(
         { facingMode: "environment" },
-        { fps: 20, aspectRatio: 1 },
+        { fps: 5, aspectRatio: 1 },
         (code) => {
           setScanResult(code);
-          html5QrCode.stop().catch((e) => console.error("scanner stop error", e));
+          html5QrCode?.stop().catch((e) => console.error("scanner stop error", e));
         },
-        (e, err) => console.error("scan error", e, err)
+        () => void 0
       )
       .catch((e) => console.error("scanner start error ", e));
   }
@@ -68,20 +64,13 @@ export default function Home() {
           >
             HTML5QR SCANNER START
           </button>
-          <div className="text-white">{scanResult}</div>
+          <div className="text-white">
+            {html5QrCodeScanner?.getState() === Html5QrcodeScannerState.SCANNING
+              ? "scanning..."
+              : scanResult}
+          </div>
           <div
             id="qr-container"
-            className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300"
-          />
-          <button
-            className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300"
-            onClick={handleMedia}
-          >
-            GIVE CAMERA ACCESS
-          </button>
-          <video
-            ref={camera}
-            autoPlay
             className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
