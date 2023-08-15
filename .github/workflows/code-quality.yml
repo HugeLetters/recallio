@@ -23,7 +23,7 @@ jobs:
           cache-dependency-path: "pnpm-lock.yaml"
       - run: pnpm install
         name: Setup node_modules
-      - run: pnpm lint
+      - run: SKIP_ENV_VALIDATION=1 pnpm lint
         name: Lint
         if: steps.node.outcome=='success'
       - run: pnpm check-format
