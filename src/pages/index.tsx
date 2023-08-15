@@ -13,7 +13,6 @@ export default function Home() {
     if (!camera.current) return;
 
     if (camera.current.srcObject) {
-      const a: number = "da";
       camera.current.srcObject = null;
       return;
     }
