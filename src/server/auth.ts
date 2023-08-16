@@ -1,8 +1,9 @@
-import { type GetServerSidePropsContext } from "next";
-import { getServerSession, type NextAuthOptions, type DefaultSession } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import { db } from "@/database";
 import { env } from "@/env.mjs";
-
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { type GetServerSidePropsContext } from "next";
+import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth";
+import DiscordProvider from "next-auth/providers/discord";
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -30,15 +31,11 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  adapter: DrizzleAdapter(db),
   callbacks: {
-    // todo - improve this once you get the hang of stuff
-    session: ({ session, token }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: token.sub,
-      },
-    }),
+    session: ({ session, user }) => {
+      return Object.assign(session, { user });
+    },
   },
   providers: [
     DiscordProvider({

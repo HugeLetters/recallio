@@ -11,6 +11,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
   useEffect(() => {
     scanner.current = createScanner(id);
     setState("stopped");
+
     return () => {
       if (scanner.current) {
         stop(scanner.current).catch(console.error);
@@ -38,6 +39,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
       .then(() => setState("scanning"))
       .catch((e) => {
         console.error(e);
+        setState("stopped");
         toast.error("There was an error trying to start the scanner.");
       });
   }
