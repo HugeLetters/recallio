@@ -38,7 +38,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
       .then(() => setState("scanning"))
       .catch((e) => {
         console.error(e);
-        toast.error("There was an error trying to start the scanner");
+        toast.error("There was an error trying to start the scanner.");
       });
   }
 
