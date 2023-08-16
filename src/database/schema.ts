@@ -9,7 +9,9 @@ export const user = mysqlTable("user", {
   emailVerified: timestamp("emailVerified", {
     mode: "date",
     fsp: 3,
-  }).defaultNow(),
+  })
+    .defaultNow()
+    .notNull(),
   image: varchar("image", { length: 255 }),
 });
 export const userRelations = relations(user, ({ many }) => ({
