@@ -26,7 +26,8 @@ CREATE TABLE `user` (
 	`email` varchar(255) NOT NULL,
 	`emailVerified` timestamp(3) DEFAULT (now()),
 	`image` varchar(255),
-	CONSTRAINT `user_id` PRIMARY KEY(`id`)
+	CONSTRAINT `user_id` PRIMARY KEY(`id`),
+	CONSTRAINT `user_email_unique` UNIQUE(`email`)
 );
 --> statement-breakpoint
 CREATE TABLE `verificationToken` (
@@ -35,6 +36,3 @@ CREATE TABLE `verificationToken` (
 	`expires` timestamp NOT NULL,
 	CONSTRAINT `verificationToken_identifier_token` PRIMARY KEY(`identifier`,`token`)
 );
---> statement-breakpoint
-ALTER TABLE `account` ADD CONSTRAINT `account_userId_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `session` ADD CONSTRAINT `session_userId_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE cascade ON UPDATE no action;

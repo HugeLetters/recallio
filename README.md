@@ -5,7 +5,7 @@ You can bypass this through either testing on `localhost` or setting your dev se
 
 # Database
 
-I use Planetscale which doesn't use foreign keys - so migrations will log errors BUT according to Planetscale it will still work fine, it's just that these constraints won't be applied.
+I use Planetscale which doesn't use foreign keys - so don't use them and rely on Drizzle-ORM relations.
 
 # Create T3 App
 
