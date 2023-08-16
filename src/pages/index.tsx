@@ -14,7 +14,7 @@ export default function Home() {
   function handleScan(scanData: typeof scanResult) {
     setScanResult(scanData);
     if (scanner.ready) {
-      scanner.stop();
+      void scanner.stop();
     }
   }
 
@@ -40,7 +40,7 @@ export default function Home() {
             className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300 transition-[filter] disabled:saturate-0"
             onClick={() => {
               if (scanner.state === "not mounted") return;
-              scanner.state === "scanning" ? scanner.stop() : void scanner.start();
+              scanner.state === "scanning" ? void scanner.stop() : void scanner.start();
             }}
             disabled={!scanner.ready || scanner.state === "starting"}
           >
