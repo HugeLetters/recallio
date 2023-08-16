@@ -1,0 +1,44 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "77e33112-ed6d-483c-a38c-bacd310cf4ea",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "test-table": {
+      "name": "test-table",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "test-table_id": {
+          "name": "test-table_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

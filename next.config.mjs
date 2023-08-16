@@ -3,6 +3,7 @@
  * for Docker builds.
  */
 await import("./src/env.mjs");
+import BundleAnalyzer from "@next/bundle-analyzer";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -19,4 +20,6 @@ const config = {
   },
 };
 
-export default config;
+export default function NextConfig() {
+  return BundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(config);
+}

@@ -1,3 +1,12 @@
+# Camera access
+
+For local development - most browsers don't allow access to camera through `navigator.mediaDevices.getUserMedia()` in unsecure context.
+You can bypass this through either testing on `localhost` or setting your dev server ip address as secure in unsafe chrome flags.
+
+# Database
+
+I use Planetscale which doesn't use foreign keys - so migrations will log errors BUT according to Planetscale it will still work fine, it's just that these constraints won't be applied.
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
