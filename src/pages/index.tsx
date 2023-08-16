@@ -1,46 +1,21 @@
+import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import { api } from "@/utils/api";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useState } from "react";
 
 export default function Home() {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
-  const camera = useRef<HTMLVideoElement>(null);
-  function handleMedia() {
-    if (!camera.current) return;
-
-    if (camera.current.srcObject) {
-      camera.current.srcObject = null;
-      return;
-    }
-
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-      .then((stream) => {
-        if (!camera.current) return;
-        camera.current.srcObject = stream;
-      })
-      .catch(console.error);
-  }
-
   const [scanResult, setScanResult] = useState("QR scan result");
-  function handleScanner() {
-    setScanResult("scanning...");
-    const html5QrCode = new Html5Qrcode("qr-container");
-    html5QrCode
-      .start(
-        { facingMode: "environment" },
-        { fps: 20, aspectRatio: 1 },
-        (code) => {
-          setScanResult(code);
-          html5QrCode.stop().catch((e) => console.error("scanner stop error", e));
-        },
-        (e, err) => console.error("scan error", e, err)
-      )
-      .catch((e) => console.error("scanner start error ", e));
+  const scanner = useBarcodeScanner(handleScan);
+
+  function handleScan(scanData: typeof scanResult) {
+    setScanResult(scanData);
+    if (scanner.ready) {
+      scanner.stop();
+    }
   }
 
   return (
@@ -62,26 +37,20 @@ export default function Home() {
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
           <button
-            className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300"
-            onClick={handleScanner}
+            className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300 transition-[filter] disabled:saturate-0"
+            onClick={() => {
+              if (scanner.state === "not mounted") return;
+              scanner.state === "scanning" ? scanner.stop() : void scanner.start();
+            }}
+            disabled={!scanner.ready || scanner.state === "starting"}
           >
-            HTML5QR SCANNER START
+            {scanner.state !== "scanning" ? "START SCAN" : "STOP SCAN"}
           </button>
-          <div className="text-white">{scanResult}</div>
+          <div>{scanResult}</div>
+          <div>{scanner.state}</div>
           <div
-            id="qr-container"
-            className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300"
-          />
-          <button
-            className="rounded-full bg-purple-700 p-4 text-lime-300 outline outline-1 outline-lime-300"
-            onClick={handleMedia}
-          >
-            GIVE CAMERA ACCESS
-          </button>
-          <video
-            ref={camera}
-            autoPlay
-            className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300"
+            id={scanner.id}
+            className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300 transition-shadow duration-500"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
