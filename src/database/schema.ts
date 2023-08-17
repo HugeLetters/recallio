@@ -1,5 +1,5 @@
 import type { AdapterAccount } from "@auth/core/adapters";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { int, mysqlTable, primaryKey, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const user = mysqlTable("user", {
@@ -9,9 +9,7 @@ export const user = mysqlTable("user", {
   emailVerified: timestamp("emailVerified", {
     mode: "date",
     fsp: 3,
-  })
-    .defaultNow()
-    .notNull(),
+  }).default(sql`(CURRENT_TIMESTAMP)`),
   image: varchar("image", { length: 255 }),
 });
 export const userRelations = relations(user, ({ many }) => ({
