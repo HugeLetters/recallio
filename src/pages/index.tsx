@@ -103,10 +103,18 @@ function AuthShowcase() {
       </p>
       <button
         className="rounded-full bg-white/10 px-10 py-3 font-semibold  no-underline transition hover:bg-white/20"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
+        onClick={() => void signIn()}
       >
-        {sessionData ? "Sign out" : "Sign in"}
+        {sessionData ? "Link new account" : "Sign in"}
       </button>
+      {sessionData && (
+        <button
+          className="rounded-full bg-white/10 px-10 py-3 font-semibold  no-underline transition hover:bg-white/20"
+          onClick={() => void signOut()}
+        >
+          Sign out
+        </button>
+      )}
     </div>
   );
 }
