@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1692208806653,
-      "tag": "0000_confused_grim_reaper",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1692211059206,
-      "tag": "0001_complex_shriek",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1692255203941,
-      "tag": "0002_mature_trish_tilby",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1692255694394,
-      "tag": "0003_windy_centennial",
+      "when": 1692256640581,
+      "tag": "0000_strange_tiger_shark",
       "breakpoints": true
     }
   ]

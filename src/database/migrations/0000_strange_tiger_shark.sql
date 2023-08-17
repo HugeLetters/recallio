@@ -24,10 +24,9 @@ CREATE TABLE `user` (
 	`id` varchar(255) NOT NULL,
 	`name` varchar(255),
 	`email` varchar(255) NOT NULL,
-	`emailVerified` timestamp(3) DEFAULT (now()),
+	`emailVerified` timestamp(3) DEFAULT (CURRENT_TIMESTAMP),
 	`image` varchar(255),
-	CONSTRAINT `user_id` PRIMARY KEY(`id`),
-	CONSTRAINT `user_email_unique` UNIQUE(`email`)
+	CONSTRAINT `user_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `verificationToken` (
