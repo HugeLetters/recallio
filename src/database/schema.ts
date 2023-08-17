@@ -25,6 +25,7 @@ export const account = mysqlTable(
     provider: varchar("provider", { length: 255 }).notNull(),
     providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
     refresh_token: varchar("refresh_token", { length: 255 }),
+    // LinkedIn token can be quite long
     access_token: varchar("access_token", { length: 511 }),
     expires_at: int("expires_at"),
     token_type: varchar("token_type", { length: 255 }),
@@ -32,6 +33,8 @@ export const account = mysqlTable(
     // Google id token can be quite long
     id_token: varchar("id_token", { length: 2047 }),
     session_state: varchar("session_state", { length: 255 }),
+    // For GitHub
+    refresh_token_expires_in: int("refresh_token_expires_in"),
   },
   (account) => ({
     compoundKey: primaryKey(account.provider, account.providerAccountId),
