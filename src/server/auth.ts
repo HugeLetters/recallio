@@ -5,6 +5,8 @@ import { type GetServerSidePropsContext } from "next";
 import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
+import LinkedInProvider from "next-auth/providers/linkedin";
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -46,6 +48,10 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+    }),
+    LinkedInProvider({
+      clientId: env.LINKED_IN_CLIENT_ID,
+      clientSecret: env.LINKED_IN_CLIENT_SECRET,
     }),
     /**
      * ...add more providers here.

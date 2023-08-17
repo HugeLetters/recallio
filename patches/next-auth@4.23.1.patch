@@ -1,0 +1,188 @@
+diff --git a/providers/linkedin.d.ts b/providers/linkedin.d.ts
+index 8ae6663e993838ec3cc9e96a25e6b0670ed63cde..fe1debcfbf15cce5f0139e21a4896386ccb75511 100644
+--- a/providers/linkedin.d.ts
++++ b/providers/linkedin.d.ts
+@@ -1,20 +1,12 @@
+ import type { OAuthConfig, OAuthUserConfig } from ".";
+-interface Identifier {
+-    identifier: string;
++export interface LinkedInProfile {
++  sub: string;
++  name: string;
++  email: string;
++  picture: string;
+ }
+-interface Element {
+-    identifiers?: Identifier[];
+-}
+-export interface LinkedInProfile extends Record<string, any> {
+-    id: string;
+-    localizedFirstName: string;
+-    localizedLastName: string;
+-    profilePicture: {
+-        "displayImage~": {
+-            elements?: Element[];
+-        };
+-    };
+-}
+-export default function LinkedIn<P extends LinkedInProfile>(options: OAuthUserConfig<P>): OAuthConfig<P>;
++export default function LinkedIn<P extends LinkedInProfile>(
++  options: OAuthUserConfig<P>
++): OAuthConfig<P>;
+ export {};
+ //# sourceMappingURL=linkedin.d.ts.map
+diff --git a/providers/linkedin.js b/providers/linkedin.js
+index 6491bd302e1d1ef2ec1a0c2fbdc05f858a8bdec9..77009b758731e8b7fefc26e7cbcc31ec6527a097 100644
+--- a/providers/linkedin.js
++++ b/providers/linkedin.js
+@@ -1,7 +1,7 @@
+ "use strict";
+ 
+ Object.defineProperty(exports, "__esModule", {
+-  value: true
++  value: true,
+ });
+ exports.default = LinkedIn;
+ 
+@@ -10,48 +10,29 @@ function LinkedIn(options) {
+     id: "linkedin",
+     name: "LinkedIn",
+     type: "oauth",
++    wellKnown: "https://www.linkedin.com/oauth/.well-known/openid-configuration",
+     authorization: {
+-      url: "https://www.linkedin.com/oauth/v2/authorization",
+-      params: {
+-        scope: "r_liteprofile r_emailaddress"
+-      }
++      params: { scope: "profile email openid" },
+     },
+-    token: "https://www.linkedin.com/oauth/v2/accessToken",
+     client: {
+-      token_endpoint_auth_method: "client_secret_post"
++      token_endpoint_auth_method: "client_secret_post",
+     },
+-    userinfo: {
+-      url: "https://api.linkedin.com/v2/me",
+-      params: {
+-        projection: `(id,localizedFirstName,localizedLastName,profilePicture(displayImage~digitalmediaAsset:playableStreams))`
+-      }
+-    },
+-
+-    async profile(profile, tokens) {
+-      var _emailData$elements, _emailData$elements$, _emailData$elements$$, _profile$profilePictu, _profile$profilePictu2, _profile$profilePictu3, _profile$profilePictu4, _profile$profilePictu5, _profile$profilePictu6;
+-
+-      const emailResponse = await fetch("https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))", {
+-        headers: {
+-          Authorization: `Bearer ${tokens.access_token}`
+-        }
+-      });
+-      const emailData = await emailResponse.json();
++    profile(profile) {
+       return {
+-        id: profile.id,
+-        name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
+-        email: emailData === null || emailData === void 0 ? void 0 : (_emailData$elements = emailData.elements) === null || _emailData$elements === void 0 ? void 0 : (_emailData$elements$ = _emailData$elements[0]) === null || _emailData$elements$ === void 0 ? void 0 : (_emailData$elements$$ = _emailData$elements$["handle~"]) === null || _emailData$elements$$ === void 0 ? void 0 : _emailData$elements$$.emailAddress,
+-        image: (_profile$profilePictu = profile.profilePicture) === null || _profile$profilePictu === void 0 ? void 0 : (_profile$profilePictu2 = _profile$profilePictu["displayImage~"]) === null || _profile$profilePictu2 === void 0 ? void 0 : (_profile$profilePictu3 = _profile$profilePictu2.elements) === null || _profile$profilePictu3 === void 0 ? void 0 : (_profile$profilePictu4 = _profile$profilePictu3[0]) === null || _profile$profilePictu4 === void 0 ? void 0 : (_profile$profilePictu5 = _profile$profilePictu4.identifiers) === null || _profile$profilePictu5 === void 0 ? void 0 : (_profile$profilePictu6 = _profile$profilePictu5[0]) === null || _profile$profilePictu6 === void 0 ? void 0 : _profile$profilePictu6.identifier
++        id: profile.sub,
++        name: profile.name,
++        email: profile.email,
++        image: profile.picture,
+       };
+     },
+-
+     style: {
+       logo: "/linkedin.svg",
+       logoDark: "/linkedin-dark.svg",
+       bg: "#fff",
+       text: "#069",
+       bgDark: "#069",
+-      textDark: "#fff"
++      textDark: "#fff",
+     },
+-    options
++    options,
+   };
+ }
+diff --git a/src/providers/linkedin.ts b/src/providers/linkedin.ts
+index deb63cd0918c12bad27210704a4d1523e1abbdf6..470733fb3d52f6f228130c795ec3fd37c9f4b09d 100644
+--- a/src/providers/linkedin.ts
++++ b/src/providers/linkedin.ts
+@@ -1,22 +1,10 @@
+-import type { OAuthConfig, OAuthUserConfig } from "."
++import type { OAuthConfig, OAuthUserConfig } from ".";
+ 
+-interface Identifier {
+-  identifier: string
+-}
+-
+-interface Element {
+-  identifiers?: Identifier[]
+-}
+-
+-export interface LinkedInProfile extends Record<string, any> {
+-  id: string
+-  localizedFirstName: string
+-  localizedLastName: string
+-  profilePicture: {
+-    "displayImage~": {
+-      elements?: Element[]
+-    }
+-  }
++export interface LinkedInProfile {
++  sub: string;
++  name: string;
++  email: string;
++  picture: string;
+ }
+ 
+ export default function LinkedIn<P extends LinkedInProfile>(
+@@ -26,34 +14,20 @@ export default function LinkedIn<P extends LinkedInProfile>(
+     id: "linkedin",
+     name: "LinkedIn",
+     type: "oauth",
++    wellKnown: "https://www.linkedin.com/oauth/.well-known/openid-configuration",
+     authorization: {
+-      url: "https://www.linkedin.com/oauth/v2/authorization",
+-      params: { scope: "r_liteprofile r_emailaddress" },
++      params: { scope: "profile email openid" },
+     },
+-    token: "https://www.linkedin.com/oauth/v2/accessToken",
+     client: {
+       token_endpoint_auth_method: "client_secret_post",
+     },
+-    userinfo: {
+-      url: "https://api.linkedin.com/v2/me",
+-      params: {
+-        projection: `(id,localizedFirstName,localizedLastName,profilePicture(displayImage~digitalmediaAsset:playableStreams))`,
+-      },
+-    },
+-    async profile(profile, tokens) {
+-      const emailResponse = await fetch(
+-        "https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))",
+-        { headers: { Authorization: `Bearer ${tokens.access_token}` } }
+-      )
+-      const emailData = await emailResponse.json()
++    profile(profile) {
+       return {
+-        id: profile.id,
+-        name: `${profile.localizedFirstName} ${profile.localizedLastName}`,
+-        email: emailData?.elements?.[0]?.["handle~"]?.emailAddress,
+-        image:
+-          profile.profilePicture?.["displayImage~"]?.elements?.[0]
+-            ?.identifiers?.[0]?.identifier,
+-      }
++        id: profile.sub,
++        name: profile.name,
++        email: profile.email,
++        image: profile.picture,
++      };
+     },
+     style: {
+       logo: "/linkedin.svg",
+@@ -64,5 +38,5 @@ export default function LinkedIn<P extends LinkedInProfile>(
+       textDark: "#fff",
+     },
+     options,
+-  }
++  };
+ }
