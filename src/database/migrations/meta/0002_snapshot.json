@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "7115f799-0a5a-461a-bd03-0bef59af66b7",
-  "prevId": "f1ab778d-f352-4eb3-a878-fc3abdd4cf93",
+  "id": "e450ff17-47d5-43af-8922-70be3376a464",
+  "prevId": "6239f503-5e40-44b3-bb2b-eaefa73fb2a6",
   "tables": {
     "account": {
       "name": "account",
@@ -44,7 +44,7 @@
         },
         "access_token": {
           "name": "access_token",
-          "type": "varchar(255)",
+          "type": "varchar(511)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -72,7 +72,7 @@
         },
         "id_token": {
           "name": "id_token",
-          "type": "varchar(255)",
+          "type": "varchar(2047)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -163,7 +163,7 @@
           "name": "emailVerified",
           "type": "timestamp(3)",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
         },
@@ -185,14 +185,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "user_email_unique": {
-          "name": "user_email_unique",
-          "columns": [
-            "email"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "verificationToken": {
       "name": "verificationToken",

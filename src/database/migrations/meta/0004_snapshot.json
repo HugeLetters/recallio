@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "6239f503-5e40-44b3-bb2b-eaefa73fb2a6",
-  "prevId": "e3fe3334-fba7-4670-9ada-4db21a44b9c6",
+  "id": "a4f133f6-82a1-4f43-b1af-f3ee8b9fdd90",
+  "prevId": "5922262e-6495-4991-ba85-ec42dac03ef3",
   "tables": {
     "account": {
       "name": "account",
@@ -44,7 +44,7 @@
         },
         "access_token": {
           "name": "access_token",
-          "type": "varchar(255)",
+          "type": "varchar(511)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -80,6 +80,13 @@
         "session_state": {
           "name": "session_state",
           "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "refresh_token_expires_in": {
+          "name": "refresh_token_expires_in",
+          "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -185,7 +192,14 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ]
+        }
+      }
     },
     "verificationToken": {
       "name": "verificationToken",

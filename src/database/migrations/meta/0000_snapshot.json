@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "cf36a469-71fd-4d42-bafd-2ec470f42201",
+  "id": "e3fe3334-fba7-4670-9ada-4db21a44b9c6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -165,7 +165,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "(now())"
+          "default": "(CURRENT_TIMESTAMP)"
         },
         "image": {
           "name": "image",
@@ -185,14 +185,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "user_email_unique": {
-          "name": "user_email_unique",
-          "columns": [
-            "email"
-          ]
-        }
-      }
+      "uniqueConstraints": {}
     },
     "verificationToken": {
       "name": "verificationToken",
