@@ -46,12 +46,12 @@ export default function Home() {
           >
             {scanner.state !== "scanning" ? "START SCAN" : "STOP SCAN"}
           </button>
-          <div>{scanResult}</div>
-          <div>{scanner.state}</div>
           <div
             id={scanner.id}
             className="aspect-square h-56 overflow-hidden rounded-3xl bg-purple-900 object-cover shadow-[0_0_40px_3px] shadow-purple-300 transition-shadow duration-500"
           />
+          <div>{scanResult}</div>
+          <div>{scanner.state}</div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4  hover:bg-white/20"
