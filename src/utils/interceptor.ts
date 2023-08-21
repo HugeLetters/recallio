@@ -1,11 +1,12 @@
 import { rest, setupWorker } from "msw";
 
+/** During development adds latency to API calls to mock real-life scenario */
 export default function setupInterceptor() {
   if (typeof window === "undefined") return;
 
   const worker = setupWorker(
     rest.all("api/*", async (req) => {
-      const delayDuration = randInt(3000, 3000);
+      const delayDuration = randInt(100, 3000);
       console.log(`Delaying request to ${req.url.href} for ${delayDuration}ms`);
       await delay(delayDuration);
       return req.passthrough();
@@ -13,6 +14,7 @@ export default function setupInterceptor() {
   );
 
   void worker.start().catch(console.error);
+  return worker;
 }
 
 function delay(ms: number) {
