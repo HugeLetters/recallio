@@ -97,20 +97,20 @@ function AuthShowcase() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl ">
+      <div className="text-center text-2xl ">
         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
         {secretMessage && <span> - {secretMessage}</span>}
-      </p>
+      </div>
       <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold  no-underline transition hover:bg-white/20"
+        className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
         onClick={() => void signIn()}
       >
         {sessionData ? "Link new account" : "Sign in"}
       </button>
       {sessionData && (
         <button
-          className="rounded-full bg-white/10 px-10 py-3 font-semibold  no-underline transition hover:bg-white/20"
-          onClick={() => void signOut()}
+          className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
+          onClick={() => void signOut({ redirect: false })}
         >
           Sign out
         </button>

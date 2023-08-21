@@ -16,6 +16,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
       if (scanner.current) {
         stop(scanner.current).catch(console.error);
       }
+      scanner.current = undefined;
       setState("not mounted");
     };
   }, [id]);
