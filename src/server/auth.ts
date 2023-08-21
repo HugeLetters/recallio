@@ -1,5 +1,5 @@
 import { db } from "@/database";
-import { account, session, user, verificationToken } from "@/database/schema";
+import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { env } from "@/env.mjs";
 import { AdapterError } from "@auth/core/errors";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
