@@ -18,7 +18,7 @@ import { db } from "..";
 
 type InsertValue<T extends MySqlTable> = InferModel<T, "insert">;
 type UpdateValue<T extends MySqlTable> = MySqlUpdateSetSource<T>;
-type WhereQuery<T extends MySqlTable> = (table: T, operators: typeof OPERATORS) => SQL;
+type WhereQuery<T extends MySqlTable> = (table: T, operators: typeof OPERATORS) => SQL | undefined;
 
 const OPERATORS = { eq, gt, lt, isNull, inArray, exists, between, like, not, and, or };
 
@@ -28,7 +28,8 @@ export abstract class Repository<T extends MySqlTable> {
     this.table = table;
   }
   async create(value: InsertValue<T>) {
-    await db.insert(this.table).values(value);
+    // values as an array because of a Drizzle bug where excess properties cause a crash on single insert
+    await db.insert(this.table).values([value]);
   }
   findFirst(query: WhereQuery<T>) {
     return this.findMany(query)

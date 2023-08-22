@@ -1,6 +1,7 @@
 import { db } from "@/database";
+import accountRepository from "@/database/repository/account";
 import userRepository from "@/database/repository/user";
-import { account, session, user, verificationToken } from "@/database/schema/auth";
+import { session, user, verificationToken } from "@/database/schema/auth";
 import type { Adapter } from "@auth/core/adapters";
 import { and, eq } from "drizzle-orm";
 
@@ -73,8 +74,7 @@ export function DatabaseAdapter(): Adapter {
         .then((res) => res[0]);
     },
     async linkAccount(rawAccount) {
-      // values as an array because of a Drizzle bug where excess peroperties cause a crash on single insert
-      await db.insert(account).values([rawAccount]);
+      await accountRepository.create(rawAccount);
     },
     getUserByAccount(data) {
       return userRepository.getByAccount(data).then((x) => x ?? null);
@@ -139,14 +139,12 @@ export function DatabaseAdapter(): Adapter {
       return dbUser ?? null;
     },
     async unlinkAccount(accountData) {
-      await db
-        .delete(account)
-        .where(
-          and(
-            eq(account.providerAccountId, accountData.providerAccountId),
-            eq(account.provider, accountData.provider)
-          )
-        );
+      await accountRepository.delete((table, { and, eq }) =>
+        and(
+          eq(table.providerAccountId, accountData.providerAccountId),
+          eq(table.provider, accountData.provider)
+        )
+      );
 
       return undefined;
     },
