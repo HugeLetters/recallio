@@ -18,6 +18,14 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  images: {
+    remotePatterns: [
+      { hostname: "avatars.githubusercontent.com", pathname: "/u/*" },
+      { hostname: "cdn.discordapp.com", pathname: "/avatars/*" },
+      { hostname: "*.googleusercontent.com", pathname: "/a/*" },
+      { hostname: "media.licdn.com", pathname: "**" },
+    ],
+  },
 };
 
 export default function NextConfig() {

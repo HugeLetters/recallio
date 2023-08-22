@@ -6,5 +6,5 @@ export const product = mysqlTable(
     barcode: varchar("barcode", { length: 50 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
   },
-  (product) => ({ compoundKey: primaryKey(product.barcode, product.name) })
+  (table) => ({ compoundKey: primaryKey(table.barcode, table.name) })
 );
