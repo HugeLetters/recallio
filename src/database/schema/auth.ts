@@ -4,7 +4,7 @@ import { int, mysqlTable, primaryKey, timestamp, varchar } from "drizzle-orm/mys
 
 export const user = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
-  name: varchar("name", { length: 255 }),
+  name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: timestamp("emailVerified", {
     mode: "date",
@@ -36,8 +36,8 @@ export const account = mysqlTable(
     // For GitHub
     refresh_token_expires_in: int("refresh_token_expires_in"),
   },
-  (account) => ({
-    compoundKey: primaryKey(account.provider, account.providerAccountId),
+  (table) => ({
+    compoundKey: primaryKey(table.provider, table.providerAccountId),
   })
 );
 export const accountRelations = relations(account, ({ one }) => ({
@@ -66,7 +66,7 @@ export const verificationToken = mysqlTable(
     token: varchar("token", { length: 255 }).notNull(),
     expires: timestamp("expires", { mode: "date" }).notNull(),
   },
-  (vt) => ({
-    compoundKey: primaryKey(vt.identifier, vt.token),
+  (table) => ({
+    compoundKey: primaryKey(table.identifier, table.token),
   })
 );

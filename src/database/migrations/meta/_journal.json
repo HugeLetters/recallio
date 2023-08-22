@@ -43,6 +43,13 @@
       "when": 1692633800467,
       "tag": "0005_quick_jack_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1692711903451,
+      "tag": "0006_condemned_radioactive_man",
+      "breakpoints": true
     }
   ]
 }

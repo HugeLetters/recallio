@@ -1,15 +1,11 @@
-import { db } from "@/database";
-import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { env } from "@/env.mjs";
-import { AdapterError } from "@auth/core/errors";
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import type { MySqlTableFn } from "drizzle-orm/mysql-core";
 import { type GetServerSidePropsContext } from "next";
 import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
+import { DatabaseAdapter } from "./db-adapter";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -21,6 +17,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: DefaultSession["user"] & {
       id: string;
+      name: string;
       // ...other properties
       // role: UserRole;
     };
@@ -32,34 +29,19 @@ declare module "next-auth" {
   // }
 }
 
-/** Next-auth Drizzle adapter uses it's own schema which doesn't work
- * for cases when a profile/account has excess properties */
-function getTable(tableName: string) {
-  switch (tableName) {
-    case "user":
-      return user;
-    case "account":
-      return account;
-    case "session":
-      return session;
-    case "verificationToken":
-      return verificationToken;
-  }
-  throw new AdapterError("Next-auth requested a table which is not defined");
-}
-
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
-  adapter: DrizzleAdapter(db, getTable as unknown as MySqlTableFn),
+  adapter: DatabaseAdapter(),
   callbacks: {
     session: ({ session, user }) => {
       return Object.assign(session, { user });
     },
   },
+  //! When adding a new provider don't forget to add a new host to allowed patterns for external images
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,

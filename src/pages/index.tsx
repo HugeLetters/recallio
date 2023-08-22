@@ -1,3 +1,4 @@
+import Auth from "@/components/auth";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import { api } from "@/utils/api";
 import Head from "next/head";
@@ -52,6 +53,7 @@ export default function Home() {
             ))}
           </div>
         )}
+        <Auth />
       </main>
     </>
   );
