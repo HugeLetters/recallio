@@ -1,16 +1,15 @@
-import { db } from "@/database";
 import accountRepository from "@/database/repository/account";
+import sessionRepository from "@/database/repository/session";
 import userRepository from "@/database/repository/user";
-import { session, user, verificationToken } from "@/database/schema/auth";
+import verificationTokenRepository from "@/database/repository/verificationToken";
 import type { Adapter } from "@auth/core/adapters";
-import { and, eq } from "drizzle-orm";
 
 export function DatabaseAdapter(): Adapter {
   return {
     async createUser(data) {
       const id = crypto.randomUUID();
-      const newUser = Object.assign(data, { id, name: data.name ?? data.email });
-      await userRepository.create(newUser);
+      const user = Object.assign(data, { id, name: data.name ?? data.email });
+      await userRepository.create(user);
 
       return userRepository
         .findFirst((table, { eq }) => eq(table.id, id))
@@ -27,34 +26,27 @@ export function DatabaseAdapter(): Adapter {
         .findFirst((table, { eq }) => eq(table.email, email))
         .then((x) => x ?? null);
     },
-    async createSession(data) {
-      await db.insert(session).values(data);
+    async createSession(session) {
+      await sessionRepository.create(session);
 
-      return db
-        .select()
-        .from(session)
-        .where(eq(session.sessionToken, data.sessionToken))
-        .limit(1)
+      return sessionRepository
+        .findFirst((table, { eq }) => eq(table.sessionToken, session.sessionToken))
         .then((res) => {
-          if (!res[0]) throw new Error("Session was not created successfully");
-          return res[0];
+          if (!res) throw new Error("Session was not created successfully");
+          return res;
         });
     },
     getSessionAndUser(sessionToken) {
-      return db
-        .select({ session, user })
-        .from(session)
-        .where(eq(session.sessionToken, sessionToken))
-        .innerJoin(user, eq(user.id, session.userId))
-        .limit(1)
-        .then((res) => res[0] ?? null);
+      return sessionRepository
+        .findFirstWithUser((table, { eq }) => eq(table.sessionToken, sessionToken))
+        .then((x) => x ?? null);
     },
     async updateUser(data) {
       if (!data.id) {
         throw new Error("No user id.");
       }
-      const nData = Object.assign(data, { name: data.name ?? undefined });
-      await userRepository.update(nData, (table, { eq }) => eq(table.id, data.id));
+      const user = Object.assign(data, { name: data.name ?? undefined });
+      await userRepository.update(user, (table, { eq }) => eq(table.id, data.id));
 
       return userRepository
         .findFirst((table, { eq }) => eq(table.id, data.id))
@@ -63,68 +55,55 @@ export function DatabaseAdapter(): Adapter {
           return value;
         });
     },
-    async updateSession(data) {
-      await db.update(session).set(data).where(eq(session.sessionToken, data.sessionToken));
+    async updateSession(session) {
+      await sessionRepository.update(session, (table, { eq }) =>
+        eq(table.sessionToken, session.sessionToken)
+      );
 
-      return db
-        .select()
-        .from(session)
-        .where(eq(session.sessionToken, data.sessionToken))
-        .limit(1)
-        .then((res) => res[0]);
+      return sessionRepository.findFirst((table, { eq }) =>
+        eq(table.sessionToken, session.sessionToken)
+      );
     },
-    async linkAccount(rawAccount) {
-      await accountRepository.create(rawAccount);
+    async linkAccount(account) {
+      await accountRepository.create(account);
     },
-    getUserByAccount(data) {
-      return userRepository.getByAccount(data).then((x) => x ?? null);
-    },
-    async deleteSession(sessionToken) {
-      const sessionRow = await db
-        .select()
-        .from(session)
-        .where(eq(session.sessionToken, sessionToken))
-        .limit(1)
-        .then((res) => res[0]);
-
-      if (sessionRow) {
-        await db.delete(session).where(eq(session.sessionToken, sessionToken));
-      }
-
-      return sessionRow;
-    },
-    async createVerificationToken(token) {
-      await db.insert(verificationToken).values(token);
-
-      return db
-        .select()
-        .from(verificationToken)
-        .where(eq(verificationToken.identifier, token.identifier))
-        .limit(1)
-        .then((res) => res[0]);
-    },
-    async useVerificationToken(token) {
-      const deletedToken = await db
-        .select()
-        .from(verificationToken)
-        .where(
+    getUserByAccount(account) {
+      return accountRepository
+        .findFirstWithUser((table, { and, eq }) =>
           and(
-            eq(verificationToken.identifier, token.identifier),
-            eq(verificationToken.token, token.token)
+            eq(table.provider, account.provider),
+            eq(table.providerAccountId, account.providerAccountId)
           )
         )
-        .limit(1)
-        .then((res) => res[0]);
+        .then((x) => x?.user ?? null);
+    },
+    async deleteSession(sessionToken) {
+      const session = await sessionRepository.findFirst((table, { eq }) =>
+        eq(table.sessionToken, sessionToken)
+      );
+
+      if (session) {
+        await sessionRepository.delete((table, { eq }) => eq(table.sessionToken, sessionToken));
+      }
+
+      return session;
+    },
+    async createVerificationToken(token) {
+      await verificationTokenRepository.create(token);
+
+      return verificationTokenRepository.findFirst((table, { eq }) =>
+        eq(table.identifier, token.identifier)
+      );
+    },
+    async useVerificationToken(token) {
+      const deletedToken = await verificationTokenRepository.findFirst((table, { and, eq }) =>
+        and(eq(table.identifier, token.identifier), eq(table.token, token.token))
+      );
 
       if (deletedToken) {
-        await db
-          .delete(verificationToken)
-          .where(
-            and(
-              eq(verificationToken.identifier, token.identifier),
-              eq(verificationToken.token, token.token)
-            )
-          );
+        await verificationTokenRepository.delete((table, { and, eq }) =>
+          and(eq(table.identifier, token.identifier), eq(table.token, token.token))
+        );
       }
 
       return deletedToken ?? null;
@@ -138,11 +117,11 @@ export function DatabaseAdapter(): Adapter {
 
       return dbUser ?? null;
     },
-    async unlinkAccount(accountData) {
+    async unlinkAccount(account) {
       await accountRepository.delete((table, { and, eq }) =>
         and(
-          eq(table.providerAccountId, accountData.providerAccountId),
-          eq(table.provider, accountData.provider)
+          eq(table.providerAccountId, account.providerAccountId),
+          eq(table.provider, account.provider)
         )
       );
 
