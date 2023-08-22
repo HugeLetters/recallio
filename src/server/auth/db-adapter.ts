@@ -1,4 +1,5 @@
 import { db } from "@/database";
+import userRepository from "@/database/repository/user";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import type { Adapter } from "@auth/core/adapters";
 import { and, eq } from "drizzle-orm";
@@ -8,38 +9,27 @@ export function DatabaseAdapter(): Adapter {
     async createUser(data) {
       const id = crypto.randomUUID();
       const newUser = Object.assign(data, { id, name: data.name ?? data.email });
-      await db.insert(user).values(newUser);
+      await userRepository.create(newUser);
 
-      return db
-        .select()
-        .from(user)
-        .where(eq(user.id, id))
-        .limit(1)
-        .then((res) => {
-          if (!res[0]) throw new Error("User was not created successfully");
-          return res[0];
+      return userRepository
+        .findFirst((table, { eq }) => eq(table.id, id))
+        .then((value) => {
+          if (!value) throw new Error("User was not created successfully");
+          return value;
         });
     },
     getUser(id) {
-      return db
-        .select()
-        .from(user)
-        .where(eq(user.id, id))
-        .limit(1)
-        .then((res) => res[0] ?? null);
+      return userRepository.findFirst((table, { eq }) => eq(table.id, id)).then((x) => x ?? null);
     },
     getUserByEmail(email) {
-      return db
-        .select()
-        .from(user)
-        .where(eq(user.email, email))
-        .limit(1)
-        .then((res) => res[0] ?? null);
+      return userRepository
+        .findFirst((table, { eq }) => eq(table.email, email))
+        .then((x) => x ?? null);
     },
     async createSession(data) {
       await db.insert(session).values(data);
 
-      return await db
+      return db
         .select()
         .from(session)
         .where(eq(session.sessionToken, data.sessionToken))
@@ -63,16 +53,13 @@ export function DatabaseAdapter(): Adapter {
         throw new Error("No user id.");
       }
       const nData = Object.assign(data, { name: data.name ?? undefined });
-      await db.update(user).set(nData).where(eq(user.id, data.id));
+      await userRepository.update(nData, (table, { eq }) => eq(table.id, data.id));
 
-      return db
-        .select()
-        .from(user)
-        .where(eq(user.id, data.id))
-        .limit(1)
-        .then((res) => {
-          if (!res[0]) throw new Error("User was not updated successfully");
-          return res[0];
+      return userRepository
+        .findFirst((table, { eq }) => eq(table.id, data.id))
+        .then((value) => {
+          if (!value) throw new Error("User was not updated successfully");
+          return value;
         });
     },
     async updateSession(data) {
@@ -90,18 +77,7 @@ export function DatabaseAdapter(): Adapter {
       await db.insert(account).values([rawAccount]);
     },
     getUserByAccount(data) {
-      return db
-        .select()
-        .from(account)
-        .where(
-          and(
-            eq(account.providerAccountId, data.providerAccountId),
-            eq(account.provider, data.provider)
-          )
-        )
-        .leftJoin(user, eq(account.userId, user.id))
-        .limit(1)
-        .then((res) => res[0]?.user ?? null);
+      return userRepository.getByAccount(data).then((x) => x ?? null);
     },
     async deleteSession(sessionToken) {
       const sessionRow = await db
@@ -154,15 +130,10 @@ export function DatabaseAdapter(): Adapter {
       return deletedToken ?? null;
     },
     async deleteUser(id) {
-      const dbUser = await db
-        .select()
-        .from(user)
-        .where(eq(user.id, id))
-        .limit(1)
-        .then((res) => res[0]);
+      const dbUser = await userRepository.findFirst((table, { eq }) => eq(table.id, id));
 
       if (dbUser) {
-        await db.delete(user).where(eq(user.id, id));
+        await userRepository.delete((table, { eq }) => eq(table.id, id));
       }
 
       return dbUser ?? null;
