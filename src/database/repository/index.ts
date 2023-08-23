@@ -32,9 +32,9 @@ export abstract class Repository<T extends MySqlTable> {
   constructor(table: T) {
     this.table = table;
   }
-  async create(value: InsertValue<T>) {
+  async create(value: InsertValue<T> | InsertValue<T>[]) {
     // values as an array because of a Drizzle bug where excess properties cause a crash on single insert
-    await this.db.insert(this.table).values([value]);
+    await this.db.insert(this.table).values(Array.isArray(value) ? value : [value]);
   }
   findFirst(query: WhereQuery<T>) {
     return this.findMany(query)
