@@ -20,7 +20,7 @@ type InsertValue<T extends MySqlTable> = InferModel<T, "insert">;
 type UpdateValue<T extends MySqlTable> = MySqlUpdateSetSource<T>;
 export type WhereQuery<T extends MySqlTable> = (
   table: T,
-  operators: typeof OPERATORS
+  operators: typeof OPERATORS,
 ) => SQL | undefined;
 
 const OPERATORS = { eq, gt, lt, isNull, inArray, exists, between, like, not, and, or };

@@ -57,11 +57,11 @@ export function DatabaseAdapter(): Adapter {
     },
     async updateSession(session) {
       await sessionRepository.update(session, (table, { eq }) =>
-        eq(table.sessionToken, session.sessionToken)
+        eq(table.sessionToken, session.sessionToken),
       );
 
       return sessionRepository.findFirst((table, { eq }) =>
-        eq(table.sessionToken, session.sessionToken)
+        eq(table.sessionToken, session.sessionToken),
       );
     },
     async linkAccount(account) {
@@ -72,14 +72,14 @@ export function DatabaseAdapter(): Adapter {
         .findFirstWithUser((table, { and, eq }) =>
           and(
             eq(table.provider, account.provider),
-            eq(table.providerAccountId, account.providerAccountId)
-          )
+            eq(table.providerAccountId, account.providerAccountId),
+          ),
         )
         .then((x) => x?.user ?? null);
     },
     async deleteSession(sessionToken) {
       const session = await sessionRepository.findFirst((table, { eq }) =>
-        eq(table.sessionToken, sessionToken)
+        eq(table.sessionToken, sessionToken),
       );
 
       if (session) {
@@ -92,17 +92,17 @@ export function DatabaseAdapter(): Adapter {
       await verificationTokenRepository.create(token);
 
       return verificationTokenRepository.findFirst((table, { eq }) =>
-        eq(table.identifier, token.identifier)
+        eq(table.identifier, token.identifier),
       );
     },
     async useVerificationToken(token) {
       const deletedToken = await verificationTokenRepository.findFirst((table, { and, eq }) =>
-        and(eq(table.identifier, token.identifier), eq(table.token, token.token))
+        and(eq(table.identifier, token.identifier), eq(table.token, token.token)),
       );
 
       if (deletedToken) {
         await verificationTokenRepository.delete((table, { and, eq }) =>
-          and(eq(table.identifier, token.identifier), eq(table.token, token.token))
+          and(eq(table.identifier, token.identifier), eq(table.token, token.token)),
         );
       }
 
@@ -121,8 +121,8 @@ export function DatabaseAdapter(): Adapter {
       await accountRepository.delete((table, { and, eq }) =>
         and(
           eq(table.providerAccountId, account.providerAccountId),
-          eq(table.provider, account.provider)
-        )
+          eq(table.provider, account.provider),
+        ),
       );
 
       return undefined;
