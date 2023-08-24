@@ -38,7 +38,7 @@ export const account = mysqlTable(
   },
   (table) => ({
     compoundKey: primaryKey(table.provider, table.providerAccountId),
-  }),
+  })
 );
 export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
@@ -68,5 +68,5 @@ export const verificationToken = mysqlTable(
   },
   (table) => ({
     compoundKey: primaryKey(table.identifier, table.token),
-  }),
+  })
 );

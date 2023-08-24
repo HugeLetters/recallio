@@ -6,7 +6,7 @@ import { z } from "zod";
 export const productRouter = createTRPCRouter({
   getProducts: protectedProcedure.input(z.string()).query(async ({ input }): Promise<string[]> => {
     const dbProducts = await productRepository.findMany((table, { eq }) =>
-      eq(table.barcode, input),
+      eq(table.barcode, input)
     );
     if (dbProducts.length) return dbProducts.map((x) => x.name);
 
