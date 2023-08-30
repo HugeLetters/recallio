@@ -18,13 +18,10 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback, config:
     scanner.current = createScanner(id);
     setState("stopped");
 
-    async function cleanup() {
-      await stop().catch(console.error);
+    return () => {
+      stop().catch(console.error);
       scanner.current = undefined;
       setState("not mounted");
-    }
-    return () => {
-      void cleanup();
     };
   }, [id]);
 
