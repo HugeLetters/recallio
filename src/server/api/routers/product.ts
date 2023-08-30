@@ -1,6 +1,7 @@
 import productRepository from "@/database/repository/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import getScrapedProducts from "@/server/utils/scrapers";
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const productRouter = createTRPCRouter({
@@ -14,6 +15,7 @@ export const productRouter = createTRPCRouter({
     if (scrapedProducts.length) {
       productRepository
         .create(scrapedProducts.map((name) => ({ name, barcode: input })))
+        .onDuplicateKeyUpdate({ set: { barcode: sql`${productRepository.table.barcode}` } })
         .catch(console.error);
     }
 
