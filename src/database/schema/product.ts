@@ -1,7 +1,7 @@
 import { mysqlTable, primaryKey, varchar } from "drizzle-orm/mysql-core";
 
-export const product = mysqlTable(
-  "product",
+export const productName = mysqlTable(
+  "product-name",
   {
     barcode: varchar("barcode", { length: 50 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),

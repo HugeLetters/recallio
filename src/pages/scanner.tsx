@@ -6,12 +6,12 @@ import { useEffect, useState } from "react";
 export default function ScannerPage() {
   const router = useRouter();
   const [barcode, setBarcode] = useState("");
-  const { id, ready, start, stop } = useBarcodeScanner((val) => goToProduct(val), {
+  const { id, ready, start, stop } = useBarcodeScanner((val) => goToReview(val), {
     mockScan: env.NEXT_PUBLIC_NODE_ENV === "development",
   });
 
-  function goToProduct(id: string) {
-    void router.push({ pathname: "/product/search/[id]", query: { id } });
+  function goToReview(id: string) {
+    void router.push({ pathname: "/review/[id]", query: { id } });
   }
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function ScannerPage() {
       />
       <div className="text-black">
         <input onChange={(e) => setBarcode(e.currentTarget.value)} />
-        <button onClick={() => goToProduct(barcode)}>Submit</button>
+        <button onClick={() => goToReview(barcode)}>Submit</button>
       </div>
     </div>
   );

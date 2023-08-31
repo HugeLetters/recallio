@@ -1,7 +1,9 @@
-import accountRepository from "@/database/repository/account";
-import sessionRepository from "@/database/repository/session";
-import userRepository from "@/database/repository/user";
-import verificationTokenRepository from "@/database/repository/verificationToken";
+import {
+  accountRepository,
+  sessionRepository,
+  userRepository,
+  verificationTokenRepository,
+} from "@/database/repository/auth";
 import type { Adapter } from "@auth/core/adapters";
 
 export function DatabaseAdapter(): Adapter {

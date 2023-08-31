@@ -10,13 +10,13 @@ import {
   lt,
   not,
   or,
-  type InferModel,
   type SQL,
+  type InferInsertModel,
 } from "drizzle-orm";
 import { type MySqlTable, type MySqlUpdateSetSource } from "drizzle-orm/mysql-core";
 import { db } from "..";
 
-type InsertValue<T extends MySqlTable> = InferModel<T, "insert">;
+type InsertValue<T extends MySqlTable> = InferInsertModel<T>;
 type UpdateValue<T extends MySqlTable> = MySqlUpdateSetSource<T>;
 export type WhereQuery<T extends MySqlTable> = (
   table: T,
