@@ -27,7 +27,11 @@ const config = {
       { hostname: "cdn.discordapp.com", pathname: "/avatars/*" },
       { hostname: "*.googleusercontent.com", pathname: "/a/*" },
       { hostname: "media.licdn.com", pathname: "**" },
+      { hostname: "uploadthing.com", pathname: "/f/**" },
     ],
+  },
+  experimental: {
+    esmExternals: false,
   },
 };
 

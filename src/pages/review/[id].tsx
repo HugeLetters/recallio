@@ -1,4 +1,5 @@
 import { useImmer, type Drafter } from "@/hooks/useImmer";
+import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam } from "@/utils";
 import { api } from "@/utils/api";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -7,6 +8,7 @@ import { produce } from "immer";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 type Review = {
   productName: string;
@@ -118,24 +120,10 @@ export default function ReviewPage() {
           add category
         </button>
       </fieldset>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files?.item(0);
-          if (!file) {
-            updateReview((d) => {
-              d.image = undefined;
-            });
-            return;
-          }
-          const fr = new FileReader();
-          fr.readAsDataURL(file);
-          fr.addEventListener("load", () => {
-            updateReview((draft) => {
-              if (typeof fr.result !== "string") return;
-              draft.image = fr.result;
-            });
+      <ImageUpload
+        setImage={(image) => {
+          updateReview((draft) => {
+            draft.image = image;
           });
         }}
       />
@@ -321,6 +309,43 @@ function Category({ category, setCategory }: CategoryProps) {
           </button>
         )) ?? "Loading..."}
       </div>
+    </div>
+  );
+}
+
+type ImageUploadProps = {
+  setImage: (image: Review["image"]) => void;
+};
+function ImageUpload({ setImage }: ImageUploadProps) {
+  const { startUpload, isUploading } = useUploadThing({
+    onUploadError(e) {
+      console.error(e);
+      toast.error("Error uploading image");
+    },
+  });
+
+  return (
+    <div>
+      {!isUploading ? (
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.item(0);
+            if (!file) return;
+            startUpload([file])
+              .then((x) => {
+                setImage(x?.[0]?.url);
+              })
+              .catch((err) => {
+                console.error(err);
+                toast.error("Error uploading image");
+              });
+          }}
+        />
+      ) : (
+        "Uploading..."
+      )}
     </div>
   );
 }
