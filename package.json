@@ -5,8 +5,8 @@
   "packageManager": "pnpm@8.6.12",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db-migrate&& next build",
-    "analyze": "set ANALYZE=true&& pn nextjs-routes&& next build",
+    "build": "npm run db-migrate&& pn nextjs-routes&& next build",
+    "analyze": "set ANALYZE=true&& next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
