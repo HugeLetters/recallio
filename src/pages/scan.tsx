@@ -1,4 +1,3 @@
-import { env } from "@/env.mjs";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -6,9 +5,7 @@ import { useEffect, useState } from "react";
 export default function ScannerPage() {
   const router = useRouter();
   const [barcode, setBarcode] = useState("");
-  const { id, ready, start, stop } = useBarcodeScanner((val) => goToReview(val), {
-    mockScan: env.NEXT_PUBLIC_NODE_ENV === "development",
-  });
+  const { id, ready, start, stop } = useBarcodeScanner((val) => goToReview(val));
 
   function goToReview(id: string) {
     void router.push({ pathname: "/review/[id]", query: { id } });
@@ -29,10 +26,20 @@ export default function ScannerPage() {
         id={id}
         className="w-56 "
       />
-      <div className="text-black">
+      <form
+        className="text-black"
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+      >
         <input onChange={(e) => setBarcode(e.target.value)} />
-        <button onClick={() => goToReview(barcode)}>Submit</button>
-      </div>
+        <button
+          onClick={() => goToReview(barcode)}
+          disabled={!barcode}
+        >
+          Submit
+        </button>
+      </form>
     </div>
   );
 }

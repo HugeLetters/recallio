@@ -4,13 +4,10 @@ import { toast } from "react-toastify";
 
 type Scanner = Html5Qrcode;
 type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
-type Config = Partial<{
-  mockScan: boolean;
-}>;
 /**
  * Scanner cleans-up on being unmounted automatically.
  */
-export default function useBarcodeScanner(onScan: QrcodeSuccessCallback, config: Config = {}) {
+export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
   const id = useId();
   const [state, setState] = useState<ScannerState>("not mounted");
   const scanner = useRef<Scanner>();
@@ -40,17 +37,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback, config:
     await stop();
 
     scanner
-      .start(
-        { facingMode: "environment" },
-        { fps: 5, aspectRatio: 1 },
-        onScan,
-        config.mockScan
-          ? triggerOnce(
-              () => onScan("9008700152921", { decodedText: "", result: { text: "" } }),
-              3000
-            )
-          : () => void 0
-      )
+      .start({ facingMode: "environment" }, { fps: 5, aspectRatio: 1 }, onScan, () => void 0)
       .then(() => setState("scanning"))
       .catch((e) => {
         console.error(e);
@@ -85,13 +72,4 @@ function createScanner(id: string) {
     useBarCodeDetectorIfSupported: true,
     verbose: false,
   });
-}
-
-function triggerOnce(callback: () => void, timeout: number) {
-  let called = false;
-  return () => {
-    if (called) return;
-    called = true;
-    setTimeout(callback, timeout);
-  };
 }
