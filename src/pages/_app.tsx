@@ -26,19 +26,21 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <ToastContainer />
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <Head>
-          <title>recallio</title>
-          <link
-            rel="icon"
-            href="/favicon.ico"
-          />
-        </Head>
+      <Head>
+        <title>recallio</title>
+        <link
+          rel="icon"
+          href="/favicon.ico"
+        />
+      </Head>
+      <div className="grid min-h-screen grid-rows-[1fr,auto] justify-center bg-gradient-to-br from-teal-600 to-green-400">
         <main>
           <Component {...pageProps} />
         </main>
-        <NavBar />
-        <Auth />
+        <footer>
+          <Auth />
+          <NavBar />
+        </footer>
       </div>
     </SessionProvider>
   );

@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function Auth() {
   const { data, status } = useSession();
   return (
-    <div className="m-4 flex flex-col gap-3 rounded-lg bg-purple-400 p-4">
+    <div className="m-4 flex flex-col gap-3 rounded-lg bg-teal-400 p-4">
       <button onClick={() => void signIn()}>
         {status === "authenticated" ? "LINK NEW PROFILE" : "SIGN IN"}
       </button>

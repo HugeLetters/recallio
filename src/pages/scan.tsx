@@ -30,7 +30,7 @@ export default function ScannerPage() {
         className="w-56 "
       />
       <div className="text-black">
-        <input onChange={(e) => setBarcode(e.currentTarget.value)} />
+        <input onChange={(e) => setBarcode(e.target.value)} />
         <button onClick={() => goToReview(barcode)}>Submit</button>
       </div>
     </div>

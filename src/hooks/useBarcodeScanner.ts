@@ -73,7 +73,9 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback, config:
     ready: true as const,
     state,
     id,
+    /** Does not have referential equality on rerenders */
     start,
+    /** Does not have referential equality on rerenders */
     stop: () => stop(true),
   };
 }
