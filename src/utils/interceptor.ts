@@ -5,7 +5,7 @@ export default function setupInterceptor() {
   if (typeof window === "undefined") return;
 
   const worker = setupWorker(
-    rest.all("api/*", async (req) => {
+    rest.all("/api/*", async (req) => {
       const delayDuration = randInt(100, 3000);
       console.log(`Delaying request to ${req.url.href} for ${delayDuration}ms`);
       await delay(delayDuration);

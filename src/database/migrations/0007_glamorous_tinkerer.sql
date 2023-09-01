@@ -1,0 +1,1 @@
+RENAME TABLE `product` TO `product-name`;

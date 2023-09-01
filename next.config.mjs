@@ -4,6 +4,9 @@
  */
 await import("./src/env.mjs");
 import BundleAnalyzer from "@next/bundle-analyzer";
+import nextRoutes from "nextjs-routes/config";
+
+const withRoutes = nextRoutes();
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -29,5 +32,5 @@ const config = {
 };
 
 export default function NextConfig() {
-  return BundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(config);
+  return withRoutes(BundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(config));
 }

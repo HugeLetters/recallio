@@ -50,6 +50,20 @@
       "when": 1692711903451,
       "tag": "0006_condemned_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1693462502952,
+      "tag": "0007_glamorous_tinkerer",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1693569391627,
+      "tag": "0008_panoramic_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

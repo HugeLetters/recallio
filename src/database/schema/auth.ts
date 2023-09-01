@@ -1,6 +1,6 @@
 import type { AdapterAccount } from "@auth/core/adapters";
-import { relations, sql } from "drizzle-orm";
-import { int, mysqlTable, primaryKey, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { sql } from "drizzle-orm";
+import { index, int, mysqlTable, primaryKey, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const user = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
@@ -12,10 +12,6 @@ export const user = mysqlTable("user", {
   }).default(sql`(CURRENT_TIMESTAMP)`),
   image: varchar("image", { length: 255 }),
 });
-export const userRelations = relations(user, ({ many }) => ({
-  accounts: many(account),
-  sessions: many(session),
-}));
 
 export const account = mysqlTable(
   "account",
@@ -38,26 +34,21 @@ export const account = mysqlTable(
   },
   (table) => ({
     compoundKey: primaryKey(table.provider, table.providerAccountId),
+    userIdIndex: index("user-id-index").on(table.userId),
   })
 );
-export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
 
-export const session = mysqlTable("session", {
-  sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
-  userId: varchar("userId", { length: 255 }).notNull(),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-});
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
-}));
+export const session = mysqlTable(
+  "session",
+  {
+    sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
+    userId: varchar("userId", { length: 255 }).notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (table) => ({
+    userIdIndex: index("user-id-index").on(table.userId),
+  })
+);
 
 export const verificationToken = mysqlTable(
   "verificationToken",
