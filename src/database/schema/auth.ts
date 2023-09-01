@@ -1,5 +1,5 @@
 import type { AdapterAccount } from "@auth/core/adapters";
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { index, int, mysqlTable, primaryKey, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 export const user = mysqlTable("user", {
@@ -12,6 +12,10 @@ export const user = mysqlTable("user", {
   }).default(sql`(CURRENT_TIMESTAMP)`),
   image: varchar("image", { length: 255 }),
 });
+export const userRelations = relations(user, ({ many }) => ({
+  accounts: many(account),
+  sessions: many(session),
+}));
 
 export const account = mysqlTable(
   "account",
@@ -37,6 +41,12 @@ export const account = mysqlTable(
     userIdIndex: index("user-id-index").on(table.userId),
   })
 );
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
 
 export const session = mysqlTable(
   "session",
@@ -49,6 +59,12 @@ export const session = mysqlTable(
     userIdIndex: index("user-id-index").on(table.userId),
   })
 );
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
 
 export const verificationToken = mysqlTable(
   "verificationToken",

@@ -279,7 +279,7 @@ type CategoryProps = {
   category: Review["categories"][number];
 };
 function Category({ category, setCategory }: CategoryProps) {
-  const { data } = api.product.getProudctCategories.useQuery(category);
+  const { data } = api.product.getCategories.useQuery(category, { staleTime: Infinity });
 
   return (
     <div className="m-1 flex flex-col gap-1">

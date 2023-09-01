@@ -1,8 +1,11 @@
 import { Repository } from "..";
-import { productCategory, productName } from "../../schema/product";
+import { category, productName, review } from "../../schema/product";
 
 class ProductNameRepository<T extends typeof productName> extends Repository<T> {}
 export const productNameRepository = new ProductNameRepository(productName);
 
-class ProductCategoryRepository<T extends typeof productCategory> extends Repository<T> {}
-export const productCategoryRepository = new ProductCategoryRepository(productCategory);
+class CategoryRepository<T extends typeof category> extends Repository<T> {}
+export const categoryRepository = new CategoryRepository(category);
+
+class ReviewRepository<T extends typeof review> extends Repository<T> {}
+export const reviewRepository = new ReviewRepository(review);

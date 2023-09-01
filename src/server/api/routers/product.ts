@@ -1,4 +1,4 @@
-import { productCategoryRepository, productNameRepository } from "@/database/repository/product";
+import { categoryRepository, productNameRepository } from "@/database/repository/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import getScrapedProducts from "@/server/utils/scrapers";
 import { sql } from "drizzle-orm";
@@ -23,8 +23,8 @@ export const productRouter = createTRPCRouter({
 
       return scrapedProducts;
     }),
-  getProudctCategories: protectedProcedure.input(z.string()).query(({ input }) => {
-    return productCategoryRepository
+  getCategories: protectedProcedure.input(z.string()).query(({ input }) => {
+    return categoryRepository
       .findMany((table, { like }) => like(table.name, `%${input}%`))
       .limit(10);
   }),
