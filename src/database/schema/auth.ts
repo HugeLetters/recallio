@@ -1,6 +1,7 @@
 import type { AdapterAccount } from "@auth/core/adapters";
 import { relations, sql } from "drizzle-orm";
 import { index, int, mysqlTable, primaryKey, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { review } from "./product";
 
 export const user = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
@@ -15,6 +16,7 @@ export const user = mysqlTable("user", {
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   sessions: many(session),
+  reviews: many(review),
 }));
 
 export const account = mysqlTable(

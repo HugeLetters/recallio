@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { index, mysqlTable, primaryKey, tinyint, varchar } from "drizzle-orm/mysql-core";
+import { user } from "./auth";
 
 export const productName = mysqlTable(
   "product-name",
@@ -23,19 +24,23 @@ export const review = mysqlTable(
     barcode: varchar("barcode", { length: 55 }).notNull(),
     userId: varchar("user-id", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
-    rating: tinyint("rating"),
+    rating: tinyint("rating").notNull(),
     pros: varchar("pros", { length: 4095 }),
     cons: varchar("cons", { length: 4095 }),
     comment: varchar("comment", { length: 2047 }),
-    image: varchar("image", { length: 255 }),
+    imageKey: varchar("image-key", { length: 255 }),
   },
   (table) => ({
     compoundKey: primaryKey(table.userId, table.barcode),
     barcodeIndex: index("barcode-index").on(table.barcode),
   })
 );
-export const reviewRelations = relations(review, ({ many }) => ({
+export const reviewRelations = relations(review, ({ many, one }) => ({
   categories: many(reviewsToCategories),
+  user: one(user, {
+    fields: [review.userId],
+    references: [user.id],
+  }),
 }));
 
 export const reviewsToCategories = mysqlTable(

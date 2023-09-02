@@ -1,6 +1,5 @@
-import { eq } from "drizzle-orm";
-import { Repository, type WhereQuery } from "..";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
+import { Repository, type WhereQuery } from "..";
 
 class AccountRepository<T extends typeof account> extends Repository<T> {
   findFirstWithUser(query: WhereQuery<T>) {
@@ -8,7 +7,7 @@ class AccountRepository<T extends typeof account> extends Repository<T> {
       .select()
       .from(account)
       .where(query(this.table, this.operators))
-      .innerJoin(user, eq(user.id, account.userId))
+      .innerJoin(user, this.operators.eq(user.id, account.userId))
       .limit(1)
       .then((res) => res[0]);
   }
@@ -21,7 +20,7 @@ class SessionRepository<T extends typeof session> extends Repository<T> {
       .select()
       .from(session)
       .where(query(this.table, this.operators))
-      .innerJoin(user, eq(user.id, session.userId))
+      .innerJoin(user, this.operators.eq(user.id, session.userId))
       .limit(1)
       .then((res) => res[0]);
   }

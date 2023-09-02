@@ -1,5 +1,4 @@
 import { useImmer, type Drafter } from "@/hooks/useImmer";
-import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam } from "@/utils";
 import { api } from "@/utils/api";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -7,8 +6,7 @@ import * as Select from "@radix-ui/react-select";
 import { produce } from "immer";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
 
 type Review = {
   productName: string;
@@ -17,7 +15,7 @@ type Review = {
   cons: Review["pros"];
   comment: string;
   categories: string[];
-  image?: string;
+  image?: File;
 };
 
 export default function ReviewPage() {
@@ -29,6 +27,7 @@ export default function ReviewPage() {
     comment: "",
     categories: [],
   }));
+  const [imagePreview, setImagePreview] = useState<string>();
 
   return (
     <form
@@ -120,17 +119,31 @@ export default function ReviewPage() {
           add category
         </button>
       </fieldset>
-      <ImageUpload
-        setImage={(image) => {
-          updateReview((draft) => {
-            draft.image = image;
-          });
-        }}
-      />
+      <div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const image = e.target.files?.item(0);
+            if (!image) return;
+
+            updateReview((draft) => {
+              draft.image = image;
+            });
+
+            const fr = new FileReader();
+            fr.readAsDataURL(image);
+            fr.addEventListener("load", () => {
+              if (typeof fr.result !== "string") return;
+              setImagePreview(fr.result);
+            });
+          }}
+        />
+      </div>
       <div className="relative aspect-square w-24 overflow-hidden rounded-lg">
-        {review.image ? (
+        {imagePreview ? (
           <Image
-            src={review.image}
+            src={imagePreview}
             alt="your uploaded image"
             fill
             className="object-fill"
@@ -255,7 +268,7 @@ function Points({ points, setPoints }: PointsProps) {
               }}
             />
           </label>
-          {!!point && (
+          {i !== points.length && (
             <button
               onClick={() => {
                 setPoints((draft) => {
@@ -309,43 +322,6 @@ function Category({ category, setCategory }: CategoryProps) {
           </button>
         )) ?? "Loading..."}
       </div>
-    </div>
-  );
-}
-
-type ImageUploadProps = {
-  setImage: (image: Review["image"]) => void;
-};
-function ImageUpload({ setImage }: ImageUploadProps) {
-  const { startUpload, isUploading } = useUploadThing({
-    onUploadError(e) {
-      console.error(e);
-      toast.error("Error uploading image");
-    },
-  });
-
-  return (
-    <div>
-      {!isUploading ? (
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.item(0);
-            if (!file) return;
-            startUpload([file])
-              .then((x) => {
-                setImage(x?.[0]?.url);
-              })
-              .catch((err) => {
-                console.error(err);
-                toast.error("Error uploading image");
-              });
-          }}
-        />
-      ) : (
-        "Uploading..."
-      )}
     </div>
   );
 }

@@ -33,7 +33,7 @@ export abstract class Repository<T extends MySqlTable> {
     this.table = table;
   }
   create(value: InsertValue<T> | InsertValue<T>[]) {
-    // values as an array because of a Drizzle bug where excess properties cause a crash on single insert
+    // values as an array because of a TS limitation with handling union in function overloads
     return this.db.insert(this.table).values(Array.isArray(value) ? value : [value]);
   }
   findFirst(query: WhereQuery<T>) {

@@ -28,6 +28,7 @@ const config = {
       { hostname: "*.googleusercontent.com", pathname: "/a/*" },
       { hostname: "media.licdn.com", pathname: "**" },
       { hostname: "uploadthing.com", pathname: "/f/**" },
+      { hostname: "utfs.io", pathname: "/f/**" },
     ],
   },
   experimental: {
