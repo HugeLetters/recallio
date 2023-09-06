@@ -6,17 +6,17 @@ import { z } from "zod";
 
 export const productRouter = createTRPCRouter({
   getProductNames: protectedProcedure
-    .input(z.string())
-    .query(async ({ input }): Promise<string[]> => {
+    .input(z.object({ barcode: z.string() }))
+    .query(async ({ input: { barcode } }): Promise<string[]> => {
       const dbProducts = await productNameRepository.findMany((table, { eq }) =>
-        eq(table.barcode, input)
+        eq(table.barcode, barcode)
       );
       if (dbProducts.length) return dbProducts.map((x) => x.name);
 
-      const scrapedProducts = await getScrapedProducts(input);
+      const scrapedProducts = await getScrapedProducts(barcode);
       if (scrapedProducts.length) {
         productNameRepository
-          .create(scrapedProducts.map((name) => ({ name, barcode: input })))
+          .create(scrapedProducts.map((name) => ({ name, barcode })))
           .onDuplicateKeyUpdate({ set: { barcode: sql`${productNameRepository.table.barcode}` } })
           .catch(console.error);
       }

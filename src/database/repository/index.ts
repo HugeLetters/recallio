@@ -32,9 +32,10 @@ export abstract class Repository<T extends MySqlTable> {
   constructor(table: T) {
     this.table = table;
   }
-  create(value: InsertValue<T> | InsertValue<T>[]) {
+  // context allows me to pass in transaction context instead of db
+  create(value: InsertValue<T> | InsertValue<T>[], context = db) {
     // values as an array because of a TS limitation with handling union in function overloads
-    return this.db.insert(this.table).values(Array.isArray(value) ? value : [value]);
+    return context.insert(this.table).values(Array.isArray(value) ? value : [value]);
   }
   findFirst(query: WhereQuery<T>) {
     return this.findMany(query)

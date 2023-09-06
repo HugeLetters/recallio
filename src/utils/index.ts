@@ -6,3 +6,5 @@ export function getQueryParam(query: Query[string]) {
 }
 
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
+export type StrictPick<T, K extends keyof T> = Pick<T, K>;
+export type ModelProps<T> = { value: T; setValue: (value: T) => void };

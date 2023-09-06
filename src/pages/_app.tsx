@@ -52,6 +52,7 @@ export default api.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
   const { status } = useSession();
+  // todo - proper loading state
   if (status !== "authenticated") {
     return null;
   }
