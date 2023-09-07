@@ -153,6 +153,15 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
 
   const fileInput = useRef<HTMLInputElement>(null);
   const fileReader = useRef(new FileReader());
+  function readeImageFile() {
+    if (typeof fileReader.current.result !== "string") return;
+    setLocalImageSrc(fileReader.current.result);
+  }
+  useEffect(() => {
+    const fr = fileReader.current;
+    fr.addEventListener("load", readeImageFile);
+    return () => fr.removeEventListener("load", readeImageFile);
+  }, []);
   // null - delete, undefined - keep as is
   const [image, setImage] = useState<File | null>();
   function updateImage(file: typeof image) {
@@ -167,10 +176,6 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
     }
 
     fileReader.current.readAsDataURL(file);
-    fileReader.current.addEventListener("load", () => {
-      if (typeof fileReader.current.result !== "string") return;
-      setLocalImageSrc(fileReader.current.result);
-    });
   }
   const [localImageSrc, setLocalImageSrc] = useState<string>();
   const { data: serverImageSrc } = api.review.getReviewImage.useQuery(
