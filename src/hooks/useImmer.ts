@@ -1,4 +1,4 @@
-import { produce, type Draft } from "immer";
+import { produce, type Draft, freeze } from "immer";
 import { useCallback, useState } from "react";
 
 // undefined enforces we don't return anything in the same drafter
@@ -6,8 +6,14 @@ import { useCallback, useState } from "react";
 export type Drafter<T> = (draft: Draft<T>) => undefined;
 export type Updater<T> = (arg: T | Drafter<T>) => void;
 
+/**
+ * Retunred setter callback is stable.
+ */
 export function useImmer<T>(initValue: T | (() => T)): [T, Updater<T>] {
-  const [val, setVal] = useState(initValue);
+  const [val, setVal] = useState(
+    freeze(typeof initValue === "function" ? (initValue as () => T)() : initValue)
+  );
+
   return [
     val,
     useCallback(
