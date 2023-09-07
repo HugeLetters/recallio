@@ -417,9 +417,7 @@ function Categories({ control, name }: CategoriesProps) {
                           : "text-text-gray outline-text-gray"
                       } rounded-xl p-1.5 capitalize outline outline-1 current:outline-dashed`}
                       onClick={() => {
-                        if (!selected) return append({ name: category });
-
-                        remove(index);
+                        selected ? remove(index) : append({ name: category });
                       }}
                       aria-label={!selected ? "add" : "remove"}
                     >
