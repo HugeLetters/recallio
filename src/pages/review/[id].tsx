@@ -355,7 +355,6 @@ type CategoriesProps = Required<
 >;
 function Categories({ control, name }: CategoriesProps) {
   const { fields, append, remove } = useFieldArray({ control, name });
-  const fieldNames = fields.map((value) => value.name);
   const [inputCategory, setInputCategory] = useState("");
   const {
     data: categories,
@@ -406,7 +405,8 @@ function Categories({ control, name }: CategoriesProps) {
           ? isSuccess
             ? categories.length
               ? categories.map((category) => {
-                  const selected = fieldNames.includes(category);
+                  const index = fields.findIndex((field) => field.name === category);
+                  const selected = index >= 0;
                   return (
                     <button
                       key={category}
@@ -418,9 +418,6 @@ function Categories({ control, name }: CategoriesProps) {
                       } rounded-xl p-1.5 capitalize outline outline-1 current:outline-dashed`}
                       onClick={() => {
                         if (!selected) return append({ name: category });
-
-                        const index = fields.findIndex((field) => field.name === category);
-                        if (index < 0) return;
 
                         remove(index);
                       }}
