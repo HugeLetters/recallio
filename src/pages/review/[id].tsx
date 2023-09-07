@@ -500,7 +500,7 @@ function Features({ control, name, register }: FeaturesProps) {
       ) : (
         <MaterialSymbolsRemoveRounded className="text-4xl text-red-600" />
       )}
-      <div className="mt-2 flex flex-col items-start gap-1">
+      <div className="mt-2.5 flex flex-col items-start gap-1">
         {fields.map((field, i) => (
           <div
             key={field.id}
