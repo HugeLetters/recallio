@@ -33,8 +33,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
           href="/favicon.ico"
         />
       </Head>
-      <div className="grid min-h-screen grid-rows-[1fr,auto] justify-center bg-gradient-to-br from-teal-600 to-green-400">
-        <main className="m-4 h-fit">
+      <div className="grid min-h-screen grid-rows-[auto_1fr_auto] place-items-center gap-2  bg-gradient-to-br from-teal-600 to-green-400 py-2">
+        <header className=" w-full max-w-md rounded-lg bg-background p-2">header</header>
+        <main className="h-full w-full max-w-md">
           <AuthProtection>
             <Component {...pageProps} />
           </AuthProtection>

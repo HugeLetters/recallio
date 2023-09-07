@@ -5,7 +5,7 @@
 await import("./src/env.mjs");
 import BundleAnalyzer from "@next/bundle-analyzer";
 import nextRoutes from "nextjs-routes/config";
-
+import unpluginIcons from "unplugin-icons/webpack";
 const withRoutes = nextRoutes();
 
 /** @type {import("next").NextConfig} */
@@ -30,6 +30,17 @@ const config = {
       { hostname: "uploadthing.com", pathname: "/f/**" },
       { hostname: "utfs.io", pathname: "/f/**" },
     ],
+  },
+  /** @type { (config:{plugins: unknown[]})=> typeof config } */
+  webpack(config) {
+    config.plugins.push(
+      unpluginIcons({
+        compiler: "jsx",
+        jsx: "react",
+        autoInstall: true,
+      })
+    );
+    return config;
   },
   experimental: {
     esmExternals: false,
