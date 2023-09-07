@@ -78,8 +78,7 @@ class ReviewRepository<T extends typeof review> extends Repository<T> {
   }
 
   #reviewWithCategoriesCols = (() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { barcode, userId, ...review } = getTableColumns(this.table);
+    const { barcode: _, userId: __, ...review } = getTableColumns(this.table);
 
     return {
       ...review,
