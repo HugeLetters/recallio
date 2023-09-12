@@ -5,12 +5,17 @@ import {
   verificationTokenRepository,
 } from "@/database/repository/auth";
 import type { Adapter } from "@auth/core/adapters";
+import { uniqueNamesGenerator, type Config, adjectives, animals } from "unique-names-generator";
+const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
 
 export function DatabaseAdapter(): Adapter {
   return {
     async createUser(data) {
       const id = crypto.randomUUID();
-      const user = Object.assign(data, { id, name: data.name ?? `user-${id}` });
+      const user = Object.assign(data, {
+        id,
+        name: data.name ?? uniqueNamesGenerator(generatorConfig),
+      });
       await userRepository.create(user);
 
       return userRepository

@@ -2,6 +2,7 @@ import { env } from "@/env.mjs";
 import { type GetServerSidePropsContext } from "next";
 import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import EmailProvider from "next-auth/providers/email";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
@@ -43,6 +44,17 @@ export const authOptions: NextAuthOptions = {
   },
   //! When adding a new provider don't forget to add a new host to allowed patterns for external images
   providers: [
+    EmailProvider({
+      type: "email",
+      server: {
+        service: "gmail",
+        auth: {
+          user: env.NODEMAILER_EMAIL,
+          pass: env.NODEMAILER_PASSWORD,
+        },
+      },
+      from: env.NODEMAILER_EMAIL,
+    }),
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
