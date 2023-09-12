@@ -10,7 +10,7 @@ export function DatabaseAdapter(): Adapter {
   return {
     async createUser(data) {
       const id = crypto.randomUUID();
-      const user = Object.assign(data, { id, name: data.name ?? data.email });
+      const user = Object.assign(data, { id, name: data.name ?? `user-${id}` });
       await userRepository.create(user);
 
       return userRepository
