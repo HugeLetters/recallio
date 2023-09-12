@@ -1,13 +1,14 @@
+import { CommondHeader } from "@/components/Header";
 import useHeader from "@/hooks/useHeader";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 
 export default function Profile() {
   const { data, status } = useSession();
-  useHeader("Profile");
+  useHeader(() => <CommondHeader title="Profile" />, []);
 
   return (
-    <div className="bg-background m-4 flex flex-col gap-3 rounded-lg p-4">
+    <div className="bg-background  flex w-full flex-col gap-3 rounded-lg p-8">
       {status !== "loading" ? (
         <>
           <button onClick={() => void signIn()}>

@@ -38,6 +38,7 @@ const config = {
         compiler: "jsx",
         jsx: "react",
         autoInstall: true,
+        scale: 1,
       })
     );
     return config;
