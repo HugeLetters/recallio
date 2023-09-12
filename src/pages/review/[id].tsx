@@ -21,7 +21,7 @@ export default function Page() {
   const barcode = getQueryParam(router.query.id);
 
   return (
-    <div className=" my-4 h-full rounded-xl bg-background p-4">
+    <div className="h-full rounded-xl">
       {barcode ? <ReviewBlock barcode={barcode} /> : "loading..."}
     </div>
   );
@@ -245,7 +245,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-text-gray text-background">
+            <div className="flex h-full items-center justify-center bg-neutral-400 text-white">
               <MaterialSymbolsAddPhotoAlternateOutline className="text-xl" />
             </div>
           )}
@@ -280,7 +280,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
           className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-green-500"
         >
           <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
-          <Switch.Thumb className="block aspect-square h-7 rounded-full bg-background drop-shadow-md" />
+          <Switch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
         </Switch.Root>
       </label>
       <button
@@ -290,7 +290,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <button className="rounded-lg bg-accent-green px-3 py-4 text-background">SUBMIT</button>
+      <button className="rounded-lg bg-accent-green px-3 py-4 text-white">SUBMIT</button>
     </form>
   );
 }
@@ -330,7 +330,7 @@ function NameSelect({ value, setValue, barcode }: ModelProps<string> & { barcode
           <Select.Content
             position="popper"
             side="right"
-            className="rounded-xl bg-background p-2"
+            className="rounded-xl bg-white p-2"
           >
             <Select.Viewport>
               {data?.map((name) => (
@@ -389,6 +389,7 @@ function Categories({ control, name }: CategoriesProps) {
         onChange={(e) => setInputCategory(e.target.value)}
         autoFocus
         onKeyDown={(e) => {
+          // todo - doesn't work on mobile
           if (e.key === "Enter") {
             e.preventDefault();
             append({ name: inputCategory });
@@ -438,7 +439,7 @@ function Categories({ control, name }: CategoriesProps) {
           type="button"
           aria-label="remove"
           onClick={() => remove(i)}
-          className="rounded-xl p-1.5 capitalize text-text-gray outline outline-1 outline-text-gray current:outline-dashed"
+          className="rounded-xl p-1.5 capitalize text-neutral-400 outline outline-1 outline-neutral-400 current:outline-dashed"
         >
           {name}
         </button>

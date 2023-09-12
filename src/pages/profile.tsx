@@ -1,10 +1,13 @@
+import useHeader from "@/hooks/useHeader";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 
-export default function Auth() {
+export default function Profile() {
   const { data, status } = useSession();
+  useHeader("Profile");
+
   return (
-    <div className="m-4 flex flex-col gap-3 rounded-lg bg-background p-4">
+    <div className="bg-background m-4 flex flex-col gap-3 rounded-lg p-4">
       {status !== "loading" ? (
         <>
           <button onClick={() => void signIn()}>
@@ -15,15 +18,15 @@ export default function Auth() {
           )}
           {status === "authenticated" && (
             <div>
-              <span>YOU ARE LOGGED IN AS {data.user.name}</span>
               {data.user.image && (
                 <Image
                   src={data.user.image}
-                  alt={`Profile image of ${data.user.name}`}
+                  alt="your profile pic"
                   width={100}
                   height={100}
                 />
               )}
+              <span>YOU ARE LOGGED IN AS {data.user.name}</span>
             </div>
           )}
         </>
