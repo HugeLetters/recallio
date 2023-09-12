@@ -1,10 +1,13 @@
 import { immerAtom } from "@/utils/immer";
 import { useSetAtom } from "jotai";
-import { useEffect, useId, type ReactNode } from "react";
+import { useEffect, useId, type ReactNode, useMemo } from "react";
 
-export default function useHeader(content: ReactNode): void {
+export default function useHeader(contentGetter: () => ReactNode, deps: unknown[]): void {
   const setContentStack = useSetAtom(contentStackAtom);
   const id = useId();
+  // dependencies should be explicitly provided by the callee
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const content = useMemo(contentGetter, deps);
 
   useEffect(() => {
     setContentStack((x) => {

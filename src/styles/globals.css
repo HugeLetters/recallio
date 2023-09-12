@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::-webkit-scrollbar {
+  background-color: theme("colors.black/0.2");
+  width: theme("width.2");
+  border-radius: theme("borderRadius.md");
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: theme("colors.black/0.2");
+  border-radius: theme("borderRadius.md");
+}

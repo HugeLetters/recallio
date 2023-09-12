@@ -37,7 +37,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     await stop();
 
     scanner
-      .start({ facingMode: "environment" }, { fps: 5, aspectRatio: 1 }, onScan, () => void 0)
+      .start({ facingMode: "environment" }, { fps: 30, aspectRatio: 1 }, onScan, () => void 0)
       .then(() => setState("scanning"))
       .catch((e) => {
         console.error(e);

@@ -8,12 +8,18 @@ import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
 import { type AppType } from "next/app";
+import { Lato } from "next/font/google";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, type ReactNode } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+const lato = Lato({
+  subsets: ["latin"],
+  variable: "--font-lato",
+  weight: ["100", "300", "400", "700", "900"],
+});
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -36,9 +42,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
           href="/favicon.ico"
         />
       </Head>
-      <div className="grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white">
+      <div
+        className={`${lato.variable} grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950`}
+      >
         <Header />
-        <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-scroll">
+        <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-auto [scrollbar-gutter:stable]">
           <AuthProtection>
             <Component {...pageProps} />
           </AuthProtection>

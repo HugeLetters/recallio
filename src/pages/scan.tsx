@@ -1,4 +1,6 @@
+import { CommondHeader } from "@/components/Header";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
+import useHeader from "@/hooks/useHeader";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -19,6 +21,8 @@ export default function ScannerPage() {
     // it should run only once on mount once scanner gave a signal it's ready to go
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  useHeader(() => <CommondHeader title="Scanner" />, []);
 
   return (
     <div>
