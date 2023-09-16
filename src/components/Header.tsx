@@ -35,6 +35,7 @@ export function CommondHeader({ title, backAction, noNav }: CommondHeaderProps) 
         <button
           onClick={backAction ?? router.back}
           role="navigation"
+          aria-label="back"
           className="flex items-center justify-self-start"
         >
           <LeftArrowIcon className="h-8 w-8" />

@@ -6,11 +6,10 @@ import { api } from "@/utils/api";
 import setupInterceptor from "@/utils/interceptor";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
-import { SessionProvider, useSession } from "next-auth/react";
+import { SessionProvider, signIn, useSession } from "next-auth/react";
 import { type AppType } from "next/app";
 import { Lato } from "next/font/google";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, type ReactNode } from "react";
 import { ToastContainer } from "react-toastify";
@@ -63,8 +62,9 @@ function AuthProtection({ children }: { children: ReactNode }) {
   const router = useRouter();
   // todo - proper loading state
   if (router.pathname !== "/profile" && status !== "authenticated") {
-    return <Link href="/profile">Go to login page</Link>;
+    return <button onClick={() => void signIn()}>Sign in</button>;
   }
+
   return <>{children}</>;
 }
 
