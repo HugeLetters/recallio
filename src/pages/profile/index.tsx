@@ -3,7 +3,7 @@ import useHeader from "@/hooks/useHeader";
 import { api, type RouterInputs } from "@/utils/api";
 import { useImmer } from "@/utils/immer";
 import * as Select from "@radix-ui/react-select";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import SwapIcon from "~icons/iconamoon/swap-thin";
@@ -19,7 +19,6 @@ export default function Profile() {
     <div className="flex w-full flex-col gap-2 p-2">
       <ProfileInfo user={data.user} />
       <Reviews />
-      <Btns authed={status === "authenticated"} />
     </div>
   );
 }
@@ -189,16 +188,6 @@ function Reviews() {
           </Link>
         ))}
       </div>
-    </div>
-  );
-}
-
-type BtnsProps = { authed: boolean };
-function Btns({ authed }: BtnsProps) {
-  return (
-    <div className="flex gap-2">
-      <button onClick={() => void signIn()}>{authed ? "LINK NEW PROFILE" : "SIGN IN"}</button>
-      {authed && <button onClick={() => void signOut({ redirect: false })}>SIGN OUT</button>}
     </div>
   );
 }
