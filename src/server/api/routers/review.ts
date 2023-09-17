@@ -1,5 +1,7 @@
 import { reviewRepository } from "@/database/repository/product";
+import type { StrictOmit } from "@/utils";
 import type { AsyncResult } from "@/utils/api";
+import { getTableColumns } from "drizzle-orm";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -43,18 +45,65 @@ export const reviewRouter = createTRPCRouter({
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: z.string() }))
-    .query(({ ctx, input: { barcode } }) => {
-      return reviewRepository
+    .query(async ({ ctx, input: { barcode } }): Promise<UserReview> => {
+      const data = await reviewRepository
         .findFirstWithCategories((table, { and, eq }) =>
           and(eq(table.userId, ctx.session.user.id), eq(table.barcode, barcode))
         )
         .then((data) => data ?? null);
+      if (!data) return null;
+
+      const { imageKey, ...review } = data;
+      if (!imageKey) return Object.assign(review, { image: null });
+
+      const image = await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null);
+      return Object.assign(review, { image });
     }),
-  getReviewImage: protectedProcedure
-    .input(z.object({ imageKey: z.string() }))
-    .query(({ input: { imageKey } }) => {
-      return utapi.getFileUrls(imageKey).then((x) => x[0]?.url ?? null);
+  getUserReviewSummaries: protectedProcedure
+    .input(
+      z.object({
+        page: z.object({
+          size: z.number().int().min(1),
+          index: z.number().int().min(1),
+        }),
+        sort: z.object({
+          by: z.enum(
+            Object.keys(getTableColumns(reviewRepository.table)) as [
+              ReviewColumns,
+              ...Array<ReviewColumns>
+            ]
+          ),
+          desc: z.boolean(),
+        }),
+      })
+    )
+    .query(async ({ input: { page, sort }, ctx }): Promise<ReviewSummary[]> => {
+      // converting to zero-based index
+      page.index--;
+
+      return Promise.all(
+        await reviewRepository
+          .findReviewSummaries((table, { eq }) => eq(table.userId, ctx.session.user.id), {
+            page,
+            sort,
+          })
+          .then((summaries) =>
+            summaries.map(async (summary): Promise<ReviewSummary> => {
+              const { imageKey, ...rest } = summary;
+              // todo is there a more efficient way to fetch URLs? As a single request?
+              const image = imageKey
+                ? await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null)
+                : null;
+              return Object.assign(rest, { image });
+            })
+          )
+      );
     }),
+  getReviewCount: protectedProcedure.query(({ ctx }) => {
+    return reviewRepository
+      .count((table, { eq }) => eq(table.userId, ctx.session.user.id))
+      .then((x) => x);
+  }),
   deleteReviewImage: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .mutation(async ({ ctx, input: { barcode } }): AsyncResult<void, string> => {
@@ -81,3 +130,16 @@ export const reviewRouter = createTRPCRouter({
         });
     }),
 });
+
+type UserReview =
+  | (StrictOmit<
+      NonNullable<Awaited<ReturnType<(typeof reviewRepository)["findFirstWithCategories"]>>>,
+      "imageKey"
+    > & { image: string | null })
+  | null;
+type ReviewSummary =
+  | StrictOmit<
+      NonNullable<Awaited<ReturnType<(typeof reviewRepository)["findReviewSummaries"]>>>[number],
+      "imageKey"
+    > & { image: string | null };
+type ReviewColumns = keyof ReturnType<typeof getTableColumns<(typeof reviewRepository)["table"]>>;

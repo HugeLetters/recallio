@@ -10,8 +10,9 @@ import {
   lt,
   not,
   or,
-  type SQL,
+  sql,
   type InferInsertModel,
+  type SQL,
 } from "drizzle-orm";
 import { type MySqlTable, type MySqlUpdateSetSource } from "drizzle-orm/mysql-core";
 import { db } from "..";
@@ -50,5 +51,13 @@ export abstract class Repository<T extends MySqlTable> {
   }
   update(value: UpdateValue<T>, query: WhereQuery<T>) {
     return this.db.update(this.table).set(value).where(query(this.table, this.operators));
+  }
+  count(query: WhereQuery<T>) {
+    return this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(this.table)
+      .where(query(this.table, this.operators))
+      .limit(1)
+      .then((x) => x[0]?.count ?? 0);
   }
 }

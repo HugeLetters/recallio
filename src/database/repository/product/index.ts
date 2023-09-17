@@ -1,26 +1,28 @@
-import { getTableColumns, sql, type InferInsertModel } from "drizzle-orm";
-import type { MySqlUpdateSetSource } from "drizzle-orm/mysql-core";
+import { asc, desc, getTableColumns, sql, type InferInsertModel } from "drizzle-orm";
 import { Repository, type WhereQuery } from "..";
 import { category, productName, review, reviewsToCategories } from "../../schema/product";
 
-class ProductNameRepository<T extends typeof productName> extends Repository<T> {}
+type ProductName = typeof productName;
+class ProductNameRepository extends Repository<ProductName> {}
 export const productNameRepository = new ProductNameRepository(productName);
 
-class CategoryRepository<T extends typeof category> extends Repository<T> {}
+type Category = typeof category;
+class CategoryRepository extends Repository<Category> {}
 export const categoryRepository = new CategoryRepository(category);
 
-class ReviewRepository<T extends typeof review> extends Repository<T> {
+type Review = typeof review;
+class ReviewRepository extends Repository<Review> {
   async createWithCategories(
-    reviewValue: Parameters<(typeof this)["create"]>[0] & InferInsertModel<typeof review>,
+    reviewValue: InferInsertModel<Review>,
     categories: string[] | undefined
   ) {
     return this.db
       .transaction(async (tx) => {
+        // override updatedAt value with current time
+        Object.assign(reviewValue, { updatedAt: new Date() });
+
         const newReview = await this.create(reviewValue, tx)
-          .onDuplicateKeyUpdate({
-            // The type is correct - TS doesn't understand this w/o assertion and I dunnu why, probably the type is too complex
-            set: reviewValue as MySqlUpdateSetSource<typeof review>,
-          })
+          .onDuplicateKeyUpdate({ set: reviewValue })
           .catch((e) => {
             console.error(e);
             throw Error("Error saving the review");
@@ -85,7 +87,7 @@ class ReviewRepository<T extends typeof review> extends Repository<T> {
       categories: sql<string[]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
     };
   })();
-  async findFirstWithCategories(query: WhereQuery<T>) {
+  findFirstWithCategories(query: WhereQuery<Review>) {
     const { eq, and } = this.operators;
 
     return this.db
@@ -102,6 +104,54 @@ class ReviewRepository<T extends typeof review> extends Repository<T> {
       .groupBy(this.table.barcode, this.table.userId)
       .limit(1)
       .then((x) => x[0]);
+  }
+
+  #reviewSummaryCols = (() => {
+    return {
+      barcode: this.table.barcode,
+      name: this.table.name,
+      imageKey: this.table.imageKey,
+      rating: this.table.rating,
+      categories: sql<string[]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
+    };
+  })();
+  findReviewSummaries(
+    query: WhereQuery<Review>,
+    options?: {
+      page?: { index: number; size: number };
+      sort?: {
+        by: keyof ReturnType<typeof getTableColumns<(typeof reviewRepository)["table"]>>;
+        desc: boolean;
+      };
+    }
+  ) {
+    const { eq, and } = this.operators;
+    let result = this.db
+      .select(this.#reviewSummaryCols)
+      .from(this.table)
+      .where(query(this.table, this.operators))
+      .leftJoin(
+        reviewsToCategories,
+        and(
+          eq(this.table.userId, reviewsToCategories.userId),
+          eq(this.table.barcode, reviewsToCategories.barcode)
+        )
+      )
+      .groupBy(this.table.barcode, this.table.userId);
+
+    if (!options) return result.then((x) => x);
+
+    const { page, sort } = options;
+    if (page) {
+      result = result.limit(page.size).offset(page.index * page.size);
+    }
+
+    if (sort) {
+      const direction = sort.desc ? desc : asc;
+      result = result.orderBy(direction(this.table[sort.by]));
+    }
+
+    return result.then((x) => x);
   }
 }
 export const reviewRepository = new ReviewRepository(review);

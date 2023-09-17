@@ -6,11 +6,10 @@ import { api } from "@/utils/api";
 import setupInterceptor from "@/utils/interceptor";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
-import { SessionProvider, signIn, useSession } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { type AppType } from "next/app";
 import { Lato } from "next/font/google";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { useEffect, type ReactNode } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -42,13 +41,18 @@ const MyApp: AppType<{ session: Session | null }> = ({
         />
       </Head>
       <div
-        className={`${lato.variable} grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950`}
+        className={`${lato.variable} grid h-[100dvh] w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950`}
       >
         <Header />
         <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-auto [scrollbar-gutter:stable]">
-          <AuthProtection>
+          {/* @ts-expect-error - I use noAuth property to allow some pages to be acessed w/o login. It's too much of a bother to extend Next interfaces to have this property*/}
+          {!Component.noAuth ? (
+            <AuthProtection>
+              <Component {...pageProps} />
+            </AuthProtection>
+          ) : (
             <Component {...pageProps} />
-          </AuthProtection>
+          )}
         </main>
         <Footer />
       </div>
@@ -58,11 +62,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
 export default api.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
-  const { status } = useSession();
-  const router = useRouter();
+  const { status } = useSession({ required: true });
   // todo - proper loading state
-  if (router.pathname !== "/profile" && status !== "authenticated") {
-    return <button onClick={() => void signIn()}>Sign in</button>;
+  if (status !== "authenticated") {
+    return <>Loading...</>;
   }
 
   return <>{children}</>;

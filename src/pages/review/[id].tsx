@@ -20,11 +20,7 @@ export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
 
-  return (
-    <div className="h-full rounded-xl">
-      {barcode ? <ReviewBlock barcode={barcode} /> : "loading..."}
-    </div>
-  );
+  return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
 }
 
 type ReviewBlockProps = { barcode: string };
@@ -50,7 +46,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
           cons: [],
           comment: null,
           categories: [],
-          imageKey: null,
+          image: null,
         }
       }
       getServerValue={(callback) => {
@@ -96,6 +92,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
             if (!data.ok) toast.error(data.error);
             // ! todo - image key is not properly synced due to race condition
             // ! whether onUpload hook on server finishes before sync on the client or not
+            // todo - compress image
             else if (!!image) {
               await startUpload([image], { barcode }).catch((err) => {
                 console.error(err);
@@ -178,18 +175,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
     fileReader.current.readAsDataURL(file);
   }
   const [localImageSrc, setLocalImageSrc] = useState<string>();
-  const { data: serverImageSrc } = api.review.getReviewImage.useQuery(
-    { imageKey: data.imageKey ?? "" },
-    {
-      enabled: !!data.imageKey,
-      staleTime: Infinity,
-    }
-  );
-  const imageSrc = image === null ? null : localImageSrc ?? serverImageSrc;
+  const imageSrc = image === null ? null : localImageSrc ?? data.image;
 
   return (
     <form
-      className="flex flex-col gap-2"
+      className="flex h-fit flex-col gap-2 py-2"
       onSubmit={submitReview}
     >
       <Controller
@@ -537,7 +527,7 @@ function Features({ control, name, register }: FeaturesProps) {
 
 function transformReview(data: RouterOutputs["review"]["getUserReview"]) {
   if (!data) return data;
-  const { pros, cons, categories, ...rest } = data;
+  const { pros, cons, categories, updatedAt: _, ...rest } = data;
 
   return Object.assign(rest, {
     pros: pros?.split("\n").map((x) => ({ name: x })) ?? [],

@@ -1,5 +1,5 @@
-import { relations } from "drizzle-orm";
-import { index, mysqlTable, primaryKey, tinyint, varchar } from "drizzle-orm/mysql-core";
+import { relations, sql } from "drizzle-orm";
+import { datetime, index, mysqlTable, primaryKey, tinyint, varchar } from "drizzle-orm/mysql-core";
 import { user } from "./auth";
 
 export const productName = mysqlTable(
@@ -29,6 +29,9 @@ export const review = mysqlTable(
     cons: varchar("cons", { length: 4095 }),
     comment: varchar("comment", { length: 2047 }),
     imageKey: varchar("image-key", { length: 255 }),
+    updatedAt: datetime("updated-at")
+      .notNull()
+      .default(sql`(now())`),
   },
   (table) => ({
     compoundKey: primaryKey(table.userId, table.barcode),
