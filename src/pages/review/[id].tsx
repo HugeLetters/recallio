@@ -10,11 +10,11 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
-import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle";
-import LucidePen from "~icons/lucide/pen";
-import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline";
-import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded";
-import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded";
+import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
+import LucidePen from "~icons/lucide/pen.jsx";
+import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
+import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
+import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
 
 export default function Page() {
   const router = useRouter();

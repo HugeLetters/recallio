@@ -6,8 +6,8 @@ import * as Select from "@radix-ui/react-select";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import SwapIcon from "~icons/iconamoon/swap-thin";
-import LucidePen from "~icons/lucide/pen";
+import SwapIcon from "~icons/iconamoon/swap-thin.jsx";
+import LucidePen from "~icons/lucide/pen.jsx";
 
 export default function Profile() {
   const { data, status } = useSession();

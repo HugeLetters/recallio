@@ -1,7 +1,7 @@
-import SearchIcon from "~icons/iconamoon/search";
-import BarcodeIcon from "~icons/ph/barcode-light";
+import SearchIcon from "~icons/iconamoon/search.jsx";
+import BarcodeIcon from "~icons/ph/barcode-light.jsx";
 import Link from "next/link";
-import ProfileIcon from "~icons/ion/person-outline";
+import ProfileIcon from "~icons/ion/person-outline.jsx";
 import { useRouter } from "next/router";
 export default function Footer() {
   const route = useRouter().pathname;
