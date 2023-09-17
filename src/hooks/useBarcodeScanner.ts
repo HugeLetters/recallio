@@ -49,7 +49,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
   async function stop(updateState?: boolean) {
     if (!scanner.current) return;
     if (scanner.current.getState() === Html5QrcodeScannerState.SCANNING) {
-      await scanner.current
+      return scanner.current
         .stop()
         .then(() => updateState && setState("stopped"))
         .catch(console.error);
