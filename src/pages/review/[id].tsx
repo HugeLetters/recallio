@@ -1,4 +1,5 @@
 import { CommondHeader } from "@/components/Header";
+import ImageInput from "@/components/ImageInput";
 import useHeader from "@/hooks/useHeader";
 import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
@@ -64,6 +65,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
   );
 }
 
+const fileReader = typeof window === "undefined" ? null : new FileReader();
 type ReviewFormProps<T> = {
   data: T;
   getServerValue: (callback: (value: T) => void) => void;
@@ -148,16 +150,16 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
   const { replace: replacePros } = useFieldArray({ control, name: "pros" });
   const { replace: replaceCons } = useFieldArray({ control, name: "cons" });
 
-  const fileInput = useRef<HTMLInputElement>(null);
-  const fileReader = useRef(new FileReader());
   function readeImageFile() {
-    if (typeof fileReader.current.result !== "string") return;
-    setLocalImageSrc(fileReader.current.result);
+    if (!fileReader || typeof fileReader.result !== "string") return;
+
+    setLocalImageSrc(fileReader.result);
   }
   useEffect(() => {
-    const fr = fileReader.current;
-    fr.addEventListener("load", readeImageFile);
-    return () => fr.removeEventListener("load", readeImageFile);
+    if (!fileReader) return;
+
+    fileReader.addEventListener("load", readeImageFile);
+    return () => fileReader.removeEventListener("load", readeImageFile);
   }, []);
   // null - delete, undefined - keep as is
   const [image, setImage] = useState<File | null>();
@@ -166,13 +168,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
 
     if (!file) {
       setLocalImageSrc(undefined);
-      if (fileInput.current) {
-        fileInput.current.value = "";
-      }
       return;
     }
 
-    fileReader.current.readAsDataURL(file);
+    if (!fileReader) return;
+    fileReader.readAsDataURL(file);
   }
   const [localImageSrc, setLocalImageSrc] = useState<string>();
   const imageSrc = image === null ? null : localImageSrc ?? data.image;
@@ -226,7 +226,12 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
         />
       </div>
       <div className="flex gap-3">
-        <label className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md">
+        <ImageInput
+          className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md focus-within:outline"
+          onChange={(e) => updateImage(e.target.files?.[0])}
+          isImageSet={!!image}
+          aria-label="add review image"
+        >
           {imageSrc ? (
             <Image
               alt="your attachment"
@@ -239,15 +244,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
               <MaterialSymbolsAddPhotoAlternateOutline className="text-xl" />
             </div>
           )}
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/*"
-            onChange={(e) => updateImage(e.target.files?.[0])}
-            className="hidden"
-            aria-label="add review image"
-          />
-        </label>
+        </ImageInput>
         <div className="flex flex-col justify-center gap-2">
           <button
             type="button"
