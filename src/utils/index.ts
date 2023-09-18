@@ -5,6 +5,8 @@ export function getQueryParam(query: Query[string]) {
   return Array.isArray(query) ? query.at(-1) : query;
 }
 
+export const minutesToMs = (minutes: number) => minutes * 60 * 1000;
+
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type StrictPick<T, K extends keyof T> = Pick<T, K>;
 export type ModelProps<T> = { value: T; setValue: (value: T) => void };

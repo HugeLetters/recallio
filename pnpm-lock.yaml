@@ -8,6 +8,9 @@ patchedDependencies:
   next-auth@4.23.1:
     hash: yvsgxii7fhox2eua2fqmbhdpzu
     path: patches/next-auth@4.23.1.patch
+  unplugin-icons@0.17.0:
+    hash: sqmumxbll7aozqr4n7wqdsxj5q
+    path: patches/unplugin-icons@0.17.0.patch
 
 dependencies:
   '@auth/core':
@@ -132,7 +135,7 @@ dependencies:
     version: 4.7.1
   unplugin-icons:
     specifier: ^0.17.0
-    version: 0.17.0(@svgr/core@8.1.0)
+    version: 0.17.0(patch_hash=sqmumxbll7aozqr4n7wqdsxj5q)(@svgr/core@8.1.0)
   uploadthing:
     specifier: ^5.5.0
     version: 5.5.0(zod@3.21.4)
@@ -157,8 +160,8 @@ devDependencies:
     specifier: ^1.1.12
     version: 1.1.12
   '@iconify-json/lucide':
-    specifier: ^1.1.124
-    version: 1.1.124
+    specifier: ^1.1.127
+    version: 1.1.127
   '@iconify-json/material-symbols':
     specifier: ^1.1.57
     version: 1.1.57
@@ -1007,8 +1010,8 @@ packages:
       '@iconify/types': 2.0.0
     dev: true
 
-  /@iconify-json/lucide@1.1.124:
-    resolution: {integrity: sha512-xFt0n3qjfjkvOlmQaJ8lvg2PTnIN5uZDWLsv5bwTMFMyOvlzyV0NXPEvl0yN6vriE/gG5ODUNZBRUFQwkFcPkQ==}
+  /@iconify-json/lucide@1.1.127:
+    resolution: {integrity: sha512-T/vbkQsazjnp6nKCuqTApD+SJL9/LhDFuk4XdH7sGkfl9aIH9BZ3qG2WxnmDyPSle+7KpyVkV7cRuIOMW7Mz9g==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true
@@ -6351,7 +6354,7 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /unplugin-icons@0.17.0(@svgr/core@8.1.0):
+  /unplugin-icons@0.17.0(patch_hash=sqmumxbll7aozqr4n7wqdsxj5q)(@svgr/core@8.1.0):
     resolution: {integrity: sha512-gMv66eY/Hj64heM55XrfDH3LUCWI51mtkBVUPVl9VkpvLgAYhdVe9nRuzu6p+idmCLSQVq7xiPxQcD4aXCgW5A==}
     peerDependencies:
       '@svgr/core': '>=7.0.0'
@@ -6382,6 +6385,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: false
+    patched: true
 
   /unplugin@1.4.0:
     resolution: {integrity: sha512-5x4eIEL6WgbzqGtF9UV8VEC/ehKptPXDS6L2b0mv4FRMkJxRtjaJfOWDd6a8+kYbqsjklix7yWP0N3SUepjXcg==}

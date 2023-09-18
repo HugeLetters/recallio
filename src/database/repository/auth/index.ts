@@ -1,8 +1,9 @@
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { Repository, type WhereQuery } from "..";
 
-class AccountRepository<T extends typeof account> extends Repository<T> {
-  findFirstWithUser(query: WhereQuery<T>) {
+type Account = typeof account;
+class AccountRepository extends Repository<Account> {
+  findFirstWithUser(query: WhereQuery<Account>) {
     return this.db
       .select()
       .from(account)
@@ -14,8 +15,9 @@ class AccountRepository<T extends typeof account> extends Repository<T> {
 }
 export const accountRepository = new AccountRepository(account);
 
-class SessionRepository<T extends typeof session> extends Repository<T> {
-  findFirstWithUser(query: WhereQuery<T>) {
+type Session = typeof session;
+class SessionRepository extends Repository<Session> {
+  findFirstWithUser(query: WhereQuery<Session>) {
     return this.db
       .select()
       .from(session)
@@ -27,8 +29,10 @@ class SessionRepository<T extends typeof session> extends Repository<T> {
 }
 export const sessionRepository = new SessionRepository(session);
 
-class UserRepository<T extends typeof user> extends Repository<T> {}
+type User = typeof user;
+class UserRepository extends Repository<User> {}
 export const userRepository = new UserRepository(user);
 
-class VerificationTokenRepository<T extends typeof verificationToken> extends Repository<T> {}
+type VerificationToken = typeof verificationToken;
+class VerificationTokenRepository extends Repository<VerificationToken> {}
 export const verificationTokenRepository = new VerificationTokenRepository(verificationToken);

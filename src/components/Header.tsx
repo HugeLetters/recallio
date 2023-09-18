@@ -3,8 +3,8 @@ import type { DiscriminatedUnion } from "@/utils";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import LeftArrowIcon from "~icons/uil/arrow-left";
-import HomeIcon from "~icons/uil/home-alt";
+import LeftArrowIcon from "~icons/uil/arrow-left.jsx";
+import HomeIcon from "~icons/uil/home-alt.jsx";
 export default function Header() {
   const stack = useAtomValue(contentStackAtom).filter((node) => !!node.content);
 
@@ -35,6 +35,7 @@ export function CommondHeader({ title, backAction, noNav }: CommondHeaderProps) 
         <button
           onClick={backAction ?? router.back}
           role="navigation"
+          aria-label="back"
           className="flex items-center justify-self-start"
         >
           <LeftArrowIcon className="h-8 w-8" />

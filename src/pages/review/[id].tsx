@@ -10,21 +10,17 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
-import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle";
-import LucidePen from "~icons/lucide/pen";
-import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline";
-import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded";
-import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded";
+import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
+import LucidePen from "~icons/lucide/pen.jsx";
+import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
+import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
+import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
 
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
 
-  return (
-    <div className="h-full rounded-xl">
-      {barcode ? <ReviewBlock barcode={barcode} /> : "loading..."}
-    </div>
-  );
+  return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
 }
 
 type ReviewBlockProps = { barcode: string };
@@ -50,7 +46,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
           cons: [],
           comment: null,
           categories: [],
-          imageKey: null,
+          image: null,
         }
       }
       getServerValue={(callback) => {
@@ -96,6 +92,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
             if (!data.ok) toast.error(data.error);
             // ! todo - image key is not properly synced due to race condition
             // ! whether onUpload hook on server finishes before sync on the client or not
+            // todo - compress image
             else if (!!image) {
               await startUpload([image], { barcode }).catch((err) => {
                 console.error(err);
@@ -178,18 +175,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
     fileReader.current.readAsDataURL(file);
   }
   const [localImageSrc, setLocalImageSrc] = useState<string>();
-  const { data: serverImageSrc } = api.review.getReviewImage.useQuery(
-    { imageKey: data.imageKey ?? "" },
-    {
-      enabled: !!data.imageKey,
-      staleTime: Infinity,
-    }
-  );
-  const imageSrc = image === null ? null : localImageSrc ?? serverImageSrc;
+  const imageSrc = image === null ? null : localImageSrc ?? data.image;
 
   return (
     <form
-      className="flex flex-col gap-2"
+      className="flex h-fit flex-col gap-2 py-2"
       onSubmit={submitReview}
     >
       <Controller
@@ -382,25 +372,28 @@ function Categories({ control, name }: CategoriesProps) {
         if (e.key === "Escape") setIsEditing(false);
       }}
       ref={rootDiv}
-      className="flex flex-col gap-2"
+      className="grid grid-cols-5 gap-2 p-2"
     >
       <input
         value={inputCategory}
         onChange={(e) => setInputCategory(e.target.value)}
         autoFocus
-        onKeyDown={(e) => {
-          // todo - doesn't work on mobile
-          if (e.key === "Enter") {
-            e.preventDefault();
-            append({ name: inputCategory });
-          }
-        }}
-        className="rounded-xl p-3 outline outline-1 outline-accent-green focus:outline-2"
+        className="col-span-4 rounded-xl p-3 outline outline-1 outline-accent-green focus:outline-2"
       />
+      <button
+        type="button"
+        onClick={() => {
+          if (!inputCategory || !!fields.find((x) => x.name === inputCategory)) return;
+          append({ name: inputCategory });
+        }}
+        className="rounded-xl px-4 outline outline-1"
+      >
+        Add
+      </button>
       <div
         className={`${
           isPreviousData && inputCategory ? "opacity-50" : ""
-        } flex flex-wrap gap-2 rounded-xl p-3 outline`}
+        } col-span-full flex flex-wrap gap-2 rounded-xl p-3 outline`}
       >
         {inputCategory
           ? isSuccess
@@ -416,7 +409,7 @@ function Categories({ control, name }: CategoriesProps) {
                         selected
                           ? "text-accent-green outline-accent-green"
                           : "text-text-gray outline-text-gray"
-                      } rounded-xl p-1.5 capitalize outline outline-1 current:outline-dashed`}
+                      } rounded-xl p-1.5 outline outline-1 current:outline-dashed`}
                       onClick={() => {
                         selected ? remove(index) : append({ name: category });
                       }}
@@ -439,7 +432,7 @@ function Categories({ control, name }: CategoriesProps) {
           type="button"
           aria-label="remove"
           onClick={() => remove(i)}
-          className="rounded-xl p-1.5 capitalize text-neutral-400 outline outline-1 outline-neutral-400 current:outline-dashed"
+          className="rounded-xl p-1.5 text-neutral-400 outline outline-1 outline-neutral-400 current:outline-dashed"
         >
           {name}
         </button>
@@ -447,7 +440,7 @@ function Categories({ control, name }: CategoriesProps) {
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="rounded-xl p-1.5 font-bold capitalize text-accent-green outline outline-1 outline-accent-green current:outline-dashed"
+        className="rounded-xl p-1.5 font-bold text-accent-green outline outline-1 outline-accent-green current:outline-dashed"
       >
         Add
       </button>
@@ -534,7 +527,7 @@ function Features({ control, name, register }: FeaturesProps) {
 
 function transformReview(data: RouterOutputs["review"]["getUserReview"]) {
   if (!data) return data;
-  const { pros, cons, categories, ...rest } = data;
+  const { pros, cons, categories, updatedAt: _, ...rest } = data;
 
   return Object.assign(rest, {
     pros: pros?.split("\n").map((x) => ({ name: x })) ?? [],
