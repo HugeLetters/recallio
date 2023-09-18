@@ -71,7 +71,6 @@ function Reviews() {
   const [searchOptions, setSearchOptions] = useImmer<ReviewSummaryInput>({
     page: {
       index: 1,
-      // todo - this should be in user settings
       size: 2,
     },
     sort: {

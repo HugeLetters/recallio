@@ -93,9 +93,6 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
         {
           async onSuccess(data) {
             if (!data.ok) toast.error(data.error);
-            // ! todo - image key is not properly synced due to race condition
-            // ! whether onUpload hook on server finishes before sync on the client or not
-            // todo - compress image
             else if (!!image) {
               await startUpload([image], { barcode }).catch((err) => {
                 console.error(err);
@@ -295,7 +292,6 @@ function NameSelect({ value, setValue, barcode }: ModelProps<string> & { barcode
     if (!data?.[0] || value) return;
 
     setValue(data[0]);
-    // todo - maybe replace if with skeleton until data loads?
     // update input once data has loaded if user didn't input something already
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
