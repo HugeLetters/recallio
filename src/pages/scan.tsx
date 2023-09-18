@@ -25,10 +25,10 @@ export default function ScannerPage() {
   useHeader(() => <CommondHeader title="Scanner" />, []);
 
   return (
-    <div>
+    <div className="h-full w-full">
       <div
         id={id}
-        className="w-56 "
+        className="flex h-full justify-center overflow-x-hidden [&>video]:!w-auto [&>video]:max-w-none"
       />
       <form
         className="text-black"

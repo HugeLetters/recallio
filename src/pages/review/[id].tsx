@@ -1,3 +1,5 @@
+import { CommondHeader } from "@/components/Header";
+import useHeader from "@/hooks/useHeader";
 import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
@@ -19,6 +21,7 @@ import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
+  useHeader(() => <CommondHeader title={barcode ?? "Recallio"} />, [barcode]);
 
   return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
 }
