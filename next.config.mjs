@@ -6,6 +6,7 @@ await import("./src/env.mjs");
 import BundleAnalyzer from "@next/bundle-analyzer";
 import nextRoutes from "nextjs-routes/config";
 import unpluginIcons from "unplugin-icons/webpack";
+import { FileSystemIconLoader } from "unplugin-icons/loaders";
 const withRoutes = nextRoutes();
 
 /** @type {import("next").NextConfig} */
@@ -39,6 +40,9 @@ const config = {
         jsx: "react",
         autoInstall: true,
         scale: 1,
+        customCollections: {
+          custom: FileSystemIconLoader("./src/assets/icons"),
+        },
       })
     );
     return config;

@@ -1,8 +1,8 @@
-import SearchIcon from "~icons/iconamoon/search.jsx";
-import BarcodeIcon from "~icons/ph/barcode-light.jsx";
 import Link from "next/link";
-import ProfileIcon from "~icons/ion/person-outline.jsx";
 import { useRouter } from "next/router";
+import ScanIcon from "~icons/custom/scan.jsx";
+import SearchIcon from "~icons/iconamoon/search.jsx";
+import ProfileIcon from "~icons/ion/person-outline.jsx";
 export default function Footer() {
   const route = useRouter().pathname;
 
@@ -24,7 +24,7 @@ export default function Footer() {
             route.startsWith("/scan") ? "bg-green-500 text-white" : "bg-neutral-100"
           }`}
         >
-          <BarcodeIcon className="h-full w-full" />
+          <ScanIcon className="h-full w-full" />
         </Link>
         <Link
           href="/profile"
