@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
 import { api } from "@/utils/api";
-import setupInterceptor from "@/utils/interceptor";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -26,8 +25,14 @@ const MyApp: AppType<{ session: Session | null }> = ({
   useEffect(() => {
     if (env.NEXT_PUBLIC_NODE_ENV == "production") return;
 
-    const worker = setupInterceptor();
-    return () => worker?.stop();
+    const worker = import("@/utils/interceptor")
+      .then((module) => module.default)
+      .then((setupInterceptor) => setupInterceptor())
+      .catch(console.error);
+
+    return () => {
+      worker.then((w) => w?.stop()).catch(console.error);
+    };
   }, []);
 
   return (
