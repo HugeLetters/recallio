@@ -26,8 +26,18 @@ export default function ScannerPage() {
   }
   const [selection, setSelection] = useSelection();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
   const [barcode, setBarcode] = useState("");
+  const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
+  useEffect(() => {
+    if (!ready) return;
+    start().catch(console.error);
+
+    return () => {
+      stop().catch(console.error);
+    };
+    // it should run only once on mount once scanner gave a signal it's ready to go
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   const router = useRouter();
   function goToReview(id: string) {
@@ -46,17 +56,6 @@ export default function ScannerPage() {
         console.error(e);
       });
   }
-
-  useEffect(() => {
-    if (!ready) return;
-    start().catch(console.error);
-
-    return () => {
-      stop().catch(console.error);
-    };
-    // it should run only once on mount once scanner gave a signal it's ready to go
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
 
   const [offset, setOffset] = useState(0);
   const transform = `translateX(calc(${offset}px ${selection > 0 ? "-" : "+"} ${
@@ -104,7 +103,7 @@ export default function ScannerPage() {
         </div>
       )}
       <div
-        className={`absolute bottom-8 grid grid-cols-3 text-white drop-shadow-md ${
+        className={`absolute bottom-8 grid grid-cols-3 text-white ${
           !offset ? "transition-transform" : ""
         }`}
         style={{ transform }}
