@@ -64,7 +64,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     start,
     /** Does not have referential equality on rerenders */
     stop: () => stop(true),
-    /** Stops the scanner before reading the */
+    /** Stops the scanner before reading the file */
     scanFile: async (image: File) => {
       await stop(true);
       return getScanner().scanFileV2(image, false);
