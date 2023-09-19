@@ -5,14 +5,15 @@
   "packageManager": "pnpm@8.7.4",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run db-migrate&& pnpm nextjs-routes&& next build",
-    "analyze": "set ANALYZE=true&& next build",
+    "build": "pnpm db-migrate&& pnpm nextjs-routes&& next build",
+    "analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "check-format": "prettier . -c",
     "format": "pnpm check-format -w",
-    "db-migrate": "drizzle-kit generate:mysql && tsx ./scripts/database/migration.ts",
+    "rscript": "tsx ./scripts/run.ts",
+    "db-migrate": "drizzle-kit generate:mysql && pnpm rscript database/migration",
     "db-studio": "drizzle-kit studio"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
     "@trpc/react-query": "^10.34.0",
     "@trpc/server": "^10.34.0",
     "@uploadthing/react": "^5.5.0",
+    "@use-gesture/react": "^10.3.0",
     "drizzle-orm": "^0.28.5",
     "html5-qrcode": "^2.3.8",
     "immer": "^10.0.2",

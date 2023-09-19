@@ -22,7 +22,7 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     };
   }, [id]);
 
-  if (state === "not mounted") return { ready: false as const, state, id };
+  if (state === "not mounted" || !scanner.current) return { ready: false as const, state, id };
 
   function getScanner() {
     scanner.current ??= createScanner(id);
@@ -36,8 +36,8 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     const scanner = getScanner();
     await stop();
 
-    scanner
-      .start({ facingMode: "environment" }, { fps: 30, aspectRatio: 1 }, onScan, () => void 0)
+    return scanner
+      .start({ facingMode: "environment" }, { fps: 15 }, onScan, () => void 0)
       .then(() => setState("scanning"))
       .catch((e) => {
         console.error(e);
@@ -64,6 +64,11 @@ export default function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     start,
     /** Does not have referential equality on rerenders */
     stop: () => stop(true),
+    /** Stops the scanner before reading the file */
+    scanFile: async (image: File) => {
+      await stop(true);
+      return getScanner().scanFileV2(image, false);
+    },
   };
 }
 

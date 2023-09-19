@@ -3,7 +3,6 @@ import Header from "@/components/Header";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
 import { api } from "@/utils/api";
-import setupInterceptor from "@/utils/interceptor";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -26,8 +25,14 @@ const MyApp: AppType<{ session: Session | null }> = ({
   useEffect(() => {
     if (env.NEXT_PUBLIC_NODE_ENV == "production") return;
 
-    const worker = setupInterceptor();
-    return () => worker?.stop();
+    const worker = import("@/utils/interceptor")
+      .then((module) => module.default)
+      .then((setupInterceptor) => setupInterceptor())
+      .catch(console.error);
+
+    return () => {
+      worker.then((w) => w?.stop()).catch(console.error);
+    };
   }, []);
 
   return (
@@ -44,7 +49,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         className={`${lato.variable} grid h-[100dvh] w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950`}
       >
         <Header />
-        <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-auto [scrollbar-gutter:stable]">
+        <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-auto">
           {/* @ts-expect-error - I use noAuth property to allow some pages to be acessed w/o login. It's too much of a bother to extend Next interfaces to have this property*/}
           {!Component.noAuth ? (
             <AuthProtection>
@@ -63,7 +68,7 @@ export default api.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
   const { status } = useSession({ required: true });
-  // todo - proper loading state
+
   if (status !== "authenticated") {
     return <>Loading...</>;
   }

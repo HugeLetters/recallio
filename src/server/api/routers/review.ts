@@ -90,7 +90,6 @@ export const reviewRouter = createTRPCRouter({
           .then((summaries) =>
             summaries.map(async (summary): Promise<ReviewSummary> => {
               const { imageKey, ...rest } = summary;
-              // todo is there a more efficient way to fetch URLs? As a single request?
               const image = imageKey
                 ? await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null)
                 : null;

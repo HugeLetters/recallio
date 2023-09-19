@@ -1,3 +1,6 @@
+import { CommondHeader } from "@/components/Header";
+import ImageInput from "@/components/ImageInput";
+import useHeader from "@/hooks/useHeader";
 import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
@@ -19,6 +22,7 @@ import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
+  useHeader(() => <CommondHeader title={barcode ?? "Recallio"} />, [barcode]);
 
   return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
 }
@@ -61,6 +65,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
   );
 }
 
+const fileReader = typeof window === "undefined" ? null : new FileReader();
 type ReviewFormProps<T> = {
   data: T;
   getServerValue: (callback: (value: T) => void) => void;
@@ -90,9 +95,6 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
         {
           async onSuccess(data) {
             if (!data.ok) toast.error(data.error);
-            // ! todo - image key is not properly synced due to race condition
-            // ! whether onUpload hook on server finishes before sync on the client or not
-            // todo - compress image
             else if (!!image) {
               await startUpload([image], { barcode }).catch((err) => {
                 console.error(err);
@@ -148,16 +150,17 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
   const { replace: replacePros } = useFieldArray({ control, name: "pros" });
   const { replace: replaceCons } = useFieldArray({ control, name: "cons" });
 
-  const fileInput = useRef<HTMLInputElement>(null);
-  const fileReader = useRef(new FileReader());
-  function readeImageFile() {
-    if (typeof fileReader.current.result !== "string") return;
-    setLocalImageSrc(fileReader.current.result);
-  }
   useEffect(() => {
-    const fr = fileReader.current;
-    fr.addEventListener("load", readeImageFile);
-    return () => fr.removeEventListener("load", readeImageFile);
+    if (!fileReader) return;
+
+    function readeImageFile() {
+      if (!fileReader || typeof fileReader.result !== "string") return;
+
+      setLocalImageSrc(fileReader.result);
+    }
+
+    fileReader.addEventListener("load", readeImageFile);
+    return () => fileReader.removeEventListener("load", readeImageFile);
   }, []);
   // null - delete, undefined - keep as is
   const [image, setImage] = useState<File | null>();
@@ -166,13 +169,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
 
     if (!file) {
       setLocalImageSrc(undefined);
-      if (fileInput.current) {
-        fileInput.current.value = "";
-      }
       return;
     }
 
-    fileReader.current.readAsDataURL(file);
+    if (!fileReader) return;
+    fileReader.readAsDataURL(file);
   }
   const [localImageSrc, setLocalImageSrc] = useState<string>();
   const imageSrc = image === null ? null : localImageSrc ?? data.image;
@@ -226,7 +227,12 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
         />
       </div>
       <div className="flex gap-3">
-        <label className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md">
+        <ImageInput
+          className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md"
+          onChange={(e) => updateImage(e.target.files?.[0])}
+          isImageSet={!!image}
+          aria-label="add review image"
+        >
           {imageSrc ? (
             <Image
               alt="your attachment"
@@ -239,15 +245,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
               <MaterialSymbolsAddPhotoAlternateOutline className="text-xl" />
             </div>
           )}
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/*"
-            onChange={(e) => updateImage(e.target.files?.[0])}
-            className="hidden"
-            aria-label="add review image"
-          />
-        </label>
+        </ImageInput>
         <div className="flex flex-col justify-center gap-2">
           <button
             type="button"
@@ -292,7 +290,6 @@ function NameSelect({ value, setValue, barcode }: ModelProps<string> & { barcode
     if (!data?.[0] || value) return;
 
     setValue(data[0]);
-    // todo - maybe replace if with skeleton until data loads?
     // update input once data has loaded if user didn't input something already
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
