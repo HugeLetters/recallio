@@ -110,7 +110,9 @@ export default function ScannerPage() {
       >
         <ImageInput
           ref={fileInputRef}
-          className="mx-1 cursor-pointer rounded-xl bg-green-500 p-2 "
+          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300  ${
+            selection === -1 ? "bg-green-500" : "bg-black/30"
+          }`}
           aria-label="Scan from file"
           isImageSet={true}
           onChange={(e) => {
@@ -123,14 +125,18 @@ export default function ScannerPage() {
           Upload
         </ImageInput>
         <button
-          className="mx-1 rounded-xl bg-green-500 p-2"
+          className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
+            selection === 0 ? "bg-green-500" : "bg-black/30"
+          }`}
           onClick={() => setSelection(0)}
           type="button"
         >
           Scan
         </button>
         <button
-          className="mx-1 rounded-xl bg-green-500 p-2"
+          className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
+            selection === 1 ? "bg-green-500" : "bg-black/30"
+          }`}
           onClick={() => setSelection(1)}
           type="button"
         >
