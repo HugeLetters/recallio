@@ -12,17 +12,17 @@ export default function ScannerPage() {
   useHeader(() => <CommondHeader title="Scanner" />, []);
 
   function useSelection() {
-    const [selection, _setSelection] = useState(0);
+    const [value, setValue] = useState(0);
 
-    function setSelection(value: typeof selection) {
-      value = clamp(-1, value, 1);
-      if (selection === value) return;
+    function setSelection(selection: typeof value) {
+      selection = clamp(-1, selection, 1);
+      if (value === selection) return;
 
-      _setSelection(value);
-      if (value < 0) fileInputRef.current?.click();
+      setValue(selection);
+      if (selection < 0) fileInputRef.current?.click();
     }
 
-    return [selection, setSelection] as const;
+    return [value, setSelection] as const;
   }
   const [selection, setSelection] = useSelection();
   const fileInputRef = useRef<HTMLInputElement>(null);
