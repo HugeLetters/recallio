@@ -4,6 +4,7 @@ import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
 import { clamp } from "@/utils";
 import { useDrag } from "@use-gesture/react";
+import { atom, useAtom } from "jotai";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search.jsx";
@@ -12,7 +13,7 @@ export default function ScannerPage() {
   useHeader(() => <CommondHeader title="Scanner" />, []);
 
   function useSelection() {
-    const [value, setValue] = useState(0);
+    const [value, setValue] = useAtom(selectionAtom);
 
     function setSelection(selection: typeof value) {
       selection = clamp(-1, selection, 1);
@@ -85,7 +86,7 @@ export default function ScannerPage() {
       />
       {selection > 0 && (
         <div className="absolute bottom-24 left-1/2 w-full -translate-x-1/2 px-6">
-          <label className="flex rounded-xl bg-white p-3 outline outline-1 outline-green-500 focus-within:outline-4">
+          <label className="flex rounded-xl bg-white p-3 outline outline-1 outline-app-green focus-within:outline-4">
             <input
               className="grow outline-none"
               placeholder="barcode"
@@ -95,7 +96,7 @@ export default function ScannerPage() {
             <button
               onClick={() => goToReview(barcode)}
               disabled={!barcode}
-              className="text-green-500"
+              className="text-app-green"
             >
               <SearchIcon className="h-7 w-7" />
             </button>
@@ -111,7 +112,7 @@ export default function ScannerPage() {
         <ImageInput
           ref={fileInputRef}
           className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300  ${
-            selection === -1 ? "bg-green-500" : "bg-black/50"
+            selection === -1 ? "bg-app-green" : "bg-black/50"
           }`}
           aria-label="Scan from file"
           isImageSet={true}
@@ -126,7 +127,7 @@ export default function ScannerPage() {
         </ImageInput>
         <button
           className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
-            selection === 0 ? "bg-green-500" : "bg-black/50"
+            selection === 0 ? "bg-app-green" : "bg-black/50"
           }`}
           onClick={() => setSelection(0)}
           type="button"
@@ -135,7 +136,7 @@ export default function ScannerPage() {
         </button>
         <button
           className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
-            selection === 1 ? "bg-green-500" : "bg-black/50"
+            selection === 1 ? "bg-app-green" : "bg-black/50"
           }`}
           onClick={() => setSelection(1)}
           type="button"
@@ -146,3 +147,5 @@ export default function ScannerPage() {
     </form>
   );
 }
+
+export const selectionAtom = atom(0);

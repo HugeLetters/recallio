@@ -14,7 +14,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
 import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
-import LucidePen from "~icons/lucide/pen.jsx";
+import LucidePen from "~icons/custom/pen.jsx";
 import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
 import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
 import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
@@ -208,7 +208,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
           />
         )}
       />
-      <div className="flex flex-col gap-2 rounded-xl p-4 outline outline-1 outline-accent-green">
+      <div className="flex flex-col gap-2 rounded-xl p-4 outline outline-1 outline-app-green">
         <Features
           name="pros"
           register={register}
@@ -265,7 +265,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
         Private review
         <Switch.Root
           defaultChecked
-          className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-green-500"
+          className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green"
         >
           <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
           <Switch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
@@ -278,7 +278,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <button className="rounded-lg bg-accent-green px-3 py-4 text-white">SUBMIT</button>
+      <button className="rounded-lg bg-app-green px-3 py-4 text-white">SUBMIT</button>
     </form>
   );
 }
@@ -375,7 +375,7 @@ function Categories({ control, name }: CategoriesProps) {
         value={inputCategory}
         onChange={(e) => setInputCategory(e.target.value)}
         autoFocus
-        className="col-span-4 rounded-xl p-3 outline outline-1 outline-accent-green focus:outline-2"
+        className="col-span-4 rounded-xl p-3 outline outline-1 outline-app-green focus:outline-2"
       />
       <button
         type="button"
@@ -404,7 +404,7 @@ function Categories({ control, name }: CategoriesProps) {
                       type="button"
                       className={`${
                         selected
-                          ? "text-accent-green outline-accent-green"
+                          ? "text-app-green outline-app-green"
                           : "text-text-gray outline-text-gray"
                       } rounded-xl p-1.5 outline outline-1 current:outline-dashed`}
                       onClick={() => {
@@ -437,7 +437,7 @@ function Categories({ control, name }: CategoriesProps) {
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="rounded-xl p-1.5 font-bold text-accent-green outline outline-1 outline-accent-green current:outline-dashed"
+        className="rounded-xl p-1.5 font-bold text-app-green outline outline-1 outline-app-green current:outline-dashed"
       >
         Add
       </button>
@@ -458,7 +458,7 @@ function Rating({ value, setValue }: ModelProps<number>) {
         <Radio.Item
           key={x}
           value={x.toString()}
-          className={`${x <= value ? "text-yellow-400" : ""} ${
+          className={`${x <= value ? "text-app-gold" : ""} ${
             x === 0 ? "pointer-events-none h-0 w-0 opacity-0" : ""
           } text-6xl`}
           onClick={() => {
@@ -482,7 +482,7 @@ function Features({ control, name, register }: FeaturesProps) {
   return (
     <div className="flex">
       {name === "pros" ? (
-        <MaterialSymbolsAddRounded className="text-4xl text-accent-green" />
+        <MaterialSymbolsAddRounded className="text-4xl text-app-green" />
       ) : (
         <MaterialSymbolsRemoveRounded className="text-4xl text-red-600" />
       )}
