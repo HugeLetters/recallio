@@ -150,13 +150,14 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
   const { replace: replacePros } = useFieldArray({ control, name: "pros" });
   const { replace: replaceCons } = useFieldArray({ control, name: "cons" });
 
-  function readeImageFile() {
-    if (!fileReader || typeof fileReader.result !== "string") return;
-
-    setLocalImageSrc(fileReader.result);
-  }
   useEffect(() => {
     if (!fileReader) return;
+
+    function readeImageFile() {
+      if (!fileReader || typeof fileReader.result !== "string") return;
+
+      setLocalImageSrc(fileReader.result);
+    }
 
     fileReader.addEventListener("load", readeImageFile);
     return () => fileReader.removeEventListener("load", readeImageFile);
