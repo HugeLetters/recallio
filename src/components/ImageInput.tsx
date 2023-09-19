@@ -1,19 +1,16 @@
 import type { StrictOmit } from "@/utils";
-import type { ChangeEventHandler, HTMLAttributes } from "react";
+import { forwardRef, type ChangeEventHandler, type HTMLAttributes } from "react";
 
 type ImageInputProps = StrictOmit<HTMLAttributes<HTMLInputElement>, "onChange"> & {
   onChange?: ChangeEventHandler<HTMLInputElement>;
   isImageSet: boolean;
 };
-export default function ImageInput({
-  children,
-  className,
-  onChange,
-  isImageSet,
-  ...inputAttributes
-}: ImageInputProps) {
+export default forwardRef<HTMLInputElement, ImageInputProps>(function ImageInput(
+  { children, className, onChange, isImageSet, ...inputAttributes },
+  ref
+) {
   return (
-    <label className={className}>
+    <label className={`${className} focus-within:outline`}>
       {children}
       <input
         type="file"
@@ -22,7 +19,8 @@ export default function ImageInput({
         onChange={onChange}
         {...inputAttributes}
         value={isImageSet ? undefined : ""}
+        ref={ref}
       />
     </label>
   );
-}
+});

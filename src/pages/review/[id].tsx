@@ -227,7 +227,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       </div>
       <div className="flex gap-3">
         <ImageInput
-          className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md focus-within:outline"
+          className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md"
           onChange={(e) => updateImage(e.target.files?.[0])}
           isImageSet={!!image}
           aria-label="add review image"
