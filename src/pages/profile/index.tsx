@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import SwapIcon from "~icons/iconamoon/swap-thin.jsx";
-import LucidePen from "~icons/lucide/pen.jsx";
+import LucidePen from "~icons/custom/pen.jsx";
 
 export default function Profile() {
   const { data, status } = useSession();
@@ -46,7 +46,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
             className="h-full w-full rounded-full"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-green-500 text-white">
+          <div className="flex h-full w-full items-center justify-center rounded-full bg-app-green text-white">
             {getInitials()}
           </div>
         )}
@@ -178,7 +178,7 @@ function Reviews() {
               {ratings.map((x) => (
                 <span
                   key={x}
-                  className={`${x <= summary.rating ? "text-yellow-400" : ""}`}
+                  className={`${x <= summary.rating ? "text-app-gold" : ""}`}
                 >
                   ★
                 </span>

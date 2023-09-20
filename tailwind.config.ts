@@ -8,7 +8,7 @@ export default {
     extend: {
       fontFamily: { lato: ["var(--font-lato)", ...defaultTheme.fontFamily.sans] },
       colors: {
-        accent: {
+        app: {
           gold: "hsla(47, 87%, 56%)",
           green: "hsla(122, 39%, 49%)",
         },
