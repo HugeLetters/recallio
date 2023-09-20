@@ -3,11 +3,11 @@ import { useAtomValue } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import type { ReactElement } from "react";
-import LucidePen from "~icons/custom/pen.jsx";
-import UploadIcon from "~icons/custom/photo-upload.jsx";
-import ScanIcon from "~icons/custom/scan.jsx";
-import SearchIcon from "~icons/iconamoon/search.jsx";
-import ProfileIcon from "~icons/ion/person-outline.jsx";
+import LucidePen from "~icons/custom/pen";
+import UploadIcon from "~icons/custom/photo-upload";
+import ScanIcon from "~icons/custom/scan";
+import SearchIcon from "~icons/iconamoon/search";
+import ProfileIcon from "~icons/ion/person-outline";
 
 export default function Footer() {
   const route = useRouter().pathname;
@@ -15,12 +15,15 @@ export default function Footer() {
 
   function getScanIcon(): ReactElement {
     switch (selection) {
-      case -1:
+      case "upload":
         return <UploadIcon className="h-full w-full" />;
-      case 1:
+      case "input":
         return <LucidePen className="h-full w-full" />;
-      default:
+      case "scan":
         return <ScanIcon className="h-full w-full" />;
+      default:
+        const x: never = selection;
+        return x;
     }
   }
 

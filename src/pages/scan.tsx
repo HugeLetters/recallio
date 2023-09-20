@@ -2,9 +2,10 @@ import { CommondHeader } from "@/components/Header";
 import ImageInput from "@/components/ImageInput";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
-import { clamp } from "@/utils";
+import { SelectList, type StrictPick } from "@/utils";
 import { useDrag } from "@use-gesture/react";
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
+import { atomWithReducer } from "jotai/utils";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search.jsx";
@@ -12,21 +13,14 @@ import SearchIcon from "~icons/iconamoon/search.jsx";
 export default function ScannerPage() {
   useHeader(() => <CommondHeader title="Scanner" />, []);
 
-  function useSelection() {
-    const [value, setValue] = useAtom(selectionAtom);
-
-    function setSelection(selection: typeof value) {
-      selection = clamp(-1, selection, 1);
-      if (value === selection) return;
-
-      setValue(selection);
-      if (selection < 0) fileInputRef.current?.click();
-    }
-
-    return [value, setSelection] as const;
-  }
-  const [selection, setSelection] = useSelection();
+  const [selection, selectionDispatch] = useAtom(selectionAtom);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isUploadSelected = selection === "upload";
+  useEffect(() => {
+    if (!isUploadSelected) return;
+    fileInputRef.current?.click();
+  }, [isUploadSelected]);
+
   const [barcode, setBarcode] = useState("");
   const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
   useEffect(() => {
@@ -59,17 +53,20 @@ export default function ScannerPage() {
   }
 
   const [offset, setOffset] = useState(0);
-  const transform = `translateX(calc(${offset}px ${selection > 0 ? "-" : "+"} ${
-    !selection ? 0 : 100 / 3
+  const transform = `translateX(calc(${offset}px ${selection !== "upload" ? "-" : "+"} ${
+    selection === "scan" ? 0 : 100 / 3
   }%))`;
   const bind = useDrag(
     ({ movement: [x], down }) => {
       setOffset(down ? x : 0);
       if (down) return;
 
-      const step = Math.abs(x) > 90 ? 2 : Math.abs(x) > 30 ? 1 : 0;
-      const direction = x < 0 ? 1 : -1;
-      setSelection(selection + step * direction);
+      if (Math.abs(x) < 30) return;
+      const isNext = x < 0 ? true : false;
+      selectionDispatch([isNext ? "next" : "previous"]);
+
+      if (Math.abs(x) < 90) return;
+      selectionDispatch([isNext ? "next" : "previous"]);
     },
     { axis: "x", filterTaps: true }
   );
@@ -84,7 +81,7 @@ export default function ScannerPage() {
         id={id}
         className="flex h-full justify-center [&>video]:!w-auto [&>video]:max-w-none"
       />
-      {selection > 0 && (
+      {selection === "input" && (
         <div className="absolute bottom-24 left-1/2 w-full -translate-x-1/2 px-6">
           <label className="flex rounded-xl bg-white p-3 outline outline-1 outline-app-green focus-within:outline-4">
             <input
@@ -112,7 +109,7 @@ export default function ScannerPage() {
         <ImageInput
           ref={fileInputRef}
           className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300  ${
-            selection === -1 ? "bg-app-green" : "bg-black/50"
+            selection === "upload" ? "bg-app-green" : "bg-black/50"
           }`}
           aria-label="Scan from file"
           isImageSet={true}
@@ -121,24 +118,24 @@ export default function ScannerPage() {
             if (!image) return;
             handleImage(image);
           }}
-          onClick={() => setSelection(-1)}
+          onClick={() => selectionDispatch(["set", "upload"])}
         >
           Upload
         </ImageInput>
         <button
           className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
-            selection === 0 ? "bg-app-green" : "bg-black/50"
+            selection === "scan" ? "bg-app-green" : "bg-black/50"
           }`}
-          onClick={() => setSelection(0)}
+          onClick={() => selectionDispatch(["set", "scan"])}
           type="button"
         >
           Scan
         </button>
         <button
           className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
-            selection === 1 ? "bg-app-green" : "bg-black/50"
+            selection === "input" ? "bg-app-green" : "bg-black/50"
           }`}
-          onClick={() => setSelection(1)}
+          onClick={() => selectionDispatch(["set", "input"])}
           type="button"
         >
           Input
@@ -148,4 +145,17 @@ export default function ScannerPage() {
   );
 }
 
-export const selectionAtom = atom(0);
+const selection = new SelectList(["upload", "scan", "input"], "scan");
+type SelectionAtomEvent =
+  | [type: keyof StrictPick<typeof selection, "next" | "previous">, value?: never]
+  | [type: keyof StrictPick<typeof selection, "set">, value: ReturnType<(typeof selection)["get"]>];
+export const selectionAtom = atomWithReducer(
+  selection.get(),
+  (_, [type, value]: SelectionAtomEvent) => {
+    if (type === "set") {
+      return selection.set(value);
+    } else {
+      return selection[type]();
+    }
+  }
+);
