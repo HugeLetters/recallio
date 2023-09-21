@@ -74,42 +74,38 @@ export default function ScannerPage() {
 
   return (
     <form
-      className="relative flex h-full w-full touch-pan-y touch-pinch-zoom justify-center overflow-x-hidden"
+      className="relative isolate flex h-full w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
       onSubmit={(e) => e.preventDefault()}
       {...bind()}
     >
       <div
         id={id}
-        className="flex h-full justify-center [&>video]:!w-auto [&>video]:max-w-none"
+        className="!absolute -z-10 flex h-full w-full justify-center [&>video]:!w-auto [&>video]:max-w-none"
       />
       {selection === "input" && (
-        <div className="absolute bottom-24 left-1/2 w-full -translate-x-1/2 px-6">
-          <label className="flex rounded-xl bg-white p-3 outline outline-1 outline-app-green focus-within:outline-4">
-            <input
-              className="grow outline-none"
-              placeholder="barcode"
-              autoFocus
-              onChange={(e) => setBarcode(e.target.value)}
-            />
-            <button
-              onClick={() => goToReview(barcode)}
-              disabled={!barcode}
-              className="text-app-green"
-            >
-              <SearchIcon className="h-7 w-7" />
-            </button>
-          </label>
-        </div>
+        <label className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green focus-within:outline-4">
+          <input
+            className="grow outline-none"
+            placeholder="barcode"
+            autoFocus
+            onChange={(e) => setBarcode(e.target.value)}
+          />
+          <button
+            onClick={() => goToReview(barcode)}
+            disabled={!barcode}
+            className="text-app-green"
+          >
+            <SearchIcon className="h-7 w-7" />
+          </button>
+        </label>
       )}
       <div
-        className={`absolute bottom-8 grid grid-cols-3 text-white ${
-          !offset ? "transition-transform" : ""
-        }`}
+        className={`grid grid-cols-3 pb-8 text-white ${!offset ? "transition-transform" : ""}`}
         style={{ transform }}
       >
         <ImageInput
           ref={fileInputRef}
-          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300  ${
+          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 ${
             selection === "upload" ? "bg-app-green" : "bg-black/50"
           }`}
           aria-label="Scan from file"
