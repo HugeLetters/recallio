@@ -2,7 +2,7 @@ import { CommondHeader } from "@/components/Header";
 import ImageInput from "@/components/ImageInput";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
-import { SelectList, type StrictPick } from "@/utils";
+import { clamp } from "@/utils";
 import { useDrag } from "@use-gesture/react";
 import { useAtom } from "jotai";
 import { atomWithReducer } from "jotai/utils";
@@ -13,13 +13,14 @@ import SearchIcon from "~icons/iconamoon/search.jsx";
 export default function ScannerPage() {
   useHeader(() => <CommondHeader title="Scanner" />, []);
 
-  const [selection, selectionDispatch] = useAtom(selectionAtom);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isUploadSelected = selection === "upload";
-  useEffect(() => {
-    if (!isUploadSelected) return;
+  function clickUpload() {
     fileInputRef.current?.click();
-  }, [isUploadSelected]);
+  }
+  const [selection, selectionDispatch] = useAtom(selectionAtom);
+  useEffect(() => {
+    return () => selectionDispatch({ action: "set", value: "scan" });
+  }, [selectionDispatch]);
 
   const [barcode, setBarcode] = useState("");
   const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
@@ -63,10 +64,11 @@ export default function ScannerPage() {
 
       if (Math.abs(x) < 30) return;
       const isNext = x < 0 ? true : false;
-      selectionDispatch([isNext ? "next" : "previous"]);
+      // ! - DONT CLICK IF OVERSHOOTING
+      selectionDispatch({ action: isNext ? "next" : "prev", activateUpload: clickUpload });
 
       if (Math.abs(x) < 90) return;
-      selectionDispatch([isNext ? "next" : "previous"]);
+      selectionDispatch({ action: isNext ? "next" : "prev", activateUpload: clickUpload });
     },
     { axis: "x", filterTaps: true }
   );
@@ -118,7 +120,7 @@ export default function ScannerPage() {
             if (!image) return;
             handleImage(image);
           }}
-          onClick={() => selectionDispatch(["set", "upload"])}
+          onClick={() => selectionDispatch({ action: "set", value: "upload" })}
         >
           Upload
         </ImageInput>
@@ -126,7 +128,7 @@ export default function ScannerPage() {
           className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
             selection === "scan" ? "bg-app-green" : "bg-black/50"
           }`}
-          onClick={() => selectionDispatch(["set", "scan"])}
+          onClick={() => selectionDispatch({ action: "set", value: "scan" })}
           type="button"
         >
           Scan
@@ -135,7 +137,7 @@ export default function ScannerPage() {
           className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
             selection === "input" ? "bg-app-green" : "bg-black/50"
           }`}
-          onClick={() => selectionDispatch(["set", "input"])}
+          onClick={() => selectionDispatch({ action: "set", value: "input" })}
           type="button"
         >
           Input
@@ -144,18 +146,58 @@ export default function ScannerPage() {
     </form>
   );
 }
+class SelectList<const T> {
+  constructor(public values: [T, ...T[]], public value = values[0]) {}
+
+  #clampIndex = (index: number) => clamp(0, index, this.values.length - 1);
+  #getIndex(value: T) {
+    const index = this.values.indexOf(value);
+    if (index === -1) return null;
+    return index;
+  }
+
+  prev(): T {
+    const index = this.#getIndex(this.value) ?? 0;
+    this.value = this.values[this.#clampIndex(index - 1)] ?? this.values[0];
+    return this.value;
+  }
+  next(): T {
+    const index = this.#getIndex(this.value) ?? this.values.length - 1;
+    this.value = this.values[this.#clampIndex(index + 1)] ?? this.values.at(-1) ?? this.values[0];
+    return this.value;
+  }
+  set(value: T): T {
+    this.value = value;
+    return this.value;
+  }
+}
 
 const selection = new SelectList(["upload", "scan", "input"], "scan");
 type SelectionAtomEvent =
-  | [type: keyof StrictPick<typeof selection, "next" | "previous">, value?: never]
-  | [type: keyof StrictPick<typeof selection, "set">, value: ReturnType<(typeof selection)["get"]>];
+  | { action: "next" | "prev"; activateUpload: () => void }
+  | { action: "set"; value: typeof selection.value };
 export const selectionAtom = atomWithReducer(
-  selection.get(),
-  (_, [type, value]: SelectionAtomEvent) => {
-    if (type === "set") {
-      return selection.set(value);
-    } else {
-      return selection[type]();
+  selection.value,
+  (prevValue, payload: SelectionAtomEvent) => {
+    function getNewValue() {
+      switch (payload.action) {
+        case "next":
+          return selection.next();
+        case "prev":
+          return selection.prev();
+        case "set":
+          return selection.set(payload.value);
+        default:
+          const x: never = payload;
+          return x;
+      }
     }
+    const newValue = getNewValue();
+
+    if (payload.action !== "set" && newValue === "upload" && newValue !== prevValue) {
+      payload.activateUpload();
+    }
+
+    return newValue;
   }
 );

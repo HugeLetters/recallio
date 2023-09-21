@@ -32,7 +32,7 @@ export default function Footer() {
       <nav className="grid w-full max-w-md grid-cols-[1fr,auto,1fr] items-center justify-items-center">
         <Link
           href="/search"
-          className={`flex flex-col items-center ${
+          className={`flex flex-col items-center transition-colors ${
             route.startsWith("/search") ? "text-app-green" : ""
           }`}
         >
@@ -41,7 +41,7 @@ export default function Footer() {
         </Link>
         <Link
           href="/scan"
-          className={`flex h-16 w-16 -translate-y-1/3 items-center justify-center rounded-full p-4 ${
+          className={`flex h-16 w-16 -translate-y-1/3 items-center justify-center rounded-full p-4 transition-colors ${
             route.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
           }`}
         >
@@ -49,7 +49,7 @@ export default function Footer() {
         </Link>
         <Link
           href="/profile"
-          className={`flex flex-col items-center ${
+          className={`flex flex-col items-center transition-colors ${
             route.startsWith("/profile") ? "text-app-green" : ""
           }`}
         >
