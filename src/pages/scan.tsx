@@ -64,7 +64,6 @@ export default function ScannerPage() {
 
       if (Math.abs(x) < 30) return;
       const isNext = x < 0 ? true : false;
-      // ! - DONT CLICK IF OVERSHOOTING
       selectionDispatch({ action: isNext ? "next" : "prev", activateUpload: clickUpload });
 
       if (Math.abs(x) < 90) return;
