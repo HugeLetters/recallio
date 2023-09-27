@@ -1,6 +1,7 @@
 import { categoryRepository, productNameRepository } from "@/database/repository/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import getScrapedProducts from "@/server/utils/scrapers";
+import { nonEmptyArray } from "@/utils";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -14,9 +15,11 @@ export const productRouter = createTRPCRouter({
       if (dbProducts.length) return dbProducts.map((x) => x.name);
 
       const scrapedProducts = await getScrapedProducts(barcode);
-      if (scrapedProducts.length) {
+
+      const savedProducts = scrapedProducts.map((name) => ({ name, barcode }));
+      if (nonEmptyArray(savedProducts)) {
         productNameRepository
-          .create(scrapedProducts.map((name) => ({ name, barcode })))
+          .create(savedProducts)
           .onDuplicateKeyUpdate({ set: { barcode: sql`${productNameRepository.table.barcode}` } })
           .catch(console.error);
       }

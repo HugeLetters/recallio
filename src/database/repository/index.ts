@@ -34,7 +34,8 @@ export abstract class Repository<T extends MySqlTable> {
     this.table = table;
   }
   // context allows me to pass in transaction context instead of db
-  create(value: InsertValue<T> | InsertValue<T>[], context = db) {
+  // empty arrays are actually a no-go in Drizzle
+  create(value: InsertValue<T> | [InsertValue<T>, ...InsertValue<T>[]], context = db) {
     // values as an array because of a TS limitation with handling union in function overloads
     return context.insert(this.table).values(Array.isArray(value) ? value : [value]);
   }
