@@ -7,6 +7,11 @@ export function getQueryParam(query: Query[string]) {
 export function clamp(min: number, value: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
+
+export function nonEmptyArray<T>(array: T[]): array is [T, ...T[]] {
+  return !!array.length;
+}
+
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type StrictPick<T, K extends keyof T> = Pick<T, K>;
 export type ModelProps<T> = { value: T; setValue: (value: T) => void };

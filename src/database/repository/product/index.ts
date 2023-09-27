@@ -1,6 +1,7 @@
 import { asc, desc, getTableColumns, sql, type InferInsertModel } from "drizzle-orm";
 import { Repository, type WhereQuery } from "..";
 import { category, productName, review, reviewsToCategories } from "../../schema/product";
+import { nonEmptyArray } from "@/utils";
 
 type ProductName = typeof productName;
 class ProductNameRepository extends Repository<ProductName> {}
@@ -29,11 +30,11 @@ class ReviewRepository extends Repository<Review> {
           });
         if (!categories) return newReview;
 
+        const categoryValues = categories.map((category) => ({ name: category }));
+        if (!nonEmptyArray(categoryValues)) return newReview;
+
         await categoryRepository
-          .create(
-            categories.map((category) => ({ name: category })),
-            tx
-          )
+          .create(categoryValues, tx)
           .onDuplicateKeyUpdate({ set: { name: sql`${categoryRepository.table.name}` } })
           .catch((e) => {
             console.error(e);

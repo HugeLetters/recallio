@@ -63,6 +63,7 @@
     "zod": "^3.21.4"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.1.0",
     "@iconify-json/dashicons": "^1.1.5",
     "@iconify-json/healthicons": "^1.1.10",
     "@iconify-json/ic": "^1.1.14",

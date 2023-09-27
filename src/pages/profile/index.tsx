@@ -71,7 +71,7 @@ function Reviews() {
   const [searchOptions, setSearchOptions] = useImmer<ReviewSummaryInput>({
     page: {
       index: 1,
-      size: 2,
+      size: 10,
     },
     sort: {
       by: "updatedAt",
