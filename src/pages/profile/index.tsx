@@ -1,13 +1,15 @@
 import { CommondHeader } from "@/components/Header";
 import useHeader from "@/hooks/useHeader";
+import type { StrictOmit } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
 import { useImmer } from "@/utils/immer";
 import * as Select from "@radix-ui/react-select";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import SwapIcon from "~icons/iconamoon/swap-thin.jsx";
+import { useEffect, useRef } from "react";
 import LucidePen from "~icons/custom/pen.jsx";
+import SwapIcon from "~icons/iconamoon/swap-thin.jsx";
 
 export default function Profile() {
   const { data, status } = useSession();
@@ -62,50 +64,53 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   );
 }
 
-type ReviewSummaryInput = RouterInputs["review"]["getUserReviewSummaries"];
+type SearchOptions = StrictOmit<RouterInputs["review"]["getUserReviewSummaries"], "cursor">;
 const ratings = [1, 2, 3, 4, 5];
 const orderOptions = ["rating", "updatedAt", "barcode", "name"] satisfies Array<
-  NonNullable<ReviewSummaryInput["sort"]>["by"]
+  NonNullable<SearchOptions["sort"]>["by"]
 >;
 function Reviews() {
-  const [searchOptions, setSearchOptions] = useImmer<ReviewSummaryInput>({
-    page: {
-      index: 1,
-      size: 10,
-    },
+  const [options, setOptions] = useImmer<SearchOptions>({
+    limit: 20,
     sort: {
       by: "updatedAt",
       desc: true,
     },
   });
-  const summaryQuery = api.review.getUserReviewSummaries.useQuery(searchOptions, {
+
+  const summaryQuery = api.review.getUserReviewSummaries.useInfiniteQuery(options, {
     keepPreviousData: true,
+    getNextPageParam: (lastPage) => lastPage.cursor,
+    initialCursor: 0,
   });
   const countQuery = api.review.getReviewCount.useQuery();
+
+  const lastElement = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!lastElement.current) return;
+
+    const observer = new IntersectionObserver((events) => {
+      events.forEach((event) => {
+        if (!(event.target === lastElement.current && event.isIntersecting)) return;
+
+        summaryQuery.fetchNextPage().catch(console.error);
+      });
+    });
+    observer.observe(lastElement.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [summaryQuery]);
 
   return (
     <div className="flex flex-col gap-3">
       <h1 className="text-xl">Reviews {countQuery.isSuccess ? `(${countQuery.data})` : ""}</h1>
       <div className="flex gap-1">
-        <label>
-          Page:
-          <input
-            type="number"
-            min={1}
-            max={Math.ceil((countQuery.data ?? 1) / searchOptions.page.size)}
-            step={1}
-            value={searchOptions.page.index}
-            onChange={(e) => {
-              setSearchOptions((d) => {
-                d.page.index = +e.target.value;
-              });
-            }}
-          />
-        </label>
         <Select.Root
-          value={searchOptions.sort?.by}
+          value={options.sort?.by}
           onValueChange={(value: (typeof orderOptions)[number]) => {
-            setSearchOptions((d) => {
+            setOptions((d) => {
               d.sort.by = value;
             });
           }}
@@ -143,49 +148,60 @@ function Reviews() {
           Descending order:
           <input
             type="checkbox"
-            checked={searchOptions.sort?.desc}
+            checked={options.sort?.desc}
             onChange={(e) => {
-              setSearchOptions((d) => {
+              setOptions((d) => {
                 d.sort.desc = e.target.checked;
               });
             }}
           />
         </label>
       </div>
+
       <div className={`flex flex-col gap-2 ${summaryQuery.isPreviousData ? "opacity-50" : ""}`}>
-        {summaryQuery.data?.map((summary) => (
-          <Link
-            key={summary.barcode}
-            href={{ pathname: "/review/[id]", query: { id: summary.barcode } }}
-            className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
-          >
-            {summary.image && (
-              <Image
-                src={summary.image}
-                alt={`review image for product ${summary.barcode}`}
-                width={50}
-                height={50}
-                className="aspect-square h-9 w-9 rounded-full bg-white object-cover"
-              />
-            )}
-            <div className="flex  flex-col gap-1">
-              <span className="text-sm">{summary.name}</span>
-              <span className="text-xs text-neutral-400">
-                {summary.categories.slice(0, 3).join(", ")}
-              </span>
-            </div>
-            <div className="ml-auto text-lg">
-              {ratings.map((x) => (
-                <span
-                  key={x}
-                  className={`${x <= summary.rating ? "text-app-gold" : ""}`}
-                >
-                  ★
+        {summaryQuery.data?.pages.map((data) =>
+          data.page.map((summary) => (
+            <Link
+              key={summary.barcode}
+              href={{ pathname: "/review/[id]", query: { id: summary.barcode } }}
+              className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
+            >
+              {summary.image && (
+                <Image
+                  src={summary.image}
+                  alt={`review image for product ${summary.barcode}`}
+                  width={50}
+                  height={50}
+                  className="aspect-square h-9 w-9 rounded-full bg-white object-cover"
+                />
+              )}
+              <div
+                className="flex  flex-col gap-1"
+                ref={
+                  data === summaryQuery.data.pages.at(-1) &&
+                  summary === (data.page.at(-10) ?? data.page[0])
+                    ? lastElement
+                    : undefined
+                }
+              >
+                <span className="text-sm">{summary.name}</span>
+                <span className="text-xs text-neutral-400">
+                  {summary.categories.slice(0, 3).join(", ")}
                 </span>
-              ))}
-            </div>
-          </Link>
-        ))}
+              </div>
+              <div className="ml-auto text-lg">
+                {ratings.map((x) => (
+                  <span
+                    key={x}
+                    className={`${x <= summary.rating ? "text-app-gold" : ""}`}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );
