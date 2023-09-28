@@ -62,10 +62,9 @@ export const reviewRouter = createTRPCRouter({
   getUserReviewSummaries: protectedProcedure
     .input(
       z.object({
-        page: z.object({
-          size: z.number().int().min(1),
-          index: z.number().int().min(1),
-        }),
+        limit: z.number().int().min(1),
+        /** zero-based index */
+        cursor: z.number().int().min(0),
         sort: z.object({
           by: z.enum(
             Object.keys(getTableColumns(reviewRepository.table)) as [
@@ -77,27 +76,35 @@ export const reviewRouter = createTRPCRouter({
         }),
       })
     )
-    .query(async ({ input: { page, sort }, ctx }): Promise<ReviewSummary[]> => {
-      // converting to zero-based index
-      page.index--;
-
-      return Promise.all(
-        await reviewRepository
-          .findReviewSummaries((table, { eq }) => eq(table.userId, ctx.session.user.id), {
-            page,
-            sort,
-          })
-          .then((summaries) =>
-            summaries.map(async (summary): Promise<ReviewSummary> => {
-              const { imageKey, ...rest } = summary;
-              const image = imageKey
-                ? await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null)
-                : null;
-              return Object.assign(rest, { image });
+    .query(
+      async ({
+        input: { cursor, limit, sort },
+        ctx,
+      }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
+        const page = await Promise.all(
+          await reviewRepository
+            .findReviewSummaries((table, { eq }) => eq(table.userId, ctx.session.user.id), {
+              page: { cursor, limit },
+              sort,
             })
-          )
-      );
-    }),
+            .then((summaries) =>
+              summaries.map(async (summary): Promise<ReviewSummary> => {
+                const { imageKey, ...rest } = summary;
+                const image = imageKey
+                  ? await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null)
+                  : null;
+                return Object.assign(rest, { image });
+              })
+            )
+        );
+
+        return {
+          // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
+          cursor: page.length === limit ? cursor + 1 : undefined,
+          page,
+        };
+      }
+    ),
   getReviewCount: protectedProcedure.query(({ ctx }) => {
     return reviewRepository
       .count((table, { eq }) => eq(table.userId, ctx.session.user.id))

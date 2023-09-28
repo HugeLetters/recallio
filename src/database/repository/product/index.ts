@@ -119,7 +119,7 @@ class ReviewRepository extends Repository<Review> {
   findReviewSummaries(
     query: WhereQuery<Review>,
     options?: {
-      page?: { index: number; size: number };
+      page?: { cursor: number; limit: number };
       sort?: {
         by: keyof ReturnType<typeof getTableColumns<(typeof reviewRepository)["table"]>>;
         desc: boolean;
@@ -144,7 +144,7 @@ class ReviewRepository extends Repository<Review> {
 
     const { page, sort } = options;
     if (page) {
-      result = result.limit(page.size).offset(page.index * page.size);
+      result = result.limit(page.limit).offset(page.cursor * page.limit);
     }
 
     if (sort) {
