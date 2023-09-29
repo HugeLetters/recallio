@@ -19,7 +19,7 @@ export default function Profile() {
   if (status !== "authenticated") return "Loading";
 
   return (
-    <div className="relative flex w-full flex-col gap-2 p-4">
+    <div className="flex w-full flex-col gap-2 p-4">
       <ProfileInfo user={data.user} />
       <Reviews />
     </div>
@@ -110,23 +110,23 @@ function Reviews() {
     };
   }, [summaryQuery]);
 
-  const [isSearch, setIsSearch] = useState(false);
+  const [isFilter, setIsFilter] = useState(false);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 pb-3">
       <h1 className="text-xl">Reviews {countQuery.isSuccess ? `(${countQuery.data})` : ""}</h1>
       <div className="flex items-center justify-between">
         <Flipper
-          flipKey={isSearch}
+          flipKey={isFilter}
           spring={{ damping: 50, stiffness: 400, overshootClamping: true }}
         >
           <div>
-            {isSearch ? (
+            {isFilter ? (
               <label className="flex rounded-xl p-3 outline outline-app-green">
                 <input
                   autoFocus
                   className="outline-transparent"
-                  onBlur={() => setIsSearch(false)}
+                  onBlur={() => setIsFilter(false)}
                   defaultValue={filterBy}
                   onChange={(e) => {
                     window.clearTimeout(debounceTimeoutRef.current);
@@ -141,9 +141,9 @@ function Reviews() {
               </label>
             ) : (
               <button
-                aria-label="Start text search"
+                aria-label="Start review search"
                 className="py-3"
-                onClick={() => setIsSearch(true)}
+                onClick={() => setIsFilter(true)}
               >
                 <Flipped flipId="search icon">
                   <SearchIcon className="h-7 w-7 text-app-green" />
@@ -181,8 +181,8 @@ function Reviews() {
                       >
                         <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
                           <Flipped
-                            flipId={`sortyby - ${option === sortBy}`}
-                            key={`sortby - ${option === sortBy}`}
+                            flipId={`${option === sortBy}`}
+                            key={`${option === sortBy}`}
                           >
                             <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green" />
                           </Flipped>
