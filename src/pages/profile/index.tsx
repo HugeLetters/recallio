@@ -1,8 +1,5 @@
-import SearchIcon from "~icons/iconamoon/search.jsx";
-import { Flipper, Flipped } from "react-flip-toolkit";
 import { CommondHeader } from "@/components/Header";
 import useHeader from "@/hooks/useHeader";
-import type { StrictPick } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -10,7 +7,9 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Flipped, Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen.jsx";
+import SearchIcon from "~icons/iconamoon/search.jsx";
 import SwapIcon from "~icons/iconamoon/swap.jsx";
 
 export default function Profile() {
@@ -66,7 +65,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   );
 }
 
-type SortOptions = StrictPick<RouterInputs["review"]["getUserReviewSummaries"], "sort">["sort"];
+type SortOptions = RouterInputs["review"]["getUserReviewSummaries"]["sort"];
 const sortByOptions = ["recent", "earliest", "rating"] as const;
 type SortBy = (typeof sortByOptions)[number];
 const ratings = [1, 2, 3, 4, 5];
