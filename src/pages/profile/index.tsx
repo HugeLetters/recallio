@@ -158,7 +158,7 @@ function Reviews() {
             <span className="capitalize">{sortBy}</span>
           </Dialog.Trigger>
           <Dialog.Portal>
-            <Dialog.Overlay className="animate-in fade-in fixed inset-0 bg-black/50" />
+            <Dialog.Overlay className="fixed inset-0 bg-black/50 animate-in fade-in" />
             <Dialog.Content className="fixed bottom-0 left-0 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
               <div className="w-full max-w-md rounded-t-xl bg-white p-5 text-lime-950">
                 <Dialog.Title className="mb-6 text-xl font-medium">Sort by</Dialog.Title>

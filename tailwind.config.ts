@@ -1,6 +1,7 @@
 import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
+import animatePlugin from "tailwindcss-animate";
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -27,6 +28,7 @@ export default {
     },
   },
   plugins: [
+    animatePlugin,
     plugin(({ addVariant }) => {
       addVariant("current", ["&:focus-within", "&:hover"]);
     }),
