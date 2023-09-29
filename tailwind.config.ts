@@ -1,12 +1,12 @@
 import { type Config } from "tailwindcss";
-import plugin from "tailwindcss/plugin";
 import defaultTheme from "tailwindcss/defaultTheme";
+import plugin from "tailwindcss/plugin";
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      fontFamily: { lato: ["var(--font-lato)", ...defaultTheme.fontFamily.sans] },
+      fontFamily: { lato: ["var(--font-lato, Lato)", ...defaultTheme.fontFamily.sans] },
       colors: {
         app: {
           gold: "hsla(47, 87%, 56%)",
@@ -14,6 +14,16 @@ export default {
         },
       },
       boxShadow: { top: "0 -5px 10px", bottom: "0 5px 10px" },
+      dropShadow: { top: "0 -1px 10px" },
+      animation: {
+        "slide-up": "slide-up 200ms ease-in-out",
+      },
+      keyframes: {
+        "slide-up": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+      },
     },
   },
   plugins: [
