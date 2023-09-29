@@ -1,15 +1,16 @@
 import { CommondHeader } from "@/components/Header";
 import useHeader from "@/hooks/useHeader";
-import type { StrictOmit } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
-import { useImmer } from "@/utils/immer";
-import * as Select from "@radix-ui/react-select";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Flipped, Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen.jsx";
-import SwapIcon from "~icons/iconamoon/swap-thin.jsx";
+import SearchIcon from "~icons/iconamoon/search.jsx";
+import SwapIcon from "~icons/iconamoon/swap.jsx";
 
 export default function Profile() {
   const { data, status } = useSession();
@@ -18,7 +19,7 @@ export default function Profile() {
   if (status !== "authenticated") return "Loading";
 
   return (
-    <div className="flex w-full flex-col gap-2 p-2">
+    <div className="flex w-full flex-col gap-2 p-4">
       <ProfileInfo user={data.user} />
       <Reviews />
     </div>
@@ -64,26 +65,32 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   );
 }
 
-type SearchOptions = StrictOmit<RouterInputs["review"]["getUserReviewSummaries"], "cursor">;
+type SortOptions = RouterInputs["review"]["getUserReviewSummaries"]["sort"];
+const sortByOptions = ["recent", "earliest", "rating"] as const;
+type SortBy = (typeof sortByOptions)[number];
 const ratings = [1, 2, 3, 4, 5];
-const orderOptions = ["rating", "updatedAt", "barcode", "name"] satisfies Array<
-  NonNullable<SearchOptions["sort"]>["by"]
->;
 function Reviews() {
-  const [options, setOptions] = useImmer<SearchOptions>({
-    limit: 20,
-    sort: {
-      by: "updatedAt",
-      desc: true,
-    },
-  });
-
-  const summaryQuery = api.review.getUserReviewSummaries.useInfiniteQuery(options, {
-    keepPreviousData: true,
-    getNextPageParam: (lastPage) => lastPage.cursor,
-    initialCursor: 0,
-  });
   const countQuery = api.review.getReviewCount.useQuery();
+
+  const [sortBy, setSortBy] = useState<SortBy>("recent");
+  const sort: SortOptions =
+    sortBy === "recent"
+      ? { by: "updatedAt", desc: true }
+      : sortBy === "earliest"
+      ? { by: "updatedAt", desc: false }
+      : { by: "rating", desc: true };
+
+  const [filterBy, setFilterBy] = useState("");
+  const debounceTimeoutRef = useRef<number>();
+
+  const summaryQuery = api.review.getUserReviewSummaries.useInfiniteQuery(
+    { limit: 20, sort, filter: filterBy },
+    {
+      keepPreviousData: true,
+      getNextPageParam: (lastPage) => lastPage.cursor,
+      initialCursor: 0,
+    }
+  );
 
   const lastElement = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -103,59 +110,92 @@ function Reviews() {
     };
   }, [summaryQuery]);
 
+  const [isFilter, setIsFilter] = useState(false);
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 pb-3">
       <h1 className="text-xl">Reviews {countQuery.isSuccess ? `(${countQuery.data})` : ""}</h1>
-      <div className="flex gap-1">
-        <Select.Root
-          value={options.sort?.by}
-          onValueChange={(value: (typeof orderOptions)[number]) => {
-            setOptions((d) => {
-              d.sort.by = value;
-            });
-          }}
+      <div className="flex items-center justify-between">
+        <Flipper
+          flipKey={isFilter}
+          spring={{ damping: 50, stiffness: 400, overshootClamping: true }}
         >
-          <Select.Trigger
-            aria-label="sort by"
-            className="flex"
-          >
-            <Select.Value placeholder="order by" />
-            <Select.Icon>
-              <SwapIcon />
-            </Select.Icon>
-          </Select.Trigger>
-          <Select.Portal>
-            <Select.Content
-              position="popper"
-              side="right"
-              className="rounded-xl bg-white p-2"
-            >
-              <Select.Viewport>
-                {orderOptions.map((name) => (
-                  <Select.Item
-                    key={name}
-                    value={name}
-                    className="cursor-pointer rounded-md outline-none current:bg-neutral-200"
+          <div>
+            {isFilter ? (
+              <label className="flex rounded-xl p-3 outline outline-app-green">
+                <input
+                  autoFocus
+                  className="outline-transparent"
+                  onBlur={() => setIsFilter(false)}
+                  defaultValue={filterBy}
+                  onChange={(e) => {
+                    window.clearTimeout(debounceTimeoutRef.current);
+                    debounceTimeoutRef.current = window.setTimeout(() => {
+                      setFilterBy(e.target.value);
+                    }, 1000);
+                  }}
+                />
+                <Flipped flipId="search icon">
+                  <SearchIcon className="h-7 w-7 text-app-green" />
+                </Flipped>
+              </label>
+            ) : (
+              <button
+                aria-label="Start review search"
+                className="py-3"
+                onClick={() => setIsFilter(true)}
+              >
+                <Flipped flipId="search icon">
+                  <SearchIcon className="h-7 w-7 text-app-green" />
+                </Flipped>
+              </button>
+            )}
+          </div>
+        </Flipper>
+        <Dialog.Root>
+          <Dialog.Trigger className="flex items-center gap-2 text-sm">
+            <SwapIcon className="h-8 w-8" />
+            <span className="capitalize">{sortBy}</span>
+          </Dialog.Trigger>
+          <Dialog.Portal>
+            <Dialog.Overlay className="animate-in fade-in fixed inset-0 bg-black/50" />
+            <Dialog.Content className="fixed bottom-0 left-0 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
+              <div className="w-full max-w-md rounded-t-xl bg-white p-5 text-lime-950">
+                <Dialog.Title className="mb-6 text-xl font-medium">Sort by</Dialog.Title>
+                <Flipper
+                  flipKey={sortBy}
+                  spring={{ stiffness: 700, overshootClamping: true }}
+                >
+                  <RadioGroup.Root
+                    value={sortBy}
+                    onValueChange={(value: SortBy) => {
+                      setSortBy(value);
+                    }}
+                    className="flex flex-col gap-7"
                   >
-                    <Select.ItemText>{name}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Viewport>
-            </Select.Content>
-          </Select.Portal>
-        </Select.Root>
-        <label>
-          Descending order:
-          <input
-            type="checkbox"
-            checked={options.sort?.desc}
-            onChange={(e) => {
-              setOptions((d) => {
-                d.sort.desc = e.target.checked;
-              });
-            }}
-          />
-        </label>
+                    {sortByOptions.map((option) => (
+                      <RadioGroup.Item
+                        value={option}
+                        key={option}
+                        className="group flex items-center gap-2"
+                      >
+                        <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
+                          <Flipped
+                            flipId={`${option === sortBy}`}
+                            key={`${option === sortBy}`}
+                          >
+                            <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green" />
+                          </Flipped>
+                        </div>
+                        <span className="capitalize">{option}</span>
+                      </RadioGroup.Item>
+                    ))}
+                  </RadioGroup.Root>
+                </Flipper>
+              </div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog.Root>
       </div>
 
       <div className={`flex flex-col gap-2 ${summaryQuery.isPreviousData ? "opacity-50" : ""}`}>
@@ -176,7 +216,7 @@ function Reviews() {
                 />
               )}
               <div
-                className="flex  flex-col gap-1"
+                className="flex flex-col gap-1"
                 ref={
                   data === summaryQuery.data.pages.at(-1) &&
                   summary === (data.page.at(-10) ?? data.page[0])

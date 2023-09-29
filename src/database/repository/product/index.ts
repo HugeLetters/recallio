@@ -85,7 +85,7 @@ class ReviewRepository extends Repository<Review> {
 
     return {
       ...review,
-      categories: sql<string[]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
+      categories: sql<string[] | [null]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
     };
   })();
   findFirstWithCategories(query: WhereQuery<Review>) {

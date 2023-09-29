@@ -5,6 +5,7 @@ import { getTableColumns } from "drizzle-orm";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { reviewsToCategories } from "@/database/schema/product";
 
 export const reviewRouter = createTRPCRouter({
   createReview: protectedProcedure
@@ -74,19 +75,31 @@ export const reviewRouter = createTRPCRouter({
           ),
           desc: z.boolean(),
         }),
+        /** Filter by name or category */
+        filter: z.string().optional(),
       })
     )
     .query(
       async ({
-        input: { cursor, limit, sort },
+        input: { cursor, limit, sort, filter },
         ctx,
       }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
         const page = await Promise.all(
           await reviewRepository
-            .findReviewSummaries((table, { eq }) => eq(table.userId, ctx.session.user.id), {
-              page: { cursor, limit },
-              sort,
-            })
+            .findReviewSummaries(
+              (table, { and, or, eq, like }) =>
+                and(
+                  eq(table.userId, ctx.session.user.id),
+                  or(
+                    filter ? like(table.name, `%${filter}%`) : undefined,
+                    filter ? like(reviewsToCategories.category, `%${filter}%`) : undefined
+                  )
+                ),
+              {
+                page: { cursor, limit },
+                sort,
+              }
+            )
             .then((summaries) =>
               summaries.map(async (summary): Promise<ReviewSummary> => {
                 const { imageKey, ...rest } = summary;

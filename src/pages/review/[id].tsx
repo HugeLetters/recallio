@@ -529,7 +529,8 @@ function transformReview(data: RouterOutputs["review"]["getUserReview"]) {
   return Object.assign(rest, {
     pros: pros?.split("\n").map((x) => ({ name: x })) ?? [],
     cons: cons?.split("\n").map((x) => ({ name: x })) ?? [],
-    categories: categories.map((x) => ({ name: x })),
+    // TS - whyyyyyy you're can't narrow the type here >:(
+    categories: categories[0] !== null ? categories.map((x) => ({ name: x ?? "" })) : [],
   });
 }
 
