@@ -33,7 +33,9 @@ export default {
   },
   plugins: [
     plugin(({ addVariant }) => {
-      addVariant("current", ["&:focus-within", "&:hover"]);
+      addVariant("selected", "&:is(:focus-within,:hover)");
+      addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
+      addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
     }),
   ],
 } satisfies Config;

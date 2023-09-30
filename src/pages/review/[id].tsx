@@ -324,7 +324,7 @@ function NameSelect({ value, setValue, barcode }: ModelProps<string> & { barcode
                 <Select.Item
                   key={name}
                   value={name}
-                  className="cursor-pointer rounded-md outline-none current:bg-neutral-200"
+                  className="cursor-pointer rounded-md outline-none selected:bg-neutral-200"
                 >
                   <Select.ItemText>{name}</Select.ItemText>
                 </Select.Item>
@@ -406,7 +406,7 @@ function Categories({ control, name }: CategoriesProps) {
                         selected
                           ? "text-app-green outline-app-green"
                           : "text-text-gray outline-text-gray"
-                      } rounded-xl p-1.5 outline outline-1 current:outline-dashed`}
+                      } rounded-xl p-1.5 outline outline-1 selected:outline-dashed`}
                       onClick={() => {
                         selected ? remove(index) : append({ name: category });
                       }}
@@ -429,7 +429,7 @@ function Categories({ control, name }: CategoriesProps) {
           type="button"
           aria-label="remove"
           onClick={() => remove(i)}
-          className="rounded-xl p-1.5 text-neutral-400 outline outline-1 outline-neutral-400 current:outline-dashed"
+          className="rounded-xl p-1.5 text-neutral-400 outline outline-1 outline-neutral-400 selected:outline-dashed"
         >
           {name}
         </button>
@@ -437,7 +437,7 @@ function Categories({ control, name }: CategoriesProps) {
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="rounded-xl p-1.5 font-bold text-app-green outline outline-1 outline-app-green current:outline-dashed"
+        className="rounded-xl p-1.5 font-bold text-app-green outline outline-1 outline-app-green selected:outline-dashed"
       >
         Add
       </button>
