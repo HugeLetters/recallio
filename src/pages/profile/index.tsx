@@ -11,6 +11,7 @@ import { Flipped, Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen.jsx";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 import SwapIcon from "~icons/iconamoon/swap.jsx";
+import MilkIcon from "~icons/custom/milk.jsx";
 
 export default function Profile() {
   const { data, status } = useSession();
@@ -206,7 +207,7 @@ function Reviews() {
               href={{ pathname: "/review/[id]", query: { id: summary.barcode } }}
               className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
             >
-              {summary.image && (
+              {summary.image ? (
                 <Image
                   src={summary.image}
                   alt={`review image for product ${summary.barcode}`}
@@ -214,6 +215,10 @@ function Reviews() {
                   height={50}
                   className="aspect-square h-9 w-9 rounded-full bg-white object-cover"
                 />
+              ) : (
+                <div className="flex aspect-square h-9 w-9 items-center justify-center rounded-full bg-neutral-400 p-1">
+                  <MilkIcon className="h-full w-full text-white" />
+                </div>
               )}
               <div
                 className="flex flex-col gap-1"
