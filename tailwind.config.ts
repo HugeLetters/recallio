@@ -1,7 +1,6 @@
 import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
-import animatePlugin from "tailwindcss-animate";
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -18,17 +17,21 @@ export default {
       dropShadow: { top: "0 -1px 10px" },
       animation: {
         "slide-up": "slide-up 200ms ease-in-out",
+        "fade-in": "fade-in 200ms ease-in-out",
       },
       keyframes: {
         "slide-up": {
           "0%": { transform: "translateY(100%)" },
           "100%": { transform: "translateY(0)" },
         },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
       },
     },
   },
   plugins: [
-    animatePlugin,
     plugin(({ addVariant }) => {
       addVariant("current", ["&:focus-within", "&:hover"]);
     }),
