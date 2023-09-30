@@ -12,6 +12,10 @@ export function nonEmptyArray<T>(array: T[]): array is [T, ...T[]] {
   return !!array.length;
 }
 
+export function minutesToMs(minutes: number) {
+  return minutes * 60 * 1000;
+}
+
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type StrictPick<T, K extends keyof T> = Pick<T, K>;
 export type ModelProps<T> = { value: T; setValue: (value: T) => void };

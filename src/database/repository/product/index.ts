@@ -1,7 +1,8 @@
+import { aggregateArrayColumn } from "@/database/utils";
+import { nonEmptyArray } from "@/utils";
 import { asc, desc, getTableColumns, sql, type InferInsertModel } from "drizzle-orm";
 import { Repository, type WhereQuery } from "..";
 import { category, productName, review, reviewsToCategories } from "../../schema/product";
-import { nonEmptyArray } from "@/utils";
 
 type ProductName = typeof productName;
 class ProductNameRepository extends Repository<ProductName> {}
@@ -85,7 +86,7 @@ class ReviewRepository extends Repository<Review> {
 
     return {
       ...review,
-      categories: sql<string[] | [null]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
+      categories: aggregateArrayColumn<string>(reviewsToCategories.category),
     };
   })();
   findFirstWithCategories(query: WhereQuery<Review>) {
@@ -113,10 +114,10 @@ class ReviewRepository extends Repository<Review> {
       name: this.table.name,
       imageKey: this.table.imageKey,
       rating: this.table.rating,
-      categories: sql<string[]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
+      categories: aggregateArrayColumn<string>(reviewsToCategories.category),
     };
   })();
-  findReviewSummaries(
+  findManyReviewSummary(
     query: WhereQuery<Review>,
     options?: {
       page?: { cursor: number; limit: number };

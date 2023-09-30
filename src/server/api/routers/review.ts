@@ -60,7 +60,7 @@ export const reviewRouter = createTRPCRouter({
       const image = await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null);
       return Object.assign(review, { image });
     }),
-  getUserReviewSummaries: protectedProcedure
+  getUserReviewSummaryList: protectedProcedure
     .input(
       z.object({
         limit: z.number().int().min(1),
@@ -86,7 +86,7 @@ export const reviewRouter = createTRPCRouter({
       }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
         const page = await Promise.all(
           await reviewRepository
-            .findReviewSummaries(
+            .findManyReviewSummary(
               (table, { and, or, eq, like }) =>
                 and(
                   eq(table.userId, ctx.session.user.id),
@@ -158,7 +158,7 @@ type UserReview =
   | null;
 type ReviewSummary =
   | StrictOmit<
-      NonNullable<Awaited<ReturnType<(typeof reviewRepository)["findReviewSummaries"]>>>[number],
+      NonNullable<Awaited<ReturnType<(typeof reviewRepository)["findManyReviewSummary"]>>>[number],
       "imageKey"
     > & { image: string | null };
 type ReviewColumns = keyof ReturnType<typeof getTableColumns<(typeof reviewRepository)["table"]>>;

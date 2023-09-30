@@ -1,4 +1,3 @@
-import { CommondHeader } from "@/components/Header";
 import ImageInput from "@/components/ImageInput";
 import useHeader from "@/hooks/useHeader";
 import { useUploadThing } from "@/hooks/useUploadthing";
@@ -13,8 +12,8 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
-import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
 import LucidePen from "~icons/custom/pen.jsx";
+import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
 import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
 import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
 import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
@@ -22,7 +21,7 @@ import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
-  useHeader(() => <CommondHeader title={barcode ?? "Recallio"} />, [barcode]);
+  useHeader(() => ({ title: barcode ?? "Recallio" }), [barcode]);
 
   return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
 }
@@ -529,8 +528,7 @@ function transformReview(data: RouterOutputs["review"]["getUserReview"]) {
   return Object.assign(rest, {
     pros: pros?.split("\n").map((x) => ({ name: x })) ?? [],
     cons: cons?.split("\n").map((x) => ({ name: x })) ?? [],
-    // TS - whyyyyyy you're can't narrow the type here >:(
-    categories: categories[0] !== null ? categories.map((x) => ({ name: x ?? "" })) : [],
+    categories: categories.map((x) => ({ name: x })),
   });
 }
 

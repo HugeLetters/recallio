@@ -1,4 +1,3 @@
-import { CommondHeader } from "@/components/Header";
 import ImageInput from "@/components/ImageInput";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
@@ -11,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 
 export default function ScannerPage() {
-  useHeader(() => <CommondHeader title="Scanner" />, []);
+  useHeader(() => ({ title: "Scanner" }), []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   function clickUpload() {
