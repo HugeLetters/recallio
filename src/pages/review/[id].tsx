@@ -273,11 +273,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       <button
         onClick={syncWithServer}
         type="button"
-        className="rounded-lg bg-neutral-300 p-1"
+        className="rounded-xl bg-neutral-300 p-1"
       >
         CANCEL CHANGES
       </button>
-      <button className="rounded-lg bg-app-green px-3 py-4 text-white">SUBMIT</button>
+      <button className="rounded-xl bg-app-green px-3 py-4 text-white">SUBMIT</button>
     </form>
   );
 }

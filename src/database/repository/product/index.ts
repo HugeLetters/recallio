@@ -95,7 +95,7 @@ class ReviewRepository extends Repository<Review> {
     return this.db
       .select(this.#reviewWithCategoriesCols)
       .from(this.table)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .leftJoin(
         reviewsToCategories,
         and(
@@ -108,15 +108,13 @@ class ReviewRepository extends Repository<Review> {
       .then((x) => x[0]);
   }
 
-  #reviewSummaryCols = (() => {
-    return {
-      barcode: this.table.barcode,
-      name: this.table.name,
-      imageKey: this.table.imageKey,
-      rating: this.table.rating,
-      categories: aggregateArrayColumn<string>(reviewsToCategories.category),
-    };
-  })();
+  #reviewSummaryCols = {
+    barcode: this.table.barcode,
+    name: this.table.name,
+    imageKey: this.table.imageKey,
+    rating: this.table.rating,
+    categories: aggregateArrayColumn<string>(reviewsToCategories.category),
+  };
   findManyReviewSummary(
     query: WhereQuery<Review>,
     options?: {
@@ -131,7 +129,7 @@ class ReviewRepository extends Repository<Review> {
     let result = this.db
       .select(this.#reviewSummaryCols)
       .from(this.table)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .leftJoin(
         reviewsToCategories,
         and(

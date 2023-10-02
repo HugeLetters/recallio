@@ -21,8 +21,8 @@ export const categoryRelations = relations(category, ({ many }) => ({
 export const review = mysqlTable(
   "review",
   {
-    barcode: varchar("barcode", { length: 55 }).notNull(),
     userId: varchar("user-id", { length: 255 }).notNull(),
+    barcode: varchar("barcode", { length: 55 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     rating: tinyint("rating").notNull(),
     pros: varchar("pros", { length: 4095 }),
@@ -49,8 +49,8 @@ export const reviewRelations = relations(review, ({ many, one }) => ({
 export const reviewsToCategories = mysqlTable(
   "reviews-to-categories",
   {
-    barcode: varchar("user-id", { length: 255 }).notNull(),
-    userId: varchar("barcode", { length: 55 }).notNull(),
+    userId: varchar("user-id", { length: 255 }).notNull(),
+    barcode: varchar("barcode", { length: 55 }).notNull(),
     category: varchar("category", { length: 31 }).notNull(),
   },
   (table) => ({ compoundKey: primaryKey(table.userId, table.barcode, table.category) })

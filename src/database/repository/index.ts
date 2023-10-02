@@ -21,18 +21,16 @@ type InsertValue<T extends MySqlTable> = InferInsertModel<T>;
 type UpdateValue<T extends MySqlTable> = MySqlUpdateSetSource<T>;
 export type WhereQuery<T extends MySqlTable> = (
   table: T,
-  operators: typeof OPERATORS
+  operators: typeof OPERATORS,
+  DB: typeof db
 ) => SQL | undefined;
 
 const OPERATORS = { eq, gt, lt, isNull, inArray, exists, between, like, not, and, or };
 
 export abstract class Repository<T extends MySqlTable> {
-  table;
   protected db = db;
   protected operators = OPERATORS;
-  constructor(table: T) {
-    this.table = table;
-  }
+  constructor(public table: T) {}
   // context allows me to pass in transaction context instead of db
   // empty arrays are actually a no-go in Drizzle
   create(value: InsertValue<T> | [InsertValue<T>, ...InsertValue<T>[]], context = db) {
@@ -45,19 +43,19 @@ export abstract class Repository<T extends MySqlTable> {
       .then((x) => x[0]);
   }
   findMany(query: WhereQuery<T>) {
-    return this.db.select().from(this.table).where(query(this.table, this.operators));
+    return this.db.select().from(this.table).where(query(this.table, this.operators, this.db));
   }
   delete(query: WhereQuery<T>) {
-    return this.db.delete(this.table).where(query(this.table, this.operators));
+    return this.db.delete(this.table).where(query(this.table, this.operators, this.db));
   }
   update(value: UpdateValue<T>, query: WhereQuery<T>) {
-    return this.db.update(this.table).set(value).where(query(this.table, this.operators));
+    return this.db.update(this.table).set(value).where(query(this.table, this.operators, this.db));
   }
   count(query: WhereQuery<T>) {
     return this.db
       .select({ count: sql<number>`count(*)` })
       .from(this.table)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .limit(1)
       .then((x) => x[0]?.count ?? 0);
   }

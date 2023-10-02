@@ -15,7 +15,7 @@ export default forwardRef<HTMLInputElement, ImageInputProps>(function ImageInput
       <input
         type="file"
         accept="image/*"
-        className="absolute h-0 w-0 opacity-0"
+        className="sr-only"
         onChange={onChange}
         {...inputAttributes}
         value={isImageSet ? undefined : ""}

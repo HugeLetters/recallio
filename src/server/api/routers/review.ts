@@ -1,11 +1,11 @@
 import { reviewRepository } from "@/database/repository/product";
+import { reviewsToCategories } from "@/database/schema/product";
 import type { StrictOmit } from "@/utils";
 import type { AsyncResult } from "@/utils/api";
 import { getTableColumns } from "drizzle-orm";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { reviewsToCategories } from "@/database/schema/product";
 
 export const reviewRouter = createTRPCRouter({
   createReview: protectedProcedure
@@ -87,13 +87,26 @@ export const reviewRouter = createTRPCRouter({
         const page = await Promise.all(
           await reviewRepository
             .findManyReviewSummary(
-              (table, { and, or, eq, like }) =>
+              (table, { and, or, eq, like, inArray }, db) =>
                 and(
                   eq(table.userId, ctx.session.user.id),
-                  or(
-                    filter ? like(table.name, `%${filter}%`) : undefined,
-                    filter ? like(reviewsToCategories.category, `%${filter}%`) : undefined
-                  )
+                  filter
+                    ? or(
+                        like(table.name, `%${filter}%`),
+                        inArray(
+                          table.barcode,
+                          db
+                            .select({ barcode: reviewsToCategories.barcode })
+                            .from(reviewsToCategories)
+                            .where(
+                              and(
+                                eq(reviewsToCategories.userId, ctx.session.user.id),
+                                like(reviewsToCategories.category, `%${filter}%`)
+                              )
+                            )
+                        )
+                      )
+                    : undefined
                 ),
               {
                 page: { cursor, limit },
