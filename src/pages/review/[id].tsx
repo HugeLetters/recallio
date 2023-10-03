@@ -371,9 +371,10 @@ function Categories({ control, name }: CategoriesProps) {
       className="grid grid-cols-5 gap-2 p-2"
     >
       <input
+        autoFocus
+        aria-label="add a category"
         value={inputCategory}
         onChange={(e) => setInputCategory(e.target.value)}
-        autoFocus
         className="col-span-4 rounded-xl p-3 outline outline-1 outline-app-green focus:outline-2"
       />
       <button

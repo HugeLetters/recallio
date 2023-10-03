@@ -28,7 +28,7 @@ export const productRouter = createTRPCRouter({
     }),
   getCategories: protectedProcedure.input(z.string()).query(({ input }) => {
     return categoryRepository
-      .findMany((table, { like }) => like(table.name, `%${input}%`))
+      .findMany((table, { like }) => like(table.name, `${input}%`))
       .limit(10)
       .then((data) => data.map((x) => x.name));
   }),

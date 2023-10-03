@@ -8,7 +8,9 @@ export const productName = mysqlTable(
     barcode: varchar("barcode", { length: 55 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
   },
-  (table) => ({ compoundKey: primaryKey(table.barcode, table.name) })
+  (table) => ({
+    compoundKey: primaryKey(table.barcode, table.name),
+  })
 );
 
 export const category = mysqlTable("category", {
@@ -31,11 +33,14 @@ export const review = mysqlTable(
     imageKey: varchar("image-key", { length: 255 }),
     updatedAt: datetime("updated-at")
       .notNull()
-      .default(sql`(now())`),
+      .default(sql`NOW()`),
   },
   (table) => ({
     compoundKey: primaryKey(table.userId, table.barcode),
     barcodeIndex: index("barcode-index").on(table.barcode),
+    nameIndex: index("name-index").on(table.name),
+    ratingIndex: index("rating-index").on(table.rating),
+    updatedAtIndex: index("updated-at-index").on(table.updatedAt),
   })
 );
 export const reviewRelations = relations(review, ({ many, one }) => ({
@@ -53,7 +58,11 @@ export const reviewsToCategories = mysqlTable(
     barcode: varchar("barcode", { length: 55 }).notNull(),
     category: varchar("category", { length: 31 }).notNull(),
   },
-  (table) => ({ compoundKey: primaryKey(table.userId, table.barcode, table.category) })
+  (table) => ({
+    compoundKey: primaryKey(table.userId, table.barcode, table.category),
+    barcodeIndex: index("barcode-index").on(table.barcode),
+    categoryIndex: index("category-index").on(table.category),
+  })
 );
 export const reviewsToCategoriesRelations = relations(reviewsToCategories, ({ one }) => ({
   review: one(review, {

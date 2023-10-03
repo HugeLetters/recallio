@@ -2,7 +2,7 @@ import { reviewRepository } from "@/database/repository/product";
 import { reviewsToCategories } from "@/database/schema/product";
 import type { StrictOmit } from "@/utils";
 import type { AsyncResult } from "@/utils/api";
-import { getTableColumns } from "drizzle-orm";
+import { type getTableColumns } from "drizzle-orm";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -67,12 +67,7 @@ export const reviewRouter = createTRPCRouter({
         /** zero-based index */
         cursor: z.number().int().min(0),
         sort: z.object({
-          by: z.enum(
-            Object.keys(getTableColumns(reviewRepository.table)) as [
-              ReviewColumns,
-              ...Array<ReviewColumns>
-            ]
-          ),
+          by: z.enum(["updatedAt", "rating"] satisfies [ReviewColumns, ...ReviewColumns[]]),
           desc: z.boolean(),
         }),
         /** Filter by name or category */
@@ -92,7 +87,7 @@ export const reviewRouter = createTRPCRouter({
                   eq(table.userId, ctx.session.user.id),
                   filter
                     ? or(
-                        like(table.name, `%${filter}%`),
+                        like(table.name, `${filter}%`),
                         inArray(
                           table.barcode,
                           db
@@ -101,7 +96,7 @@ export const reviewRouter = createTRPCRouter({
                             .where(
                               and(
                                 eq(reviewsToCategories.userId, ctx.session.user.id),
-                                like(reviewsToCategories.category, `%${filter}%`)
+                                like(reviewsToCategories.category, `${filter}%`)
                               )
                             )
                         )
