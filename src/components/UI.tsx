@@ -4,7 +4,7 @@ import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef, type ChangeEventHandler, type HTMLAttributes } from "react";
 import StarIcon from "~icons/material-symbols/star-rounded";
 
-type ClickableProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
+type PrimaryButtonProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
   T extends true ? typeof Link : "button"
 >;
 export function PrimaryButton<T extends boolean = false>({
@@ -12,7 +12,7 @@ export function PrimaryButton<T extends boolean = false>({
   className,
   children,
   ...restProps
-}: PropsWithChildren<ClickableProps<T>>) {
+}: PropsWithChildren<PrimaryButtonProps<T>>) {
   const Component = asLink ? Link : "button";
 
   return (
