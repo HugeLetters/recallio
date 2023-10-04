@@ -105,6 +105,7 @@ function Reviews() {
 }
 
 const filterKey = "search";
+const searchIconFlipId = "search idon";
 function FilterInput() {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<number>();
@@ -143,7 +144,7 @@ function FilterInput() {
               }, 1000);
             }}
           />
-          <Flipped flipId="search icon">
+          <Flipped flipId={searchIconFlipId}>
             {isOpen && !!filter ? (
               <button
                 aria-label="reset filter"
@@ -167,7 +168,7 @@ function FilterInput() {
           className="py-3"
           onClick={() => setIsOpen(true)}
         >
-          <Flipped flipId="search icon">
+          <Flipped flipId={searchIconFlipId}>
             <SearchIcon className="h-7 w-7 text-app-green" />
           </Flipped>
         </button>
