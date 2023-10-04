@@ -9,7 +9,7 @@ import * as Separator from "@radix-ui/react-separator";
 import * as Switch from "@radix-ui/react-switch";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
 import LucidePen from "~icons/custom/pen.jsx";
@@ -353,21 +353,20 @@ function Categories({ control, name }: CategoriesProps) {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const rootDiv = useRef<HTMLDivElement>(null);
 
   return isEditing ? (
     <div
-      onBlur={() => {
+      onBlur={(e) => {
+        const root = e.currentTarget;
         // when focus switches on the children on the first tick focus is set on body and on the next set on the new element
         // so we use setTimeout to check on the next tick
         setTimeout(() => {
-          setIsEditing(rootDiv.current?.contains(document.activeElement) ?? false);
+          setIsEditing(root.contains(document.activeElement));
         });
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape") setIsEditing(false);
       }}
-      ref={rootDiv}
       className="grid grid-cols-5 gap-2 p-2"
     >
       <input

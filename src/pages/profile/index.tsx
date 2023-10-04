@@ -1,15 +1,20 @@
+import ResetIcon from "~icons/radix-icons/cross-1";
 import { HeaderLink } from "@/components/Header";
 import { Star } from "@/components/Star";
+import { PrimaryButton } from "@/components/UI";
 import useHeader from "@/hooks/useHeader";
-import { minutesToMs, type StrictOmit } from "@/utils";
+import { setQueryParam, getQueryParam, minutesToMs } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
+import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { Flipped, Flipper } from "react-flip-toolkit";
+import GroceriesIcon from "~icons/custom/groceries.jsx";
 import MilkIcon from "~icons/custom/milk.jsx";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 import SwapIcon from "~icons/iconamoon/swap.jsx";
@@ -44,9 +49,8 @@ function getInitials(name: string) {
   const [first, second] = name.split(/[\s_+.-]/);
   return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
 }
-
 type ProfileInfoProps = {
-  user: NonNullable<ReturnType<typeof useSession>["data"]>["user"];
+  user: Session["user"];
 };
 function ProfileInfo({ user }: ProfileInfoProps) {
   return (
@@ -71,119 +75,141 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   );
 }
 
-type SortOptions = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
-const sortByOptions = ["recent", "earliest", "rating"] as const;
-type SortBy = (typeof sortByOptions)[number];
 function Reviews() {
   const countQuery = api.review.getReviewCount.useQuery(undefined, {
     staleTime: minutesToMs(5),
   });
 
-  const [sortBy, setSortBy] = useState<SortBy>("recent");
-  const sort: SortOptions =
-    sortBy === "recent"
-      ? { by: "updatedAt", desc: true }
-      : sortBy === "earliest"
-      ? { by: "updatedAt", desc: false }
-      : { by: "rating", desc: true };
-
-  const [filterBy, setFilterBy] = useState("");
-
   return (
-    <div className="flex flex-col gap-3 pb-3">
-      <h1 className="text-xl">Reviews {countQuery.isSuccess ? `(${countQuery.data})` : ""}</h1>
-      <div className="flex items-center justify-between">
-        <FilterInput
-          value={filterBy}
-          setValue={setFilterBy}
-        />
-        <SortDialog
-          title="Sort By"
-          options={sortByOptions}
-          setValue={setSortBy}
-          value={sortBy}
-        />
-      </div>
-      <ReviewCards query={{ limit: 20, sort, filter: filterBy }} />
+    <div className="flex grow flex-col gap-3 pb-3">
+      <h1 className="text-xl">
+        Reviews
+        {countQuery.isSuccess && <span> ({countQuery.data})</span>}
+      </h1>
+      {/* That way we fetch ReviewCards w/o waiting for countQuery to settle */}
+      {!countQuery.isSuccess || !!countQuery.data ? (
+        <>
+          {countQuery.isSuccess && (
+            <div className="flex items-center justify-between">
+              <FilterInput />
+              <SortDialog />
+            </div>
+          )}
+          <ReviewCards />
+        </>
+      ) : (
+        <NoReviews />
+      )}
     </div>
   );
 }
 
-type FilterInputProps = { value: string; setValue: (value: string) => void };
-function FilterInput({ value, setValue }: FilterInputProps) {
+const filterKey = "search";
+function FilterInput() {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<number>();
+  const router = useRouter();
+  // todo - annoying delay on showing reset button
+  const filter = getQueryParam(router.query[filterKey]);
 
   return (
     <Flipper
       flipKey={isOpen}
       spring={{ damping: 50, stiffness: 400, overshootClamping: true }}
     >
-      <div>
-        {isOpen ? (
-          <label className="flex rounded-xl p-3 outline outline-app-green">
-            <input
-              autoFocus
-              className="outline-transparent"
-              onBlur={() => setIsOpen(false)}
-              defaultValue={value}
-              onChange={(e) => {
-                window.clearTimeout(debounceTimeoutRef.current);
-                debounceTimeoutRef.current = window.setTimeout(() => {
-                  setValue(e.target.value);
-                }, 1000);
-              }}
-            />
-            <Flipped flipId="search icon">
+      {isOpen ? (
+        <label
+          className="flex rounded-xl p-3 outline outline-app-green"
+          onBlur={(e) => {
+            const root = e.currentTarget;
+            setTimeout(() => {
+              setIsOpen(root.contains(document.activeElement));
+            });
+          }}
+        >
+          <input
+            key={`${!!filter}`}
+            autoFocus
+            className="outline-transparent"
+            aria-label="filter by name or category"
+            defaultValue={filter}
+            onChange={(e) => {
+              window.clearTimeout(debounceTimeoutRef.current);
+              debounceTimeoutRef.current = window.setTimeout(() => {
+                setQueryParam(router, filterKey, e.target.value);
+              }, 1000);
+            }}
+          />
+          <Flipped flipId="search icon">
+            {isOpen && !!filter ? (
+              <button
+                aria-label="reset filter"
+                onClick={() => {
+                  window.clearTimeout(debounceTimeoutRef.current);
+                  setQueryParam(router, filterKey, null);
+                }}
+              >
+                <ResetIcon className="h-7 w-7 text-app-green" />
+              </button>
+            ) : (
               <SearchIcon className="h-7 w-7 text-app-green" />
-            </Flipped>
-          </label>
-        ) : (
-          <button
-            aria-label="Start review search"
-            className="py-3"
-            onClick={() => setIsOpen(true)}
-          >
-            <Flipped flipId="search icon">
-              <SearchIcon className="h-7 w-7 text-app-green" />
-            </Flipped>
-          </button>
-        )}
-      </div>
+            )}
+          </Flipped>
+        </label>
+      ) : (
+        <button
+          aria-label="Start review search"
+          className="py-3"
+          onClick={() => setIsOpen(true)}
+        >
+          <Flipped flipId="search icon">
+            <SearchIcon className="h-7 w-7 text-app-green" />
+          </Flipped>
+        </button>
+      )}
     </Flipper>
   );
 }
 
-type SortDialogProps<T> = {
-  title: string;
-  value: T;
-  setValue: (value: T) => void;
-  options: readonly T[];
-};
-function SortDialog<T extends string>({ title, value, setValue, options }: SortDialogProps<T>) {
+const sortOptionList = ["recent", "earliest", "rating"] as const;
+type SortOption = (typeof sortOptionList)[number];
+const sortKey = "sort";
+function useParseSort(query: string | undefined) {
+  const router = useRouter();
+
+  if (query && sortOptionList.includes(query as SortOption)) return query as SortOption;
+
+  if (query !== undefined) setQueryParam(router, sortKey, null);
+  return sortOptionList[0];
+}
+
+function SortDialog() {
+  const router = useRouter();
+  const sortBy = useParseSort(getQueryParam(router.query[sortKey]));
+
   return (
     <Dialog.Root>
       <Dialog.Trigger className="flex items-center gap-2 text-sm">
         <SwapIcon className="h-8 w-8" />
-        <span className="capitalize">{value}</span>
+        <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 animate-fade-in bg-black/50" />
         <Dialog.Content className="fixed bottom-0 left-0 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
           <div className="w-full max-w-md rounded-t-xl bg-white p-5 text-lime-950">
-            <Dialog.Title className="mb-6 text-xl font-medium">{title}</Dialog.Title>
+            <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
-              flipKey={value}
+              flipKey={sortBy}
               spring={{ stiffness: 700, overshootClamping: true }}
             >
               <RadioGroup.Root
-                value={value}
-                onValueChange={(value: T) => {
-                  setValue(value);
+                value={sortBy}
+                onValueChange={(value) => {
+                  setQueryParam(router, sortKey, value);
                 }}
                 className="flex flex-col gap-7"
               >
-                {options.map((option) => (
+                {sortOptionList.map((option) => (
                   <RadioGroup.Item
                     value={option}
                     key={option}
@@ -191,8 +217,8 @@ function SortDialog<T extends string>({ title, value, setValue, options }: SortD
                   >
                     <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
                       <Flipped
-                        flipId={`${option === value}`}
-                        key={`${option === value}`}
+                        flipId={`${option === sortBy}`}
+                        key={`${option === sortBy}`}
                       >
                         <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green" />
                       </Flipped>
@@ -209,16 +235,35 @@ function SortDialog<T extends string>({ title, value, setValue, options }: SortD
   );
 }
 
-type ReviewCardsProps = {
-  query: StrictOmit<RouterInputs["review"]["getUserReviewSummaryList"], "cursor">;
-};
-function ReviewCards({ query }: ReviewCardsProps) {
-  const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(query, {
-    keepPreviousData: true,
-    getNextPageParam: (lastPage) => lastPage.cursor,
-    initialCursor: 0,
-    staleTime: minutesToMs(5),
-  });
+type SortQuery = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
+function parseSortParam(param: SortOption): SortQuery {
+  switch (param) {
+    case "recent":
+      return { by: "updatedAt", desc: true };
+    case "earliest":
+      return { by: "updatedAt", desc: false };
+    case "rating":
+      return { by: "rating", desc: true };
+    default:
+      const x: never = param;
+      return x;
+  }
+}
+function ReviewCards() {
+  const router = useRouter();
+  const filter = getQueryParam(router.query[filterKey]);
+  const sortParam = useParseSort(getQueryParam(router.query[sortKey]));
+  const sort = parseSortParam(sortParam);
+
+  const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
+    { limit: 20, filter, sort },
+    {
+      keepPreviousData: true,
+      getNextPageParam: (lastPage) => lastPage.cursor,
+      initialCursor: 0,
+      staleTime: minutesToMs(5),
+    }
+  );
   const lastPage = reviewCardsQuery.data?.pages.at(-1);
 
   const lastElement = useRef<HTMLDivElement>(null);
@@ -239,10 +284,11 @@ function ReviewCards({ query }: ReviewCardsProps) {
   }, [reviewCardsQuery]);
 
   return (
-    <div className={`flex flex-col gap-2 ${reviewCardsQuery.isPreviousData ? "opacity-50" : ""}`}>
-      {reviewCardsQuery.isSuccess ? (
-        reviewCardsQuery.data.pages.some((data) => !!data.page.length) ? (
-          reviewCardsQuery.data.pages.map((data) => {
+    <div
+      className={`flex grow flex-col gap-2 ${reviewCardsQuery.isPreviousData ? "opacity-50" : ""}`}
+    >
+      {reviewCardsQuery.isSuccess
+        ? reviewCardsQuery.data.pages.map((data) => {
             const isLastPage = data === lastPage;
             const triggerSummary = data.page.at(-10) ?? data.page[0];
 
@@ -258,12 +304,7 @@ function ReviewCards({ query }: ReviewCardsProps) {
               );
             });
           })
-        ) : (
-          <NoReviews />
-        )
-      ) : (
-        "Loading..."
-      )}
+        : "Loading..."}
     </div>
   );
 }
@@ -274,7 +315,6 @@ type ReviewCardProps = { review: ReviewSummary; cardRef: RefObject<HTMLDivElemen
 function ReviewCard({ review, cardRef }: ReviewCardProps) {
   return (
     <Link
-      key={review.barcode}
       href={{ pathname: "/review/[id]", query: { id: review.barcode } }}
       className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
     >
@@ -284,9 +324,10 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
           alt={`review image for product ${review.barcode}`}
           width={50}
           height={50}
-          className="aspect-square h-9 w-9 rounded-full bg-white object-cover"
+          className="aspect-square h-9 w-9 rounded-full bg-white object-cover !text-black/10 drop-shadow-around"
         />
       ) : (
+        // todo - should milk icon also have a drop shadow?
         <div className="flex aspect-square h-9 w-9 items-center justify-center rounded-full bg-neutral-400 p-1">
           <MilkIcon className="h-full w-full text-white" />
         </div>
@@ -315,5 +356,18 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
 }
 
 function NoReviews() {
-  return <div className="h-full w-full bg-red-500">you have no reviews loser</div>;
+  return (
+    <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
+      {/* todo - this icon needs to be fixed */}
+      <GroceriesIcon className="h-auto w-full" />
+      <span className="text-xl">Your review list is empty</span>
+      <span className="text-sm">All your scanned goods will be kept here. </span>
+      <PrimaryButton
+        asLink
+        href="/scan"
+      >
+        Scan for the first time
+      </PrimaryButton>
+    </div>
+  );
 }

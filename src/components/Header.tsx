@@ -2,7 +2,7 @@ import { contentStackAtom } from "@/hooks/useHeader";
 import { useAtomValue } from "jotai";
 import Link from "next/link";
 import router from "next/router";
-import type { ButtonHTMLAttributes, ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import type Icon from "~icons/*";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 import HomeIcon from "~icons/uil/home-alt";
@@ -47,7 +47,7 @@ export default function Header() {
 
 type HeaderButtonProps = {
   Icon: typeof Icon;
-} & ButtonHTMLAttributes<HTMLButtonElement>;
+} & ComponentPropsWithoutRef<"button">;
 export function HeaderButton({ Icon, type, className, ...butonAttributes }: HeaderButtonProps) {
   return (
     <button

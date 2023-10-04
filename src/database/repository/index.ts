@@ -53,7 +53,7 @@ export abstract class Repository<T extends MySqlTable> {
   }
   count(query: WhereQuery<T>) {
     return this.db
-      .select({ count: sql<number>`count(*)` })
+      .select({ count: sql<string>`count(*)`.mapWith((x) => +x) })
       .from(this.table)
       .where(query(this.table, this.operators, this.db))
       .limit(1)
