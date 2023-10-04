@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
-import StarIcon from "~icons/material-symbols/star-rounded";
+import StarIcon from "~icons/typcn/star-full-outline";
 
 type PrimaryButtonProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
   T extends true ? typeof Link : "button"

@@ -71,6 +71,7 @@
     "@iconify-json/material-symbols": "^1.1.57",
     "@iconify-json/radix-icons": "^1.1.11",
     "@iconify-json/solar": "^1.1.5",
+    "@iconify-json/typcn": "^1.1.5",
     "@iconify-json/uil": "^1.1.5",
     "@next/bundle-analyzer": "^13.4.16",
     "@types/eslint": "^8.37.0",
