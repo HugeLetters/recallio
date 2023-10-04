@@ -28,7 +28,7 @@ export function PrimaryButton<T extends boolean = false>({
 
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
-  return <StarIcon className={`${highlight ? "text-amber-400" : "text-neutral-300"}`} />;
+  return <StarIcon className={highlight ? "text-amber-400" : "text-neutral-300"} />;
 }
 
 type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
