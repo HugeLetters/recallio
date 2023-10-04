@@ -2,7 +2,7 @@ import { HeaderLink } from "@/components/Header";
 import { PrimaryButton, Star } from "@/components/UI";
 import { hasFocusWithin } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
-import { getQueryParam, minutesToMs, setQueryParam } from "@/utils";
+import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -183,7 +183,7 @@ const sortKey = "sort";
 function useParseSort(query: string | undefined) {
   const router = useRouter();
 
-  if (query && sortOptionList.includes(query as SortOption)) return query as SortOption;
+  if (query && includes(sortOptionList, query)) return query;
 
   if (query !== undefined) setQueryParam(router, sortKey, null);
   return sortOptionList[0];

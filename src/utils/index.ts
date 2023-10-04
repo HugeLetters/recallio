@@ -22,6 +22,11 @@ export function nonEmptyArray<T>(array: T[]): array is [T, ...T[]] {
   return !!array.length;
 }
 
+/** Checks if element is an array - narrows the type of checked element */
+export function includes<T>(array: readonly T[], element: unknown): element is T {
+  return array.includes(element as T);
+}
+
 export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;
 }
