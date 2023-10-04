@@ -1,7 +1,6 @@
-import type { StrictOmit } from "@/utils";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
-import { forwardRef, type ChangeEventHandler, type HTMLAttributes } from "react";
+import { forwardRef } from "react";
 import StarIcon from "~icons/material-symbols/star-rounded";
 
 type PrimaryButtonProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
@@ -32,23 +31,19 @@ export function Star({ highlight }: StarProps) {
   return <StarIcon className={`${highlight ? "text-amber-400" : "text-neutral-300"}`} />;
 }
 
-type ImageInputProps = StrictOmit<HTMLAttributes<HTMLInputElement>, "onChange"> & {
-  onChange?: ChangeEventHandler<HTMLInputElement>;
-  isImageSet: boolean;
-};
+type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
 export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function ImageInput(
-  { children, className, onChange, isImageSet, ...inputAttributes },
+  { children, className, isImageSet, ...inputAttributes },
   ref
 ) {
   return (
-    <label className={`${className} focus-within:outline`}>
+    <label className={`focus-within:outline ${className}`}>
       {children}
       <input
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        onChange={onChange}
         {...inputAttributes}
+        className="sr-only"
+        accept="image/*"
+        type="file"
         value={isImageSet ? undefined : ""}
         ref={ref}
       />
