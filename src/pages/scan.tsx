@@ -90,9 +90,11 @@ export default function ScannerPage() {
             onChange={(e) => setBarcode(e.target.value)}
           />
           <button
-            onClick={() => goToReview(barcode)}
+            aria-label="open review page of the specified barcode"
+            role="navigation"
             disabled={!barcode}
             className="text-app-green"
+            onClick={() => goToReview(barcode)}
           >
             <SearchIcon className="h-7 w-7" />
           </button>
