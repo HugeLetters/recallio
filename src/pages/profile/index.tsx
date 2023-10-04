@@ -10,6 +10,7 @@ import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { Flipped, Flipper } from "react-flip-toolkit";
@@ -180,8 +181,8 @@ function FilterInput() {
 const sortOptionList = ["recent", "earliest", "rating"] as const;
 type SortOption = (typeof sortOptionList)[number];
 const sortKey = "sort";
-function useParseSort(query: string | undefined) {
-  const router = useRouter();
+function useParseSort(router: NextRouter) {
+  const query = getQueryParam(router.query[sortKey]);
 
   if (query && includes(sortOptionList, query)) return query;
 
@@ -191,7 +192,7 @@ function useParseSort(query: string | undefined) {
 
 function SortDialog() {
   const router = useRouter();
-  const sortBy = useParseSort(getQueryParam(router.query[sortKey]));
+  const sortBy = useParseSort(router);
 
   return (
     <Dialog.Root>
@@ -260,7 +261,7 @@ const limit = 20;
 function ReviewCards() {
   const router = useRouter();
   const filter = getQueryParam(router.query[filterKey]);
-  const sortParam = useParseSort(getQueryParam(router.query[sortKey]));
+  const sortParam = useParseSort(router);
   const sort = parseSortParam(sortParam);
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
