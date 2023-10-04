@@ -109,8 +109,13 @@ function FilterInput() {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<number>();
   const router = useRouter();
-  // todo - annoying delay on showing reset button
-  const filter = getQueryParam(router.query[filterKey]);
+  const filterParam: string = getQueryParam(router.query[filterKey]) ?? "";
+  const [filter, setFilter] = useState(filterParam);
+
+  // keeps filter in sync on back/forward
+  useEffect(() => {
+    setFilter(filterParam);
+  }, [filterParam, setFilter]);
 
   return (
     <Flipper
@@ -123,15 +128,17 @@ function FilterInput() {
           onBlur={hasFocusWithin(setIsOpen)}
         >
           <input
-            key={`${!!filter}`}
             autoFocus
             className="outline-transparent"
             aria-label="filter by name or category"
-            defaultValue={filter}
+            value={filter}
             onChange={(e) => {
+              const { value } = e.target;
+              setFilter(value);
+
               window.clearTimeout(debounceTimeoutRef.current);
               debounceTimeoutRef.current = window.setTimeout(() => {
-                setQueryParam(router, filterKey, e.target.value);
+                setQueryParam(router, filterKey, value);
               }, 1000);
             }}
           />
@@ -140,6 +147,8 @@ function FilterInput() {
               <button
                 aria-label="reset filter"
                 onClick={() => {
+                  setFilter("");
+
                   window.clearTimeout(debounceTimeoutRef.current);
                   setQueryParam(router, filterKey, null);
                 }}
@@ -185,6 +194,7 @@ function SortDialog() {
   return (
     <Dialog.Root>
       <Dialog.Trigger className="flex items-center gap-2 text-sm">
+        {/* todo this shifts on narrow screens when filter input is open */}
         <SwapIcon className="h-8 w-8" />
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
