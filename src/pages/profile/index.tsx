@@ -339,12 +339,12 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
         </div>
       )}
       <div
-        className="flex h-full flex-col items-start gap-1"
+        className="flex h-full min-w-0 flex-col items-start gap-1"
         ref={cardRef}
       >
         <span className="text-sm capitalize">{review.name}</span>
         {!!review.categories.length && (
-          <span className="text-xs capitalize text-neutral-400">
+          <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">
             {review.categories.slice(0, 3).join(", ")}
           </span>
         )}
