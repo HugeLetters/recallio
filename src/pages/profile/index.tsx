@@ -253,6 +253,8 @@ function parseSortParam(param: SortOption): SortQuery {
       return x;
   }
 }
+// just a magic number which seems to work well
+const limit = 20;
 function ReviewCards() {
   const router = useRouter();
   const filter = getQueryParam(router.query[filterKey]);
@@ -260,7 +262,7 @@ function ReviewCards() {
   const sort = parseSortParam(sortParam);
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
-    { limit: 20, filter, sort },
+    { limit, filter, sort },
     {
       keepPreviousData: true,
       getNextPageParam: (lastPage) => lastPage.cursor,
@@ -294,7 +296,7 @@ function ReviewCards() {
       {reviewCardsQuery.isSuccess
         ? reviewCardsQuery.data.pages.map((data) => {
             const isLastPage = data === lastPage;
-            const triggerSummary = data.page.at(-10) ?? data.page[0];
+            const triggerSummary = data.page.at(-limit / 2) ?? data.page[0];
 
             return data.page.map((summary) => {
               const isTriggerCard = isLastPage && summary === triggerSummary;
@@ -340,9 +342,9 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
         className="flex h-full flex-col items-start gap-1"
         ref={cardRef}
       >
-        <span className="text-sm">{review.name}</span>
+        <span className="text-sm capitalize">{review.name}</span>
         {!!review.categories.length && (
-          <span className="text-xs text-neutral-400">
+          <span className="text-xs capitalize text-neutral-400">
             {review.categories.slice(0, 3).join(", ")}
           </span>
         )}
