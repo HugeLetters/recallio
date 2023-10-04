@@ -1,6 +1,5 @@
 import { HeaderLink } from "@/components/Header";
-import { Star } from "@/components/Star";
-import { PrimaryButton } from "@/components/UI";
+import { PrimaryButton, Star } from "@/components/UI";
 import { hasFocusWithin } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { getQueryParam, minutesToMs, setQueryParam } from "@/utils";

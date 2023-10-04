@@ -1,4 +1,4 @@
-import ImageInput from "@/components/ImageInput";
+import { ImageInput } from "@/components/UI";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
 import { clamp } from "@/utils";

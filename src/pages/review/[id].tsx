@@ -1,5 +1,4 @@
-import ImageInput from "@/components/ImageInput";
-import { PrimaryButton } from "@/components/UI";
+import { ImageInput, PrimaryButton, Star } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
@@ -445,20 +444,23 @@ function Rating({ value, setValue }: ModelProps<number>) {
       onValueChange={(val) => {
         setValue(+val);
       }}
-      className="flex gap-4"
+      className="flex gap-4 text-6xl"
     >
-      {[0, 1, 2, 3, 4, 5].map((x) => (
+      <Radio.Item
+        value="0"
+        className="sr-only"
+      >
+        <Star />
+      </Radio.Item>
+      {[1, 2, 3, 4, 5].map((x) => (
         <Radio.Item
           key={x}
           value={x.toString()}
-          className={`${x <= value ? "text-app-gold" : ""} ${
-            x === 0 ? "pointer-events-none h-0 w-0 opacity-0" : ""
-          } text-6xl`}
           onClick={() => {
             if (x === value) setValue(0);
           }}
         >
-          ★
+          <Star highlight={x <= value} />
         </Radio.Item>
       ))}
     </Radio.Root>
