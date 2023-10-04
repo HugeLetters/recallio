@@ -129,6 +129,7 @@ function FilterInput() {
         >
           <input
             autoFocus
+            // I have only a very vague idea why w-1/12(or any % size less than 100%) works
             className="w-1/12 grow self-stretch outline-transparent"
             aria-label="filter by name or category"
             value={filter}
