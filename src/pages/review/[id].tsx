@@ -1,6 +1,7 @@
 import ImageInput from "@/components/ImageInput";
+import { PrimaryButton } from "@/components/UI";
+import { hasFocusWithin, useUploadThing } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
-import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -277,7 +278,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <button className="rounded-xl bg-app-green px-3 py-4 text-white">SUBMIT</button>
+      <PrimaryButton type="submit">SUBMIT</PrimaryButton>
     </form>
   );
 }
@@ -356,14 +357,7 @@ function Categories({ control, name }: CategoriesProps) {
 
   return isEditing ? (
     <div
-      onBlur={(e) => {
-        const root = e.currentTarget;
-        // when focus switches on the children on the first tick focus is set on body and on the next set on the new element
-        // so we use setTimeout to check on the next tick
-        setTimeout(() => {
-          setIsEditing(root.contains(document.activeElement));
-        });
-      }}
+      onBlur={hasFocusWithin(setIsEditing)}
       onKeyDown={(e) => {
         if (e.key === "Escape") setIsEditing(false);
       }}

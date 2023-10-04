@@ -17,7 +17,7 @@ export function PrimaryButton<T extends boolean = false>({
     <Component
       type={!asLink ? "button" : undefined}
       {...restProps}
-      className={`rounded-xl bg-app-green px-2.5 py-3.5 text-white ${className}`}
+      className={`rounded-xl bg-app-green px-2.5 py-3.5 text-white transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${className}`}
     >
       {children}
     </Component>

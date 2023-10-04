@@ -1,9 +1,9 @@
-import ResetIcon from "~icons/radix-icons/cross-1";
 import { HeaderLink } from "@/components/Header";
 import { Star } from "@/components/Star";
 import { PrimaryButton } from "@/components/UI";
+import { hasFocusWithin } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
-import { setQueryParam, getQueryParam, minutesToMs } from "@/utils";
+import { getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -18,6 +18,7 @@ import GroceriesIcon from "~icons/custom/groceries.jsx";
 import MilkIcon from "~icons/custom/milk.jsx";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 import SwapIcon from "~icons/iconamoon/swap.jsx";
+import ResetIcon from "~icons/radix-icons/cross-1";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 export default function Profile() {
@@ -120,12 +121,7 @@ function FilterInput() {
       {isOpen ? (
         <label
           className="flex rounded-xl p-3 outline outline-app-green"
-          onBlur={(e) => {
-            const root = e.currentTarget;
-            setTimeout(() => {
-              setIsOpen(root.contains(document.activeElement));
-            });
-          }}
+          onBlur={hasFocusWithin(setIsOpen)}
         >
           <input
             key={`${!!filter}`}
