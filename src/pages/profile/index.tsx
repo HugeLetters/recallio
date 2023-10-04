@@ -90,7 +90,7 @@ function Reviews() {
       {!countQuery.isSuccess || !!countQuery.data ? (
         <>
           {countQuery.isSuccess && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <FilterInput />
               <SortDialog />
             </div>
@@ -124,12 +124,12 @@ function FilterInput() {
     >
       {isOpen ? (
         <label
-          className="flex rounded-xl p-3 outline outline-app-green"
+          className="flex justify-between rounded-xl p-3 outline outline-app-green"
           onBlur={hasFocusWithin(setIsOpen)}
         >
           <input
             autoFocus
-            className="outline-transparent"
+            className="w-1/12 grow self-stretch outline-transparent"
             aria-label="filter by name or category"
             value={filter}
             onChange={(e) => {
@@ -194,7 +194,6 @@ function SortDialog() {
   return (
     <Dialog.Root>
       <Dialog.Trigger className="flex items-center gap-2 text-sm">
-        {/* todo this shifts on narrow screens when filter input is open */}
         <SwapIcon className="h-8 w-8" />
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
