@@ -1,5 +1,5 @@
 import { aggregateArrayColumn } from "@/database/utils";
-import { nonEmptyArray } from "@/utils";
+import { nonEmptyArray, type StrictPick } from "@/utils";
 import { asc, desc, getTableColumns, sql, type InferInsertModel } from "drizzle-orm";
 import { Repository, type WhereQuery } from "..";
 import { category, productName, review, reviewsToCategories } from "../../schema/product";
@@ -21,18 +21,21 @@ class ReviewRepository extends Repository<Review> {
     return this.db
       .transaction(async (tx) => {
         // override updatedAt value with current time
-        Object.assign(reviewValue, { updatedAt: new Date() });
+        Object.assign(reviewValue, { updatedAt: new Date() } satisfies StrictPick<
+          typeof reviewValue,
+          "updatedAt"
+        >);
 
-        const newReview = await this.create(reviewValue, tx)
+        const reviewQuery = await this.create(reviewValue, tx)
           .onDuplicateKeyUpdate({ set: reviewValue })
           .catch((e) => {
             console.error(e);
             throw Error("Error saving the review");
           });
-        if (!categories) return newReview;
+        if (!categories) return reviewQuery;
 
         const categoryValues = categories.map((category) => ({ name: category }));
-        if (!nonEmptyArray(categoryValues)) return newReview;
+        if (!nonEmptyArray(categoryValues)) return reviewQuery;
 
         await categoryRepository
           .create(categoryValues, tx)
@@ -42,11 +45,6 @@ class ReviewRepository extends Repository<Review> {
             throw Error("Error saving categories for review");
           });
 
-        const categoriesForReview = categories.map((category) => ({
-          barcode: reviewValue.barcode,
-          userId: reviewValue.userId,
-          category,
-        }));
         const { and, eq } = this.operators;
 
         await tx
@@ -58,6 +56,11 @@ class ReviewRepository extends Repository<Review> {
             )
           );
 
+        const categoriesForReview = categories.map((category) => ({
+          barcode: reviewValue.barcode,
+          userId: reviewValue.userId,
+          category,
+        }));
         await tx
           .insert(reviewsToCategories)
           .values(categoriesForReview)
@@ -73,7 +76,7 @@ class ReviewRepository extends Repository<Review> {
             throw Error("Error linking categories for review");
           });
 
-        return newReview;
+        return reviewQuery;
       })
       .catch((e: Error) => {
         console.error(e);
