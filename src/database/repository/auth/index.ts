@@ -7,7 +7,7 @@ class AccountRepository extends Repository<Account> {
     return this.db
       .select()
       .from(account)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .innerJoin(user, this.operators.eq(user.id, account.userId))
       .limit(1)
       .then((res) => res[0]);
@@ -21,7 +21,7 @@ class SessionRepository extends Repository<Session> {
     return this.db
       .select()
       .from(session)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .innerJoin(user, this.operators.eq(user.id, session.userId))
       .limit(1)
       .then((res) => res[0]);

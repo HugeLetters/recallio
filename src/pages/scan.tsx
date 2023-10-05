@@ -1,5 +1,4 @@
-import { CommondHeader } from "@/components/Header";
-import ImageInput from "@/components/ImageInput";
+import { ImageInput } from "@/components/UI";
 import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
 import { clamp } from "@/utils";
@@ -11,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 
 export default function ScannerPage() {
-  useHeader(() => <CommondHeader title="Scanner" />, []);
+  useHeader(() => ({ title: "Scanner" }), []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   function clickUpload() {
@@ -91,9 +90,11 @@ export default function ScannerPage() {
             onChange={(e) => setBarcode(e.target.value)}
           />
           <button
-            onClick={() => goToReview(barcode)}
+            aria-label="open review page of the specified barcode"
+            role="navigation"
             disabled={!barcode}
             className="text-app-green"
+            onClick={() => goToReview(barcode)}
           >
             <SearchIcon className="h-7 w-7" />
           </button>
