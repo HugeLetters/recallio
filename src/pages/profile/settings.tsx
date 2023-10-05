@@ -1,9 +1,9 @@
-import { CommondHeader } from "@/components/Header";
 import useHeader from "@/hooks/useHeader";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function ProfileEdit() {
-  useHeader(() => <CommondHeader title="Editing" />, []);
+  useHeader(() => ({ title: "Settings" }), []);
+
   const { status } = useSession();
   if (status !== "authenticated") return "Loading";
 

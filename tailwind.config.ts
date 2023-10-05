@@ -14,7 +14,7 @@ export default {
         },
       },
       boxShadow: { top: "0 -5px 10px", bottom: "0 5px 10px" },
-      dropShadow: { top: "0 -1px 10px" },
+      dropShadow: { top: "0 -1px 10px", around: "0 0 3px" },
       animation: {
         "slide-up": "slide-up 200ms ease-in-out",
         "fade-in": "fade-in 200ms ease-in-out",

@@ -1,7 +1,8 @@
+import { aggregateArrayColumn } from "@/database/utils";
+import { nonEmptyArray } from "@/utils";
 import { asc, desc, getTableColumns, sql, type InferInsertModel } from "drizzle-orm";
 import { Repository, type WhereQuery } from "..";
 import { category, productName, review, reviewsToCategories } from "../../schema/product";
-import { nonEmptyArray } from "@/utils";
 
 type ProductName = typeof productName;
 class ProductNameRepository extends Repository<ProductName> {}
@@ -85,7 +86,7 @@ class ReviewRepository extends Repository<Review> {
 
     return {
       ...review,
-      categories: sql<string[] | [null]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
+      categories: aggregateArrayColumn<string>(reviewsToCategories.category),
     };
   })();
   findFirstWithCategories(query: WhereQuery<Review>) {
@@ -94,7 +95,7 @@ class ReviewRepository extends Repository<Review> {
     return this.db
       .select(this.#reviewWithCategoriesCols)
       .from(this.table)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .leftJoin(
         reviewsToCategories,
         and(
@@ -107,16 +108,14 @@ class ReviewRepository extends Repository<Review> {
       .then((x) => x[0]);
   }
 
-  #reviewSummaryCols = (() => {
-    return {
-      barcode: this.table.barcode,
-      name: this.table.name,
-      imageKey: this.table.imageKey,
-      rating: this.table.rating,
-      categories: sql<string[]>`JSON_ARRAYAGG(${reviewsToCategories.category})`,
-    };
-  })();
-  findReviewSummaries(
+  #reviewSummaryCols = {
+    barcode: this.table.barcode,
+    name: this.table.name,
+    imageKey: this.table.imageKey,
+    rating: this.table.rating,
+    categories: aggregateArrayColumn<string>(reviewsToCategories.category),
+  };
+  findManyReviewSummary(
     query: WhereQuery<Review>,
     options?: {
       page?: { cursor: number; limit: number };
@@ -130,7 +129,7 @@ class ReviewRepository extends Repository<Review> {
     let result = this.db
       .select(this.#reviewSummaryCols)
       .from(this.table)
-      .where(query(this.table, this.operators))
+      .where(query(this.table, this.operators, this.db))
       .leftJoin(
         reviewsToCategories,
         and(

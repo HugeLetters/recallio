@@ -1,7 +1,6 @@
-import { CommondHeader } from "@/components/Header";
-import ImageInput from "@/components/ImageInput";
+import { ImageInput, PrimaryButton, Star } from "@/components/UI";
+import { hasFocusWithin, useUploadThing } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
-import { useUploadThing } from "@/hooks/useUploadthing";
 import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -10,11 +9,11 @@ import * as Separator from "@radix-ui/react-separator";
 import * as Switch from "@radix-ui/react-switch";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
-import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
 import LucidePen from "~icons/custom/pen.jsx";
+import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
 import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
 import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
 import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
@@ -22,7 +21,7 @@ import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
-  useHeader(() => <CommondHeader title={barcode ?? "Recallio"} />, [barcode]);
+  useHeader(() => ({ title: barcode ?? "Recallio" }), [barcode]);
 
   return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
 }
@@ -274,11 +273,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       <button
         onClick={syncWithServer}
         type="button"
-        className="rounded-lg bg-neutral-300 p-1"
+        className="rounded-xl bg-neutral-300 p-1"
       >
         CANCEL CHANGES
       </button>
-      <button className="rounded-lg bg-app-green px-3 py-4 text-white">SUBMIT</button>
+      <PrimaryButton type="submit">SUBMIT</PrimaryButton>
     </form>
   );
 }
@@ -354,27 +353,20 @@ function Categories({ control, name }: CategoriesProps) {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const rootDiv = useRef<HTMLDivElement>(null);
 
   return isEditing ? (
     <div
-      onBlur={() => {
-        // when focus switches on the children on the first tick focus is set on body and on the next set on the new element
-        // so we use setTimeout to check on the next tick
-        setTimeout(() => {
-          setIsEditing(rootDiv.current?.contains(document.activeElement) ?? false);
-        });
-      }}
+      onBlur={hasFocusWithin(setIsEditing)}
       onKeyDown={(e) => {
         if (e.key === "Escape") setIsEditing(false);
       }}
-      ref={rootDiv}
       className="grid grid-cols-5 gap-2 p-2"
     >
       <input
+        autoFocus
+        aria-label="add a category"
         value={inputCategory}
         onChange={(e) => setInputCategory(e.target.value)}
-        autoFocus
         className="col-span-4 rounded-xl p-3 outline outline-1 outline-app-green focus:outline-2"
       />
       <button
@@ -452,20 +444,23 @@ function Rating({ value, setValue }: ModelProps<number>) {
       onValueChange={(val) => {
         setValue(+val);
       }}
-      className="flex gap-4"
+      className="flex gap-4 text-6xl"
     >
-      {[0, 1, 2, 3, 4, 5].map((x) => (
+      <Radio.Item
+        value="0"
+        className="sr-only"
+      >
+        <Star />
+      </Radio.Item>
+      {[1, 2, 3, 4, 5].map((x) => (
         <Radio.Item
           key={x}
           value={x.toString()}
-          className={`${x <= value ? "text-app-gold" : ""} ${
-            x === 0 ? "pointer-events-none h-0 w-0 opacity-0" : ""
-          } text-6xl`}
           onClick={() => {
             if (x === value) setValue(0);
           }}
         >
-          ★
+          <Star highlight={x <= value} />
         </Radio.Item>
       ))}
     </Radio.Root>
@@ -529,8 +524,7 @@ function transformReview(data: RouterOutputs["review"]["getUserReview"]) {
   return Object.assign(rest, {
     pros: pros?.split("\n").map((x) => ({ name: x })) ?? [],
     cons: cons?.split("\n").map((x) => ({ name: x })) ?? [],
-    // TS - whyyyyyy you're can't narrow the type here >:(
-    categories: categories[0] !== null ? categories.map((x) => ({ name: x ?? "" })) : [],
+    categories: categories.map((x) => ({ name: x })),
   });
 }
 
