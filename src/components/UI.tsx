@@ -64,9 +64,9 @@ export function UserPic({ user, className }: UserPicProps) {
       {user.image ? (
         <Image
           src={user.image}
-          alt="your profile pic"
-          width={64}
-          height={64}
+          alt="your avatar"
+          width={100}
+          height={100}
           className="h-full w-full rounded-full"
         />
       ) : (

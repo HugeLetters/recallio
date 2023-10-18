@@ -13,7 +13,7 @@ export default function Header() {
     .at(-1)?.content ?? { title: "Recallio", left: null, right: null };
 
   return (
-    <header className="flex h-14 justify-center bg-white shadow-bottom shadow-black/10">
+    <header className="z-10 flex h-14 justify-center bg-white shadow-bottom shadow-black/10">
       <div className="w-full max-w-md p-2">
         {content.header !== undefined ? (
           content.header
