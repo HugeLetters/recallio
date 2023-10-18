@@ -14,6 +14,7 @@ import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { Flipped, Flipper } from "react-flip-toolkit";
+import EggBasketIcon from "~icons/custom/egg-basket.jsx";
 import GroceriesIcon from "~icons/custom/groceries.jsx";
 import MilkIcon from "~icons/custom/milk.jsx";
 import SearchIcon from "~icons/iconamoon/search.jsx";
@@ -23,18 +24,7 @@ import SettingsIcon from "~icons/solar/settings-linear";
 
 export default function Profile() {
   const { data, status } = useSession();
-  useHeader(
-    () => ({
-      title: "Profile",
-      right: (
-        <HeaderLink
-          Icon={SettingsIcon}
-          href={"/profile/settings"}
-        />
-      ),
-    }),
-    []
-  );
+  useHeader(() => ({ header: <HeaderFilterInput /> }), []);
 
   if (status !== "authenticated") return "Loading";
 
@@ -83,33 +73,24 @@ function Reviews() {
 
   return (
     <div className="flex grow flex-col gap-3 pb-3">
-      <h1 className="text-xl">
-        Reviews
-        {countQuery.isSuccess && <span> ({countQuery.data})</span>}
-      </h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="font-semibold">
+          My reviews
+          {countQuery.isSuccess && <span> ({countQuery.data})</span>}
+        </h1>
+        <SortDialog />
+      </div>
       {/* That way we fetch ReviewCards w/o waiting for countQuery to settle */}
-      {!countQuery.isSuccess || !!countQuery.data ? (
-        <>
-          {countQuery.isSuccess && (
-            <div className="flex items-center justify-between gap-2">
-              <FilterInput />
-              <SortDialog />
-            </div>
-          )}
-          <ReviewCards />
-        </>
-      ) : (
-        <NoReviews />
-      )}
+      {!countQuery.isSuccess || !!countQuery.data ? <ReviewCards /> : <NoReviews />}
     </div>
   );
 }
 
 const filterKey = "search";
-const searchIconFlipId = "search idon";
-function FilterInput() {
+function HeaderFilterInput() {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<number>();
+
   const router = useRouter();
   const filterParam: string = getQueryParam(router.query[filterKey]) ?? "";
   const [filter, setFilter] = useState(filterParam);
@@ -120,61 +101,56 @@ function FilterInput() {
   }, [filterParam, setFilter]);
 
   return (
-    <Flipper
-      flipKey={isOpen}
-      spring={{ damping: 50, stiffness: 400, overshootClamping: true }}
+    <div
+      className="flex h-full items-center gap-2 text-xl"
+      onBlur={hasFocusWithin(setIsOpen)}
     >
+      <button
+        aria-label="Start review search"
+        onClick={() => setIsOpen(true)}
+      >
+        <SearchIcon className="h-7 w-7" />
+      </button>
       {isOpen ? (
-        <label
-          className="flex justify-between rounded-xl p-3 outline outline-app-green"
-          onBlur={hasFocusWithin(setIsOpen)}
-        >
-          <input
-            autoFocus
-            // I have only a very vague idea why w-1/12(or any % size less than 100%) works
-            className="w-1/12 grow self-stretch outline-transparent"
-            aria-label="filter by name or category"
-            value={filter}
-            onChange={(e) => {
-              const { value } = e.target;
-              setFilter(value);
+        <input
+          // key helps refocus input when clear button is pressed
+          key={`${!!filter}`}
+          autoFocus
+          className="h-full grow p-1 caret-app-green"
+          aria-label="filter by name or category"
+          value={filter}
+          onChange={(e) => {
+            const { value } = e.target;
+            setFilter(value);
 
-              window.clearTimeout(debounceTimeoutRef.current);
-              debounceTimeoutRef.current = window.setTimeout(() => {
-                setQueryParam(router, filterKey, value);
-              }, 1000);
-            }}
-          />
-          <Flipped flipId={searchIconFlipId}>
-            {isOpen && !!filter ? (
-              <button
-                aria-label="reset filter"
-                onClick={() => {
-                  setFilter("");
-
-                  window.clearTimeout(debounceTimeoutRef.current);
-                  setQueryParam(router, filterKey, null);
-                }}
-              >
-                <ResetIcon className="h-7 w-7 text-app-green" />
-              </button>
-            ) : (
-              <SearchIcon className="h-7 w-7 text-app-green" />
-            )}
-          </Flipped>
-        </label>
+            window.clearTimeout(debounceTimeoutRef.current);
+            debounceTimeoutRef.current = window.setTimeout(() => {
+              setQueryParam(router, filterKey, value);
+            }, 1000);
+          }}
+        />
       ) : (
-        <button
-          aria-label="Start review search"
-          className="py-3"
-          onClick={() => setIsOpen(true)}
-        >
-          <Flipped flipId={searchIconFlipId}>
-            <SearchIcon className="h-7 w-7 text-app-green" />
-          </Flipped>
-        </button>
+        <div className="grow text-center">Profile</div>
       )}
-    </Flipper>
+      {isOpen && !!filter ? (
+        <button
+          aria-label="reset filter"
+          onClick={() => {
+            setFilter("");
+
+            window.clearTimeout(debounceTimeoutRef.current);
+            setQueryParam(router, filterKey, null);
+          }}
+        >
+          <ResetIcon className="ml-1 h-7 w-7" />
+        </button>
+      ) : (
+        <HeaderLink
+          Icon={SettingsIcon}
+          href="/profile/settings"
+        />
+      )}
+    </div>
   );
 }
 
@@ -296,8 +272,9 @@ function ReviewCards() {
     <div
       className={`flex grow flex-col gap-2 ${reviewCardsQuery.isPreviousData ? "opacity-50" : ""}`}
     >
-      {reviewCardsQuery.isSuccess
-        ? reviewCardsQuery.data.pages.map((data) => {
+      {reviewCardsQuery.isSuccess ? (
+        !!reviewCardsQuery.data.pages[0]?.page.length ? (
+          reviewCardsQuery.data.pages.map((data) => {
             const isLastPage = data === lastPage;
             const triggerSummary = data.page.at(-limit / 2) ?? data.page[0];
 
@@ -313,7 +290,12 @@ function ReviewCards() {
               );
             });
           })
-        : "Loading..."}
+        ) : (
+          <NoResults />
+        )
+      ) : (
+        "Loading..."
+      )}
     </div>
   );
 }
@@ -367,16 +349,25 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
 function NoReviews() {
   return (
     <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
-      {/* todo - this icon needs to be fixed */}
       <GroceriesIcon className="h-auto w-full" />
       <span className="text-xl">Your review list is empty</span>
-      <span className="text-sm">All your scanned goods will be kept here. </span>
+      <span className="text-sm">All your scanned goods will be kept here</span>
       <PrimaryButton
         asLink
         href="/scan"
       >
         Scan for the first time
       </PrimaryButton>
+    </div>
+  );
+}
+
+function NoResults() {
+  return (
+    <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
+      <EggBasketIcon className="h-auto w-full" />
+      <span className="text-xl">No results found</span>
+      <span className="text-sm">Try using different keywords</span>
     </div>
   );
 }

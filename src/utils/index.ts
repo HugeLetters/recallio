@@ -38,5 +38,5 @@ export type DiscriminatedUnion<
   V extends Record<string, unknown>,
   U extends Record<string, unknown>
 > =
-  | (V & { [K in Exclude<keyof U, keyof V>]?: undefined })
-  | (U & { [K in Exclude<keyof V, keyof U>]?: undefined });
+  | (V & { [K in Exclude<keyof U, keyof V>]?: never })
+  | (U & { [K in Exclude<keyof V, keyof U>]?: never });
