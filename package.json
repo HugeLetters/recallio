@@ -64,6 +64,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.1.0",
+    "@iconify-json/fluent-emoji-high-contrast": "^1.1.11",
     "@iconify-json/ic": "^1.1.14",
     "@iconify-json/iconamoon": "^1.1.1",
     "@iconify-json/ion": "^1.1.12",

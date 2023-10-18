@@ -1,7 +1,7 @@
 import { ImageInput, PrimaryButton, Star } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
-import { getQueryParam, type ModelProps, type StrictPick } from "@/utils";
+import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
@@ -64,7 +64,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
   );
 }
 
-const fileReader = typeof window === "undefined" ? null : new FileReader();
+const fileReader = browser ? new FileReader() : null;
 type ReviewFormProps<T> = {
   data: T;
   getServerValue: (callback: (value: T) => void) => void;

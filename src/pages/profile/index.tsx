@@ -1,5 +1,5 @@
 import { HeaderLink } from "@/components/Header";
-import { PrimaryButton, Star } from "@/components/UI";
+import { PrimaryButton, Star, UserPic } from "@/components/UI";
 import { hasFocusWithin } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
@@ -36,10 +36,6 @@ export default function Profile() {
   );
 }
 
-function getInitials(name: string) {
-  const [first, second] = name.split(/[\s_+.-]/);
-  return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
-}
 type ProfileInfoProps = {
   user: Session["user"];
 };
@@ -47,19 +43,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="h-16 w-16">
-        {user.image ? (
-          <Image
-            src={user.image}
-            alt="your profile pic"
-            width={64}
-            height={64}
-            className="h-full w-full rounded-full"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-app-green text-white">
-            {getInitials(user.name)}
-          </div>
-        )}
+        <UserPic user={user} />
       </div>
       <span className="text-2xl font-bold">{user.name}</span>
     </div>

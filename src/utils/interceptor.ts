@@ -1,8 +1,9 @@
 import { rest, setupWorker } from "msw";
+import { browser } from ".";
 
 /** During development adds latency to API calls to mock real-life scenario */
 export default function setupInterceptor() {
-  if (typeof window === "undefined") return;
+  if (!browser) return;
 
   const worker = setupWorker(
     rest.all("/api/*", async (req) => {
