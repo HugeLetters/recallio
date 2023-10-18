@@ -1,3 +1,5 @@
+import type { Session } from "next-auth";
+import Image from "next/image";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
@@ -50,3 +52,28 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
     </label>
   );
 });
+
+function getInitials(name: string) {
+  const [first, second] = name.split(/[\s_+.-]/);
+  return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
+}
+type UserPicProps = { user: Session["user"]; className?: string };
+export function UserPic({ user, className }: UserPicProps) {
+  return (
+    <div className={className}>
+      {user.image ? (
+        <Image
+          src={user.image}
+          alt="your avatar"
+          width={100}
+          height={100}
+          className="h-full w-full rounded-full"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center rounded-full bg-app-green text-white">
+          {getInitials(user.name)}
+        </div>
+      )}
+    </div>
+  );
+}

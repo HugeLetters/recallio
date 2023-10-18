@@ -1,5 +1,5 @@
 import { HeaderLink } from "@/components/Header";
-import { PrimaryButton, Star } from "@/components/UI";
+import { PrimaryButton, Star, UserPic } from "@/components/UI";
 import { hasFocusWithin } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
@@ -13,6 +13,7 @@ import Link from "next/link";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { Flipped, Flipper } from "react-flip-toolkit";
 import EggBasketIcon from "~icons/custom/egg-basket.jsx";
 import GroceriesIcon from "~icons/custom/groceries.jsx";
@@ -36,10 +37,6 @@ export default function Profile() {
   );
 }
 
-function getInitials(name: string) {
-  const [first, second] = name.split(/[\s_+.-]/);
-  return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
-}
 type ProfileInfoProps = {
   user: Session["user"];
 };
@@ -47,19 +44,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="h-16 w-16">
-        {user.image ? (
-          <Image
-            src={user.image}
-            alt="your profile pic"
-            width={64}
-            height={64}
-            className="h-full w-full rounded-full"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-full bg-app-green text-white">
-            {getInitials(user.name)}
-          </div>
-        )}
+        <UserPic user={user} />
       </div>
       <span className="text-2xl font-bold">{user.name}</span>
     </div>
@@ -95,6 +80,8 @@ function HeaderFilterInput() {
   const filterParam: string = getQueryParam(router.query[filterKey]) ?? "";
   const [filter, setFilter] = useState(filterParam);
 
+  const searchIcon = <SearchIcon className="h-7 w-7" />;
+
   // keeps filter in sync on back/forward
   useEffect(() => {
     setFilter(filterParam);
@@ -103,52 +90,65 @@ function HeaderFilterInput() {
   return (
     <div
       className="flex h-full items-center gap-2 text-xl"
-      onBlur={hasFocusWithin(setIsOpen)}
+      onBlur={hasFocusWithin((hasFocus) => {
+        if (!isOpen) return;
+        setIsOpen(hasFocus);
+      })}
     >
-      <button
-        aria-label="Start review search"
-        onClick={() => setIsOpen(true)}
-      >
-        <SearchIcon className="h-7 w-7" />
-      </button>
       {isOpen ? (
-        <input
-          // key helps refocus input when clear button is pressed
-          key={`${!!filter}`}
-          autoFocus
-          className="h-full grow p-1 caret-app-green"
-          aria-label="filter by name or category"
-          value={filter}
-          onChange={(e) => {
-            const { value } = e.target;
-            setFilter(value);
+        <>
+          {createPortal(
+            <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
+            document.body
+          )}
+          {searchIcon}
+          <input
+            // key helps refocus input when clear button is pressed
+            key={`${!!filter}`}
+            autoFocus
+            className="h-full grow p-1 caret-app-green outline-none"
+            placeholder="Seach by..."
+            value={filter}
+            onChange={(e) => {
+              const { value } = e.target;
+              setFilter(value);
 
-            window.clearTimeout(debounceTimeoutRef.current);
-            debounceTimeoutRef.current = window.setTimeout(() => {
-              setQueryParam(router, filterKey, value);
-            }, 1000);
-          }}
-        />
-      ) : (
-        <div className="grow text-center">Profile</div>
-      )}
-      {isOpen && !!filter ? (
-        <button
-          aria-label="reset filter"
-          onClick={() => {
-            setFilter("");
+              window.clearTimeout(debounceTimeoutRef.current);
+              debounceTimeoutRef.current = window.setTimeout(() => {
+                setQueryParam(router, filterKey, value);
+              }, 1000);
+            }}
+          />
+          <button
+            aria-label="reset filter"
+            className="ml-1"
+            onClick={() => {
+              setFilter("");
+              setIsOpen(false);
 
-            window.clearTimeout(debounceTimeoutRef.current);
-            setQueryParam(router, filterKey, null);
-          }}
-        >
-          <ResetIcon className="ml-1 h-7 w-7" />
-        </button>
+              window.clearTimeout(debounceTimeoutRef.current);
+              setQueryParam(router, filterKey, null);
+            }}
+          >
+            <ResetIcon className="h-7 w-7" />
+          </button>
+        </>
       ) : (
-        <HeaderLink
-          Icon={SettingsIcon}
-          href="/profile/settings"
-        />
+        <>
+          <button
+            aria-label="Start review search"
+            onClick={() => {
+              setIsOpen(true);
+            }}
+          >
+            {searchIcon}
+          </button>
+          <div className="grow text-center">Profile</div>
+          <HeaderLink
+            Icon={SettingsIcon}
+            href="/profile/settings"
+          />
+        </>
       )}
     </div>
   );
@@ -177,8 +177,8 @@ function SortDialog() {
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 animate-fade-in bg-black/50" />
-        <Dialog.Content className="fixed bottom-0 left-0 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
+        <Dialog.Overlay className="fixed inset-0 z-10 animate-fade-in bg-black/50" />
+        <Dialog.Content className="fixed bottom-0 left-0 z-10 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
           <div className="w-full max-w-md rounded-t-xl bg-white p-5 text-lime-950">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper

@@ -50,7 +50,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
       >
         <Header />
         <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-auto">
-          {/* @ts-expect-error - I use noAuth property to allow some pages to be acessed w/o login. It's too much of a bother to extend Next interfaces to have this property*/}
           {!Component.noAuth ? (
             <AuthProtection>
               <Component {...pageProps} />
