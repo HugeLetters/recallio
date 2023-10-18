@@ -15,31 +15,35 @@ export default function Header() {
   return (
     <header className="flex h-14 justify-center bg-white shadow-bottom shadow-black/10">
       <div className="w-full max-w-md p-2">
-        <div className="grid h-full w-full grid-cols-3 items-center">
-          <div className="justify-self-start">
-            {content.left !== undefined ? (
-              content.left
-            ) : (
-              <HeaderButton
-                Icon={LeftArrowIcon}
-                onClick={router.back}
-                role="navigation"
-                aria-label="back"
-              />
-            )}
+        {content.header !== undefined ? (
+          content.header
+        ) : (
+          <div className="grid h-full w-full grid-cols-3 items-center">
+            <div className="justify-self-start">
+              {content.left !== undefined ? (
+                content.left
+              ) : (
+                <HeaderButton
+                  Icon={LeftArrowIcon}
+                  onClick={router.back}
+                  role="navigation"
+                  aria-label="back"
+                />
+              )}
+            </div>
+            <h1 className="col-start-2 justify-self-center text-xl">{content.title}</h1>
+            <div className="justify-self-end">
+              {content.right !== undefined ? (
+                content.right
+              ) : (
+                <HeaderLink
+                  Icon={HomeIcon}
+                  href="/"
+                />
+              )}
+            </div>
           </div>
-          <h1 className="col-start-2 justify-self-center text-xl">{content.title}</h1>
-          <div className="justify-self-end">
-            {content.right !== undefined ? (
-              content.right
-            ) : (
-              <HeaderLink
-                Icon={HomeIcon}
-                href="/"
-              />
-            )}
-          </div>
-        </div>
+        )}
       </div>
     </header>
   );

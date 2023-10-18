@@ -1,6 +1,7 @@
+import type { DiscriminatedUnion } from "@/utils";
 import { immerAtom } from "@/utils/immer";
 import { useSetAtom } from "jotai";
-import { useEffect, useId, type ReactNode, useMemo } from "react";
+import { useEffect, useId, useMemo, type ReactNode } from "react";
 
 export default function useHeader(contentGetter: () => Content, deps: unknown[]): void {
   const setContentStack = useSetAtom(contentStackAtom);
@@ -28,5 +29,8 @@ export default function useHeader(contentGetter: () => Content, deps: unknown[])
   }, [id, setContentStack]);
 }
 
-type Content = { title: string; left?: ReactNode; right?: ReactNode } | null;
+type Content = DiscriminatedUnion<
+  { title: ReactNode; left?: ReactNode; right?: ReactNode },
+  { header: Exclude<ReactNode, undefined> }
+> | null;
 export const contentStackAtom = immerAtom<Array<{ content: Content; id: string }>>([]);
