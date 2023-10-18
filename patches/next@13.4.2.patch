@@ -1,0 +1,12 @@
+diff --git a/dist/shared/lib/utils.d.ts b/dist/shared/lib/utils.d.ts
+index b881faf25652fcc5b97122b90bd10b08631ecf58..306e375c2cac1ebcf7bac2272abb009bc14d454d 100644
+--- a/dist/shared/lib/utils.d.ts
++++ b/dist/shared/lib/utils.d.ts
+@@ -17,6 +17,7 @@ export declare type NextComponentType<Context extends BaseContext = NextPageCont
+      * @param context Context of `page`
+      */
+     getInitialProps?(context: Context): InitialProps | Promise<InitialProps>;
++    noAuth?: boolean;
+ };
+ export declare type DocumentType = NextComponentType<DocumentContext, DocumentInitialProps, DocumentProps>;
+ export declare type AppType<P = {}> = NextComponentType<AppContextType, P, AppPropsType<any, P>>;
