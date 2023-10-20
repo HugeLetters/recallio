@@ -1,3 +1,5 @@
+import type { StrictOmit } from "@/utils";
+import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
@@ -75,5 +77,18 @@ export function UserPic({ user, className }: UserPicProps) {
         </div>
       )}
     </div>
+  );
+}
+
+type SwitchProps = StrictOmit<BaseSwitch.SwitchProps, "className">;
+export function Switch(props: SwitchProps) {
+  return (
+    <BaseSwitch.Root
+      {...props}
+      className={`group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green`}
+    >
+      <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
+      <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
+    </BaseSwitch.Root>
   );
 }

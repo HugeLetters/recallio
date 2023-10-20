@@ -32,10 +32,11 @@ export default {
     },
   },
   plugins: [
-    plugin(({ addVariant }) => {
+    plugin(({ addVariant, matchVariant }) => {
       addVariant("selected", "&:is(:focus-within,:hover)");
       addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
       addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
+      matchVariant("not", (value) => `&:not(${value})`);
     }),
   ],
 } satisfies Config;
