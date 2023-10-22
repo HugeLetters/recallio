@@ -66,9 +66,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 export default api.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
-  const { status } = useSession({ required: true });
+  const { data } = useSession({ required: true });
 
-  if (status !== "authenticated") {
+  if (!data) {
     return <>Loading...</>;
   }
 

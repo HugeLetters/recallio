@@ -23,7 +23,7 @@ import SwapIcon from "~icons/iconamoon/swap.jsx";
 import ResetIcon from "~icons/radix-icons/cross-1";
 import SettingsIcon from "~icons/solar/settings-linear";
 
-export default function Profile() {
+export default function Page() {
   const { data, status } = useSession();
   useHeader(() => ({ header: <HeaderFilterInput /> }), []);
 

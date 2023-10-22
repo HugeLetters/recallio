@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 import StarIcon from "~icons/typcn/star-full-outline";
+import BlankAvatarBg from "@/assets/blank-avatar.png";
 
 type PrimaryButtonProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
   T extends true ? typeof Link : "button"
@@ -62,18 +63,25 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={className}>
+    <div className={`h-full w-full ${className}`}>
       {user.image ? (
         <Image
           src={user.image}
           alt="your avatar"
           width={100}
           height={100}
-          className="h-full w-full rounded-full"
+          className="h-full w-full rounded-full drop-shadow-md"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center rounded-full bg-app-green text-white">
-          {getInitials(user.name)}
+        <div
+          className="flex h-full w-full items-center justify-center overflow-hidden rounded-full"
+          aria-label="your avatar placeholder"
+        >
+          <Image
+            src={BlankAvatarBg}
+            alt=""
+          />
+          <span className="absolute text-2xl font-bold">{getInitials(user.name)}</span>
         </div>
       )}
     </div>
