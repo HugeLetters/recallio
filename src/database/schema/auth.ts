@@ -11,6 +11,7 @@ export const user = mysqlTable("user", {
     mode: "date",
     fsp: 3,
   }).default(sql`(CURRENT_TIMESTAMP)`),
+  /** Stored either as URL or an UploadThing key */
   image: varchar("image", { length: 255 }),
 });
 export const userRelations = relations(user, ({ many }) => ({

@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 
-export default function ScannerPage() {
+export default function Page() {
   useHeader(() => ({ title: "Scanner" }), []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);

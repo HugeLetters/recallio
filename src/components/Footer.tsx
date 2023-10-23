@@ -29,7 +29,7 @@ export default function Footer() {
 
   return (
     <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-top shadow-black/10">
-      <nav className="grid w-full max-w-md grid-cols-[1fr,auto,1fr] items-center justify-items-center">
+      <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] items-center justify-items-center">
         <Link
           href="/search"
           className={`flex flex-col items-center transition-colors ${

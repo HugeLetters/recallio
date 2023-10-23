@@ -33,6 +33,15 @@ export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;
 }
 
+export function isValidUrlString(url: string) {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type StrictPick<T, K extends keyof T> = Pick<T, K>;
 export type ModelProps<T> = { value: T; setValue: (value: T) => void };

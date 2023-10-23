@@ -23,10 +23,10 @@ import SwapIcon from "~icons/iconamoon/swap.jsx";
 import ResetIcon from "~icons/radix-icons/cross-1";
 import SettingsIcon from "~icons/solar/settings-linear";
 
-export default function Profile() {
-  const { data, status } = useSession();
+export default function Page() {
   useHeader(() => ({ header: <HeaderFilterInput /> }), []);
 
+  const { data, status } = useSession();
   if (status !== "authenticated") return "Loading";
 
   return (
@@ -179,7 +179,7 @@ function SortDialog() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-10 animate-fade-in bg-black/50" />
         <Dialog.Content className="fixed bottom-0 left-0 z-10 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
-          <div className="w-full max-w-md rounded-t-xl bg-white p-5 text-lime-950">
+          <div className="w-full max-w-app rounded-t-xl bg-white p-5 text-lime-950">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}

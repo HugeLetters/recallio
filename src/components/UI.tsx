@@ -1,9 +1,12 @@
+import type { StrictOmit } from "@/utils";
+import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 import StarIcon from "~icons/typcn/star-full-outline";
+import BlankAvatarBg from "@/assets/blank-avatar.png";
 
 type PrimaryButtonProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
   T extends true ? typeof Link : "button"
@@ -60,20 +63,40 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={className}>
+    <div className={`aspect-square h-full w-full ${className}`}>
       {user.image ? (
         <Image
           src={user.image}
           alt="your avatar"
           width={100}
           height={100}
-          className="h-full w-full rounded-full"
+          className="h-full w-full rounded-full object-cover drop-shadow-md"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center rounded-full bg-app-green text-white">
-          {getInitials(user.name)}
+        <div
+          className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full"
+          aria-label="your avatar placeholder"
+        >
+          <Image
+            src={BlankAvatarBg}
+            alt=""
+          />
+          <span className="absolute text-2xl font-bold">{getInitials(user.name)}</span>
         </div>
       )}
     </div>
+  );
+}
+
+type SwitchProps = StrictOmit<BaseSwitch.SwitchProps, "className">;
+export function Switch(props: SwitchProps) {
+  return (
+    <BaseSwitch.Root
+      {...props}
+      className={`group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green`}
+    >
+      <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
+      <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
+    </BaseSwitch.Root>
   );
 }
