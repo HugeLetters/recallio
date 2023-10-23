@@ -1,4 +1,4 @@
-import { ImageInput, PrimaryButton, Star, Switch } from "@/components/UI";
+import { ImageInput, Clickable, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
@@ -270,7 +270,12 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <PrimaryButton type="submit">SUBMIT</PrimaryButton>
+      <Clickable
+        variant="primary"
+        type="submit"
+      >
+        SUBMIT
+      </Clickable>
     </form>
   );
 }

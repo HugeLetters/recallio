@@ -1,5 +1,5 @@
 import { HeaderLink } from "@/components/Header";
-import { PrimaryButton, Star, UserPic } from "@/components/UI";
+import { Clickable, Star, UserPic } from "@/components/UI";
 import { hasFocusWithin } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
@@ -352,12 +352,13 @@ function NoReviews() {
       <GroceriesIcon className="h-auto w-full" />
       <span className="text-xl">Your review list is empty</span>
       <span className="text-sm">All your scanned goods will be kept here</span>
-      <PrimaryButton
+      <Clickable
+        variant="primary"
         asLink
         href="/scan"
       >
         Scan for the first time
-      </PrimaryButton>
+      </Clickable>
     </div>
   );
 }

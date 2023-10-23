@@ -1,12 +1,13 @@
 import { ImageInput } from "@/components/UI";
-import useBarcodeScanner from "@/hooks/useBarcodeScanner";
 import useHeader from "@/hooks/useHeader";
 import { clamp } from "@/utils";
 import { useDrag } from "@use-gesture/react";
+import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
 import { useAtom } from "jotai";
 import { atomWithReducer } from "jotai/utils";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import SearchIcon from "~icons/iconamoon/search.jsx";
 
 export default function Page() {
@@ -197,3 +198,80 @@ export const selectionAtom = atomWithReducer(
     return newValue;
   }
 );
+
+type Scanner = Html5Qrcode;
+type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
+/**
+ * Scanner cleans-up on being unmounted automatically.
+ */
+function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
+  const id = useId();
+  const [state, setState] = useState<ScannerState>("not mounted");
+  const scanner = useRef<Scanner>();
+  useEffect(() => {
+    scanner.current = createScanner(id);
+    setState("stopped");
+
+    return () => {
+      stop().catch(console.error);
+      scanner.current = undefined;
+      setState("not mounted");
+    };
+  }, [id]);
+
+  if (state === "not mounted" || !scanner.current) return { ready: false as const, state, id };
+
+  function getScanner() {
+    scanner.current ??= createScanner(id);
+    return scanner.current;
+  }
+
+  async function start() {
+    if (state === "starting") return;
+    setState("starting");
+
+    const scanner = getScanner();
+    await stop();
+
+    return scanner
+      .start({ facingMode: "environment" }, { fps: 15 }, onScan, () => void 0)
+      .then(() => setState("scanning"))
+      .catch((e) => {
+        console.error(e);
+        setState("stopped");
+        toast.error("There was an error trying to start the scanner.");
+      });
+  }
+
+  async function stop(updateState?: boolean) {
+    if (!scanner.current) return;
+    if (scanner.current.getState() === Html5QrcodeScannerState.SCANNING) {
+      return scanner.current
+        .stop()
+        .then(() => updateState && setState("stopped"))
+        .catch(console.error);
+    }
+  }
+
+  return {
+    ready: true as const,
+    state,
+    id,
+    /** Does not have referential equality on rerenders */
+    start,
+    /** Does not have referential equality on rerenders */
+    stop: () => stop(true),
+    /** Stops the scanner before reading the file */
+    scanFile: async (image: File) => {
+      await stop(true);
+      return getScanner().scanFileV2(image, false);
+    },
+  };
+}
+
+function createScanner(id: string) {
+  return new Html5Qrcode(id, {
+    useBarCodeDetectorIfSupported: true,
+    verbose: false,
+  });
+}
