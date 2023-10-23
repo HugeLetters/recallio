@@ -4,8 +4,12 @@ import {
   userRepository,
   verificationTokenRepository,
 } from "@/database/repository/auth";
+import type { user } from "@/database/schema/auth";
+import { isValidUrlString } from "@/utils";
 import type { Adapter } from "@auth/core/adapters";
-import { uniqueNamesGenerator, type Config, adjectives, animals } from "unique-names-generator";
+import type { InferSelectModel } from "drizzle-orm";
+import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
+import { utapi } from "uploadthing/server";
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
 
 export function DatabaseAdapter(): Adapter {
@@ -20,18 +24,26 @@ export function DatabaseAdapter(): Adapter {
 
       return userRepository
         .findFirst((table, { eq }) => eq(table.id, id))
-        .then((value) => {
-          if (!value) throw new Error("User was not created successfully");
-          return value;
+        .then((user) => {
+          if (!user) throw new Error("User was not created successfully");
+          return userWithImageUrl(user);
         });
     },
     getUser(id) {
-      return userRepository.findFirst((table, { eq }) => eq(table.id, id)).then((x) => x ?? null);
+      return userRepository
+        .findFirst((table, { eq }) => eq(table.id, id))
+        .then((user) => {
+          if (!user) return null;
+          return userWithImageUrl(user);
+        });
     },
     getUserByEmail(email) {
       return userRepository
         .findFirst((table, { eq }) => eq(table.email, email))
-        .then((x) => x ?? null);
+        .then((user) => {
+          if (!user) return null;
+          return userWithImageUrl(user);
+        });
     },
     async createSession(session) {
       await sessionRepository.create(session);
@@ -46,7 +58,11 @@ export function DatabaseAdapter(): Adapter {
     getSessionAndUser(sessionToken) {
       return sessionRepository
         .findFirstWithUser((table, { eq }) => eq(table.sessionToken, sessionToken))
-        .then((x) => x ?? null);
+        .then(async (data) => {
+          if (!data) return null;
+
+          return { session: data.session, user: await userWithImageUrl(data.user) };
+        });
     },
     async updateUser(data) {
       if (!data.id) {
@@ -57,9 +73,9 @@ export function DatabaseAdapter(): Adapter {
 
       return userRepository
         .findFirst((table, { eq }) => eq(table.id, data.id))
-        .then((value) => {
-          if (!value) throw new Error("User was not updated successfully");
-          return value;
+        .then((user) => {
+          if (!user) throw new Error("User was not updated successfully");
+          return userWithImageUrl(user);
         });
     },
     async updateSession(session) {
@@ -82,7 +98,10 @@ export function DatabaseAdapter(): Adapter {
             eq(table.providerAccountId, account.providerAccountId)
           )
         )
-        .then((x) => x?.user ?? null);
+        .then((data) => {
+          if (!data) return null;
+          return userWithImageUrl(data.user);
+        });
     },
     async deleteSession(sessionToken) {
       const session = await sessionRepository.findFirst((table, { eq }) =>
@@ -135,4 +154,14 @@ export function DatabaseAdapter(): Adapter {
       return undefined;
     },
   };
+}
+
+type User = InferSelectModel<typeof user>;
+function userWithImageUrl(user: User) {
+  if (!user.image || isValidUrlString(user.image)) return user;
+
+  return utapi
+    .getFileUrls(user.image)
+    .then((utFiles) => utFiles[0]?.url ?? null)
+    .then((url) => ({ ...user, image: url }));
 }

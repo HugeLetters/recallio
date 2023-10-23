@@ -1,4 +1,4 @@
-import { ImageInput, PrimaryButton, Star } from "@/components/UI";
+import { ImageInput, PrimaryButton, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import useHeader from "@/hooks/useHeader";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
@@ -6,7 +6,6 @@ import { api, type RouterOutputs } from "@/utils/api";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Separator from "@radix-ui/react-separator";
-import * as Switch from "@radix-ui/react-switch";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState, type FormEvent } from "react";
@@ -262,13 +261,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       </div>
       <label className="flex items-center justify-between  rounded-2xl bg-neutral-100 px-3 py-4 font-bold ">
         Private review
-        <Switch.Root
-          defaultChecked
-          className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green"
-        >
-          <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
-          <Switch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
-        </Switch.Root>
+        <Switch defaultChecked />
       </label>
       <button
         onClick={syncWithServer}

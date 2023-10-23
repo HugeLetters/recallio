@@ -36,9 +36,7 @@ interface CreateContextOptions {
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
 const createInnerTRPCContext = ({ session }: CreateContextOptions) => {
-  return {
-    session,
-  };
+  return { session };
 };
 
 /**
@@ -51,9 +49,7 @@ export const createTRPCContext = async ({ req, res }: CreateNextContextOptions) 
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
 
-  return createInnerTRPCContext({
-    session,
-  });
+  return createInnerTRPCContext({ session });
 };
 
 /**
