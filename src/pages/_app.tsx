@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
+import { browser } from "@/utils";
 import { api } from "@/utils/api";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
@@ -23,7 +24,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   useEffect(() => {
-    if (env.NEXT_PUBLIC_NODE_ENV == "production") return;
+    if (env.NEXT_PUBLIC_NODE_ENV == "production" || !browser) return;
 
     const worker = import("@/utils/interceptor")
       .then((module) => module.default)
