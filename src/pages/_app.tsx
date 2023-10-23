@@ -49,7 +49,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         className={`${lato.variable} grid h-[100dvh] w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950`}
       >
         <Header />
-        <main className="flex w-full max-w-md justify-center justify-self-center overflow-y-auto">
+        <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
           {!Component.noAuth ? (
             <AuthProtection>
               <Component {...pageProps} />
@@ -66,12 +66,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 export default api.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
-  const { data } = useSession({ required: true });
-
-  if (!data) {
-    return <>Loading...</>;
-  }
-
+  useSession({ required: true });
   return <>{children}</>;
 }
 

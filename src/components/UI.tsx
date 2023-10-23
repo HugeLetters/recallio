@@ -63,18 +63,18 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`h-full w-full ${className}`}>
+    <div className={`aspect-square h-full w-full ${className}`}>
       {user.image ? (
         <Image
           src={user.image}
           alt="your avatar"
           width={100}
           height={100}
-          className="h-full w-full rounded-full drop-shadow-md"
+          className="h-full w-full rounded-full object-cover drop-shadow-md"
         />
       ) : (
         <div
-          className="flex h-full w-full items-center justify-center overflow-hidden rounded-full"
+          className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full"
           aria-label="your avatar placeholder"
         >
           <Image

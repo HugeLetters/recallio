@@ -1,7 +1,9 @@
 import { accountRepository, userRepository } from "@/database/repository/auth";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { z } from "zod";
+import { isValidUrlString } from "@/utils";
 import type { AsyncResult } from "@/utils/api";
+import { utapi } from "uploadthing/server";
+import { z } from "zod";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
   setName: protectedProcedure.input(z.string()).mutation(
@@ -17,7 +19,7 @@ export const userRouter = createTRPCRouter({
           if (!query.rowsAffected) {
             return {
               ok: false as const,
-              error: "User wasn't found",
+              error: "User not found",
             };
           }
           return { ok: true as const, data: undefined };
@@ -28,6 +30,30 @@ export const userRouter = createTRPCRouter({
         });
     }
   ),
+  deleteImage: protectedProcedure.mutation(({ ctx: { session } }): AsyncResult<void, string> => {
+    return userRepository
+      .findFirst((table, { eq }) => eq(table.id, session.user.id))
+      .then((user) => {
+        if (!user) return { ok: false, error: "User not found" };
+        const { image } = user;
+        if (!image) return { ok: false, error: "No image attached to the user" };
+
+        return userRepository
+          .update({ image: null }, (table, { eq }) => eq(table.id, session.user.id))
+          .then((query) => {
+            if (!query.rowsAffected) return { ok: false as const, error: "User not found" };
+
+            if (!isValidUrlString(image)) {
+              utapi.deleteFiles([image]).catch(console.error);
+            }
+            return { ok: true as const, data: undefined };
+          })
+          .catch((e) => {
+            console.error(e);
+            return { ok: false, error: "Error while trying to update your avatar" };
+          });
+      });
+  }),
   getAccountProviders: protectedProcedure.query(
     ({
       ctx: {
