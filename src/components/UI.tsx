@@ -1,5 +1,5 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import type { StrictOmit } from "@/utils";
+import type { Icon, StrictOmit } from "@/utils";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
@@ -7,7 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
-import type Icon from "~icons/";
 import DiscordIcon from "~icons/logos/discord-icon";
 import GoogleIcon from "~icons/logos/google-icon";
 import LinkedinIcon from "~icons/logos/linkedin-icon";
@@ -114,7 +113,7 @@ export function Switch(props: SwitchProps) {
   );
 }
 
-const providerRecord: Partial<Record<OAuthProviderType, typeof Icon>> = {
+const providerRecord: Partial<Record<OAuthProviderType, Icon>> = {
   discord: DiscordIcon,
   github: GithubIcon,
   google: GoogleIcon,

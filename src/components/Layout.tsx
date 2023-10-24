@@ -1,8 +1,7 @@
-import type { DiscriminatedUnion } from "@/utils";
+import type { DiscriminatedUnion, Icon } from "@/utils";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
-import type Icon from "~icons/*";
 import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search";
 import ProfileIcon from "~icons/ion/person-outline";
@@ -67,7 +66,7 @@ function Header({ header, left, right, title }: HeaderProps) {
   );
 }
 
-type HeaderButtonProps = { Icon: typeof Icon } & ComponentPropsWithoutRef<"button">;
+type HeaderButtonProps = { Icon: Icon } & ComponentPropsWithoutRef<"button">;
 export function HeaderButton({ Icon, type, className, ...butonAttributes }: HeaderButtonProps) {
   return (
     <button
@@ -80,7 +79,7 @@ export function HeaderButton({ Icon, type, className, ...butonAttributes }: Head
   );
 }
 
-type HeaderLinkProps = { Icon: typeof Icon } & ComponentPropsWithoutRef<typeof Link>;
+type HeaderLinkProps = { Icon: Icon } & ComponentPropsWithoutRef<typeof Link>;
 export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
   return (
     <Link
@@ -92,7 +91,7 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
   );
 }
 
-type FooterProps = { Icon?: typeof Icon };
+type FooterProps = { Icon?: Icon };
 function Footer({ Icon }: FooterProps) {
   const route = useRouter().pathname;
   Icon ??= ScanIcon;
