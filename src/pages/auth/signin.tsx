@@ -44,6 +44,7 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
         <Input
           value={email}
           required
+          name="email"
           type="email"
           onChange={(e) => setEmail(e.target.value)}
         />
