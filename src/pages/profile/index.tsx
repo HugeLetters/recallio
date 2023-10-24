@@ -277,12 +277,11 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
 }
 
 function NoReviews() {
-  // todo - сократить расстояние между строкам
   return (
-    <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
+    <div className="flex w-full grow flex-col items-center justify-center px-12">
       <GroceriesIcon className="h-auto w-full" />
-      <span className="text-xl">Your review list is empty</span>
-      <span className="text-sm">All your scanned goods will be kept here</span>
+      <span className="pt-4 text-xl">Your review list is empty</span>
+      <span className="pb-4 text-sm">All your scanned goods will be kept here</span>
       <Clickable
         variant="primary"
         asLink
@@ -296,9 +295,9 @@ function NoReviews() {
 
 function NoResults() {
   return (
-    <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
+    <div className="flex w-full grow flex-col items-center justify-center px-12">
       <EggBasketIcon className="h-auto w-full" />
-      <span className="text-xl">No results found</span>
+      <span className="pt-4 text-xl">No results found</span>
       <span className="text-sm">Try using different keywords</span>
     </div>
   );
