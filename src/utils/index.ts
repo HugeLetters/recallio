@@ -1,5 +1,6 @@
 import type { NextRouter } from "next/router";
 import type { Query } from "nextjs-routes";
+import type IconFC from "~icons/";
 
 export const browser = typeof window !== "undefined";
 
@@ -29,6 +30,12 @@ export function includes<T>(array: readonly T[], element: unknown): element is T
   return array.includes(element as T);
 }
 
+export function indexOf(array: readonly unknown[], value: unknown) {
+  const index = array.indexOf(value);
+  if (index === -1) return null;
+  return index;
+}
+
 export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;
 }
@@ -42,6 +49,7 @@ export function isValidUrlString(url: string) {
   }
 }
 
+export type Icon = typeof IconFC;
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type StrictPick<T, K extends keyof T> = Pick<T, K>;
 export type ModelProps<T> = { value: T; setValue: (value: T) => void };

@@ -1,7 +1,6 @@
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
+import { browser } from "@/utils";
 import { api } from "@/utils/api";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
@@ -12,6 +11,7 @@ import Head from "next/head";
 import { useEffect, type ReactNode } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+
 const lato = Lato({
   subsets: ["latin"],
   variable: "--font-lato",
@@ -23,7 +23,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   useEffect(() => {
-    if (env.NEXT_PUBLIC_NODE_ENV == "production") return;
+    if (env.NEXT_PUBLIC_NODE_ENV == "production" || !browser) return;
 
     const worker = import("@/utils/interceptor")
       .then((module) => module.default)
@@ -45,20 +45,14 @@ const MyApp: AppType<{ session: Session | null }> = ({
           href="/favicon.ico"
         />
       </Head>
-      <div
-        className={`${lato.variable} grid h-[100dvh] w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950`}
-      >
-        <Header />
-        <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
-          {!Component.noAuth ? (
-            <AuthProtection>
-              <Component {...pageProps} />
-            </AuthProtection>
-          ) : (
+      <div className={`contents font-lato ${lato.variable}`}>
+        {!Component.noAuth ? (
+          <AuthProtection>
             <Component {...pageProps} />
-          )}
-        </main>
-        <Footer />
+          </AuthProtection>
+        ) : (
+          <Component {...pageProps} />
+        )}
       </div>
     </Providers>
   );

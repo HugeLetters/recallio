@@ -1,7 +1,6 @@
-import { HeaderLink } from "@/components/Header";
-import { PrimaryButton, Star, UserPic } from "@/components/UI";
-import { hasFocusWithin } from "@/hooks";
-import useHeader from "@/hooks/useHeader";
+import { HeaderSearchBar, SEARCH_QUERY_KEY } from "@/components/HeaderSearchBar";
+import { HeaderLink, Layout } from "@/components/Layout";
+import { Clickable, Star, UserPic } from "@/components/UI";
 import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -12,28 +11,42 @@ import Image from "next/image";
 import Link from "next/link";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState, type RefObject } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, type RefObject } from "react";
 import { Flipped, Flipper } from "react-flip-toolkit";
 import EggBasketIcon from "~icons/custom/egg-basket.jsx";
 import GroceriesIcon from "~icons/custom/groceries.jsx";
 import MilkIcon from "~icons/custom/milk.jsx";
-import SearchIcon from "~icons/iconamoon/search.jsx";
 import SwapIcon from "~icons/iconamoon/swap.jsx";
-import ResetIcon from "~icons/radix-icons/cross-1";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 export default function Page() {
-  useHeader(() => ({ header: <HeaderFilterInput /> }), []);
-
   const { data, status } = useSession();
-  if (status !== "authenticated") return "Loading";
 
   return (
-    <div className="flex w-full flex-col gap-2 p-4">
-      <ProfileInfo user={data.user} />
-      <Reviews />
-    </div>
+    <Layout
+      header={{
+        header: (
+          <HeaderSearchBar
+            right={
+              <HeaderLink
+                Icon={SettingsIcon}
+                href="/profile/settings"
+              />
+            }
+            title="Profile"
+          />
+        ),
+      }}
+    >
+      {status === "authenticated" ? (
+        <div className="flex w-full flex-col gap-2 p-4">
+          <ProfileInfo user={data.user} />
+          <Reviews />
+        </div>
+      ) : (
+        "Loading"
+      )}
+    </Layout>
   );
 }
 
@@ -67,89 +80,6 @@ function Reviews() {
       </div>
       {/* That way we fetch ReviewCards w/o waiting for countQuery to settle */}
       {!countQuery.isSuccess || !!countQuery.data ? <ReviewCards /> : <NoReviews />}
-    </div>
-  );
-}
-
-const filterKey = "search";
-function HeaderFilterInput() {
-  const [isOpen, setIsOpen] = useState(false);
-  const debounceTimeoutRef = useRef<number>();
-
-  const router = useRouter();
-  const filterParam: string = getQueryParam(router.query[filterKey]) ?? "";
-  const [filter, setFilter] = useState(filterParam);
-
-  const searchIcon = <SearchIcon className="h-7 w-7" />;
-
-  // keeps filter in sync on back/forward
-  useEffect(() => {
-    setFilter(filterParam);
-  }, [filterParam, setFilter]);
-
-  return (
-    <div
-      className="flex h-full items-center gap-2 text-xl"
-      onBlur={hasFocusWithin((hasFocus) => {
-        if (!isOpen) return;
-        setIsOpen(hasFocus);
-      })}
-    >
-      {isOpen ? (
-        <>
-          {createPortal(
-            <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
-            document.body
-          )}
-          {searchIcon}
-          <input
-            // key helps refocus input when clear button is pressed
-            key={`${!!filter}`}
-            autoFocus
-            className="h-full grow p-1 caret-app-green outline-none"
-            placeholder="Seach by..."
-            value={filter}
-            onChange={(e) => {
-              const { value } = e.target;
-              setFilter(value);
-
-              window.clearTimeout(debounceTimeoutRef.current);
-              debounceTimeoutRef.current = window.setTimeout(() => {
-                setQueryParam(router, filterKey, value);
-              }, 1000);
-            }}
-          />
-          <button
-            aria-label="reset filter"
-            className="ml-1"
-            onClick={() => {
-              setFilter("");
-              setIsOpen(false);
-
-              window.clearTimeout(debounceTimeoutRef.current);
-              setQueryParam(router, filterKey, null);
-            }}
-          >
-            <ResetIcon className="h-7 w-7" />
-          </button>
-        </>
-      ) : (
-        <>
-          <button
-            aria-label="Start review search"
-            onClick={() => {
-              setIsOpen(true);
-            }}
-          >
-            {searchIcon}
-          </button>
-          <div className="grow text-center">Profile</div>
-          <HeaderLink
-            Icon={SettingsIcon}
-            href="/profile/settings"
-          />
-        </>
-      )}
     </div>
   );
 }
@@ -236,7 +166,7 @@ function parseSortParam(param: SortOption): SortQuery {
 const limit = 20;
 function ReviewCards() {
   const router = useRouter();
-  const filter = getQueryParam(router.query[filterKey]);
+  const filter = getQueryParam(router.query[SEARCH_QUERY_KEY]);
   const sortParam = useParseSort(router);
   const sort = parseSortParam(sortParam);
 
@@ -348,25 +278,26 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
 
 function NoReviews() {
   return (
-    <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
+    <div className="flex w-full grow flex-col items-center justify-center px-12">
       <GroceriesIcon className="h-auto w-full" />
-      <span className="text-xl">Your review list is empty</span>
-      <span className="text-sm">All your scanned goods will be kept here</span>
-      <PrimaryButton
+      <span className="pt-4 text-xl">Your review list is empty</span>
+      <span className="pb-4 text-sm">All your scanned goods will be kept here</span>
+      <Clickable
+        variant="primary"
         asLink
         href="/scan"
       >
         Scan for the first time
-      </PrimaryButton>
+      </Clickable>
     </div>
   );
 }
 
 function NoResults() {
   return (
-    <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
+    <div className="flex w-full grow flex-col items-center justify-center px-12">
       <EggBasketIcon className="h-auto w-full" />
-      <span className="text-xl">No results found</span>
+      <span className="pt-4 text-xl">No results found</span>
       <span className="text-sm">Try using different keywords</span>
     </div>
   );

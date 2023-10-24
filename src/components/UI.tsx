@@ -1,22 +1,34 @@
-import type { StrictOmit } from "@/utils";
+import BlankAvatarBg from "@/assets/blank-avatar.png";
+import type { Icon, StrictOmit } from "@/utils";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
+import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
 import Link from "next/link";
-import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
+import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
+import DiscordIcon from "~icons/logos/discord-icon";
+import GoogleIcon from "~icons/logos/google-icon";
+import LinkedinIcon from "~icons/logos/linkedin-icon";
+import GithubIcon from "~icons/mdi/github";
 import StarIcon from "~icons/typcn/star-full-outline";
-import BlankAvatarBg from "@/assets/blank-avatar.png";
 
-type PrimaryButtonProps<T extends boolean> = { asLink?: T } & ComponentPropsWithoutRef<
-  T extends true ? typeof Link : "button"
->;
-export function PrimaryButton<T extends boolean = false>({
+const variantClass: Record<"primary" | "ghost", string> = {
+  primary: "bg-app-green text-white",
+  ghost:
+    "bg-neutral-100 text-lime-950 outline outline-1 outline-neutral-400/30 focus-within:outline-2  focus-within:outline-neutral-400/70",
+};
+type ClickableProps<T extends boolean> = {
+  asLink?: T;
+  variant: keyof typeof variantClass;
+} & ComponentPropsWithoutRef<T extends true ? typeof Link : "button">;
+export function Clickable<T extends boolean = false>({
+  variant,
   asLink,
   className,
   children,
   ...restProps
-}: PropsWithChildren<PrimaryButtonProps<T>>) {
+}: PropsWithChildren<ClickableProps<T>>) {
   const Component = asLink ? Link : "button";
 
   return (
@@ -24,7 +36,7 @@ export function PrimaryButton<T extends boolean = false>({
     <Component
       type={!asLink ? "button" : undefined}
       {...restProps}
-      className={`rounded-xl bg-app-green px-2.5 py-3.5 text-white transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${className}`}
+      className={`rounded-xl px-2.5 py-3.5 transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${variantClass[variant]} ${className}`}
     >
       {children}
     </Component>
@@ -63,7 +75,7 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`aspect-square h-full w-full ${className}`}>
+    <div className={`aspect-square h-full w-full select-none ${className}`}>
       {user.image ? (
         <Image
           src={user.image}
@@ -98,5 +110,34 @@ export function Switch(props: SwitchProps) {
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
     </BaseSwitch.Root>
+  );
+}
+
+const providerRecord: Partial<Record<OAuthProviderType, Icon>> = {
+  discord: DiscordIcon,
+  github: GithubIcon,
+  google: GoogleIcon,
+  linkedin: LinkedinIcon,
+};
+export const providers = Object.entries(providerRecord);
+
+type WithLabelProps = { label: string; className?: string };
+export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {
+  return (
+    <label className={`flex flex-col ${className}`}>
+      <p className="p-2 text-sm">{label}</p>
+      {children}
+    </label>
+  );
+}
+
+type InputProps = ComponentPropsWithRef<"input">;
+export function Input({ ref, className, ...inputProps }: InputProps) {
+  return (
+    <input
+      ref={ref}
+      className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${className}`}
+      {...inputProps}
+    />
   );
 }

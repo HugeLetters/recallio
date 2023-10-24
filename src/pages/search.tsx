@@ -1,7 +1,25 @@
-import useHeader from "@/hooks/useHeader";
+import { HeaderSearchBar } from "@/components/HeaderSearchBar";
+import { HeaderLink, Layout } from "@/components/Layout";
+import HomeIcon from "~icons/uil/home-alt";
 
 export default function Page() {
-  useHeader(() => ({ title: "Search" }), []);
-
-  return <div>SEARCH PAGE</div>;
+  return (
+    <Layout
+      header={{
+        header: (
+          <HeaderSearchBar
+            right={
+              <HeaderLink
+                Icon={HomeIcon}
+                href="/"
+              />
+            }
+            title="Search"
+          />
+        ),
+      }}
+    >
+      <div>SEARCH PAGE</div>
+    </Layout>
+  );
 }

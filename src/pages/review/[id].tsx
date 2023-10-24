@@ -1,6 +1,6 @@
-import { ImageInput, PrimaryButton, Star, Switch } from "@/components/UI";
+import { Layout } from "@/components/Layout";
+import { Clickable, ImageInput, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
-import useHeader from "@/hooks/useHeader";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -20,9 +20,12 @@ import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
-  useHeader(() => ({ title: barcode ?? "Recallio" }), [barcode]);
 
-  return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
+  return (
+    <Layout header={{ title: barcode ?? "Recallio" }}>
+      {!!barcode ? <ReviewBlock barcode={barcode} /> : "loading..."}
+    </Layout>
+  );
 }
 
 type ReviewBlockProps = { barcode: string };
@@ -270,7 +273,12 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <PrimaryButton type="submit">SUBMIT</PrimaryButton>
+      <Clickable
+        variant="primary"
+        type="submit"
+      >
+        SUBMIT
+      </Clickable>
     </form>
   );
 }
