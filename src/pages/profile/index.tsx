@@ -33,6 +33,7 @@ export default function Page() {
                 href="/profile/settings"
               />
             }
+            title="Profile"
           />
         ),
       }}

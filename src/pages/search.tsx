@@ -14,6 +14,7 @@ export default function Page() {
                 href="/"
               />
             }
+            title="Search"
           />
         ),
       }}

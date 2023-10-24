@@ -7,8 +7,8 @@ import SearchIcon from "~icons/iconamoon/search.jsx";
 import ResetIcon from "~icons/radix-icons/cross-1";
 
 export const SEARCH_QUERY_KEY = "search";
-type HeaderSearchBarProps = { right: ReactNode };
-export function HeaderSearchBar({ right }: HeaderSearchBarProps) {
+type HeaderSearchBarProps = { right: ReactNode; title: string };
+export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<number>();
 
@@ -56,7 +56,7 @@ export function HeaderSearchBar({ right }: HeaderSearchBarProps) {
             }}
           />
           <button
-            aria-label="reset filter"
+            aria-label="Reset search filter"
             className="ml-1"
             onClick={() => {
               setSearch("");
@@ -72,14 +72,14 @@ export function HeaderSearchBar({ right }: HeaderSearchBarProps) {
       ) : (
         <>
           <button
-            aria-label="Start review search"
+            aria-label="Start search"
             onClick={() => {
               setIsOpen(true);
             }}
           >
             {searchIcon}
           </button>
-          <div className="grow text-center">Profile</div>
+          <div className="grow text-center">{title}</div>
           {right}
         </>
       )}
