@@ -277,6 +277,7 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
 }
 
 function NoReviews() {
+  // todo - сократить расстояние между строкам
   return (
     <div className="flex w-full grow flex-col items-center justify-center gap-4 px-12">
       <GroceriesIcon className="h-auto w-full" />

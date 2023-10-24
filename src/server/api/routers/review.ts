@@ -63,7 +63,7 @@ export const reviewRouter = createTRPCRouter({
   getUserReviewSummaryList: protectedProcedure
     .input(
       z.object({
-        limit: z.number().int().min(1),
+        limit: z.number().int().min(1).max(100),
         /** zero-based index */
         cursor: z.number().int().min(0),
         sort: z.object({
@@ -79,45 +79,57 @@ export const reviewRouter = createTRPCRouter({
         input: { cursor, limit, sort, filter },
         ctx,
       }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
-        const page = await Promise.all(
-          await reviewRepository
-            .findManyReviewSummary(
-              (table, { and, or, eq, like, inArray }, db) =>
-                and(
-                  eq(table.userId, ctx.session.user.id),
-                  filter
-                    ? or(
-                        like(table.name, `${filter}%`),
-                        inArray(
-                          table.barcode,
-                          db
-                            .select({ barcode: reviewsToCategories.barcode })
-                            .from(reviewsToCategories)
-                            .where(
-                              and(
-                                eq(reviewsToCategories.userId, ctx.session.user.id),
-                                like(reviewsToCategories.category, `${filter}%`)
-                              )
+        const page = await reviewRepository
+          .findManyReviewSummary(
+            (table, { and, or, eq, like, inArray }, db) =>
+              and(
+                eq(table.userId, ctx.session.user.id),
+                filter
+                  ? or(
+                      like(table.name, `${filter}%`),
+                      inArray(
+                        table.barcode,
+                        db
+                          .select({ barcode: reviewsToCategories.barcode })
+                          .from(reviewsToCategories)
+                          .where(
+                            and(
+                              eq(reviewsToCategories.userId, ctx.session.user.id),
+                              like(reviewsToCategories.category, `${filter}%`)
                             )
-                        )
+                          )
                       )
-                    : undefined
-                ),
-              {
-                page: { cursor, limit },
-                sort,
+                    )
+                  : undefined
+              ),
+            {
+              page: { cursor, limit },
+              sort,
+            }
+          )
+          .then((summaries) => {
+            const keys = summaries.reduce<string[]>((acc, el) => {
+              if (!!el.imageKey) acc.push(el.imageKey);
+              return acc;
+            }, []);
+            return utapi.getFileUrls(keys).then((files) => {
+              const fileMap = new Map<string, string>();
+              for (const file of files) {
+                fileMap.set(file.key, file.url);
               }
-            )
-            .then((summaries) =>
-              summaries.map(async (summary): Promise<ReviewSummary> => {
-                const { imageKey, ...rest } = summary;
-                const image = imageKey
-                  ? await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null)
-                  : null;
-                return Object.assign(rest, { image });
-              })
-            )
-        );
+
+              return summaries.map((x) => {
+                const { imageKey, ...summary } = x;
+                const result: ReviewSummary = Object.assign(summary, { image: null });
+                if (!imageKey) return result;
+                const image = fileMap.get(imageKey);
+                if (!image) return result;
+
+                result.image = image;
+                return result;
+              });
+            });
+          });
 
         return {
           // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
