@@ -75,7 +75,7 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`aspect-square h-full w-full ${className}`}>
+    <div className={`aspect-square h-full w-full select-none ${className}`}>
       {user.image ? (
         <Image
           src={user.image}

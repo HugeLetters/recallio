@@ -112,6 +112,7 @@ export const reviewRouter = createTRPCRouter({
               if (!!el.imageKey) acc.push(el.imageKey);
               return acc;
             }, []);
+
             return utapi.getFileUrls(keys).then((files) => {
               const fileMap = new Map<string, string>();
               for (const file of files) {
