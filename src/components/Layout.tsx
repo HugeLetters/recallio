@@ -1,0 +1,132 @@
+import type { DiscriminatedUnion } from "@/utils";
+import Link from "next/link";
+import router, { useRouter } from "next/router";
+import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
+import type Icon from "~icons/*";
+import ScanIcon from "~icons/custom/scan";
+import SearchIcon from "~icons/iconamoon/search";
+import ProfileIcon from "~icons/ion/person-outline";
+import LeftArrowIcon from "~icons/uil/arrow-left";
+import HomeIcon from "~icons/uil/home-alt";
+
+type LayoutProps = {
+  header?: ComponentPropsWithoutRef<typeof Header>;
+  footer?: ComponentPropsWithoutRef<typeof Footer>;
+};
+export function Layout({ children, header, footer }: PropsWithChildren<LayoutProps>) {
+  return (
+    <div className="grid h-[100dvh] w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950">
+      <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
+      <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
+        {children}
+      </main>
+      <Footer {...footer} />
+    </div>
+  );
+}
+
+type HeaderProps = DiscriminatedUnion<
+  { title: ReactNode; left?: ReactNode; right?: ReactNode },
+  { header: Exclude<ReactNode, undefined> }
+>;
+function Header({ header, left, right, title }: HeaderProps) {
+  return (
+    <header className="z-10 flex h-14 justify-center bg-white shadow-bottom shadow-black/10">
+      <div className="w-full max-w-app p-2">
+        {header !== undefined ? (
+          header
+        ) : (
+          <div className="grid h-full w-full grid-cols-3 items-center">
+            <div className="justify-self-start">
+              {left !== undefined ? (
+                left
+              ) : (
+                <HeaderButton
+                  Icon={LeftArrowIcon}
+                  onClick={router.back}
+                  role="navigation"
+                  aria-label="back"
+                />
+              )}
+            </div>
+            <h1 className="col-start-2 justify-self-center text-xl">{title}</h1>
+            <div className="justify-self-end">
+              {right !== undefined ? (
+                right
+              ) : (
+                <HeaderLink
+                  Icon={HomeIcon}
+                  href="/"
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
+
+type HeaderButtonProps = { Icon: typeof Icon } & ComponentPropsWithoutRef<"button">;
+export function HeaderButton({ Icon, type, className, ...butonAttributes }: HeaderButtonProps) {
+  return (
+    <button
+      type={type ?? "button"}
+      className={`flex items-center ${className}`}
+      {...butonAttributes}
+    >
+      <Icon className="h-8 w-8" />
+    </button>
+  );
+}
+
+type HeaderLinkProps = { Icon: typeof Icon } & ComponentPropsWithoutRef<typeof Link>;
+export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
+  return (
+    <Link
+      className={`flex items-center ${className}`}
+      {...linkAttributes}
+    >
+      <Icon className="h-8 w-8" />
+    </Link>
+  );
+}
+
+type FooterProps = { Icon?: typeof Icon };
+function Footer({ Icon }: FooterProps) {
+  const route = useRouter().pathname;
+  Icon ??= ScanIcon;
+
+  return (
+    <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-top shadow-black/10">
+      <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] items-center justify-items-center">
+        <Link
+          href="/search"
+          className={`flex flex-col items-center transition-colors ${
+            route.startsWith("/search") ? "text-app-green" : ""
+          }`}
+        >
+          <SearchIcon className="h-7 w-7" />
+          <span>Search</span>
+        </Link>
+        <Link
+          href="/scan"
+          className={`flex h-16 w-16 -translate-y-1/3 items-center justify-center rounded-full p-4 transition-colors ${
+            route.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
+          }`}
+        >
+          <Icon className="h-full w-full" />
+        </Link>
+        <Link
+          href="/profile"
+          className={`flex flex-col items-center transition-colors ${
+            route.startsWith("/profile") ? "text-app-green" : ""
+          }`}
+        >
+          <ProfileIcon className="h-7 w-7" />
+          <span>Profile</span>
+        </Link>
+      </nav>
+    </footer>
+  );
+}

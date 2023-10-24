@@ -13,7 +13,7 @@ export default function Page() {
   const callbackUrl = getQueryParam(query.callbackUrl);
 
   return (
-    <div className="my-auto flex w-full flex-col items-center gap-6 p-4">
+    <div className="flex h-[100dvh] w-full flex-col items-center justify-center gap-6 p-4">
       <Logo />
       <EmailSignIn callbackUrl={callbackUrl} />
       <div className="relative z-0 flex w-full justify-center">

@@ -29,6 +29,12 @@ export function includes<T>(array: readonly T[], element: unknown): element is T
   return array.includes(element as T);
 }
 
+export function indexOf(array: readonly unknown[], value: unknown) {
+  const index = array.indexOf(value);
+  if (index === -1) return null;
+  return index;
+}
+
 export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;
 }

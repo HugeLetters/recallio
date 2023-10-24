@@ -1,7 +1,6 @@
-import { HeaderLink } from "@/components/Header";
+import { HeaderLink, Layout } from "@/components/Layout";
 import { Clickable, Star, UserPic } from "@/components/UI";
 import { hasFocusWithin } from "@/hooks";
-import useHeader from "@/hooks/useHeader";
 import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -24,16 +23,19 @@ import ResetIcon from "~icons/radix-icons/cross-1";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 export default function Page() {
-  useHeader(() => ({ header: <HeaderFilterInput /> }), []);
-
   const { data, status } = useSession();
-  if (status !== "authenticated") return "Loading";
 
   return (
-    <div className="flex w-full flex-col gap-2 p-4">
-      <ProfileInfo user={data.user} />
-      <Reviews />
-    </div>
+    <Layout header={{ header: <HeaderFilterInput /> }}>
+      {status === "authenticated" ? (
+        <div className="flex w-full flex-col gap-2 p-4">
+          <ProfileInfo user={data.user} />
+          <Reviews />
+        </div>
+      ) : (
+        "Loading"
+      )}
+    </Layout>
   );
 }
 

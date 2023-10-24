@@ -1,7 +1,9 @@
-import useHeader from "@/hooks/useHeader";
+import { Layout } from "@/components/Layout";
 
 export default function Page() {
-  useHeader(() => ({ title: "Search" }), []);
-
-  return <div>SEARCH PAGE</div>;
+  return (
+    <Layout header={{ title: "Search" }}>
+      <div>SEARCH PAGE</div>
+    </Layout>
+  );
 }

@@ -1,6 +1,6 @@
+import { Layout } from "@/components/Layout";
 import { ImageInput, Input, Switch, UserPic, WithLabel, providers } from "@/components/UI";
 import { useUploadThing } from "@/hooks";
-import useHeader from "@/hooks/useHeader";
 import { browser } from "@/utils";
 import { api } from "@/utils/api";
 import type { Session } from "next-auth";
@@ -9,27 +9,29 @@ import { useCallback, useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
 export default function Page() {
-  useHeader(() => ({ title: "Settings" }), []);
-
   const { data } = useSession();
-  // Can't rely on status since during session refetches it reports loading
-  if (!data) return "Loading";
-
   return (
-    <div className="flex w-full flex-col items-stretch gap-3 p-4">
-      <UserImage user={data.user} />
-      <UserName username={data.user.name} />
-      <LinkedAccounts />
-      <AppSettings />
-      <button
-        className="mt-2 rounded-lg bg-neutral-100 bg-pink-800/10 px-2 py-3.5 text-pink-800"
-        onClick={() => {
-          void signOut({ redirect: false });
-        }}
-      >
-        Sign Out
-      </button>
-    </div>
+    <Layout header={{ title: "Settings" }}>
+      {/* Can't rely on status since during session refetches it reports loading */}
+      {!!data ? (
+        <div className="flex w-full flex-col items-stretch gap-3 p-4">
+          <UserImage user={data.user} />
+          <UserName username={data.user.name} />
+          <LinkedAccounts />
+          <AppSettings />
+          <button
+            className="mt-2 rounded-lg bg-neutral-100 bg-pink-800/10 px-2 py-3.5 text-pink-800"
+            onClick={() => {
+              void signOut({ redirect: false });
+            }}
+          >
+            Sign Out
+          </button>
+        </div>
+      ) : (
+        "Loading"
+      )}
+    </Layout>
   );
 }
 
