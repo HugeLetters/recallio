@@ -2,7 +2,6 @@ import { Clickable, Input, WithLabel, providers } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useState } from "react";
 import Logo from "~icons/custom/logo.jsx";
 
 Page.noAuth = true;
@@ -28,14 +27,12 @@ export default function Page() {
 
 type EmailSignInProps = { callbackUrl: string | undefined };
 function EmailSignIn({ callbackUrl }: EmailSignInProps) {
-  const [email, setEmail] = useState("");
-
   return (
     <form
       className="grid w-full grid-cols-2 gap-2"
       onSubmit={(e) => {
         e.preventDefault();
-        void signIn("email", { email, callbackUrl });
+        void signIn("email", { email: new FormData(e.currentTarget).get("email"), callbackUrl });
       }}
     >
       <WithLabel
@@ -43,11 +40,9 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
         className="col-span-2"
       >
         <Input
-          value={email}
           required
           name="email"
           type="email"
-          onChange={(e) => setEmail(e.target.value)}
         />
       </WithLabel>
       <Clickable
