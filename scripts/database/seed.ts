@@ -18,9 +18,10 @@ async function seedReviews(reviewCount: number) {
   const files = (await utapi.listFiles()).map((file) => file.key);
   const barcodes = faker.helpers.uniqueArray(randomBarcode, reviewCount / users.length);
 
-  for (const user of users) {
-    for (const barcode of barcodes) {
-      await createReview({ user, barcode }, files);
+  for (const barcode of barcodes) {
+    const names = faker.helpers.uniqueArray(() => faker.word.noun(), users.length);
+    for (const user of users) {
+      await createReview({ user, barcode, names }, files);
     }
   }
 
@@ -32,12 +33,15 @@ async function seedReviews(reviewCount: number) {
   }
 }
 
-async function createReview(data: { user: string; barcode: string }, files: string[]) {
+async function createReview(
+  data: { user: string; barcode: string; names?: string[] },
+  files: string[]
+) {
   return await reviewRepository.createWithCategories(
     {
       userId: data.user,
       barcode: data.barcode,
-      name: faker.word.noun(),
+      name: data.names ? faker.helpers.arrayElement(data.names) : faker.word.noun(),
       rating: faker.number.int({ min: 0, max: 5 }),
       comment: Math.random() > 0.5 ? faker.lorem.sentences({ min: 0, max: 3 }) : null,
       pros:
@@ -53,6 +57,7 @@ async function createReview(data: { user: string; barcode: string }, files: stri
               .join("\n")
           : null,
       imageKey: Math.random() > 0.5 ? faker.helpers.arrayElement(files) : null,
+      isPrivate: Math.random() > 0.5,
     },
     faker.helpers.uniqueArray(() => faker.word.adjective(), faker.number.int({ min: 0, max: 10 }))
   );

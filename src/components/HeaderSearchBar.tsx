@@ -42,8 +42,8 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             // key helps refocus input when clear button is pressed
             key={`${!!search}`}
             autoFocus
-            className="h-full grow p-1 caret-app-green outline-none"
-            placeholder="Seach by..."
+            className="h-full grow p-1 caret-app-green outline-none placeholder:p-1"
+            placeholder="Search"
             value={search}
             onChange={(e) => {
               const { value } = e.target;

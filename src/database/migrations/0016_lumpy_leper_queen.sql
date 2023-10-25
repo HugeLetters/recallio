@@ -1,0 +1,1 @@
+ALTER TABLE `review` MODIFY COLUMN `is-private` boolean NOT NULL DEFAULT true;

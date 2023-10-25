@@ -248,7 +248,6 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
           className="aspect-square h-9 w-9 rounded-full bg-white object-cover !text-black/10 drop-shadow-around"
         />
       ) : (
-        // todo - should milk icon also have a drop shadow?
         <div className="flex aspect-square h-9 w-9 items-center justify-center rounded-full bg-neutral-400 p-1">
           <MilkIcon className="h-full w-full text-white" />
         </div>
