@@ -1,8 +1,20 @@
-import { reviewRepository } from "@/database/repository/product";
-import { reviewsToCategories } from "@/database/schema/product";
+import { db } from "@/database";
+import { createReview } from "@/database/query/review";
+import { aggregateArrayColumn, count, findFirst } from "@/database/query/utils";
+import { review, reviewsToCategories } from "@/database/schema/product";
 import type { StrictOmit } from "@/utils";
 import type { AsyncResult } from "@/utils/api";
-import { type getTableColumns } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  inArray,
+  like,
+  or,
+  type InferColumnsDataTypes,
+} from "drizzle-orm";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -25,17 +37,16 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }): AsyncResult<void, string> => {
       const { categories, cons, pros, ...value } = input;
-      return reviewRepository
-        .createWithCategories(
-          {
-            ...value,
-            // filter out empty strings from array and coerce to null empty arrays
-            cons: cons.filter(Boolean).join("\n") || null,
-            pros: pros.filter(Boolean).join("\n") || null,
-            userId: ctx.session.user.id,
-          },
-          categories?.filter(Boolean)
-        )
+      return createReview(
+        {
+          ...value,
+          // filter out empty strings from array and coerce to null empty arrays
+          cons: cons.filter(Boolean).join("\n") || null,
+          pros: pros.filter(Boolean).join("\n") || null,
+          userId: ctx.session.user.id,
+        },
+        categories?.filter(Boolean)
+      )
         .then(() => {
           return { ok: true as const, data: undefined };
         })
@@ -47,18 +58,31 @@ export const reviewRouter = createTRPCRouter({
   getUserReview: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .query(async ({ ctx, input: { barcode } }): Promise<UserReview> => {
-      const data = await reviewRepository
-        .findFirstWithCategories((table, { and, eq }) =>
-          and(eq(table.userId, ctx.session.user.id), eq(table.barcode, barcode))
+      const data = await db
+        .select({
+          ...userReviewCols,
+          categories: aggregateArrayColumn<string>(reviewsToCategories.category),
+        })
+        .from(review)
+        .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
+        .leftJoin(
+          reviewsToCategories,
+          and(
+            eq(review.userId, reviewsToCategories.userId),
+            eq(review.barcode, reviewsToCategories.barcode)
+          )
         )
-        .then((data) => data ?? null);
+        .groupBy(review.barcode, review.userId)
+        .limit(1)
+        .then(([data]) => data);
+
       if (!data) return null;
 
-      const { imageKey, ...review } = data;
-      if (!imageKey) return Object.assign(review, { image: null });
+      const { imageKey, ...reviewData } = data;
+      if (!imageKey) return Object.assign(reviewData, { image: null });
 
       const image = await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null);
-      return Object.assign(review, { image });
+      return Object.assign(reviewData, { image });
     }),
   getUserReviewSummaryList: protectedProcedure
     .input(
@@ -79,39 +103,54 @@ export const reviewRouter = createTRPCRouter({
         input: { cursor, limit, sort, filter },
         ctx,
       }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
-        const page = await reviewRepository
-          .findManyReviewSummary(
-            (table, { and, or, eq, like, inArray }, db) =>
-              and(
-                eq(table.userId, ctx.session.user.id),
-                filter
-                  ? or(
-                      like(table.name, `${filter}%`),
-                      inArray(
-                        table.barcode,
-                        db
-                          .select({ barcode: reviewsToCategories.barcode })
-                          .from(reviewsToCategories)
-                          .where(
-                            and(
-                              eq(reviewsToCategories.userId, ctx.session.user.id),
-                              like(reviewsToCategories.category, `${filter}%`)
-                            )
+        const direction = sort.desc ? desc : asc;
+        const page = await db
+          .select(reviewSummaryCols)
+          .from(review)
+          .where(
+            and(
+              eq(review.userId, ctx.session.user.id),
+              filter
+                ? or(
+                    like(review.name, `${filter}%`),
+                    inArray(
+                      review.barcode,
+                      db
+                        .select({ barcode: reviewsToCategories.barcode })
+                        .from(reviewsToCategories)
+                        .where(
+                          and(
+                            eq(reviewsToCategories.userId, ctx.session.user.id),
+                            like(reviewsToCategories.category, `${filter}%`)
                           )
-                      )
+                        )
                     )
-                  : undefined
-              ),
-            {
-              page: { cursor, limit },
-              sort,
-            }
+                  )
+                : undefined
+            )
           )
+          .leftJoin(
+            reviewsToCategories,
+            and(
+              eq(review.userId, reviewsToCategories.userId),
+              eq(review.barcode, reviewsToCategories.barcode)
+            )
+          )
+          .groupBy(review.barcode, review.userId)
+          .limit(limit)
+          .offset(cursor * limit)
+          .orderBy(direction(review[sort.by]), review.barcode)
           .then((summaries) => {
             const keys = summaries.reduce<string[]>((acc, el) => {
               if (!!el.imageKey) acc.push(el.imageKey);
               return acc;
             }, []);
+
+            if (!keys.length)
+              return summaries.map((x) => {
+                const { imageKey: _, ...summary } = x;
+                return Object.assign(summary, { image: null });
+              });
 
             return utapi.getFileUrls(keys).then((files) => {
               const fileMap = new Map<string, string>();
@@ -139,25 +178,24 @@ export const reviewRouter = createTRPCRouter({
         };
       }
     ),
-  getReviewCount: protectedProcedure.query(({ ctx }) => {
-    return reviewRepository
-      .count((table, { eq }) => eq(table.userId, ctx.session.user.id))
-      .then((x) => x);
-  }),
+  getReviewCount: protectedProcedure.query(({ ctx }) =>
+    count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count)
+  ),
   deleteReviewImage: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .mutation(async ({ ctx, input: { barcode } }): AsyncResult<void, string> => {
-      const review = await reviewRepository.findFirst((table, { and, eq }) =>
-        and(eq(table.userId, ctx.session.user.id), eq(table.barcode, barcode))
+      const [reviewData] = await findFirst(
+        review,
+        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode))
       );
-      if (!review) return { ok: true, data: undefined };
+      if (!reviewData) return { ok: true, data: undefined };
 
-      const oldKey = review.imageKey;
+      const oldKey = reviewData.imageKey;
 
-      return reviewRepository
-        .update({ imageKey: null }, (table, { and, eq }) =>
-          and(eq(table.userId, ctx.session.user.id), eq(table.barcode, barcode))
-        )
+      return db
+        .update(review)
+        .set({ imageKey: null })
+        .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
         .then(() => {
           if (oldKey) {
             utapi.deleteFiles(oldKey).catch(console.error);
@@ -171,15 +209,26 @@ export const reviewRouter = createTRPCRouter({
     }),
 });
 
+const { barcode: _, userId: __, ...userReviewCols } = getTableColumns(review);
 type UserReview =
-  | (StrictOmit<
-      NonNullable<Awaited<ReturnType<(typeof reviewRepository)["findFirstWithCategories"]>>>,
-      "imageKey"
-    > & { image: string | null })
+  | (StrictOmit<InferColumnsDataTypes<typeof userReviewCols>, "imageKey"> & {
+      image: string | null;
+      categories: string[];
+    })
   | null;
+
+type ReviewColumns = keyof ReturnType<typeof getTableColumns<typeof review>>;
+const reviewSummaryCols = {
+  barcode: review.barcode,
+  name: review.name,
+  imageKey: review.imageKey,
+  rating: review.rating,
+  categories: aggregateArrayColumn<string>(reviewsToCategories.category),
+};
 type ReviewSummary =
   | StrictOmit<
-      NonNullable<Awaited<ReturnType<(typeof reviewRepository)["findManyReviewSummary"]>>>[number],
+      InferColumnsDataTypes<StrictOmit<typeof reviewSummaryCols, "categories">> & {
+        categories: string[];
+      },
       "imageKey"
     > & { image: string | null };
-type ReviewColumns = keyof ReturnType<typeof getTableColumns<(typeof reviewRepository)["table"]>>;

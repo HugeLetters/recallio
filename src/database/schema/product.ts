@@ -50,6 +50,7 @@ export const review = mysqlTable(
     nameIndex: index("name-index").on(table.name),
     ratingIndex: index("rating-index").on(table.rating),
     updatedAtIndex: index("updated-at-index").on(table.updatedAt),
+    isPrivateIndex: index("is-private-index").on(table.isPrivate),
   })
 );
 export const reviewRelations = relations(review, ({ many, one }) => ({

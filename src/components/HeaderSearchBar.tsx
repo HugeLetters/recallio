@@ -30,6 +30,9 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
         if (!isOpen) return;
         setIsOpen(hasFocus);
       })}
+      onKeyDown={(e) => {
+        if (e.code === "Escape") setIsOpen(false);
+      }}
     >
       {isOpen ? (
         <>

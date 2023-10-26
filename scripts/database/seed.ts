@@ -1,7 +1,7 @@
 import { db } from "@/database";
-import { userRepository } from "@/database/repository/auth";
-import { categoryRepository, reviewRepository } from "@/database/repository/product";
-import { reviewsToCategories } from "@/database/schema/product";
+import { createReview } from "@/database/query/review";
+import { user } from "@/database/schema/auth";
+import { category, review, reviewsToCategories } from "@/database/schema/product";
 import { faker } from "@faker-js/faker";
 import { utapi } from "uploadthing/server";
 
@@ -11,33 +11,33 @@ async function seed() {
 }
 async function seedReviews(reviewCount: number) {
   await db.delete(reviewsToCategories);
-  await categoryRepository.delete(() => undefined);
-  await reviewRepository.delete(() => undefined);
+  await db.delete(category);
+  await db.delete(review);
 
-  const users = (await userRepository.findMany(() => undefined)).map((user) => user.id);
+  const users = (await db.select().from(user)).map((user) => user.id);
   const files = (await utapi.listFiles()).map((file) => file.key);
   const barcodes = faker.helpers.uniqueArray(randomBarcode, reviewCount / users.length);
 
   for (const barcode of barcodes) {
     const names = faker.helpers.uniqueArray(() => faker.word.noun(), users.length);
     for (const user of users) {
-      await createReview({ user, barcode, names }, files);
+      await createMockReview({ user, barcode, names }, files);
     }
   }
 
   for (let i = 0; i < reviewCount / 10; i++) {
-    await createReview(
+    await createMockReview(
       { user: faker.helpers.arrayElement(users), barcode: randomBarcode() },
       files
     );
   }
 }
 
-async function createReview(
+async function createMockReview(
   data: { user: string; barcode: string; names?: string[] },
   files: string[]
 ) {
-  return await reviewRepository.createWithCategories(
+  return await createReview(
     {
       userId: data.user,
       barcode: data.barcode,

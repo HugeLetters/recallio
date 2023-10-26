@@ -19,6 +19,7 @@ import MilkIcon from "~icons/custom/milk.jsx";
 import SwapIcon from "~icons/iconamoon/swap.jsx";
 import SettingsIcon from "~icons/solar/settings-linear";
 
+// todo fix deisgn
 export default function Page() {
   const { data, status } = useSession();
 
