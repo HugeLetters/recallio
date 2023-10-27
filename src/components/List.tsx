@@ -34,18 +34,18 @@ export function InfiniteScroll<P, V>({
   className,
 }: InfiniteScrollProps<P, V>) {
   const lastPage = pages.at(-1);
-  const lastElement = useRef<HTMLDivElement>(null);
+  const triggerElement = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!lastElement.current) throw Error("No ref attached");
+    if (!triggerElement.current) throw Error("No ref attached");
 
     const observer = new IntersectionObserver((events) => {
       events.forEach((event) => {
-        if (event.target !== lastElement.current || !event.isIntersecting) return;
+        if (event.target !== triggerElement.current || !event.isIntersecting) return;
         getNextPage();
       });
     });
-    observer.observe(lastElement.current);
+    observer.observe(triggerElement.current);
 
     return () => {
       observer.disconnect();
@@ -73,7 +73,7 @@ export function InfiniteScroll<P, V>({
               {isTriggerValue && (
                 <div
                   className="sr-only"
-                  ref={lastElement}
+                  ref={triggerElement}
                 />
               )}
             </div>
