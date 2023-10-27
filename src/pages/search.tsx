@@ -34,7 +34,7 @@ export default function Page() {
         ),
       }}
     >
-      <div className="flex w-96 flex-col gap-2 p-2">
+      <div className="flex w-full flex-col gap-2 p-4">
         <div className="flex items-center justify-between p-2">
           <span className="text-lg">Goods</span>
           <SortDialog optionList={sortOptionList} />
@@ -55,6 +55,7 @@ export default function Page() {
                 <Card
                   // todo - this should link to product page
                   href={"/"}
+                  aria-label={`Go to product ${value.barcode} page`}
                   image={value.image}
                   label={match}
                   subtext={value.name.filter((x): x is NonNullable<typeof x> => !!x && x !== match)}
