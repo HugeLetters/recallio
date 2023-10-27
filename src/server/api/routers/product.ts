@@ -2,8 +2,9 @@ import { db } from "@/database";
 import { aggregateArrayColumn } from "@/database/query/utils";
 import { category, productName, review } from "@/database/schema/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { mapUtKeysToUrls } from "@/server/utils";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { nonEmptyArray } from "@/utils";
+import { getTopQuadruplet, nonEmptyArray } from "@/utils";
 import { and, asc, desc, eq, gt, inArray, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { z } from "zod";
@@ -76,7 +77,7 @@ export const productRouter = createTRPCRouter({
       const direction = sort.desc ? desc : asc;
       const sortBy = getSortByColumn();
 
-      const product = alias(review, "review-alias");
+      const product = alias(review, "in-array-subquery");
       const inArrayClause = filter
         ? inArray(
             review.barcode,
@@ -91,14 +92,15 @@ export const productRouter = createTRPCRouter({
           barcode: review.barcode,
           names: aggregateArrayColumn<string>(review.name)
             .mapWith(getTopQuadruplet<string>)
-            .as("names"),
+            .as("barcode-name-list"),
           averageRating: ratingCol,
           reviewCount: reviewCol,
+          image: sql<string>`MIN(${review.imageKey})`.as("min-image-key"),
         })
         .from(review)
         .where(and(inArrayClause, eq(review.isPrivate, false)))
         .groupBy(review.barcode)
-        .as("subquery");
+        .as("join-subquery");
 
       const cursorClause = cursor
         ? or(
@@ -111,6 +113,7 @@ export const productRouter = createTRPCRouter({
           barcode: review.barcode,
           matchedName: sql<string>`MIN(${review.name})`,
           name: sq.names,
+          imageKey: sq.image,
           averageRating: sq.averageRating,
           reviewCount: sq.reviewCount,
         })
@@ -126,6 +129,7 @@ export const productRouter = createTRPCRouter({
         .limit(limit)
         .groupBy(review.barcode)
         .orderBy(direction(sortBy), asc(review.barcode))
+        .then((summaryList) => mapUtKeysToUrls(summaryList, "imageKey", "image"))
         .then((page) => {
           return {
             // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
@@ -142,30 +146,3 @@ export const productRouter = createTRPCRouter({
         });
     }),
 });
-
-const indexList = [0, 1, 2, 3] as const;
-type Quadruplet<T> = [T?, T?, T?, T?];
-function getTopQuadruplet<T>(arr: T[]) {
-  const counter = new Map<T, number>();
-  for (const element of arr) {
-    const count = counter.get(element) ?? 0;
-    counter.set(element, count + 1);
-  }
-
-  const quadruplet: Quadruplet<T> = [];
-  function checkIndex(index: 0 | 1 | 2 | 3, count: number, element: T) {
-    const value = quadruplet[index];
-    if (value && count <= (counter.get(value) ?? -1)) return false;
-
-    for (let i = 3; i > index; i--) {
-      quadruplet[i] = quadruplet[i - 1];
-    }
-    quadruplet[index] = element;
-    return true;
-  }
-
-  for (const [element, count] of counter) {
-    indexList.some((index) => checkIndex(index, count, element));
-  }
-  return quadruplet;
-}

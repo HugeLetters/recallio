@@ -18,6 +18,7 @@ import {
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { mapUtKeysToUrls } from "@/server/utils";
 
 export const reviewRouter = createTRPCRouter({
   createReview: protectedProcedure
@@ -140,36 +141,7 @@ export const reviewRouter = createTRPCRouter({
           .limit(limit)
           .offset(cursor * limit)
           .orderBy(direction(review[sort.by]), review.barcode)
-          .then((summaries) => {
-            const keys = summaries.reduce<string[]>((acc, el) => {
-              if (!!el.imageKey) acc.push(el.imageKey);
-              return acc;
-            }, []);
-
-            if (!keys.length)
-              return summaries.map((x) => {
-                const { imageKey: _, ...summary } = x;
-                return Object.assign(summary, { image: null });
-              });
-
-            return utapi.getFileUrls(keys).then((files) => {
-              const fileMap = new Map<string, string>();
-              for (const file of files) {
-                fileMap.set(file.key, file.url);
-              }
-
-              return summaries.map((x) => {
-                const { imageKey, ...summary } = x;
-                const result: ReviewSummary = Object.assign(summary, { image: null });
-                if (!imageKey) return result;
-                const image = fileMap.get(imageKey);
-                if (!image) return result;
-
-                result.image = image;
-                return result;
-              });
-            });
-          });
+          .then((summaries) => mapUtKeysToUrls(summaries, "imageKey", "image"));
 
         return {
           // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo

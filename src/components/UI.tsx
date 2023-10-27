@@ -5,14 +5,8 @@ import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
 import Link from "next/link";
-import type {
-  ComponentPropsWithRef,
-  ComponentPropsWithoutRef,
-  Key,
-  PropsWithChildren,
-  ReactNode,
-} from "react";
-import { Fragment, forwardRef, useEffect, useRef } from "react";
+import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
+import { forwardRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
 import GoogleIcon from "~icons/logos/google-icon";
 import LinkedinIcon from "~icons/logos/linkedin-icon";
@@ -42,7 +36,9 @@ export function Clickable<T extends boolean = false>({
     <Component
       type={!asLink ? "button" : undefined}
       {...restProps}
-      className={`rounded-xl px-2.5 py-3.5 transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${variantClass[variant]} ${className}`}
+      className={`rounded-xl px-2.5 py-3.5 transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${
+        variantClass[variant]
+      } ${className ?? ""}`}
     >
       {children}
     </Component>
@@ -51,7 +47,9 @@ export function Clickable<T extends boolean = false>({
 
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
-  return <StarIcon className={highlight ? "text-amber-400" : "text-neutral-300"} />;
+  return (
+    <StarIcon className={`h-full w-full ${highlight ? "text-amber-400" : "text-neutral-300"}`} />
+  );
 }
 
 type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
@@ -60,7 +58,7 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   ref
 ) {
   return (
-    <label className={`focus-within:outline ${className}`}>
+    <label className={`focus-within:outline ${className ?? ""}`}>
       {children}
       <input
         {...inputAttributes}
@@ -81,7 +79,7 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`aspect-square h-full w-full select-none ${className}`}>
+    <div className={`aspect-square h-full w-full select-none ${className ?? ""}`}>
       {user.image ? (
         <Image
           src={user.image}
@@ -130,7 +128,7 @@ export const providers = Object.entries(providerRecord);
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {
   return (
-    <label className={`flex flex-col ${className}`}>
+    <label className={`flex flex-col ${className ?? ""}`}>
       <p className="p-2 text-sm">{label}</p>
       {children}
     </label>
@@ -142,82 +140,10 @@ export function Input({ ref, className, ...inputProps }: InputProps) {
   return (
     <input
       ref={ref}
-      className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${className}`}
+      className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${
+        className ?? ""
+      }`}
       {...inputProps}
     />
-  );
-}
-
-type InfiniteScrollProps<P, V> = {
-  pages: P[];
-  /** Retrieve values from a single page */
-  getPageValues: (page: P) => V[];
-  /** Render a element based on a individual value */
-  children: (value: V) => ReactNode;
-  /** Retireve unique list key from a value */
-  getKey: (value: V) => Key;
-  /** This will be invoked upon scrolling further to get more pages */
-  getNextPage: () => void;
-  /** This class will be applied to a wrapper div around an element which triggers getNextPage */
-  className?: string;
-};
-export function InfiniteScroll<P, V>({
-  pages,
-  getPageValues,
-  children,
-  getKey,
-  getNextPage,
-  className,
-}: InfiniteScrollProps<P, V>) {
-  const lastPage = pages.at(-1);
-  const lastElement = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!lastElement.current) throw Error("No ref attached");
-
-    const observer = new IntersectionObserver((events) => {
-      events.forEach((event) => {
-        if (event.target !== lastElement.current || !event.isIntersecting) return;
-        getNextPage();
-      });
-    });
-    observer.observe(lastElement.current);
-
-    return () => {
-      observer.disconnect();
-    };
-    // I don't want to enforce a getNextPage function to be stable
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pages]);
-
-  return (
-    <>
-      {pages.map((page) => {
-        const isLastPage = page === lastPage;
-        const values = getPageValues(page);
-        const triggerValue = values.at(-values.length / 2) ?? values[0];
-
-        return values.map((value) => {
-          const isTriggerValue = isLastPage && value === triggerValue;
-          const key = getKey(value);
-          return isTriggerValue ? (
-            <div
-              className={`!relative ${className ?? ""}`}
-              key={key}
-            >
-              {children(value)}
-              {isTriggerValue && (
-                <div
-                  className="sr-only"
-                  ref={lastElement}
-                />
-              )}
-            </div>
-          ) : (
-            <Fragment key={key}>{children(value)}</Fragment>
-          );
-        });
-      })}
-    </>
   );
 }

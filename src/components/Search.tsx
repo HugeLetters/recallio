@@ -6,8 +6,8 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Flipped, Flipper } from "react-flip-toolkit";
-import SearchIcon from "~icons/iconamoon/search.jsx";
-import SwapIcon from "~icons/iconamoon/swap.jsx";
+import SearchIcon from "~icons/iconamoon/search-light.jsx";
+import SwapIcon from "~icons/iconamoon/swap-light.jsx";
 import ResetIcon from "~icons/radix-icons/cross-1";
 
 export const SEARCH_QUERY_KEY = "search";
@@ -29,7 +29,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
 
   return (
     <div
-      className="flex h-full items-center gap-2 text-xl"
+      className="flex h-full items-center gap-2 px-2 text-xl"
       onBlur={hasFocusWithin((hasFocus) => {
         if (!isOpen) return;
         setIsOpen(hasFocus);
@@ -112,8 +112,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
 
   return (
     <Dialog.Root>
-      <Dialog.Trigger className="flex items-center gap-2 text-sm">
-        <SwapIcon className="h-8 w-8" />
+      <Dialog.Trigger className="flex items-center text-sm">
+        <SwapIcon className="h-8 w-8 p-1" />
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>

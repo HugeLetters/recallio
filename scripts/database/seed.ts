@@ -22,7 +22,7 @@ async function seedReviews(reviewCount: number, userCount: number) {
   const users = (await db.select().from(user)).map((user) => user.id);
   const files = (await utapi.listFiles()).map((file) => file.key);
   const barcodePool = faker.helpers
-    .uniqueArray(randomBarcode, (1.05 * reviewCount) / users.length)
+    .uniqueArray(randomBarcode, (1.1 * reviewCount) / users.length)
     .map((barcode) => ({
       barcode,
       rating: faker.number.int({ min: 0, max: 5 }),

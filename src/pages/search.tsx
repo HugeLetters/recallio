@@ -1,6 +1,7 @@
 import { HeaderLink, Layout } from "@/components/Layout";
+import { Card, InfiniteScroll } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
-import { Clickable } from "@/components/UI";
+import { Star } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
 import { useRouter } from "next/router";
@@ -34,29 +35,43 @@ export default function Page() {
       }}
     >
       <div className="flex w-96 flex-col gap-2 p-2">
-        <Clickable
-          variant="ghost"
-          onClick={() => void productListQuery.fetchNextPage()}
-        >
-          next page
-        </Clickable>
-        <SortDialog optionList={sortOptionList} />
-        {productListQuery.data?.pages?.map(({ page }) =>
-          page.map((product) => {
-            const match = filter ? product.matchedName : product.name[0];
-            return (
-              <div
-                key={product.barcode}
-                className="rounded-lg bg-app-green p-2 text-white"
-              >
-                <div>BARCODE - {product.barcode}</div>
-                <div>MATCH - {match}</div>
-                <div>NAMES - {product.name.filter((x) => !!x && x !== match).join(", ")}</div>
-                <div>RATING - {product.averageRating}</div>
-                <div>REVIEWS - {product.reviewCount}</div>
-              </div>
-            );
-          })
+        <div className="flex items-center justify-between p-2">
+          <span className="text-lg">Goods</span>
+          <SortDialog optionList={sortOptionList} />
+        </div>
+        {productListQuery.isSuccess ? (
+          <InfiniteScroll
+            pages={productListQuery.data?.pages}
+            getPageValues={(page) => page.page}
+            getKey={(value) => value.barcode}
+            getNextPage={() => {
+              !productListQuery.isFetching && productListQuery.fetchNextPage().catch(console.error);
+            }}
+          >
+            {(value) => {
+              const match = filter ? value.matchedName : value.name[0] ?? value.matchedName;
+
+              return (
+                <Card
+                  // todo - this should link to product page
+                  href={"/"}
+                  image={value.image}
+                  label={match}
+                  subtext={value.name.filter((x): x is NonNullable<typeof x> => !!x && x !== match)}
+                >
+                  <div className="flex h-5 items-center gap-0.5">
+                    <Star highlight />
+                    <span className="text-sm">{value.averageRating.toFixed(1)}</span>
+                    <span className="text-xs text-neutral-400">
+                      ({value.reviewCount.toFixed(0)})
+                    </span>
+                  </div>
+                </Card>
+              );
+            }}
+          </InfiniteScroll>
+        ) : (
+          "Loading..."
         )}
       </div>
     </Layout>
