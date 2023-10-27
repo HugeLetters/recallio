@@ -77,6 +77,15 @@ export const productRouter = createTRPCRouter({
       const sortBy = getSortByColumn();
 
       const product = alias(review, "review-alias");
+      const inArrayClause = filter
+        ? inArray(
+            review.barcode,
+            db
+              .select({ barcode: product.barcode })
+              .from(product)
+              .where(and(like(product.name, `${filter}%`), eq(product.isPrivate, false)))
+          )
+        : undefined;
       const sq = db
         .select({
           barcode: review.barcode,
@@ -87,23 +96,16 @@ export const productRouter = createTRPCRouter({
           reviewCount: reviewCol,
         })
         .from(review)
-        .where(
-          and(
-            filter
-              ? inArray(
-                  review.barcode,
-                  db
-                    .select({ barcode: product.barcode })
-                    .from(product)
-                    .where(and(like(product.name, `${filter}%`), eq(product.isPrivate, false)))
-                )
-              : undefined,
-            eq(review.isPrivate, false)
-          )
-        )
+        .where(and(inArrayClause, eq(review.isPrivate, false)))
         .groupBy(review.barcode)
         .as("subquery");
 
+      const cursorClause = cursor
+        ? or(
+            (sort.desc ? lt : gt)(sortBy, cursor.value),
+            and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.value))
+          )
+        : undefined;
       return db
         .select({
           barcode: review.barcode,
@@ -117,12 +119,7 @@ export const productRouter = createTRPCRouter({
           and(
             filter ? like(review.name, `${filter}%`) : undefined,
             eq(review.isPrivate, false),
-            cursor
-              ? or(
-                  (sort.desc ? lt : gt)(sortBy, cursor.value),
-                  and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.value))
-                )
-              : undefined
+            cursorClause
           )
         )
         .leftJoin(sq, and(eq(sq.barcode, review.barcode)))

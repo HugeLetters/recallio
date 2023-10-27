@@ -1,22 +1,16 @@
-import { HeaderSearchBar, SEARCH_QUERY_KEY } from "@/components/HeaderSearchBar";
 import { HeaderLink, Layout } from "@/components/Layout";
-import { Clickable, Star, UserPic } from "@/components/UI";
-import { getQueryParam, includes, minutesToMs, setQueryParam } from "@/utils";
+import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
+import { Clickable, InfiniteScroll, Star, UserPic } from "@/components/UI";
+import { getQueryParam, minutesToMs } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
-import * as Dialog from "@radix-ui/react-dialog";
-import * as RadioGroup from "@radix-ui/react-radio-group";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
-import { useEffect, useRef, type RefObject } from "react";
-import { Flipped, Flipper } from "react-flip-toolkit";
 import EggBasketIcon from "~icons/custom/egg-basket.jsx";
 import GroceriesIcon from "~icons/custom/groceries.jsx";
 import MilkIcon from "~icons/custom/milk.jsx";
-import SwapIcon from "~icons/iconamoon/swap.jsx";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 // todo fix deisgn
@@ -65,6 +59,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   );
 }
 
+const sortOptionList = ["recent", "earliest", "best rated", "worst rated"] as const;
 function Reviews() {
   const countQuery = api.review.getReviewCount.useQuery(undefined, {
     staleTime: minutesToMs(5),
@@ -77,7 +72,7 @@ function Reviews() {
           My reviews
           {countQuery.isSuccess && <span> ({countQuery.data})</span>}
         </h1>
-        <SortDialog />
+        <SortDialog optionList={sortOptionList} />
       </div>
       {/* That way we fetch ReviewCards w/o waiting for countQuery to settle */}
       {!countQuery.isSuccess || !!countQuery.data ? <ReviewCards /> : <NoReviews />}
@@ -85,70 +80,7 @@ function Reviews() {
   );
 }
 
-const sortOptionList = ["recent", "earliest", "rating"] as const;
 type SortOption = (typeof sortOptionList)[number];
-const sortKey = "sort";
-function useParseSort(router: NextRouter) {
-  const query = getQueryParam(router.query[sortKey]);
-
-  if (query && includes(sortOptionList, query)) return query;
-
-  if (query !== undefined) setQueryParam(router, sortKey, null);
-  return sortOptionList[0];
-}
-
-function SortDialog() {
-  const router = useRouter();
-  const sortBy = useParseSort(router);
-
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger className="flex items-center gap-2 text-sm">
-        <SwapIcon className="h-8 w-8" />
-        <span className="capitalize">{sortBy}</span>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-10 animate-fade-in bg-black/50" />
-        <Dialog.Content className="fixed bottom-0 left-0 z-10 flex w-full justify-center text-black/50 drop-shadow-top duration-150 motion-safe:animate-slide-up">
-          <div className="w-full max-w-app rounded-t-xl bg-white p-5 text-lime-950">
-            <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
-            <Flipper
-              flipKey={sortBy}
-              spring={{ stiffness: 700, overshootClamping: true }}
-            >
-              <RadioGroup.Root
-                value={sortBy}
-                onValueChange={(value) => {
-                  setQueryParam(router, sortKey, value);
-                }}
-                className="flex flex-col gap-7"
-              >
-                {sortOptionList.map((option) => (
-                  <RadioGroup.Item
-                    value={option}
-                    key={option}
-                    className="group flex items-center gap-2"
-                  >
-                    <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
-                      <Flipped
-                        flipId={`${option === sortBy}`}
-                        key={`${option === sortBy}`}
-                      >
-                        <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green" />
-                      </Flipped>
-                    </div>
-                    <span className="capitalize">{option}</span>
-                  </RadioGroup.Item>
-                ))}
-              </RadioGroup.Root>
-            </Flipper>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-}
-
 type SortQuery = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
@@ -156,8 +88,10 @@ function parseSortParam(param: SortOption): SortQuery {
       return { by: "updatedAt", desc: true };
     case "earliest":
       return { by: "updatedAt", desc: false };
-    case "rating":
+    case "best rated":
       return { by: "rating", desc: true };
+    case "worst rated":
+      return { by: "rating", desc: false };
     default:
       const x: never = param;
       return x;
@@ -168,7 +102,7 @@ const limit = 20;
 function ReviewCards() {
   const router = useRouter();
   const filter = getQueryParam(router.query[SEARCH_QUERY_KEY]);
-  const sortParam = useParseSort(router);
+  const sortParam = useParseSort(sortOptionList);
   const sort = parseSortParam(sortParam);
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
@@ -180,24 +114,6 @@ function ReviewCards() {
       staleTime: minutesToMs(5),
     }
   );
-  const lastPage = reviewCardsQuery.data?.pages.at(-1);
-
-  const lastElement = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!lastElement.current) return;
-
-    const observer = new IntersectionObserver((events) => {
-      events.forEach((event) => {
-        if (!(event.target === lastElement.current && event.isIntersecting)) return;
-        reviewCardsQuery.fetchNextPage().catch(console.error);
-      });
-    });
-    observer.observe(lastElement.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [reviewCardsQuery]);
 
   return (
     <div
@@ -205,22 +121,16 @@ function ReviewCards() {
     >
       {reviewCardsQuery.isSuccess ? (
         !!reviewCardsQuery.data.pages[0]?.page.length ? (
-          reviewCardsQuery.data.pages.map((data) => {
-            const isLastPage = data === lastPage;
-            const triggerSummary = data.page.at(-limit / 2) ?? data.page[0];
-
-            return data.page.map((summary) => {
-              const isTriggerCard = isLastPage && summary === triggerSummary;
-
-              return (
-                <ReviewCard
-                  key={summary.barcode}
-                  review={summary}
-                  cardRef={isTriggerCard ? lastElement : null}
-                />
-              );
-            });
-          })
+          <InfiniteScroll
+            pages={reviewCardsQuery.data.pages}
+            getPageValues={(page) => page.page}
+            getKey={(value) => value.barcode}
+            getNextPage={() => {
+              !reviewCardsQuery.isFetching && reviewCardsQuery.fetchNextPage().catch(console.error);
+            }}
+          >
+            {(value) => <ReviewCard review={value} />}
+          </InfiniteScroll>
         ) : (
           <NoResults />
         )
@@ -233,8 +143,8 @@ function ReviewCards() {
 
 const ratings = [1, 2, 3, 4, 5] as const;
 type ReviewSummary = RouterOutputs["review"]["getUserReviewSummaryList"]["page"][number];
-type ReviewCardProps = { review: ReviewSummary; cardRef: RefObject<HTMLDivElement> | null };
-function ReviewCard({ review, cardRef }: ReviewCardProps) {
+type ReviewCardProps = { review: ReviewSummary };
+function ReviewCard({ review }: ReviewCardProps) {
   return (
     <Link
       href={{ pathname: "/review/[id]", query: { id: review.barcode } }}
@@ -253,10 +163,7 @@ function ReviewCard({ review, cardRef }: ReviewCardProps) {
           <MilkIcon className="h-full w-full text-white" />
         </div>
       )}
-      <div
-        className="flex h-full min-w-0 flex-col items-start gap-1"
-        ref={cardRef}
-      >
+      <div className="flex h-full min-w-0 flex-col items-start gap-1">
         <span className="text-sm capitalize">{review.name}</span>
         {!!review.categories.length && (
           <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">

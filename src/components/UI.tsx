@@ -5,8 +5,14 @@ import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
 import Link from "next/link";
-import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
-import { forwardRef } from "react";
+import type {
+  ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
+  Key,
+  PropsWithChildren,
+  ReactNode,
+} from "react";
+import { Fragment, forwardRef, useEffect, useRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
 import GoogleIcon from "~icons/logos/google-icon";
 import LinkedinIcon from "~icons/logos/linkedin-icon";
@@ -139,5 +145,79 @@ export function Input({ ref, className, ...inputProps }: InputProps) {
       className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${className}`}
       {...inputProps}
     />
+  );
+}
+
+type InfiniteScrollProps<P, V> = {
+  pages: P[];
+  /** Retrieve values from a single page */
+  getPageValues: (page: P) => V[];
+  /** Render a element based on a individual value */
+  children: (value: V) => ReactNode;
+  /** Retireve unique list key from a value */
+  getKey: (value: V) => Key;
+  /** This will be invoked upon scrolling further to get more pages */
+  getNextPage: () => void;
+  /** This class will be applied to a wrapper div around an element which triggers getNextPage */
+  className?: string;
+};
+export function InfiniteScroll<P, V>({
+  pages,
+  getPageValues,
+  children,
+  getKey,
+  getNextPage,
+  className,
+}: InfiniteScrollProps<P, V>) {
+  const lastPage = pages.at(-1);
+  const lastElement = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!lastElement.current) throw Error("No ref attached");
+
+    const observer = new IntersectionObserver((events) => {
+      events.forEach((event) => {
+        if (event.target !== lastElement.current || !event.isIntersecting) return;
+        getNextPage();
+      });
+    });
+    observer.observe(lastElement.current);
+
+    return () => {
+      observer.disconnect();
+    };
+    // I don't want to enforce a getNextPage function to be stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages]);
+
+  return (
+    <>
+      {pages.map((page) => {
+        const isLastPage = page === lastPage;
+        const values = getPageValues(page);
+        const triggerValue = values.at(-values.length / 2) ?? values[0];
+
+        return values.map((value) => {
+          const isTriggerValue = isLastPage && value === triggerValue;
+          const key = getKey(value);
+          return isTriggerValue ? (
+            <div
+              className={`!relative ${className ?? ""}`}
+              key={key}
+            >
+              {children(value)}
+              {isTriggerValue && (
+                <div
+                  className="sr-only"
+                  ref={lastElement}
+                />
+              )}
+            </div>
+          ) : (
+            <Fragment key={key}>{children(value)}</Fragment>
+          );
+        });
+      })}
+    </>
   );
 }
