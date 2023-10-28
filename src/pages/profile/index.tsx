@@ -105,7 +105,6 @@ function ReviewCards() {
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
     { limit, filter, sort },
     {
-      keepPreviousData: true,
       getNextPageParam: (lastPage) => lastPage.cursor,
       initialCursor: 0,
       staleTime: minutesToMs(5),
@@ -113,9 +112,7 @@ function ReviewCards() {
   );
 
   return (
-    <div
-      className={`flex grow flex-col gap-2 ${reviewCardsQuery.isPreviousData ? "opacity-50" : ""}`}
-    >
+    <div className="flex grow flex-col gap-2">
       {reviewCardsQuery.isSuccess ? (
         !!reviewCardsQuery.data.pages[0]?.page.length ? (
           <InfiniteScroll
