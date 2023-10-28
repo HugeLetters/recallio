@@ -3,7 +3,7 @@ import Link from "next/link";
 import router, { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import ScanIcon from "~icons/custom/scan";
-import SearchIcon from "~icons/iconamoon/search";
+import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 import HomeIcon from "~icons/uil/home-alt";
@@ -71,7 +71,7 @@ export function HeaderButton({ Icon, type, className, ...butonAttributes }: Head
   return (
     <button
       type={type ?? "button"}
-      className={`flex items-center ${className}`}
+      className={`flex items-center ${className ?? ""}`}
       {...butonAttributes}
     >
       <Icon className="h-8 w-8" />
@@ -83,7 +83,7 @@ type HeaderLinkProps = { Icon: Icon } & ComponentPropsWithoutRef<typeof Link>;
 export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
   return (
     <Link
-      className={`flex items-center ${className}`}
+      className={`flex items-center ${className ?? ""}`}
       {...linkAttributes}
     >
       <Icon className="h-8 w-8" />

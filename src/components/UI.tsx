@@ -36,7 +36,9 @@ export function Clickable<T extends boolean = false>({
     <Component
       type={!asLink ? "button" : undefined}
       {...restProps}
-      className={`rounded-xl px-2.5 py-3.5 transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${variantClass[variant]} ${className}`}
+      className={`rounded-xl px-2.5 py-3.5 transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${
+        variantClass[variant]
+      } ${className ?? ""}`}
     >
       {children}
     </Component>
@@ -45,7 +47,9 @@ export function Clickable<T extends boolean = false>({
 
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
-  return <StarIcon className={highlight ? "text-amber-400" : "text-neutral-300"} />;
+  return (
+    <StarIcon className={`h-full w-full ${highlight ? "text-amber-400" : "text-neutral-300"}`} />
+  );
 }
 
 type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
@@ -54,7 +58,7 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   ref
 ) {
   return (
-    <label className={`focus-within:outline ${className}`}>
+    <label className={`focus-within:outline ${className ?? ""}`}>
       {children}
       <input
         {...inputAttributes}
@@ -75,7 +79,7 @@ function getInitials(name: string) {
 type UserPicProps = { user: Session["user"]; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`aspect-square h-full w-full select-none ${className}`}>
+    <div className={`aspect-square h-full w-full select-none ${className ?? ""}`}>
       {user.image ? (
         <Image
           src={user.image}
@@ -124,7 +128,7 @@ export const providers = Object.entries(providerRecord);
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {
   return (
-    <label className={`flex flex-col ${className}`}>
+    <label className={`flex flex-col ${className ?? ""}`}>
       <p className="p-2 text-sm">{label}</p>
       {children}
     </label>
@@ -136,7 +140,9 @@ export function Input({ ref, className, ...inputProps }: InputProps) {
   return (
     <input
       ref={ref}
-      className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${className}`}
+      className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${
+        className ?? ""
+      }`}
       {...inputProps}
     />
   );

@@ -52,6 +52,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
           comment: null,
           categories: [],
           image: null,
+          isPrivate: true,
         }
       }
       getServerValue={(callback) => {

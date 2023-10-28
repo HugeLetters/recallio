@@ -1,10 +1,13 @@
-import { userRepository } from "@/database/repository/auth";
-import { reviewRepository } from "@/database/repository/product";
+import { db } from "@/database";
+import { user } from "@/database/schema/auth";
+import { review } from "@/database/schema/product";
 import { isValidUrlString } from "@/utils";
+import { and, eq } from "drizzle-orm";
 import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { getServerAuthSession } from "./auth";
+import { findFirst } from "@/database/query/utils";
 
 const uploadthing = createUploadthing();
 
@@ -17,21 +20,21 @@ export const appFileRouter = {
       const session = await getServerAuthSession({ req, res });
       if (!session) throw Error("Unauthorized");
 
-      const review = await reviewRepository.findFirst((table, { and, eq }) =>
-        and(eq(table.userId, session.user.id), eq(table.barcode, barcode))
+      const [reviewData] = await findFirst(
+        review,
+        and(eq(review.userId, session.user.id), eq(review.barcode, barcode))
       );
-      if (!review) throw Error("Can't upload image without a corresponding review");
+      if (!reviewData) throw Error("Can't upload image without a corresponding review");
 
-      return { userId: session.user.id, barcode, oldImageKey: review.imageKey };
+      return { userId: session.user.id, barcode, oldImageKey: reviewData.imageKey };
     })
     .onUploadError(({ error }) => {
       console.log(error);
     })
     .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
-      reviewRepository
-        .update({ imageKey: file.key }, (table, { and, eq }) =>
-          and(eq(table.userId, userId), eq(table.barcode, barcode))
-        )
+      db.update(review)
+        .set({ imageKey: file.key })
+        .where(and(eq(review.userId, userId), eq(review.barcode, barcode)))
         .then((query) => {
           if (!query.rowsAffected || !oldImageKey) return;
 
@@ -47,20 +50,21 @@ export const appFileRouter = {
       const session = await getServerAuthSession({ req, res });
       if (!session) throw Error("Unauthorized");
 
-      const user = await userRepository.findFirst((table, { eq }) => eq(table.id, session.user.id));
-      if (!user) throw Error("User not found");
+      const [userData] = await findFirst(user, eq(user.id, session.user.id));
+      if (!userData) throw Error("User not found");
 
       return {
         userId: session.user.id,
-        userImageKey: user.image && !isValidUrlString(user.image) ? user.image : null,
+        userImageKey: userData.image && !isValidUrlString(userData.image) ? userData.image : null,
       };
     })
     .onUploadError(({ error }) => {
       console.log(error);
     })
     .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
-      userRepository
-        .update({ image: file.key }, (table, { eq }) => eq(table.id, userId))
+      db.update(user)
+        .set({ image: file.key })
+        .where(eq(user.id, userId))
         .then((query) => {
           if (!query.rowsAffected || !userImageKey) return;
           utapi.deleteFiles(userImageKey).catch(console.error);
