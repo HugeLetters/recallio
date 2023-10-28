@@ -11,11 +11,11 @@ import { useRouter } from "next/router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
-import LucidePen from "~icons/custom/pen.jsx";
-import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
-import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
-import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
-import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
+import LucidePen from "~icons/custom/pen";
+import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle";
+import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline";
+import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded";
+import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded";
 
 export default function Page() {
   const router = useRouter();
@@ -230,7 +230,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       </div>
       <div className="flex gap-3">
         <ImageInput
-          className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md"
+          className="relative aspect-square w-20 overflow-hidden rounded-md"
           onChange={(e) => updateImage(e.target.files?.[0])}
           isImageSet={!!image}
           aria-label="add review image"

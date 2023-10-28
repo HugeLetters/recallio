@@ -6,8 +6,8 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Flipped, Flipper } from "react-flip-toolkit";
-import SearchIcon from "~icons/iconamoon/search-light.jsx";
-import SwapIcon from "~icons/iconamoon/swap-light.jsx";
+import SearchIcon from "~icons/iconamoon/search-light";
+import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
 
 export const SEARCH_QUERY_KEY = "search";

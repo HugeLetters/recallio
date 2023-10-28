@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import LucidePen from "~icons/custom/pen";
 import UploadIcon from "~icons/custom/photo-upload";
 import ScanIcon from "~icons/custom/scan";
-import SearchIcon from "~icons/iconamoon/search.jsx";
+import SearchIcon from "~icons/iconamoon/search";
 
 export default function Page() {
   const fileInputRef = useRef<HTMLInputElement>(null);

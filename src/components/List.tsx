@@ -10,8 +10,8 @@ import {
   type PropsWithChildren,
   type ReactNode,
 } from "react";
-import EggBasketIcon from "~icons/custom/egg-basket.jsx";
-import MilkIcon from "~icons/custom/milk.jsx";
+import EggBasketIcon from "~icons/custom/egg-basket";
+import MilkIcon from "~icons/custom/milk";
 
 type InfiniteScrollProps<P, V> = {
   pages: P[];
