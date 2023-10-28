@@ -37,7 +37,7 @@ export function InfiniteScroll<P, V>({
   const triggerElement = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!triggerElement.current) throw Error("No ref attached");
+    if (!triggerElement.current) return;
 
     const observer = new IntersectionObserver((events) => {
       events.forEach((event) => {
