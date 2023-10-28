@@ -109,7 +109,7 @@ export function Card({
           alt=""
           width={50}
           height={50}
-          className="aspect-square h-9 w-9 rounded-full bg-white object-cover !text-black/10 drop-shadow-around"
+          className="aspect-square h-9 w-9 rounded-full bg-white object-cover shadow-around sa-o-10 sa-r-0.5"
         />
       ) : (
         <div className="flex aspect-square h-9 w-9 items-center justify-center rounded-full bg-neutral-400 p-1">
