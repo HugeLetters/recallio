@@ -1,5 +1,5 @@
 import { HeaderLink, Layout } from "@/components/Layout";
-import { Card, InfiniteScroll } from "@/components/List";
+import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
 import { getQueryParam } from "@/utils";
@@ -39,42 +39,46 @@ export default function Page() {
           <span className="text-lg">Goods</span>
           <SortDialog optionList={sortOptionList} />
         </div>
-        <div className="flex flex-col gap-2 pb-4">
+        <div className="flex grow flex-col gap-2 pb-4">
           {productListQuery.isSuccess ? (
-            <InfiniteScroll
-              pages={productListQuery.data?.pages}
-              getPageValues={(page) => page.page}
-              getKey={(value) => value.barcode}
-              getNextPage={() => {
-                !productListQuery.isFetching &&
-                  productListQuery.fetchNextPage().catch(console.error);
-              }}
-            >
-              {(value) => {
-                const match = filter ? value.matchedName : value.name[0] ?? value.matchedName;
+            !!productListQuery.data.pages[0]?.page.length ? (
+              <InfiniteScroll
+                pages={productListQuery.data?.pages}
+                getPageValues={(page) => page.page}
+                getKey={(value) => value.barcode}
+                getNextPage={() => {
+                  !productListQuery.isFetching &&
+                    productListQuery.fetchNextPage().catch(console.error);
+                }}
+              >
+                {(value) => {
+                  const match = filter ? value.matchedName : value.name[0] ?? value.matchedName;
 
-                return (
-                  <Card
-                    // todo - this should link to product page
-                    href={"/"}
-                    aria-label={`Go to product ${value.barcode} page`}
-                    image={value.image}
-                    label={match}
-                    subtext={value.name.filter(
-                      (x): x is NonNullable<typeof x> => !!x && x !== match
-                    )}
-                  >
-                    <div className="flex h-5 items-center gap-0.5">
-                      <Star highlight />
-                      <span className="text-sm">{value.averageRating.toFixed(1)}</span>
-                      <span className="text-xs text-neutral-400">
-                        ({value.reviewCount.toFixed(0)})
-                      </span>
-                    </div>
-                  </Card>
-                );
-              }}
-            </InfiniteScroll>
+                  return (
+                    <Card
+                      // todo - this should link to product page
+                      href={"/"}
+                      aria-label={`Go to product ${value.barcode} page`}
+                      image={value.image}
+                      label={match}
+                      subtext={value.name.filter(
+                        (x): x is NonNullable<typeof x> => !!x && x !== match
+                      )}
+                    >
+                      <div className="flex h-5 items-center gap-0.5">
+                        <Star highlight />
+                        <span className="text-sm">{value.averageRating.toFixed(1)}</span>
+                        <span className="text-xs text-neutral-400">
+                          ({value.reviewCount.toFixed(0)})
+                        </span>
+                      </div>
+                    </Card>
+                  );
+                }}
+              </InfiniteScroll>
+            ) : (
+              <NoResults />
+            )
           ) : (
             "Loading..."
           )}

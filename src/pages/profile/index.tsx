@@ -1,5 +1,5 @@
 import { HeaderLink, Layout } from "@/components/Layout";
-import { Card, InfiniteScroll } from "@/components/List";
+import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Clickable, Star, UserPic } from "@/components/UI";
 import { getQueryParam, minutesToMs } from "@/utils";
@@ -7,7 +7,6 @@ import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import EggBasketIcon from "~icons/custom/egg-basket.jsx";
 import GroceriesIcon from "~icons/custom/groceries.jsx";
 import SettingsIcon from "~icons/solar/settings-linear";
 
@@ -170,16 +169,6 @@ function NoReviews() {
       >
         Scan for the first time
       </Clickable>
-    </div>
-  );
-}
-
-function NoResults() {
-  return (
-    <div className="flex w-full grow flex-col items-center justify-center px-12">
-      <EggBasketIcon className="h-auto w-full" />
-      <span className="pt-4 text-xl">No results found</span>
-      <span className="text-sm">Try using different keywords</span>
     </div>
   );
 }

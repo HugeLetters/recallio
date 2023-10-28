@@ -10,6 +10,7 @@ import {
   type PropsWithChildren,
   type ReactNode,
 } from "react";
+import EggBasketIcon from "~icons/custom/egg-basket.jsx";
 import MilkIcon from "~icons/custom/milk.jsx";
 
 type InfiniteScrollProps<P, V> = {
@@ -126,5 +127,15 @@ export function Card({
       </div>
       <div className="ml-auto flex text-lg">{children}</div>
     </Link>
+  );
+}
+
+export function NoResults() {
+  return (
+    <div className="flex w-full grow flex-col items-center justify-center px-12">
+      <EggBasketIcon className="h-auto w-full" />
+      <span className="pt-4 text-xl">No results found</span>
+      <span className="text-sm">Try using different keywords</span>
+    </div>
   );
 }
