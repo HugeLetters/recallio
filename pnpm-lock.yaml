@@ -144,6 +144,9 @@ devDependencies:
   '@faker-js/faker':
     specifier: ^8.1.0
     version: 8.1.0
+  '@iconify-json/carbon':
+    specifier: ^1.1.21
+    version: 1.1.21
   '@iconify-json/fluent-emoji-high-contrast':
     specifier: ^1.1.11
     version: 1.1.11
@@ -156,6 +159,9 @@ devDependencies:
   '@iconify-json/ion':
     specifier: ^1.1.12
     version: 1.1.12
+  '@iconify-json/jam':
+    specifier: ^1.1.5
+    version: 1.1.5
   '@iconify-json/logos':
     specifier: ^1.1.37
     version: 1.1.37
@@ -987,6 +993,12 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
+  /@iconify-json/carbon@1.1.21:
+    resolution: {integrity: sha512-bK2cMVM4noBU+FGlay433flpXLRzQu0ED095iAnoO6ka3yb4uz0lvb8acpN5gthyGLJ89C4HpfIbQZLQnMKQww==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: true
+
   /@iconify-json/fluent-emoji-high-contrast@1.1.11:
     resolution: {integrity: sha512-sHaWePjAtwQfE5Aduf3ti2NCiYpDyN68DrcxSgCFwVKugsNwyNtC1i/FQorV2hLGTAfChYxKShXmbf+ntSaZbw==}
     dependencies:
@@ -1007,6 +1019,12 @@ packages:
 
   /@iconify-json/ion@1.1.12:
     resolution: {integrity: sha512-YvVxa9pVUJFEp7S5n97VIYZv1/qU/aX1RSehDBQRfI0YsZCZhBQY77SxYXGCb/Gc0fP4//b9wtx8UE4hfwr0eQ==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: true
+
+  /@iconify-json/jam@1.1.5:
+    resolution: {integrity: sha512-qrCwR9jFIcd62I9NHdFLtEOtuQ7U+1V4RncrAo01/nQAXHPAZLmfFIO+1o/mPDR06h7EABDzVLKnW5qcbBlM8g==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true

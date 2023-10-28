@@ -6,6 +6,8 @@ export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      height: { screen: "100dvh" },
+      minHeight: { screen: "100dvh" },
       maxWidth: { app: "450px" },
       fontFamily: { lato: ["var(--font-lato, Lato)", ...defaultTheme.fontFamily.sans] },
       colors: {
@@ -41,10 +43,10 @@ export default {
       const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
       const shadowAroundRadius = "--tw-drop-shadow-around-radius";
       addUtilities({
-        [".shadow-around"]: {
+        ".shadow-around": {
           "--tw-drop-shadow": `drop-shadow(0 0 var(${shadowAroundRadius}) rgb(0 0 0 / var(${shadowAroundOpacity})))`,
           filter:
-            "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);",
+            "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
         },
       });
       matchUtilities(

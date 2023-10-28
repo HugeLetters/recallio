@@ -7,7 +7,7 @@ import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import GroceriesIcon from "~icons/custom/groceries.jsx";
+import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 export default function Page() {

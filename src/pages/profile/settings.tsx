@@ -1,5 +1,13 @@
 import { Layout } from "@/components/Layout";
-import { ImageInput, Input, Switch, UserPic, WithLabel, providers } from "@/components/UI";
+import {
+  Clickable,
+  ImageInput,
+  Input,
+  Switch,
+  UserPic,
+  WithLabel,
+  providers,
+} from "@/components/UI";
 import { useUploadThing } from "@/hooks";
 import { browser } from "@/utils";
 import { api } from "@/utils/api";
@@ -19,14 +27,15 @@ export default function Page() {
           <UserName username={data.user.name} />
           <LinkedAccounts />
           <AppSettings />
-          <button
-            className="mt-2 rounded-lg bg-neutral-100 bg-pink-800/10 px-2 py-3.5 text-pink-800"
+          <Clickable
+            variant="destructive"
+            className="mt-2"
             onClick={() => {
               void signOut({ redirect: false });
             }}
           >
             Sign Out
-          </button>
+          </Clickable>
         </div>
       ) : (
         "Loading"

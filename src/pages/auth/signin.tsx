@@ -2,7 +2,8 @@ import { Clickable, Input, WithLabel, providers } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
-import Logo from "~icons/custom/logo.jsx";
+import Logo from "~icons/custom/logo";
+import AlertIcon from "~icons/jam/alert-f";
 
 Page.noAuth = true;
 export default function Page() {
@@ -11,16 +12,23 @@ export default function Page() {
   const error = getErrorMessage(getQueryParam(query.error));
 
   return (
-    <div className="mx-auto flex h-[100dvh] w-full max-w-app flex-col items-center justify-center p-4">
-      <Logo />
-      <p className="mb-6 text-xl">Unlock a world of informed shopping</p>
-      {!!error && <p className="whitespace-pre-wrap text-center text-sm text-red-500">{error}</p>}
-      <EmailSignIn callbackUrl={callbackUrl} />
-      <div className="relative z-0 my-6 flex w-full justify-center">
-        <hr className="absolute top-1/2 -z-10 w-full" />
-        <span className="bg-white px-4 text-neutral-400">Or</span>
+    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col p-4">
+      {!!error && (
+        <div className="flex w-fit items-center gap-2 self-center rounded-lg bg-red-800/10 px-2.5 py-4 text-red-800/80">
+          <AlertIcon className="h-8 w-8 shrink-0" />
+          <span className="text-sm">{error}</span>
+        </div>
+      )}
+      <div className="flex grow flex-col items-center justify-center">
+        <Logo className="shrink-0" />
+        <p className="mb-6 text-xl">Unlock a world of informed shopping</p>
+        <EmailSignIn callbackUrl={callbackUrl} />
+        <div className="relative z-0 my-6 flex w-full justify-center">
+          <hr className="absolute top-1/2 -z-10 w-full" />
+          <span className="bg-white px-4 text-neutral-400">Or</span>
+        </div>
+        <ProviderSignIn callbackUrl={callbackUrl} />
       </div>
-      <ProviderSignIn callbackUrl={callbackUrl} />
     </div>
   );
 }
@@ -29,16 +37,13 @@ type EmailSignInProps = { callbackUrl: string | undefined };
 function EmailSignIn({ callbackUrl }: EmailSignInProps) {
   return (
     <form
-      className="grid w-full grid-cols-2 gap-2"
+      className="group grid w-full gap-2"
       onSubmit={(e) => {
         e.preventDefault();
         void signIn("email", { email: new FormData(e.currentTarget).get("email"), callbackUrl });
       }}
     >
-      <WithLabel
-        label="E-mail"
-        className="col-span-2"
-      >
+      <WithLabel label="E-mail">
         <Input
           required
           name="email"
@@ -46,18 +51,11 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
         />
       </WithLabel>
       <Clickable
-        variant="primary"
+        variant="ghost"
         type="submit"
-        className="font-semibold"
+        className="font-semibold group-valid:bg-app-green group-valid:text-white group-invalid:transform-none group-invalid:cursor-default group-invalid:text-neutral-400"
       >
-        Sign in
-      </Clickable>
-      <Clickable
-        variant="primary"
-        type="submit"
-        className="font-semibold"
-      >
-        Sign up
+        Continue
       </Clickable>
     </form>
   );

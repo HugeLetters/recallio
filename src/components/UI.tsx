@@ -13,10 +13,11 @@ import LinkedinIcon from "~icons/logos/linkedin-icon";
 import GithubIcon from "~icons/mdi/github";
 import StarIcon from "~icons/typcn/star-full-outline";
 
-const variantClass: Record<"primary" | "ghost", string> = {
+const variantClass = {
   primary: "bg-app-green text-white",
   ghost:
-    "bg-neutral-100 text-lime-950 outline outline-1 outline-neutral-400/30 focus-within:outline-2  focus-within:outline-neutral-400/70",
+    "bg-neutral-100 text-lime-950 outline outline-1 outline-neutral-400/30 focus-within:outline-2 focus-within:outline-neutral-400/70",
+  destructive: "bg-red-800/10 text-red-800/80",
 };
 type ClickableProps<T extends boolean> = {
   asLink?: T;
@@ -36,7 +37,7 @@ export function Clickable<T extends boolean = false>({
     <Component
       type={!asLink ? "button" : undefined}
       {...restProps}
-      className={`rounded-xl px-2.5 py-3.5 transition-[transform,filter] active:brightness-110 motion-safe:active:scale-95 ${
+      className={`rounded-xl px-2.5 py-3.5 transition active:brightness-110 motion-safe:active:scale-95 ${
         variantClass[variant]
       } ${className ?? ""}`}
     >
@@ -58,7 +59,7 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   ref
 ) {
   return (
-    <label className={`focus-within:outline ${className ?? ""}`}>
+    <label className={`cursor-pointer focus-within:outline ${className ?? ""}`}>
       {children}
       <input
         {...inputAttributes}
@@ -86,7 +87,7 @@ export function UserPic({ user, className }: UserPicProps) {
           alt="your avatar"
           width={100}
           height={100}
-          className="h-full w-full rounded-full object-cover drop-shadow-md"
+          className="h-full w-full rounded-full object-cover shadow-around sa-o-10 sa-r-2"
         />
       ) : (
         <div
