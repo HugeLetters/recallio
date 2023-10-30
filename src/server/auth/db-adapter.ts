@@ -100,9 +100,13 @@ export function DatabaseAdapter(): Adapter {
     async createVerificationToken(token) {
       await db.insert(verificationToken).values(token);
 
-      return findFirst(verificationToken, eq(verificationToken.identifier, token.identifier)).then(
-        ([data]) => data
-      );
+      return findFirst(
+        verificationToken,
+        and(
+          eq(verificationToken.identifier, token.identifier),
+          eq(verificationToken.token, token.token)
+        )
+      ).then(([data]) => data);
     },
     async useVerificationToken(token) {
       const [tokenToDelete] = await findFirst(
