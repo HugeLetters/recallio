@@ -1,20 +1,14 @@
 import { freeze, produce, type Draft } from "immer";
-import { atom } from "jotai";
+import { atomWithReducer } from "jotai/utils";
 import { useCallback, useState } from "react";
 
 type Drafter<T> = (draft: Draft<T>) => void;
 type Updater<T> = (arg: T | Drafter<T>) => void;
 
 export function immerAtom<T>(initialValue: T) {
-  const createdAtom = atom(initialValue, (get, set, updater: T | Drafter<T>) => {
-    set(
-      createdAtom,
-      produce<T>(typeof updater === "function" ? (updater as Drafter<T>) : () => updater)(
-        get(createdAtom)
-      )
-    );
+  return atomWithReducer<T, Drafter<T> | T>(initialValue, (state, action) => {
+    return typeof action === "function" ? produce(state, action as Drafter<T>) : action ?? state;
   });
-  return createdAtom;
 }
 
 /**
