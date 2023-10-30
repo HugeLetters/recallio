@@ -9,7 +9,7 @@ patchedDependencies:
     hash: yvsgxii7fhox2eua2fqmbhdpzu
     path: patches/next-auth@4.23.1.patch
   next@13.4.2:
-    hash: wyts6huobzll7dhzt5zopohssy
+    hash: rpxalwh3izriaod3emeomrgsda
     path: patches/next@13.4.2.patch
 
 dependencies:
@@ -37,15 +37,30 @@ dependencies:
   '@react-email/button':
     specifier: ^0.0.10
     version: 0.0.10
+  '@react-email/column':
+    specifier: ^0.0.8
+    version: 0.0.8(react@18.2.0)
+  '@react-email/head':
+    specifier: ^0.0.6
+    version: 0.0.6(react@18.2.0)
   '@react-email/html':
     specifier: ^0.0.4
     version: 0.0.4
   '@react-email/render':
     specifier: ^0.0.7
     version: 0.0.7
+  '@react-email/row':
+    specifier: ^0.0.6
+    version: 0.0.6(react@18.2.0)
+  '@react-email/section':
+    specifier: ^0.0.10
+    version: 0.0.10(react@18.2.0)
   '@react-email/tailwind':
     specifier: ^0.0.8
     version: 0.0.8
+  '@react-email/text':
+    specifier: ^0.0.6
+    version: 0.0.6(react@18.2.0)
   '@svgr/core':
     specifier: ^8.1.0
     version: 8.1.0(typescript@5.1.6)
@@ -93,7 +108,7 @@ dependencies:
     version: 3.6.0
   next:
     specifier: ^13.4.2
-    version: 13.4.2(patch_hash=wyts6huobzll7dhzt5zopohssy)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
+    version: 13.4.2(patch_hash=rpxalwh3izriaod3emeomrgsda)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
   next-auth:
     specifier: ^4.23.1
     version: 4.23.1(patch_hash=yvsgxii7fhox2eua2fqmbhdpzu)(next@13.4.2)(nodemailer@6.9.5)(react-dom@18.2.0)(react@18.2.0)
@@ -1952,6 +1967,24 @@ packages:
       react: 18.2.0
     dev: false
 
+  /@react-email/column@0.0.8(react@18.2.0):
+    resolution: {integrity: sha512-blChqGU8e/L6KZiB5EPww8bkZfdyHDuS0vKIvU+iS14uK+xfAw+5P5CU9BYXccEuJh2Gftfngu1bWMFp2Sc6ag==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /@react-email/head@0.0.6(react@18.2.0):
+    resolution: {integrity: sha512-9BrBDalb34nBOmmQVQc7/pjJotcuAeC3rhBl4G88Ohiipuv15vPIKqwy8vPJcFNi4l7yGlitfG3EESIjkLkoIw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /@react-email/html@0.0.4:
     resolution: {integrity: sha512-7tRYSnudYAWez+NkPWOM8yLZH7EuYFtYdiLPnzpD+pf4cdk16Gz4up531DaIX6dNBbfbyEFpQxhXZxGeJ5ZkfQ==}
     engines: {node: '>=16.0.0'}
@@ -1967,6 +2000,24 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
+  /@react-email/row@0.0.6(react@18.2.0):
+    resolution: {integrity: sha512-msJ2TnDJNwpgDfDzUO63CvhusJHeaGLMM+8Zz86VPvxzwe/DkT7N48QKRWRCkt8urxVz5U+EgivORA9Dum9p3Q==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /@react-email/section@0.0.10(react@18.2.0):
+    resolution: {integrity: sha512-x9B2KYFqj+d8I1fK9bgeVm/3mLE4Qgn4mm/GbDtcJeSzKU/G7bTb7/3+BMDk9SARPGkg5XAuZm1XgcqQQutt2A==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /@react-email/tailwind@0.0.8:
     resolution: {integrity: sha512-0BLjD5GpiyBK7YDlaDrjHIpj9eTrrZrMJud3f1UPoCZhS+0S/M8LcR8WMbQsR+8/aLGmiy4F4TGZuRQcsJEsFw==}
     engines: {node: '>=16.0.0'}
@@ -1977,6 +2028,15 @@ packages:
       tw-to-css: 0.0.11
     transitivePeerDependencies:
       - ts-node
+    dev: false
+
+  /@react-email/text@0.0.6(react@18.2.0):
+    resolution: {integrity: sha512-PDUTAD1PjlzXFOIUrR1zuV2xxguL62yne5YLcn1k+u/dVUyzn6iU/5lFShxCfzuh3QDWCf4+JRNnXN9rmV6jzw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /@rushstack/eslint-patch@1.3.3:
@@ -2188,7 +2248,7 @@ packages:
       '@trpc/client': 10.34.0(@trpc/server@10.34.0)
       '@trpc/react-query': 10.34.0(@tanstack/react-query@4.29.25)(@trpc/client@10.34.0)(@trpc/server@10.34.0)(react-dom@18.2.0)(react@18.2.0)
       '@trpc/server': 10.34.0
-      next: 13.4.2(patch_hash=wyts6huobzll7dhzt5zopohssy)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
+      next: 13.4.2(patch_hash=rpxalwh3izriaod3emeomrgsda)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-ssr-prepass: 1.5.0(react@18.2.0)
@@ -5026,7 +5086,7 @@ packages:
       '@panva/hkdf': 1.1.1
       cookie: 0.5.0
       jose: 4.14.4
-      next: 13.4.2(patch_hash=wyts6huobzll7dhzt5zopohssy)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
+      next: 13.4.2(patch_hash=rpxalwh3izriaod3emeomrgsda)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
       nodemailer: 6.9.5
       oauth: 0.9.15
       openid-client: 5.4.3
@@ -5042,7 +5102,7 @@ packages:
     resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
     dev: true
 
-  /next@13.4.2(patch_hash=wyts6huobzll7dhzt5zopohssy)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0):
+  /next@13.4.2(patch_hash=rpxalwh3izriaod3emeomrgsda)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-aNFqLs3a3nTGvLWlO9SUhCuMUHVPSFQC0+tDNGAsDXqx+WJDFSbvc233gOJ5H19SBc7nw36A9LwQepOJ2u/8Kg==}
     engines: {node: '>=16.8.0'}
     hasBin: true
@@ -5095,7 +5155,7 @@ packages:
       next: '*'
     dependencies:
       chokidar: 3.5.3
-      next: 13.4.2(patch_hash=wyts6huobzll7dhzt5zopohssy)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
+      next: 13.4.2(patch_hash=rpxalwh3izriaod3emeomrgsda)(@babel/core@7.22.15)(react-dom@18.2.0)(react@18.2.0)
     dev: false
 
   /no-case@3.0.4:

@@ -3,7 +3,7 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { isValidUrlString } from "@/utils";
 import type { Adapter } from "@auth/core/adapters";
-import { and, eq, type InferSelectModel } from "drizzle-orm";
+import { and, eq, or, type InferSelectModel, lt } from "drizzle-orm";
 import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
 import { utapi } from "uploadthing/server";
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
@@ -115,9 +115,12 @@ export function DatabaseAdapter(): Adapter {
         await db
           .delete(verificationToken)
           .where(
-            and(
-              eq(verificationToken.identifier, token.identifier),
-              eq(verificationToken.token, token.token)
+            or(
+              and(
+                eq(verificationToken.identifier, token.identifier),
+                eq(verificationToken.token, token.token)
+              ),
+              lt(verificationToken.expires, new Date())
             )
           );
       }

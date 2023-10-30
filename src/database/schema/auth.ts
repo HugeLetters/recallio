@@ -78,5 +78,6 @@ export const verificationToken = mysqlTable(
   },
   (table) => ({
     compoundKey: primaryKey(table.identifier, table.token),
+    expiresIndex: index("expires-index").on(table.expires),
   })
 );

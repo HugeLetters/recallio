@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import Logo from "~icons/custom/logo";
 import AlertIcon from "~icons/jam/alert-f";
 
+// todo redirect if signed in
 Page.noAuth = true;
 export default function Page() {
   const { query } = useRouter();
@@ -35,12 +36,19 @@ export default function Page() {
 
 type EmailSignInProps = { callbackUrl: string | undefined };
 function EmailSignIn({ callbackUrl }: EmailSignInProps) {
+  const router = useRouter();
+
   return (
     <form
       className="group grid w-full gap-2"
       onSubmit={(e) => {
+        const email = new FormData(e.currentTarget).get("email");
+        if (typeof email !== "string") return;
+
         e.preventDefault();
-        void signIn("email", { email: new FormData(e.currentTarget).get("email"), callbackUrl });
+        void signIn("email", { email, callbackUrl, redirect: false });
+
+        void router.push({ pathname: "/auth/email", query: { callbackUrl, email } });
       }}
     >
       <WithLabel label="E-mail">
