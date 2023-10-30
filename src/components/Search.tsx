@@ -11,7 +11,7 @@ import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
 
 export const SEARCH_QUERY_KEY = "search";
-type HeaderSearchBarProps = { right: ReactNode; title: string };
+type HeaderSearchBarProps = { right?: ReactNode; title: string };
 export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const debounceTimeoutRef = useRef<number>();
@@ -87,7 +87,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             {searchIcon}
           </button>
           <div className="grow text-center">{title}</div>
-          {right}
+          {right ?? <div className="h-7 w-7" />}
         </>
       )}
     </div>

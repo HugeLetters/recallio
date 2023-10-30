@@ -6,7 +6,6 @@ import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
-import HomeIcon from "~icons/uil/home-alt";
 
 type LayoutProps = {
   header?: ComponentPropsWithoutRef<typeof Header>;
@@ -49,16 +48,7 @@ function Header({ header, left, right, title }: HeaderProps) {
               )}
             </div>
             <h1 className="col-start-2 justify-self-center text-xl">{title}</h1>
-            <div className="justify-self-end">
-              {right !== undefined ? (
-                right
-              ) : (
-                <HeaderLink
-                  Icon={HomeIcon}
-                  href="/"
-                />
-              )}
-            </div>
+            <div className="justify-self-end">{right}</div>
           </div>
         )}
       </div>

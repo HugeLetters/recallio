@@ -19,17 +19,6 @@ export default function Page() {
         <p>An authorization PIN has been sent to your email address</p>
         <p>{"Don't forget to check your spam folder"}</p>
       </div>
-      <Clickable
-        variant="primary"
-        asLink
-        // @ts-expect-error An external link to open email app
-        href={"mailto:"}
-        target="_blank"
-        rel="noreferrer"
-        className="self-stretch"
-      >
-        Open the email app
-      </Clickable>
       {/* todo - styling */}
       <form
         onSubmit={(e) => {

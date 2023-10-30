@@ -1,11 +1,10 @@
-import { HeaderLink, Layout } from "@/components/Layout";
+import { Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
 import { useRouter } from "next/router";
-import HomeIcon from "~icons/uil/home-alt";
 
 export default function Page() {
   const { query } = useRouter();
@@ -21,17 +20,7 @@ export default function Page() {
   return (
     <Layout
       header={{
-        header: (
-          <HeaderSearchBar
-            right={
-              <HeaderLink
-                Icon={HomeIcon}
-                href="/"
-              />
-            }
-            title="Search"
-          />
-        ),
+        header: <HeaderSearchBar title="Search" />,
       }}
     >
       <div className="flex w-full flex-col gap-4 p-4">
