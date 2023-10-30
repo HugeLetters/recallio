@@ -60,6 +60,7 @@ export const session = mysqlTable(
   },
   (table) => ({
     userIdIndex: index("user-id-index").on(table.userId),
+    expiresIndex: index("expires-index").on(table.expires),
   })
 );
 export const sessionRelations = relations(session, ({ one }) => ({

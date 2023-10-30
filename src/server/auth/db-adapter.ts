@@ -89,8 +89,10 @@ export function DatabaseAdapter(): Adapter {
     async deleteSession(sessionToken) {
       const [sessionToDelete] = await findFirst(session, eq(session.sessionToken, sessionToken));
 
-      if (!!sessionToDelete) {
-        await db.delete(session).where(eq(session.sessionToken, sessionToken));
+      if (sessionToDelete) {
+        await db
+          .delete(session)
+          .where(or(eq(session.sessionToken, sessionToken), lt(session.expires, new Date())));
       }
 
       return sessionToDelete;
