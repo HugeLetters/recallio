@@ -6,6 +6,8 @@ import EmailProvider from "next-auth/providers/email";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
+import { createTransport } from "nodemailer";
+import { getEmailHtml, getEmailText } from "./PinEmail";
 import { DatabaseAdapter } from "./db-adapter";
 
 /**
@@ -40,6 +42,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
     signOut: "/profile/settings",
     verifyRequest: "/auth/email",
+    error: "/auth/error",
   },
   adapter: DatabaseAdapter(),
   callbacks: {
@@ -59,6 +62,28 @@ export const authOptions: NextAuthOptions = {
         },
       },
       from: env.NODEMAILER_EMAIL,
+      maxAge: 5 * 60, // 5 minutes
+      generateVerificationToken() {
+        return crypto.randomUUID().slice(0, 6).toUpperCase();
+      },
+      sendVerificationRequest({ provider, identifier, token, url }) {
+        // todo - email styling & theme etc
+        createTransport(provider.server)
+          .sendMail({
+            to: identifier,
+            from: provider.from,
+            subject: "Sign in to Recallio app",
+            html: getEmailHtml({ token, url }),
+            text: getEmailText({ token, url }),
+          })
+          .then((res) => {
+            const failed = res.rejected.concat(res.pending).filter(Boolean);
+            if (failed.length) {
+              throw new Error(`Email(s) (${failed.join(", ")}) could not be sent`);
+            }
+          })
+          .catch(console.error);
+      },
     }),
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,

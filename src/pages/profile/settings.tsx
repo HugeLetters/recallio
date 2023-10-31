@@ -11,6 +11,7 @@ import {
 import { useUploadThing } from "@/hooks";
 import { browser } from "@/utils";
 import { api } from "@/utils/api";
+import { compressImage } from "@/utils/image";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
@@ -71,11 +72,15 @@ function UserImage({ user }: UserImageProps) {
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
-          startUpload([file])
-            .catch(console.error)
-            .finally(() => {
-              update().catch(console.error);
-            });
+          compressImage(file, 511 * 1024)
+            .then((image) => {
+              startUpload([image ?? file])
+                .catch(console.error)
+                .finally(() => {
+                  update().catch(console.error);
+                });
+            })
+            .catch(console.error);
         }}
       >
         {!!user.image ? "Change avatar" : "Upload avatar"}

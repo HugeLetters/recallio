@@ -3,7 +3,7 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { isValidUrlString } from "@/utils";
 import type { Adapter } from "@auth/core/adapters";
-import { and, eq, type InferSelectModel } from "drizzle-orm";
+import { and, eq, or, type InferSelectModel, lt } from "drizzle-orm";
 import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
 import { utapi } from "uploadthing/server";
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
@@ -89,8 +89,10 @@ export function DatabaseAdapter(): Adapter {
     async deleteSession(sessionToken) {
       const [sessionToDelete] = await findFirst(session, eq(session.sessionToken, sessionToken));
 
-      if (!!sessionToDelete) {
-        await db.delete(session).where(eq(session.sessionToken, sessionToken));
+      if (sessionToDelete) {
+        await db
+          .delete(session)
+          .where(or(eq(session.sessionToken, sessionToken), lt(session.expires, new Date())));
       }
 
       return sessionToDelete;
@@ -98,9 +100,13 @@ export function DatabaseAdapter(): Adapter {
     async createVerificationToken(token) {
       await db.insert(verificationToken).values(token);
 
-      return findFirst(verificationToken, eq(verificationToken.identifier, token.identifier)).then(
-        ([data]) => data
-      );
+      return findFirst(
+        verificationToken,
+        and(
+          eq(verificationToken.identifier, token.identifier),
+          eq(verificationToken.token, token.token)
+        )
+      ).then(([data]) => data);
     },
     async useVerificationToken(token) {
       const [tokenToDelete] = await findFirst(
@@ -115,9 +121,12 @@ export function DatabaseAdapter(): Adapter {
         await db
           .delete(verificationToken)
           .where(
-            and(
-              eq(verificationToken.identifier, token.identifier),
-              eq(verificationToken.token, token.token)
+            or(
+              and(
+                eq(verificationToken.identifier, token.identifier),
+                eq(verificationToken.token, token.token)
+              ),
+              lt(verificationToken.expires, new Date())
             )
           );
       }

@@ -1,0 +1,28 @@
+<svg viewBox="0 0 218 175" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g id="Group 32">
+        <circle id="Ellipse 327" cx="112.098" cy="89" r="86" fill="#F6ECEB" />
+        <circle id="Ellipse 330" cx="177" cy="40.9019" r="29.6988" transform="rotate(-31.8665 177 40.9019)"
+            fill="#F0C62F" />
+        <circle id="Ellipse 328" cx="9.59814" cy="108.5" r="9.5" fill="#AF4C4C" />
+    </g>
+    <g id="Frame" transform="translate(75 45) scale(1.1)">
+        <g id="Group">
+            <path id="Vector"
+                d="M53.7345 25.4854L48.2481 32.8007M48.2481 32.8007H43.5765L38.9051 39.8079H34.2335M48.2481 32.8007L51.7518 36.3044V42.1437L53.5035 43.8955"
+                stroke="#AF4C4C" stroke-width="2.5" stroke-miterlimit="10" stroke-linecap="square"
+                stroke-linejoin="round" />
+            <path id="Vector_2"
+                d="M60.5209 52.3781C60.6682 51.2055 60.742 50.0248 60.7417 48.843C60.7417 42.5941 58.6968 33.7779 55.2396 25.4855L52.4999 26.5L53.7345 22.101C48.5985 11.263 41.0843 2.12793 32.7128 2.12793C27.9851 2.12793 23.5307 5.0413 19.6238 9.52955M16.4133 13.734C9.31154 24.2314 4.68372 39.4423 4.68372 48.843C4.68372 64.323 17.2328 76.8721 32.7128 76.8721C45.1457 76.8721 55.6879 68.7771 59.3564 57.5702"
+                stroke="#AF4C4C" stroke-width="2.5" stroke-miterlimit="10" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </g>
+        <g id="Group 1321314405">
+            <line id="Line 9" x1="57.8628" y1="14.6003" x2="61.5671" y2="6.48114" stroke="#AF4C4C" stroke-width="2.5" />
+            <line id="Line 10" x1="63.1738" y1="20.5979" x2="71.6758" y2="17.8854" stroke="#AF4C4C"
+                stroke-width="2.5" />
+            <line id="Line 12" y1="-1.25" x2="8.92427" y2="-1.25"
+                transform="matrix(-0.86527 -0.501307 -0.501307 0.86527 70.0333 34.2813)" stroke="#AF4C4C"
+                stroke-width="2.5" />
+        </g>
+    </g>
+</svg>

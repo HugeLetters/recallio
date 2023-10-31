@@ -60,6 +60,7 @@ export const session = mysqlTable(
   },
   (table) => ({
     userIdIndex: index("user-id-index").on(table.userId),
+    expiresIndex: index("expires-index").on(table.expires),
   })
 );
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -78,5 +79,6 @@ export const verificationToken = mysqlTable(
   },
   (table) => ({
     compoundKey: primaryKey(table.identifier, table.token),
+    expiresIndex: index("expires-index").on(table.expires),
   })
 );

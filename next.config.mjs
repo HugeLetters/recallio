@@ -12,7 +12,9 @@ const withRoutes = nextRoutes();
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-
+  rewrites() {
+    return [{ source: "/", destination: "/scan" }];
+  },
   /**
    * If you are using `appDir` then you must comment the below `i18n` config out.
    *
