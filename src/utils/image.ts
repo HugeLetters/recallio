@@ -3,29 +3,29 @@ import { browser } from ".";
 export async function compressImage(file: File, targetBytes: number): Promise<File | null> {
   if (!browser) throw Error("This function is browser only");
 
-  const image = await createImageBitmap(file);
+  const bitmap = await createImageBitmap(file);
   const canvas = document.createElement("canvas");
-  canvas.width = image.width;
-  canvas.height = image.height;
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
   if (file.size < targetBytes) {
-    return drawImage(image, 1, ctx, canvas).then((blob) =>
+    return drawImage(bitmap, 1, ctx, canvas).then((blob) =>
       blob ? blobToFile(blob, file.name) : null
     );
   }
 
-  const checkedSizeSet = new Set([file.size]);
+  const checkedSizeSet = new Set<number>();
   let bestImage: Blob | null = null;
 
-  for (let currentImage: Blob | null = file, i = 0; currentImage && i < 15; i++) {
-    currentImage = await drawImage(image, getScale(currentImage.size, targetBytes), ctx, canvas);
-    if (!currentImage || checkedSizeSet.has(currentImage.size)) break;
-    checkedSizeSet.add(currentImage.size);
+  for (let image: Blob | null = file, i = 0; image && i < 15; i++) {
+    image = await drawImage(bitmap, getScale(image.size, targetBytes), ctx, canvas);
+    if (!image || checkedSizeSet.has(image.size)) break;
+    checkedSizeSet.add(image.size);
 
-    if (currentImage.size < targetBytes && (!bestImage || currentImage.size > bestImage.size)) {
-      bestImage = currentImage;
+    if (image.size < targetBytes && (!bestImage || image.size > bestImage.size)) {
+      bestImage = image;
     }
 
     if (bestImage && bestImage.size > targetBytes * 0.95 && bestImage.size < targetBytes) {
@@ -48,7 +48,7 @@ function blobToFile(blob: Blob, name: string) {
 }
 
 function drawImage(
-  image: ImageBitmap,
+  bitmap: ImageBitmap,
   scale: number,
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement
@@ -57,7 +57,7 @@ function drawImage(
   canvas.width /= scale;
   canvas.height /= scale;
 
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return new Promise<Blob | null>((resolve) => {
     canvas.toBlob((blob) => resolve(blob), "image/webp");
   });
