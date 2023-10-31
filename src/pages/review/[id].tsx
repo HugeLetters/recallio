@@ -3,6 +3,7 @@ import { Clickable, ImageInput, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
+import { compressImage } from "@/utils/image";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Separator from "@radix-ui/react-separator";
@@ -98,7 +99,8 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
           async onSuccess(data) {
             if (!data.ok) toast.error(data.error);
             else if (!!image) {
-              await startUpload([image], { barcode }).catch((err) => {
+              const compressedImage = await compressImage(image, 511 * 1024);
+              await startUpload([compressedImage ?? image], { barcode }).catch((err) => {
                 console.error(err);
                 toast.error("Error while uploading image");
               });
