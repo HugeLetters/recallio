@@ -42,6 +42,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
     signOut: "/profile/settings",
     verifyRequest: "/auth/email",
+    error: "/auth/error",
   },
   adapter: DatabaseAdapter(),
   callbacks: {

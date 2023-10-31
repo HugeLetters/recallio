@@ -46,6 +46,7 @@ export default function Page() {
                   return (
                     <Card
                       // todo - this should link to product page
+                      // @ts-expect-error fuck off
                       href={"/"}
                       aria-label={`Go to product ${value.barcode} page`}
                       image={value.image}

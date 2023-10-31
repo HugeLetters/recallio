@@ -43,7 +43,7 @@ function Header({ header, left, right, title }: HeaderProps) {
                   Icon={LeftArrowIcon}
                   onClick={router.back}
                   role="navigation"
-                  aria-label="back"
+                  aria-label="go back"
                 />
               )}
             </div>
