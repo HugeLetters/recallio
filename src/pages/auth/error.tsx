@@ -2,6 +2,7 @@ import { Error } from "@/components/Error";
 import { getQueryParam } from "@/utils";
 import { useRouter } from "next/router";
 
+Page.noAuth = true;
 export default function Page() {
   const { query } = useRouter();
   const error = getErrorMessage(getQueryParam(query.error));

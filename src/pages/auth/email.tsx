@@ -12,14 +12,13 @@ export default function Page() {
   const [pin, setPin] = useState("");
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col items-center justify-center gap-4 p-4 text-center">
+    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col items-center justify-center p-4 text-center text-lime-950">
       <EmailIcon className="h-10 w-10" />
-      <p className="text-2xl font-semibold">Check your email</p>
-      <div className="my-4 text-xl font-medium text-neutral-400">
-        <p>An authorization PIN has been sent to your email address</p>
-        <p>{"Don't forget to check your spam folder"}</p>
+      <p className="text-2xl font-semibold">Registration PIN code</p>
+      <div className="mt-2 text-xl font-medium text-neutral-400">
+        <p>To complete registration, we have sent you a PIN code to your email address.</p>
+        <p>Please enter it in the field below.</p>
       </div>
-      {/* todo - styling */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -35,18 +34,18 @@ export default function Page() {
             },
           });
         }}
-        className="flex w-full flex-col items-center gap-3"
+        className="group flex w-full max-w-[360px] flex-col items-center gap-3"
       >
-        <label className="group w-full cursor-text p-2">
-          <div className="flex w-full justify-around gap-3 uppercase">
+        <label className="group/input my-6 w-full cursor-text">
+          <div className="grid w-full grid-cols-6 justify-center gap-2.5 uppercase">
             {Array.from({ length: PIN_LENGTH }).map((_, i) => (
               <div
                 key={i}
-                className="h-10 w-10 rounded-lg p-2 outline outline-app-green"
+                className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-400/50 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green"
               >
                 {pin[i]}
                 {i === pin.length && (
-                  <span className="invisible animate-ping text-app-green group-focus-within:visible">
+                  <span className="invisible animate-ping text-app-green group-focus-within/input:visible">
                     |
                   </span>
                 )}
@@ -66,13 +65,15 @@ export default function Page() {
             className="sr-only"
           />
         </label>
-        <Clickable
-          variant="primary"
-          type="submit"
-          className="w-full"
-        >
-          Submit
-        </Clickable>
+        <div className="w-full px-1">
+          <Clickable
+            variant="ghost"
+            type="submit"
+            className="w-full group-valid:bg-app-green group-valid:text-white group-invalid:transform-none group-invalid:cursor-default"
+          >
+            Submit PIN
+          </Clickable>
+        </div>
       </form>
     </div>
   );
