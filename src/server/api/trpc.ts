@@ -100,14 +100,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  return next({
-    ctx: {
-      // t3 template had "{ ...ctx.session, user: ctx.session.user }"
-      // with a comment "infers the `session` as non-nullable"
-      // keeping this to change back in case it causes trouble
-      session: ctx.session,
-    },
-  });
+  return next({ ctx: { session: ctx.session } });
 });
 
 /**
