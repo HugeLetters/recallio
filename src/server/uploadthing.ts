@@ -1,4 +1,5 @@
 import { db } from "@/database";
+import { findFirst } from "@/database/query/utils";
 import { user } from "@/database/schema/auth";
 import { review } from "@/database/schema/product";
 import { isValidUrlString } from "@/utils";
@@ -7,7 +8,6 @@ import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { getServerAuthSession } from "./auth";
-import { findFirst } from "@/database/query/utils";
 
 const uploadthing = createUploadthing();
 
@@ -77,3 +77,7 @@ export const appFileRouter = {
 } satisfies FileRouter;
 
 export type AppFileRouter = typeof appFileRouter;
+
+export function getFileUrl(fileKey: string) {
+  return `https://utfs.io/f/${fileKey}`;
+}

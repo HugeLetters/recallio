@@ -110,6 +110,7 @@ export function Card({
           alt=""
           width={50}
           height={50}
+          sizes="50px"
           className="aspect-square h-9 w-9 rounded-full bg-white object-cover shadow-around sa-o-10 sa-r-0.5"
         />
       ) : (

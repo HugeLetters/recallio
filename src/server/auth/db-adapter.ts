@@ -3,9 +3,9 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { isValidUrlString } from "@/utils";
 import type { Adapter } from "@auth/core/adapters";
-import { and, eq, or, type InferSelectModel, lt } from "drizzle-orm";
+import { and, eq, lt, or, type InferSelectModel } from "drizzle-orm";
 import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
-import { utapi } from "uploadthing/server";
+import { getFileUrl } from "../uploadthing";
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
 
 export function DatabaseAdapter(): Adapter {
@@ -47,9 +47,9 @@ export function DatabaseAdapter(): Adapter {
     getSessionAndUser(sessionToken) {
       return findFirst(session, eq(session.sessionToken, sessionToken))
         .innerJoin(user, eq(user.id, session.userId))
-        .then(async ([data]) => {
+        .then(([data]) => {
           if (!data) return null;
-          return { session: data.session, user: await userWithImageUrl(data.user) };
+          return { session: data.session, user: userWithImageUrl(data.user) };
         });
     },
     async updateUser(data) {
@@ -154,11 +154,7 @@ export function DatabaseAdapter(): Adapter {
 }
 
 type User = InferSelectModel<typeof user>;
-function userWithImageUrl(user: User) {
+function userWithImageUrl(user: User): User {
   if (!user.image || isValidUrlString(user.image)) return user;
-
-  return utapi
-    .getFileUrls(user.image)
-    .then((utFiles) => utFiles[0]?.url ?? null)
-    .then((url) => ({ ...user, image: url }));
+  return { ...user, image: getFileUrl(user.image) };
 }

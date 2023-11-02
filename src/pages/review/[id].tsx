@@ -241,8 +241,10 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
             <Image
               alt="your attachment"
               src={imageSrc}
-              fill
-              className="object-cover"
+              width={80}
+              height={80}
+              sizes="80px"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-neutral-400 text-white">

@@ -2,6 +2,8 @@ import { db } from "@/database";
 import { createReview } from "@/database/query/review";
 import { aggregateArrayColumn, count, findFirst } from "@/database/query/utils";
 import { review, reviewsToCategories } from "@/database/schema/product";
+import { getFileUrl } from "@/server/uploadthing";
+import { mapUtKeysToUrls } from "@/server/utils";
 import type { StrictOmit } from "@/utils";
 import type { AsyncResult } from "@/utils/api";
 import {
@@ -18,7 +20,6 @@ import {
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { mapUtKeysToUrls } from "@/server/utils";
 
 export const reviewRouter = createTRPCRouter({
   createReview: protectedProcedure
@@ -80,10 +81,7 @@ export const reviewRouter = createTRPCRouter({
       if (!data) return null;
 
       const { imageKey, ...reviewData } = data;
-      if (!imageKey) return Object.assign(reviewData, { image: null });
-
-      const image = await utapi.getFileUrls(imageKey).then((utFiles) => utFiles[0]?.url ?? null);
-      return Object.assign(reviewData, { image });
+      return Object.assign(reviewData, { image: imageKey ? getFileUrl(imageKey) : null });
     }),
   getUserReviewSummaryList: protectedProcedure
     .input(
