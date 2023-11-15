@@ -1,11 +1,12 @@
 import { HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
-import { Clickable, Star, UserPic } from "@/components/UI";
+import { Star, UserPic } from "@/components/UI";
 import { getQueryParam, minutesToMs } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
@@ -162,13 +163,12 @@ function NoReviews() {
       <GroceriesIcon className="h-auto w-full" />
       <span className="pt-4 text-xl">Your review list is empty</span>
       <span className="pb-10 text-sm">All your scanned goods will be kept here</span>
-      <Clickable
-        variant="primary"
-        asLink
+      <Link
         href="/scan"
+        className="btn primary"
       >
         Scan for the first time
-      </Clickable>
+      </Link>
     </div>
   );
 }

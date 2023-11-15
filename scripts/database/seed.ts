@@ -4,7 +4,7 @@ import { user } from "@/database/schema/auth";
 import { category, review, reviewsToCategories } from "@/database/schema/product";
 import { clamp } from "@/utils";
 import { faker } from "@faker-js/faker";
-import { like } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import task from "tasuku";
 import { utapi } from "uploadthing/server";
 
@@ -61,7 +61,7 @@ async function createMockReview(
   data: { user: string; barcode: string; names?: string[]; rating?: number },
   files: string[]
 ) {
-  return await createReview(
+  await createReview(
     {
       userId: data.user,
       barcode: data.barcode,
@@ -69,10 +69,9 @@ async function createMockReview(
       rating: data.rating
         ? clamp(0, data.rating + faker.number.int({ min: -1, max: 1 }), 5)
         : faker.number.int({ min: 0, max: 5 }),
-      comment: faker.helpers.maybe(() => faker.lorem.sentences({ min: 0, max: 3 })),
-      pros: faker.helpers.maybe(randomPoints, { probability: 0.8 }),
-      cons: faker.helpers.maybe(randomPoints, { probability: 0.8 }),
-      imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)),
+      comment: faker.helpers.maybe(randomParagraph),
+      pros: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
+      cons: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       isPrivate: Math.random() > 0.5,
     },
     faker.helpers.maybe(
@@ -84,12 +83,14 @@ async function createMockReview(
       { probability: 0.9 }
     )
   );
+  await db
+    .update(review)
+    .set({ imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)) })
+    .where(and(eq(review.userId, data.user), eq(review.barcode, data.barcode)));
 }
 
-function randomPoints() {
-  return Array.from({ length: faker.number.int({ min: 1, max: 7 }) })
-    .map(() => faker.word.words(faker.number.int({ min: 1, max: 5 })))
-    .join("\n");
+function randomParagraph() {
+  return faker.lorem.paragraph({ min: 1, max: 5 });
 }
 
 function randomBarcode() {

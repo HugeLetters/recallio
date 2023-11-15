@@ -59,7 +59,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
               window.clearTimeout(debounceTimeoutRef.current);
               debounceTimeoutRef.current = window.setTimeout(() => {
                 setQueryParam(router, SEARCH_QUERY_KEY, value);
-              }, 1000);
+              }, 500);
             }}
           />
           <button
@@ -117,9 +117,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-10 animate-fade-in bg-black/40" />
-        <Dialog.Content className="fixed bottom-0 left-0 z-10 flex w-full justify-center duration-150 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
-          <div className="w-full max-w-app rounded-t-xl bg-white p-5">
+        <Dialog.Overlay className="fixed inset-0 z-10 flex animate-fade-in items-end justify-center bg-black/40">
+          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
@@ -151,8 +150,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
                 ))}
               </RadioGroup.Root>
             </Flipper>
-          </div>
-        </Dialog.Content>
+          </Dialog.Content>
+        </Dialog.Overlay>
       </Dialog.Portal>
     </Dialog.Root>
   );

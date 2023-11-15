@@ -1,5 +1,5 @@
 import { Layout } from "@/components/Layout";
-import { Clickable, ImageInput, Star, Switch } from "@/components/UI";
+import { Button, ImageInput, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
@@ -278,12 +278,12 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <Clickable
-        variant="primary"
+      <Button
         type="submit"
+        className="primary"
       >
         SUBMIT
-      </Clickable>
+      </Button>
     </form>
   );
 }

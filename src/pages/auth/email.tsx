@@ -1,4 +1,4 @@
-import { Clickable } from "@/components/UI";
+import { Button } from "@/components/UI";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import EmailIcon from "~icons/carbon/email";
@@ -66,13 +66,12 @@ export default function Page() {
           />
         </label>
         <div className="w-full px-1">
-          <Clickable
-            variant="ghost"
+          <Button
             type="submit"
-            className="w-full group-valid:bg-app-green group-valid:text-white group-invalid:transform-none group-invalid:cursor-default"
+            className="w-full group-valid:primary group-invalid:ghost group-invalid:transform-none group-invalid:cursor-default"
           >
             Submit PIN
-          </Clickable>
+          </Button>
         </div>
       </form>
     </div>

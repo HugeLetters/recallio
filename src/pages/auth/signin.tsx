@@ -1,4 +1,4 @@
-import { Clickable, Input, WithLabel, providers } from "@/components/UI";
+import { Button, Input, WithLabel, providers } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -58,13 +58,12 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
           type="email"
         />
       </WithLabel>
-      <Clickable
-        variant="ghost"
+      <Button
         type="submit"
-        className="font-semibold group-valid:bg-app-green group-valid:text-white group-invalid:transform-none group-invalid:cursor-default group-invalid:text-neutral-400"
+        className="font-semibold group-valid:primary group-invalid:ghost group-invalid:transform-none group-invalid:cursor-default group-invalid:text-neutral-400"
       >
         Continue
-      </Clickable>
+      </Button>
     </form>
   );
 }
@@ -74,8 +73,8 @@ function ProviderSignIn({ callbackUrl }: ProviderSignInProps) {
   return (
     <div className="grid w-full grid-cols-4 gap-3">
       {providers.map(([provider, Icon]) => (
-        <Clickable
-          variant="ghost"
+        <Button
+          className="ghost"
           key={provider}
           aria-label={`sign in with ${provider}`}
           onClick={() => {
@@ -83,7 +82,7 @@ function ProviderSignIn({ callbackUrl }: ProviderSignInProps) {
           }}
         >
           <Icon className="mx-auto h-7 w-7" />
-        </Clickable>
+        </Button>
       ))}
     </div>
   );

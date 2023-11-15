@@ -4,7 +4,6 @@ import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
-import Link from "next/link";
 import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
@@ -13,36 +12,21 @@ import LinkedinIcon from "~icons/logos/linkedin-icon";
 import GithubIcon from "~icons/mdi/github";
 import StarIcon from "~icons/typcn/star-full-outline";
 
-const variantClass = {
-  primary: "bg-app-green text-white",
-  ghost:
-    "bg-neutral-100 text-lime-950 outline outline-1 outline-neutral-400/30 focus-within:outline-2 focus-within:outline-neutral-400/70",
-  destructive: "bg-red-800/10 text-red-800/80",
-};
-type ClickableProps<T extends boolean> = {
-  asLink?: T;
-  variant: keyof typeof variantClass;
-} & ComponentPropsWithoutRef<T extends true ? typeof Link : "button">;
-export function Clickable<T extends boolean = false>({
-  variant,
-  asLink,
+type ClickableProps = ComponentPropsWithoutRef<"button">;
+export function Button({
   className,
+  type,
   children,
   ...restProps
-}: PropsWithChildren<ClickableProps<T>>) {
-  const Component = asLink ? Link : "button";
-
+}: PropsWithChildren<ClickableProps>) {
   return (
-    // @ts-expect-error TYPESCRIPT SHUT UP, YOU DONT KNOW WHAT ARE YOU TALKING ABOUT
-    <Component
-      type={!asLink ? "button" : undefined}
+    <button
+      type={type ?? "button"}
+      className={`btn ${className ?? ""}`}
       {...restProps}
-      className={`rounded-xl px-2.5 py-3.5 transition active:brightness-110 motion-safe:active:scale-95 ${
-        variantClass[variant]
-      } ${className ?? ""}`}
     >
       {children}
-    </Component>
+    </button>
   );
 }
 
@@ -110,11 +94,21 @@ export function Switch(props: SwitchProps) {
   return (
     <BaseSwitch.Root
       {...props}
-      className={`group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green`}
+      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green"
     >
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
     </BaseSwitch.Root>
+  );
+}
+
+type LabeledSwitchProps = { label: string; className?: string } & SwitchProps;
+export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitchProps) {
+  return (
+    <label className={`flex items-center justify-between rounded-lg px-4 py-2 ${className ?? ""}`}>
+      <span>{label}</span>
+      <Switch {...switchProps} />
+    </label>
   );
 }
 

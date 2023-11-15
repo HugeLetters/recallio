@@ -1,20 +1,20 @@
 import { Layout } from "@/components/Layout";
 import {
-  Clickable,
+  Button,
   ImageInput,
   Input,
+  LabeledSwitch,
   Switch,
   UserPic,
   WithLabel,
   providers,
 } from "@/components/UI";
-import { useUploadThing } from "@/hooks";
-import { browser } from "@/utils";
+import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
 export default function Page() {
@@ -28,15 +28,14 @@ export default function Page() {
           <UserName username={data.user.name} />
           <LinkedAccounts />
           <AppSettings />
-          <Clickable
-            variant="destructive"
-            className="mt-2"
+          <Button
+            className="destructive mt-2"
             onClick={() => {
               void signOut({ redirect: false });
             }}
           >
             Sign Out
-          </Clickable>
+          </Button>
         </div>
       ) : (
         "Loading"
@@ -179,32 +178,18 @@ function LinkedAccounts() {
   );
 }
 
-const reviewPrivateDefaultKey = "review-private-default";
-function useReviewPrivateDefault() {
-  const [value, setStateValue] = useState(() =>
-    browser ? localStorage.getItem(reviewPrivateDefaultKey) !== "false" : true
-  );
-
-  function setValue(value: boolean) {
-    setStateValue(value);
-    localStorage.setItem(reviewPrivateDefaultKey, `${value}`);
-  }
-
-  return [value, useCallback(setValue, [])] as const;
-}
 function AppSettings() {
   const [reviewPrivateDefault, setReviewPrivateDefault] = useReviewPrivateDefault();
 
   return (
     <div>
       <p className="p-2 text-sm">App settings</p>
-      <label className="flex items-center justify-between rounded-lg bg-app-green/20 px-4 py-2">
-        Reviews are private by default
-        <Switch
-          checked={reviewPrivateDefault}
-          onCheckedChange={setReviewPrivateDefault}
-        />
-      </label>
+      <LabeledSwitch
+        label="Reviews are private by default"
+        className="bg-app-green/20"
+        checked={reviewPrivateDefault}
+        onCheckedChange={setReviewPrivateDefault}
+      />
     </div>
   );
 }
