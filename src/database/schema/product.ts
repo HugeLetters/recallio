@@ -1,5 +1,13 @@
 import { relations, sql } from "drizzle-orm";
-import { datetime, index, mysqlTable, primaryKey, tinyint, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  datetime,
+  index,
+  mysqlTable,
+  primaryKey,
+  tinyint,
+  varchar,
+} from "drizzle-orm/mysql-core";
 import { user } from "./auth";
 
 export const productName = mysqlTable(
@@ -34,6 +42,7 @@ export const review = mysqlTable(
     updatedAt: datetime("updated-at")
       .notNull()
       .default(sql`NOW()`),
+    isPrivate: boolean("is-private").notNull().default(true),
   },
   (table) => ({
     compoundKey: primaryKey(table.userId, table.barcode),
@@ -41,6 +50,7 @@ export const review = mysqlTable(
     nameIndex: index("name-index").on(table.name),
     ratingIndex: index("rating-index").on(table.rating),
     updatedAtIndex: index("updated-at-index").on(table.updatedAt),
+    isPrivateIndex: index("is-private-index").on(table.isPrivate),
   })
 );
 export const reviewRelations = relations(review, ({ many, one }) => ({

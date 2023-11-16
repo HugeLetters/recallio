@@ -6,12 +6,11 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import { getServerAuthSession } from "@/server/auth";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
-import superjson from "superjson";
 import { ZodError } from "zod";
-import { getServerAuthSession } from "@/server/auth";
 
 /**
  * 1. CONTEXT
@@ -61,7 +60,6 @@ export const createTRPCContext = async ({ req, res }: CreateNextContextOptions) 
  */
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
   errorFormatter({ shape, error }) {
     return {
       ...shape,
@@ -102,14 +100,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  return next({
-    ctx: {
-      // t3 template had "{ ...ctx.session, user: ctx.session.user }"
-      // with a comment "infers the `session` as non-nullable"
-      // keeping this to change back in case it causes trouble
-      session: ctx.session,
-    },
-  });
+  return next({ ctx: { session: ctx.session } });
 });
 
 /**

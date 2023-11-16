@@ -6,7 +6,9 @@ export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      maxWidth: { app: "375px" },
+      height: { screen: "100dvh" },
+      minHeight: { screen: "100dvh" },
+      maxWidth: { app: "450px" },
       fontFamily: { lato: ["var(--font-lato, Lato)", ...defaultTheme.fontFamily.sans] },
       colors: {
         app: {
@@ -14,8 +16,6 @@ export default {
           green: "hsla(122, 39%, 49%)",
         },
       },
-      boxShadow: { top: "0 -5px 10px", bottom: "0 5px 10px" },
-      dropShadow: { top: "0 -1px 10px", around: "0 0 3px" },
       animation: {
         "slide-up": "slide-up 200ms ease-in-out",
         "fade-in": "fade-in 200ms ease-in-out",
@@ -33,11 +33,39 @@ export default {
     },
   },
   plugins: [
-    plugin(({ addVariant, matchVariant }) => {
+    plugin(({ addVariant, addUtilities, matchVariant, matchUtilities, theme }) => {
       addVariant("selected", "&:is(:focus-within,:hover)");
       addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
       addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
       matchVariant("not", (value) => `&:not(${value})`);
+
+      // #region shadow around
+      const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
+      const shadowAroundRadius = "--tw-drop-shadow-around-radius";
+      addUtilities({
+        ".shadow-around": {
+          "--tw-drop-shadow": `drop-shadow(0 0 var(${shadowAroundRadius}) rgb(0 0 0 / var(${shadowAroundOpacity})))`,
+          filter:
+            "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
+        },
+      });
+      matchUtilities(
+        {
+          ["sa-o"](value) {
+            return { [shadowAroundOpacity]: `${value}` };
+          },
+        },
+        { values: theme("opacity") }
+      );
+      matchUtilities(
+        {
+          ["sa-r"](value) {
+            return { [shadowAroundRadius]: `${value}` };
+          },
+        },
+        { values: theme("width") }
+      );
+      // #endregion
     }),
   ],
 } satisfies Config;

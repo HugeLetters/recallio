@@ -1,167 +1,160 @@
-import {
-  accountRepository,
-  sessionRepository,
-  userRepository,
-  verificationTokenRepository,
-} from "@/database/repository/auth";
-import type { user } from "@/database/schema/auth";
+import { db } from "@/database";
+import { findFirst } from "@/database/query/utils";
+import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { isValidUrlString } from "@/utils";
 import type { Adapter } from "@auth/core/adapters";
-import type { InferSelectModel } from "drizzle-orm";
+import { and, eq, lt, or, type InferSelectModel } from "drizzle-orm";
 import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
-import { utapi } from "uploadthing/server";
+import { getFileUrl } from "../uploadthing";
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
 
 export function DatabaseAdapter(): Adapter {
   return {
     async createUser(data) {
       const id = crypto.randomUUID();
-      const user = Object.assign(data, {
-        id,
-        name: data.name ?? uniqueNamesGenerator(generatorConfig),
-      });
-      await userRepository.create(user);
+      await db.insert(user).values(
+        Object.assign(data, {
+          id,
+          name: data.name ?? uniqueNamesGenerator(generatorConfig),
+        })
+      );
 
-      return userRepository
-        .findFirst((table, { eq }) => eq(table.id, id))
-        .then((user) => {
-          if (!user) throw new Error("User was not created successfully");
-          return userWithImageUrl(user);
-        });
+      return findFirst(user, eq(user.id, id)).then(([user]) => {
+        if (!user) throw new Error("User was not created successfully");
+        return userWithImageUrl(user);
+      });
     },
     getUser(id) {
-      return userRepository
-        .findFirst((table, { eq }) => eq(table.id, id))
-        .then((user) => {
-          if (!user) return null;
-          return userWithImageUrl(user);
-        });
+      return findFirst(user, eq(user.id, id)).then(([user]) => {
+        if (!user) return null;
+        return userWithImageUrl(user);
+      });
     },
     getUserByEmail(email) {
-      return userRepository
-        .findFirst((table, { eq }) => eq(table.email, email))
-        .then((user) => {
-          if (!user) return null;
-          return userWithImageUrl(user);
-        });
+      return findFirst(user, eq(user.email, email)).then(([user]) => {
+        if (!user) return null;
+        return userWithImageUrl(user);
+      });
     },
-    async createSession(session) {
-      await sessionRepository.create(session);
+    async createSession(data) {
+      await db.insert(session).values(data);
 
-      return sessionRepository
-        .findFirst((table, { eq }) => eq(table.sessionToken, session.sessionToken))
-        .then((res) => {
-          if (!res) throw new Error("Session was not created successfully");
-          return res;
-        });
+      return findFirst(session, eq(session.sessionToken, data.sessionToken)).then(([data]) => {
+        if (!data) throw new Error("Session was not created successfully");
+        return data;
+      });
     },
     getSessionAndUser(sessionToken) {
-      return sessionRepository
-        .findFirstWithUser((table, { eq }) => eq(table.sessionToken, sessionToken))
-        .then(async (data) => {
+      return findFirst(session, eq(session.sessionToken, sessionToken))
+        .innerJoin(user, eq(user.id, session.userId))
+        .then(([data]) => {
           if (!data) return null;
-
-          return { session: data.session, user: await userWithImageUrl(data.user) };
+          return { session: data.session, user: userWithImageUrl(data.user) };
         });
     },
     async updateUser(data) {
       if (!data.id) {
         throw new Error("No user id.");
       }
-      const user = Object.assign(data, { name: data.name ?? undefined });
-      await userRepository.update(user, (table, { eq }) => eq(table.id, data.id));
 
-      return userRepository
-        .findFirst((table, { eq }) => eq(table.id, data.id))
-        .then((user) => {
-          if (!user) throw new Error("User was not updated successfully");
-          return userWithImageUrl(user);
-        });
-    },
-    async updateSession(session) {
-      await sessionRepository.update(session, (table, { eq }) =>
-        eq(table.sessionToken, session.sessionToken)
-      );
+      await db
+        .update(user)
+        .set(Object.assign(data, { name: data.name ?? undefined }))
+        .where(eq(user.id, data.id));
 
-      return sessionRepository.findFirst((table, { eq }) =>
-        eq(table.sessionToken, session.sessionToken)
-      );
+      return findFirst(user, eq(user.id, data.id)).then(([user]) => {
+        if (!user) throw new Error("User was not updated successfully");
+        return userWithImageUrl(user);
+      });
     },
-    async linkAccount(account) {
-      await accountRepository.create(account);
+    async updateSession(data) {
+      await db.update(session).set(data).where(eq(session.sessionToken, data.sessionToken));
+
+      return findFirst(session, eq(session.sessionToken, data.sessionToken)).then(([data]) => data);
     },
-    getUserByAccount(account) {
-      return accountRepository
-        .findFirstWithUser((table, { and, eq }) =>
-          and(
-            eq(table.provider, account.provider),
-            eq(table.providerAccountId, account.providerAccountId)
-          )
-        )
-        .then((data) => {
+    async linkAccount(data) {
+      await db.insert(account).values(data);
+    },
+    getUserByAccount({ provider, providerAccountId }) {
+      return findFirst(
+        account,
+        and(eq(account.provider, provider), eq(account.providerAccountId, providerAccountId))
+      )
+        .innerJoin(user, eq(user.id, account.userId))
+        .then(([data]) => {
           if (!data) return null;
           return userWithImageUrl(data.user);
         });
     },
     async deleteSession(sessionToken) {
-      const session = await sessionRepository.findFirst((table, { eq }) =>
-        eq(table.sessionToken, sessionToken)
-      );
+      const [sessionToDelete] = await findFirst(session, eq(session.sessionToken, sessionToken));
 
-      if (session) {
-        await sessionRepository.delete((table, { eq }) => eq(table.sessionToken, sessionToken));
+      if (sessionToDelete) {
+        await db
+          .delete(session)
+          .where(or(eq(session.sessionToken, sessionToken), lt(session.expires, new Date())));
       }
 
-      return session;
+      return sessionToDelete;
     },
     async createVerificationToken(token) {
-      await verificationTokenRepository.create(token);
+      await db.insert(verificationToken).values(token);
 
-      return verificationTokenRepository.findFirst((table, { eq }) =>
-        eq(table.identifier, token.identifier)
-      );
+      return findFirst(
+        verificationToken,
+        and(
+          eq(verificationToken.identifier, token.identifier),
+          eq(verificationToken.token, token.token)
+        )
+      ).then(([data]) => data);
     },
     async useVerificationToken(token) {
-      const deletedToken = await verificationTokenRepository.findFirst((table, { and, eq }) =>
-        and(eq(table.identifier, token.identifier), eq(table.token, token.token))
-      );
-
-      if (deletedToken) {
-        await verificationTokenRepository.delete((table, { and, eq }) =>
-          and(eq(table.identifier, token.identifier), eq(table.token, token.token))
-        );
-      }
-
-      return deletedToken ?? null;
-    },
-    async deleteUser(id) {
-      const dbUser = await userRepository.findFirst((table, { eq }) => eq(table.id, id));
-
-      if (dbUser) {
-        await userRepository.delete((table, { eq }) => eq(table.id, id));
-      }
-
-      return dbUser ?? null;
-    },
-    async unlinkAccount(account) {
-      await accountRepository.delete((table, { and, eq }) =>
+      const [tokenToDelete] = await findFirst(
+        verificationToken,
         and(
-          eq(table.providerAccountId, account.providerAccountId),
-          eq(table.provider, account.provider)
+          eq(verificationToken.identifier, token.identifier),
+          eq(verificationToken.token, token.token)
         )
       );
 
+      if (tokenToDelete) {
+        await db
+          .delete(verificationToken)
+          .where(
+            or(
+              and(
+                eq(verificationToken.identifier, token.identifier),
+                eq(verificationToken.token, token.token)
+              ),
+              lt(verificationToken.expires, new Date())
+            )
+          );
+      }
+
+      return tokenToDelete ?? null;
+    },
+    async deleteUser(id) {
+      const [userToDelete] = await findFirst(user, eq(user.id, id));
+
+      if (userToDelete) {
+        await db.delete(user).where(eq(user.id, id));
+      }
+
+      return userToDelete ?? null;
+    },
+    async unlinkAccount({ provider, providerAccountId }) {
+      await db
+        .delete(account)
+        .where(
+          and(eq(account.providerAccountId, providerAccountId), eq(account.provider, provider))
+        );
       return undefined;
     },
   };
 }
 
 type User = InferSelectModel<typeof user>;
-function userWithImageUrl(user: User) {
+function userWithImageUrl(user: User): User {
   if (!user.image || isValidUrlString(user.image)) return user;
-
-  return utapi
-    .getFileUrls(user.image)
-    .then((utFiles) => utFiles[0]?.url ?? null)
-    .then((url) => ({ ...user, image: url }));
+  return { ...user, image: getFileUrl(user.image) };
 }

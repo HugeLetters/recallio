@@ -1,3 +1,24 @@
+diff --git a/dist/server/config-shared.d.ts b/dist/server/config-shared.d.ts
+index 54fd8c7ddae6b5e7506c1eca226b942e827c7acf..fd609ef6b3543593e47a07898e0a3eb6bb12728d 100644
+--- a/dist/server/config-shared.d.ts
++++ b/dist/server/config-shared.d.ts
+@@ -231,6 +231,7 @@ export declare type ExportPathMap = {
+         _isDynamicError?: boolean;
+     };
+ };
++type MaybePromise<T> = Promise<T>| T;
+ /**
+  * Next configuration object
+  * @see [configuration documentation](https://nextjs.org/docs/api-reference/next.config.js/introduction)
+@@ -269,7 +270,7 @@ export interface NextConfig extends Record<string, any> {
+      *
+      * @see [Rewrites configuration documentation](https://nextjs.org/docs/api-reference/next.config.js/rewrites)
+      */
+-    rewrites?: () => Promise<Rewrite[] | {
++    rewrites?: () => MaybePromise<Rewrite[] | {
+         beforeFiles: Rewrite[];
+         afterFiles: Rewrite[];
+         fallback: Rewrite[];
 diff --git a/dist/shared/lib/utils.d.ts b/dist/shared/lib/utils.d.ts
 index b881faf25652fcc5b97122b90bd10b08631ecf58..306e375c2cac1ebcf7bac2272abb009bc14d454d 100644
 --- a/dist/shared/lib/utils.d.ts

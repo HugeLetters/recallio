@@ -1,8 +1,9 @@
-import { ImageInput, PrimaryButton, Star, Switch } from "@/components/UI";
+import { Layout } from "@/components/Layout";
+import { Clickable, ImageInput, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
-import useHeader from "@/hooks/useHeader";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
+import { compressImage } from "@/utils/image";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Separator from "@radix-ui/react-separator";
@@ -11,18 +12,21 @@ import { useRouter } from "next/router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegister } from "react-hook-form";
 import { toast } from "react-toastify";
-import LucidePen from "~icons/custom/pen.jsx";
-import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle.jsx";
-import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline.jsx";
-import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded.jsx";
-import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded.jsx";
+import LucidePen from "~icons/custom/pen";
+import IcBaselineRemoveCircle from "~icons/ic/baseline-remove-circle";
+import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline";
+import MaterialSymbolsAddRounded from "~icons/material-symbols/add-rounded";
+import MaterialSymbolsRemoveRounded from "~icons/material-symbols/remove-rounded";
 
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
-  useHeader(() => ({ title: barcode ?? "Recallio" }), [barcode]);
 
-  return barcode ? <ReviewBlock barcode={barcode} /> : "loading...";
+  return (
+    <Layout header={{ title: barcode ?? "Recallio" }}>
+      {!!barcode ? <ReviewBlock barcode={barcode} /> : "loading..."}
+    </Layout>
+  );
 }
 
 type ReviewBlockProps = { barcode: string };
@@ -49,6 +53,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
           comment: null,
           categories: [],
           image: null,
+          isPrivate: true,
         }
       }
       getServerValue={(callback) => {
@@ -94,7 +99,8 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
           async onSuccess(data) {
             if (!data.ok) toast.error(data.error);
             else if (!!image) {
-              await startUpload([image], { barcode }).catch((err) => {
+              const compressedImage = await compressImage(image, 511 * 1024);
+              await startUpload([compressedImage ?? image], { barcode }).catch((err) => {
                 console.error(err);
                 toast.error("Error while uploading image");
               });
@@ -226,7 +232,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       </div>
       <div className="flex gap-3">
         <ImageInput
-          className="relative aspect-square w-20 cursor-pointer overflow-hidden rounded-md"
+          className="relative aspect-square w-20 overflow-hidden rounded-md"
           onChange={(e) => updateImage(e.target.files?.[0])}
           isImageSet={!!image}
           aria-label="add review image"
@@ -235,8 +241,10 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
             <Image
               alt="your attachment"
               src={imageSrc}
-              fill
-              className="object-cover"
+              width={80}
+              height={80}
+              sizes="80px"
+              className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-neutral-400 text-white">
@@ -270,7 +278,12 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
       >
         CANCEL CHANGES
       </button>
-      <PrimaryButton type="submit">SUBMIT</PrimaryButton>
+      <Clickable
+        variant="primary"
+        type="submit"
+      >
+        SUBMIT
+      </Clickable>
     </form>
   );
 }
