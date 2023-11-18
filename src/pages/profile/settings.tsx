@@ -47,7 +47,11 @@ export default function Page() {
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
-  const { startUpload } = useUploadThing("userImageUploader");
+  const { startUpload } = useUploadThing("userImageUploader", {
+    onClientUploadComplete: () => {
+      update().catch(console.error);
+    },
+  });
   const { mutate: remove } = api.user.deleteImage.useMutation({ onSettled: update });
 
   return (
@@ -73,11 +77,7 @@ function UserImage({ user }: UserImageProps) {
           if (!file) return;
           compressImage(file, 511 * 1024)
             .then((image) => {
-              startUpload([image ?? file])
-                .catch(console.error)
-                .finally(() => {
-                  update().catch(console.error);
-                });
+              startUpload([image ?? file]).catch(console.error);
             })
             .catch(console.error);
         }}
@@ -134,10 +134,10 @@ function LinkedAccounts() {
 
       return prevProviders;
     },
-    onSettled(data, error, _, prevProviders) {
-      if ((!!data && !data.ok) || !!error) {
-        trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
-      }
+    onError(_, __, prevProviders) {
+      trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
+    },
+    onSettled() {
       void trpcUtils.user.getAccountProviders.invalidate();
     },
   });

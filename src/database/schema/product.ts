@@ -10,17 +10,6 @@ import {
 } from "drizzle-orm/mysql-core";
 import { user } from "./auth";
 
-export const productName = mysqlTable(
-  "product-name",
-  {
-    barcode: varchar("barcode", { length: 55 }).notNull(),
-    name: varchar("name", { length: 255 }).notNull(),
-  },
-  (table) => ({
-    compoundKey: primaryKey(table.barcode, table.name),
-  })
-);
-
 export const category = mysqlTable("category", {
   name: varchar("name", { length: 31 }).primaryKey(),
 });

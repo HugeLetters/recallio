@@ -1,10 +1,11 @@
 import { db } from "@/database";
 import { aggregateArrayColumn } from "@/database/query/utils";
-import { category, productName, review } from "@/database/schema/product";
+import { category, review } from "@/database/schema/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { cacheProductNames, getProductNames } from "@/server/redis";
 import { mapUtKeysToUrls } from "@/server/utils";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { getTopQuadruplet, nonEmptyArray } from "@/utils";
+import { getTopQuadruplet } from "@/utils";
 import { and, asc, desc, eq, gt, inArray, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 import { z } from "zod";
@@ -13,22 +14,11 @@ export const productRouter = createTRPCRouter({
   getProductNames: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .query(async ({ input: { barcode } }): Promise<string[]> => {
-      const dbProducts = await db
-        .select()
-        .from(productName)
-        .where(eq(productName.barcode, barcode));
-
-      if (dbProducts.length) return dbProducts.map((x) => x.name);
+      const cachedProducts = await getProductNames(barcode);
+      if (cachedProducts) return cachedProducts;
 
       const scrapedProducts = await getScrapedProducts(barcode);
-
-      const savedProducts = scrapedProducts.map((name) => ({ name, barcode }));
-      if (nonEmptyArray(savedProducts)) {
-        db.insert(productName)
-          .values(savedProducts)
-          .onDuplicateKeyUpdate({ set: { barcode: sql`${productName.barcode}` } })
-          .catch(console.error);
-      }
+      cacheProductNames(barcode, scrapedProducts).catch(console.error);
 
       return scrapedProducts;
     }),

@@ -65,6 +65,3 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  * @example type HelloOutput = RouterOutputs['example']['hello']
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
-
-export type Result<V, E> = { ok: true; data: V } | { ok: false; error: E };
-export type AsyncResult<V, E> = Promise<Result<V, E>>;

@@ -1,57 +1,66 @@
 import { db } from "@/database";
+import { findFirst } from "@/database/query/utils";
 import { account, user } from "@/database/schema/auth";
 import { isValidUrlString } from "@/utils";
-import type { AsyncResult } from "@/utils/api";
+import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { findFirst } from "@/database/query/utils";
 
 export const userRouter = createTRPCRouter({
-  setName: protectedProcedure
-    .input(z.string())
-    .mutation(({ input, ctx: { session } }): AsyncResult<void, string> => {
-      return db
-        .update(user)
-        .set({ name: input })
-        .where(eq(user.id, session.user.id))
-        .then((query) => {
+  setName: protectedProcedure.input(z.string()).mutation(({ input, ctx: { session } }) => {
+    return db
+      .update(user)
+      .set({ name: input })
+      .where(eq(user.id, session.user.id))
+      .then(
+        (query) => {
           if (!query.rowsAffected) {
-            return {
-              ok: false as const,
-              error: "User not found",
-            };
+            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
           }
-          return { ok: true as const, data: undefined };
-        })
-        .catch((e) => {
+        },
+        (e) => {
           console.error(e);
-          return { ok: false, error: "Error while trying to update username" };
-        });
-    }),
-  deleteImage: protectedProcedure.mutation(({ ctx: { session } }): AsyncResult<void, string> => {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Error while trying to update username",
+          });
+        }
+      );
+  }),
+  deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
     return findFirst(user, eq(user.id, session.user.id)).then(([data]) => {
-      if (!data) return { ok: false, error: "User not found" };
+      if (!data) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
       const { image } = data;
-      if (!image) return { ok: false, error: "No image attached to the user" };
+      if (!image)
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "No image attached to the user",
+        });
 
       return db
         .update(user)
         .set({ image: null })
         .where(eq(user.id, session.user.id))
-        .then((query) => {
-          if (!query.rowsAffected) return { ok: false as const, error: "User not found" };
+        .then(
+          (query) => {
+            if (!query.rowsAffected) {
+              throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+            }
 
-          if (!isValidUrlString(image)) {
-            utapi.deleteFiles([image]).catch(console.error);
+            if (!isValidUrlString(image)) {
+              utapi.deleteFiles([image]).catch(console.error);
+            }
+          },
+          (e) => {
+            console.error(e);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Error while trying to update your avatar",
+            });
           }
-          return { ok: true as const, data: undefined };
-        })
-        .catch((e) => {
-          console.error(e);
-          return { ok: false, error: "Error while trying to update your avatar" };
-        });
+        );
     });
   }),
   getAccountProviders: protectedProcedure.query(
@@ -72,22 +81,26 @@ export const userRouter = createTRPCRouter({
         session: { user },
       },
       input: { provider },
-    }): AsyncResult<void, string> =>
+    }) =>
       db
         .delete(account)
         .where(and(eq(account.userId, user.id), eq(account.provider, provider)))
-        .then((query) => {
-          if (!query.rowsAffected) {
-            return {
-              ok: false as const,
-              error: `We couldn't find a ${provider} account linked to your profile`,
-            };
+        .then(
+          (query) => {
+            if (!query.rowsAffected) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: `We couldn't find a ${provider} account linked to your profile`,
+              });
+            }
+          },
+          (e) => {
+            console.error(e);
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: `Error while trying to unlink your ${provider} account`,
+            });
           }
-          return { ok: true as const, data: undefined };
-        })
-        .catch((e) => {
-          console.error(e);
-          return { ok: false, error: `Error while trying to unlink your ${provider} account` };
-        })
+        )
   ),
 });

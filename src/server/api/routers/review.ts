@@ -37,24 +37,13 @@ export const reviewRouter = createTRPCRouter({
         // enforce default behaviour - we don't wanna update imageKey here
         .strip()
     )
-    .mutation(async ({ input, ctx }): AsyncResult<void, string> => {
-      const { categories, cons, pros, ...value } = input;
-      return createReview(
-        {
-          ...value,
-          // filter out empty strings from array and coerce to null empty arrays
-          cons: cons.filter(Boolean).join("\n") || null,
-          pros: pros.filter(Boolean).join("\n") || null,
-          userId: ctx.session.user.id,
-        },
-        categories?.filter(Boolean)
-      )
-        .then(() => {
-          return { ok: true as const, data: undefined };
-        })
+        .then(() => void 0)
         .catch((e) => {
           console.error(e);
-          return { ok: false, error: "Couldn't post the review" };
+          throw new TRPCError({
+            message: "Couldn't post the review",
+            code: "INTERNAL_SERVER_ERROR",
+          });
         });
     }),
   getUserReview: protectedProcedure
@@ -153,12 +142,12 @@ export const reviewRouter = createTRPCRouter({
   ),
   deleteReviewImage: protectedProcedure
     .input(z.object({ barcode: z.string() }))
-    .mutation(async ({ ctx, input: { barcode } }): AsyncResult<void, string> => {
+    .mutation(async ({ ctx, input: { barcode } }) => {
       const [reviewData] = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode))
       );
-      if (!reviewData) return { ok: true, data: undefined };
+      if (!reviewData) return;
 
       const oldKey = reviewData.imageKey;
 
@@ -167,14 +156,14 @@ export const reviewRouter = createTRPCRouter({
         .set({ imageKey: null })
         .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
         .then(() => {
-          if (oldKey) {
+          if (!oldKey) return;
+
             utapi.deleteFiles(oldKey).catch(console.error);
-          }
-          return { ok: true as const, data: undefined };
         })
         .catch((err) => {
           console.error(err);
-          return { ok: false, error: "Couldn't delete image" };
+
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Couldn't delete image" });
         });
     }),
 });
