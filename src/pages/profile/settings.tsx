@@ -64,6 +64,7 @@ function UserImage({ user }: UserImageProps) {
             onClick={() => {
               remove();
             }}
+            aria-label="Delete avatar"
           >
             <DeleteIcon />
           </button>

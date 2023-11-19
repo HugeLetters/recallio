@@ -10,13 +10,15 @@ export function Error({ errorMessage: error }: ErrorProps) {
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-app flex-col items-center justify-center gap-3 p-4 text-center text-lime-950">
       <BrokenEggshellIcon className="h-full w-full px-10" />
-      {!!splitError && (
-        <div className="text-xl font-medium [text-wrap:balance]">
-          <p>{splitError[0]}</p>
-          <p>{splitError[1]}</p>
-        </div>
-      )}
-      <p className="text-sm">Please try again</p>
+      <div className="space-y-2 py-4">
+        {!!splitError && (
+          <div className="text-xl font-medium [text-wrap:balance]">
+            <p>{splitError[0]}</p>
+            <p>{splitError[1]}</p>
+          </div>
+        )}
+        <p className="text-sm">Please try again</p>
+      </div>
       <Button
         onClick={router.back}
         role="navigation"

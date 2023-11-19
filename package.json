@@ -25,6 +25,7 @@
     "@radix-ui/react-select": "^1.2.2",
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-switch": "^1.0.3",
+    "@radix-ui/react-toolbar": "^1.0.4",
     "@react-email/button": "^0.0.10",
     "@react-email/column": "^0.0.8",
     "@react-email/head": "^0.0.6",

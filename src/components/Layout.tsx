@@ -34,7 +34,7 @@ function Header({ header, left, right, title }: HeaderProps) {
         {header !== undefined ? (
           header
         ) : (
-          <div className="grid h-full w-full grid-cols-3 items-center">
+          <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center">
             <div className="justify-self-start">
               {left !== undefined ? (
                 left
@@ -47,7 +47,9 @@ function Header({ header, left, right, title }: HeaderProps) {
                 />
               )}
             </div>
-            <h1 className="col-start-2 justify-self-center text-xl">{title}</h1>
+            <div className="col-start-2 justify-self-center text-xl">
+              {typeof title === "string" ? <h1>{title}</h1> : title}
+            </div>
             <div className="justify-self-end">{right}</div>
           </div>
         )}
@@ -83,7 +85,7 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 type FooterProps = { Icon?: Icon };
 function Footer({ Icon }: FooterProps) {
-  const route = useRouter().pathname;
+  const { pathname } = useRouter();
   Icon ??= ScanIcon;
 
   return (
@@ -92,7 +94,7 @@ function Footer({ Icon }: FooterProps) {
         <Link
           href="/search"
           className={`flex flex-col items-center transition-colors ${
-            route.startsWith("/search") ? "text-app-green" : ""
+            pathname.startsWith("/search") ? "text-app-green" : ""
           }`}
         >
           <SearchIcon className="h-7 w-7" />
@@ -101,7 +103,7 @@ function Footer({ Icon }: FooterProps) {
         <Link
           href="/scan"
           className={`flex h-16 w-16 -translate-y-1/3 items-center justify-center rounded-full p-4 transition-colors ${
-            route.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
+            pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
           }`}
         >
           <Icon className="h-full w-full" />
@@ -109,7 +111,7 @@ function Footer({ Icon }: FooterProps) {
         <Link
           href="/profile"
           className={`flex flex-col items-center transition-colors ${
-            route.startsWith("/profile") ? "text-app-green" : ""
+            pathname.startsWith("/profile") ? "text-app-green" : ""
           }`}
         >
           <ProfileIcon className="h-7 w-7" />

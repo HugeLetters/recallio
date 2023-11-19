@@ -1,17 +1,17 @@
-import { nonEmptyArray, type StrictPick } from "@/utils";
+import { nonEmptyArray, type StrictOmit, type StrictPick } from "@/utils";
 import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
 import { db } from "..";
 import { category, review, reviewsToCategories } from "../schema/product";
 
 export async function createReview(
-  reviewValue: InferInsertModel<typeof review>,
+  reviewValue: StrictOmit<InferInsertModel<typeof review>, "updatedAt" | "imageKey">,
   categories: Array<InferInsertModel<typeof category>["name"]> | undefined
 ) {
   return db
     .transaction(async (tx) => {
       // override updatedAt value with current time
       Object.assign(reviewValue, { updatedAt: new Date() } satisfies StrictPick<
-        typeof reviewValue,
+        InferInsertModel<typeof review>,
         "updatedAt"
       >);
 

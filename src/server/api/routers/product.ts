@@ -6,8 +6,8 @@ import { cacheProductNames, getProductNames } from "@/server/redis";
 import { mapUtKeysToUrls } from "@/server/utils";
 import getScrapedProducts from "@/server/utils/scrapers";
 import { getTopQuadruplet } from "@/utils";
+import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, gt, inArray, like, lt, or, sql, type SQL } from "drizzle-orm";
-import { alias } from "drizzle-orm/mysql-core";
 import { z } from "zod";
 
 export const productRouter = createTRPCRouter({
@@ -22,14 +22,29 @@ export const productRouter = createTRPCRouter({
 
       return scrapedProducts;
     }),
-  getCategories: protectedProcedure.input(z.string()).query(({ input }) =>
-    db
-      .select()
-      .from(category)
-      .where(like(category.name, `${input}%`))
-      .limit(10)
-      .then((data) => data.map((x) => x.name))
-  ),
+  getCategories: protectedProcedure
+    .input(
+      z.object({
+        cursor: z.string().optional(),
+        filter: z.string(),
+        limit: z.number(),
+      })
+    )
+    .query(({ input: { filter, cursor, limit } }) =>
+      db
+        .select()
+        .from(category)
+        .where(
+          and(like(category.name, `${filter}%`), cursor ? gt(category.name, cursor) : undefined)
+        )
+        .limit(limit)
+        .orderBy(category.name)
+        .then((data) => data.map((x) => x.name))
+        .catch((e) => {
+          console.error(e);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        })
+    ),
   getProductSummaryList: protectedProcedure
     .input(
       z.object({
@@ -62,35 +77,36 @@ export const productRouter = createTRPCRouter({
         }
       }
 
-      const reviewCol = sql`count(*)`.mapWith((x) => +x).as("reviewCount");
-      const ratingCol = sql`sum(${review.rating})/count(*)`.mapWith((x) => +x).as("averageRating");
+      const reviewCol = sql`count(*)`.mapWith((x) => +x).as("review-count");
+      const ratingCol = sql`sum(${review.rating})/count(*)`.mapWith((x) => +x).as("average-rating");
       const direction = sort.desc ? desc : asc;
-      const sortBy = getSortByColumn();
 
-      const product = alias(review, "in-array-subquery");
+      const sortBy = getSortByColumn();
       const inArrayClause = filter
         ? inArray(
             review.barcode,
             db
-              .select({ barcode: product.barcode })
-              .from(product)
-              .where(and(like(product.name, `${filter}%`), eq(product.isPrivate, false)))
+              .select({ barcode: review.barcode })
+              .from(review)
+              .where(and(like(review.name, `${filter}%`), eq(review.isPrivate, false)))
+              .groupBy(review.barcode)
           )
         : undefined;
+
       const sq = db
         .select({
           barcode: review.barcode,
           names: aggregateArrayColumn<string>(review.name)
             .mapWith(getTopQuadruplet<string>)
-            .as("barcode-name-list"),
+            .as("names"),
           averageRating: ratingCol,
           reviewCount: reviewCol,
-          image: sql<string>`MIN(${review.imageKey})`.as("min-image-key"),
+          image: sql<string>`min(${review.imageKey})`.as("image"),
         })
         .from(review)
-        .where(and(inArrayClause, eq(review.isPrivate, false)))
+        .where(and(eq(review.isPrivate, false), inArrayClause))
         .groupBy(review.barcode)
-        .as("join-subquery");
+        .as("names-subquery");
 
       const cursorClause = cursor
         ? or(
@@ -98,27 +114,28 @@ export const productRouter = createTRPCRouter({
             and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.value))
           )
         : undefined;
+
       return db
         .select({
           barcode: review.barcode,
-          matchedName: sql<string>`MIN(${review.name})`,
-          name: sq.names,
-          imageKey: sq.image,
+          matchedName: sql<string>`min(${review.name})`,
+          names: sq.names,
           averageRating: sq.averageRating,
           reviewCount: sq.reviewCount,
+          imageKey: sq.image,
         })
         .from(review)
         .where(
           and(
-            filter ? like(review.name, `${filter}%`) : undefined,
             eq(review.isPrivate, false),
+            filter ? like(review.name, `${filter}%`) : undefined,
             cursorClause
           )
         )
-        .leftJoin(sq, and(eq(sq.barcode, review.barcode)))
-        .limit(limit)
+        .leftJoin(sq, eq(review.barcode, sq.barcode))
         .groupBy(review.barcode)
         .orderBy(direction(sortBy), asc(review.barcode))
+        .limit(limit)
         .then((summaryList) => mapUtKeysToUrls(summaryList, "imageKey", "image"))
         .then((page) => {
           return {
@@ -133,6 +150,10 @@ export const productRouter = createTRPCRouter({
                 : undefined,
             page,
           };
+        })
+        .catch((e) => {
+          console.error(e);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         });
     }),
 });

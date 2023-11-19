@@ -5,7 +5,7 @@ import { review, reviewsToCategories } from "@/database/schema/product";
 import { getFileUrl } from "@/server/uploadthing";
 import { mapUtKeysToUrls } from "@/server/utils";
 import type { StrictOmit } from "@/utils";
-import type { AsyncResult } from "@/utils/api";
+import { TRPCError } from "@trpc/server";
 import {
   and,
   asc,
@@ -29,14 +29,18 @@ export const reviewRouter = createTRPCRouter({
           barcode: z.string(),
           name: z.string(),
           rating: z.number(),
-          pros: z.array(z.string()),
-          cons: z.array(z.string()),
+          pros: z.string().nullish(),
+          cons: z.string().nullish(),
           comment: z.string().nullish(),
+          isPrivate: z.boolean(),
           categories: z.array(z.string()).optional(),
         })
         // enforce default behaviour - we don't wanna update imageKey here
         .strip()
     )
+    .mutation(async ({ input, ctx }) => {
+      const { categories, ...value } = input;
+      return createReview({ ...value, userId: ctx.session.user.id }, categories?.filter(Boolean))
         .then(() => void 0)
         .catch((e) => {
           console.error(e);
@@ -140,25 +144,91 @@ export const reviewRouter = createTRPCRouter({
   getReviewCount: protectedProcedure.query(({ ctx }) =>
     count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count)
   ),
+  deleteReview: protectedProcedure
+    .input(z.object({ barcode: z.string() }))
+    .mutation(async ({ ctx, input: { barcode } }) => {
+      const { imageKey } = await findFirst(
+        review,
+        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode))
+      ).then(
+        ([reviewData]) => {
+          if (!reviewData) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
+
+          return reviewData;
+        },
+        (err) => {
+          console.error(err);
+
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        }
+      );
+
+      return db
+        .transaction(async (tx) => {
+          await tx
+            .delete(reviewsToCategories)
+            .where(
+              and(
+                eq(reviewsToCategories.userId, ctx.session.user.id),
+                eq(reviewsToCategories.barcode, barcode)
+              )
+            );
+
+          await tx
+            .delete(review)
+            .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)));
+        })
+        .then(() => {
+          if (!imageKey) return;
+
+          utapi.deleteFiles(imageKey).catch(console.error);
+        })
+        .catch((err) => {
+          console.error(err);
+
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Couldn't delete your review for barcode ${barcode}.`,
+          });
+        });
+    }),
   deleteReviewImage: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .mutation(async ({ ctx, input: { barcode } }) => {
-      const [reviewData] = await findFirst(
+      const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode))
-      );
-      if (!reviewData) return;
+      ).then(
+        ([reviewData]) => {
+          if (!reviewData) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-      const oldKey = reviewData.imageKey;
+          return reviewData;
+        },
+        (err) => {
+          console.error(err);
+
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        }
+      );
 
       return db
         .update(review)
         .set({ imageKey: null })
         .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
         .then(() => {
-          if (!oldKey) return;
+          if (!imageKey) return;
 
-            utapi.deleteFiles(oldKey).catch(console.error);
+          utapi.deleteFiles(imageKey).catch(console.error);
         })
         .catch((err) => {
           console.error(err);

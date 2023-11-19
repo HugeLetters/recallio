@@ -4,7 +4,12 @@ import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
-import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
+import type {
+  ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
+  PropsWithChildren,
+  Ref,
+} from "react";
 import { forwardRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
 import GoogleIcon from "~icons/logos/google-icon";
@@ -33,7 +38,7 @@ export function Button({
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
   return (
-    <StarIcon className={`h-full w-full ${highlight ? "text-amber-400" : "text-neutral-300"}`} />
+    <StarIcon className={`h-full w-full ${highlight ? "text-amber-400" : "text-neutral-400/20"}`} />
   );
 }
 
@@ -142,3 +147,35 @@ export function Input({ ref, className, ...inputProps }: InputProps) {
     />
   );
 }
+
+type AutoresizableInputProps = {
+  initialContent: string;
+  rootClassName?: string;
+} & ComponentPropsWithoutRef<"textarea">;
+export const AutoresizableInput = forwardRef(function LOL(
+  { initialContent, rootClassName, className, onChange, ...props }: AutoresizableInputProps,
+  ref: Ref<HTMLTextAreaElement>
+) {
+  return (
+    <div
+      className={`relative overflow-hidden after:invisible after:break-words after:content-[attr(data-input)] ${
+        rootClassName ?? ""
+      }`}
+      data-input={initialContent}
+    >
+      <textarea
+        ref={ref}
+        className={`absolute h-full w-full resize-none break-words outline-none ${className ?? ""}`}
+        {...props}
+        onChange={(e) => {
+          onChange?.(e);
+
+          const parent = e.target.parentElement;
+          if (!parent) return;
+
+          parent.dataset.input = e.target.value;
+        }}
+      />
+    </div>
+  );
+});

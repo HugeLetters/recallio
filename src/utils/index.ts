@@ -80,6 +80,44 @@ export function getTopQuadruplet<T>(arr: T[]) {
   return quadruplet;
 }
 
+function* backoffTimeout(baseline: number) {
+  for (let i = Math.E; true; i++) {
+    yield baseline * Math.log(i);
+  }
+  return 0; // just so TS would report correct type
+}
+
+function wait(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+type BackoffCallbackOptions = {
+  callback: () => MaybePromise<void>;
+  condition: () => boolean;
+  baselineMs: number;
+  retries: number;
+};
+export async function backoffCallback({
+  baselineMs,
+  callback,
+  condition,
+  retries,
+}: BackoffCallbackOptions) {
+  const timeout = backoffTimeout(baselineMs);
+  if (retries === Infinity) retries = 1;
+
+  while (!condition()) {
+    await wait(timeout.next().value);
+
+    await callback();
+
+    retries--;
+    if (retries <= 0) return false;
+  }
+
+  return true;
+}
+
 export type Icon = typeof IconFC;
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type StrictPick<T, K extends keyof T> = Pick<T, K>;

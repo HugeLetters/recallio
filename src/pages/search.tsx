@@ -7,14 +7,14 @@ import { api, type RouterInputs } from "@/utils/api";
 import { useRouter } from "next/router";
 
 export default function Page() {
-  const { query } = useRouter();
+  const { query, isReady } = useRouter();
   const sortParam = useParseSort(sortOptionList);
   const sort = parseSortParam(sortParam);
   const filter = getQueryParam(query[SEARCH_QUERY_KEY]);
 
   const productListQuery = api.product.getProductSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
-    { getNextPageParam: (lastPage) => lastPage.cursor }
+    { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady }
   );
 
   return (
@@ -41,17 +41,15 @@ export default function Page() {
                 }}
               >
                 {(value) => {
-                  const match = filter ? value.matchedName : value.name[0] ?? value.matchedName;
+                  const match = filter ? value.matchedName : value.names[0] ?? value.matchedName;
 
                   return (
                     <Card
-                      // todo - this should link to product page
-                      // @ts-expect-error fuck off
-                      href={"/"}
+                      href={{ pathname: "/product/[id]", query: { id: value.barcode } }}
                       aria-label={`Go to product ${value.barcode} page`}
                       image={value.image}
                       label={match}
-                      subtext={value.name.filter(
+                      subtext={value.names.filter(
                         (x): x is NonNullable<typeof x> => !!x && x !== match
                       )}
                     >
