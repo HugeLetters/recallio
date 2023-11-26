@@ -1,5 +1,5 @@
 # Camera access
-
+Vercel, I beg you to redeploy
 For local development - most browsers don't allow access to camera through `navigator.mediaDevices.getUserMedia()` in unsecure context.
 You can bypass this through either testing on `localhost` or setting your dev server ip address as secure in unsafe chrome flags.
 
