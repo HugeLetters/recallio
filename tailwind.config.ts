@@ -104,10 +104,10 @@ export default {
       matchUtilities(
         {
           ["sa-o"](value) {
-            return { [shadowAroundOpacity]: `${value}` };
+            return { [shadowAroundOpacity]: `${String(value)}` };
           },
         },
-        { values: theme("opacity") }
+        { values: { ...theme("opacity"), 15: "0.15" } }
       );
       matchUtilities(
         {

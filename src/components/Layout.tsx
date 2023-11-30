@@ -29,7 +29,7 @@ type HeaderProps = DiscriminatedUnion<
 >;
 function Header({ header, left, right, title }: HeaderProps) {
   return (
-    <header className="z-10 flex h-14 justify-center bg-white shadow-around sa-o-10 sa-r-2.5">
+    <header className="z-10 flex h-14 justify-center bg-white shadow-around sa-o-15 sa-r-2">
       <div className="w-full max-w-app p-2">
         {header !== undefined ? (
           header
@@ -89,7 +89,7 @@ function Footer({ Icon }: FooterProps) {
   Icon ??= ScanIcon;
 
   return (
-    <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-10 sa-r-2.5">
+    <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-15 sa-r-2">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] items-center justify-items-center">
         <Link
           href="/search"

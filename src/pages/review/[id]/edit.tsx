@@ -31,12 +31,12 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegisterReturn } from "react-hook-form";
+import MilkIcon from "~icons/custom/milk";
 import LucidePen from "~icons/custom/pen";
+import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
-import MaterialSymbolsAddPhotoAlternateOutline from "~icons/material-symbols/add-photo-alternate-outline";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
-import ResetIcon from "~icons/radix-icons/reset";
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = Omit<
@@ -435,15 +435,15 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-neutral-400 text-white">
-              <MaterialSymbolsAddPhotoAlternateOutline className="text-xl" />
+            <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
+              <MilkIcon className="h-full w-full" />
             </div>
           )}
         </div>
         {(!!src || !!savedImage) && (
           <Button
-            className={`absolute right-0 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
-              src ? "text-rose-700" : "text-neutral-400"
+            className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
+              src ? "text-rose-700" : "text-neutral-950"
             }`}
             onClick={() => {
               setValue(src ? null : undefined);
