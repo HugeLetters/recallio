@@ -29,7 +29,7 @@ type HeaderProps = DiscriminatedUnion<
 >;
 function Header({ header, left, right, title }: HeaderProps) {
   return (
-    <header className="z-10 flex h-14 justify-center bg-white shadow-around sa-o-15 sa-r-2">
+    <header className="z-10 flex h-14 min-w-0 justify-center bg-white shadow-around sa-o-15 sa-r-2">
       <div className="w-full max-w-app p-2">
         {header !== undefined ? (
           header

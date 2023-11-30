@@ -477,7 +477,7 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
   const searchParam = getQueryParam(router.query[SEARCH_QUERY_KEY]);
   const debouncedQuery = useRef<number>();
   const categoriesQuery = api.product.getCategories.useInfiniteQuery(
-    { filter: searchParam ?? "", limit: 50 },
+    { filter: searchParam ?? "", limit: 30 },
     {
       enabled: isOpen,
       getNextPageParam(page) {

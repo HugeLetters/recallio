@@ -21,7 +21,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
   const [search, setSearch] = useState(searchParam);
 
-  const searchIcon = <SearchIcon className="h-7 w-7" />;
+  const searchIcon = <SearchIcon className="h-7 w-7 shrink-0" />;
 
   // keeps filter in sync on back/forward
   useEffect(() => {
@@ -50,7 +50,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             // key helps refocus input when clear button is pressed
             key={`${!!search}`}
             autoFocus
-            className="h-full grow p-1 caret-app-green outline-none placeholder:p-1"
+            className="h-full min-w-0 p-1 caret-app-green outline-none placeholder:p-1"
             placeholder="Search"
             value={search}
             onChange={(e) => {
