@@ -143,9 +143,15 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
   });
 
   const router = useRouter();
+  const apiUtils = api.useContext();
   const { mutate: deleteReview } = api.review.deleteReview.useMutation({
-    onSuccess() {
+    onMutate() {
       router.push("/profile").catch(console.error);
+    },
+    onSuccess() {
+      void apiUtils.review.getUserReviewSummaryList.invalidate();
+      void apiUtils.review.getReviewCount.invalidate();
+      void apiUtils.product.getProductSummaryList.invalidate();
     },
   });
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({ onSuccess: sync });
@@ -233,7 +239,7 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
         type="submit"
         className="primary"
       >
-        Update
+        Save
       </Button>
       <div className="w-full pb-5">
         <DeleteButton
