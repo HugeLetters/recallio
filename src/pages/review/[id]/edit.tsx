@@ -611,15 +611,26 @@ type DeleteButtonProps = { deleteReview: () => void };
 function DeleteButton({ deleteReview }: DeleteButtonProps) {
   return (
     <Dialog.Root>
-      <Dialog.Trigger>
+      <Dialog.Trigger asChild>
         <Button className="destructive w-full">Delete review</Button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
-          <Dialog.Content>
-            <Dialog.Title>Are you sure you want to delete the review?</Dialog.Title>
-            <Dialog.Close onClick={deleteReview}>Delete</Dialog.Close>
-            <Dialog.Close>Close</Dialog.Close>
+        <DialogOverlay className="items-center">
+          <Dialog.Content className="flex w-full max-w-app animate-scale-in flex-col gap-5 rounded-lg bg-white p-5">
+            <Dialog.Title className="basis-full text-center text-xl">
+              Are you sure you want to delete the review?
+            </Dialog.Title>
+            <div className="grid grid-cols-[1fr_auto] justify-end gap-3">
+              <Dialog.Close
+                onClick={deleteReview}
+                asChild
+              >
+                <Button className="destructive w-full">Delete</Button>
+              </Dialog.Close>
+              <Dialog.Close asChild>
+                <Button className="ghost w-full min-w-[6rem]">Close</Button>
+              </Dialog.Close>
+            </div>
           </Dialog.Content>
         </DialogOverlay>
       </Dialog.Portal>

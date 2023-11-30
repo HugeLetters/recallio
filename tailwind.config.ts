@@ -19,6 +19,7 @@ export default {
       animation: {
         "slide-up": "slide-up 200ms ease-in-out",
         "fade-in": "fade-in 200ms ease-in-out",
+        "scale-in": "scale-in 200ms ease-in-out",
       },
       keyframes: {
         "slide-up": {
@@ -28,6 +29,10 @@ export default {
         "fade-in": {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
+        },
+        "scale-in": {
+          "0%": { scale: "0.7", opacity: "0" },
+          "100%": { scale: "1", opacity: "1" },
         },
       },
     },
