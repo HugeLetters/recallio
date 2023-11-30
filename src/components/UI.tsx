@@ -158,27 +158,27 @@ export const AutoresizableInput = forwardRef(function LOL(
   ref: Ref<HTMLTextAreaElement>
 ) {
   return (
-    <div
-      className={`relative flex overflow-hidden after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)] ${
-        rootClassName ?? ""
-      }`}
-      data-input={initialContent + "\n"}
-    >
-      <textarea
-        ref={ref}
-        className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
-          className ?? ""
-        }`}
-        {...props}
-        onChange={(e) => {
-          onChange?.(e);
+    <div className={`overflow-hidden ${rootClassName ?? ""}`}>
+      <div
+        className="relative flex after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)]"
+        data-input={initialContent + "\n"}
+      >
+        <textarea
+          ref={ref}
+          className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
+            className ?? ""
+          }`}
+          {...props}
+          onChange={(e) => {
+            onChange?.(e);
 
-          const parent = e.target.parentElement;
-          if (!parent) return;
+            const parent = e.target.parentElement;
+            if (!parent) return;
 
-          parent.dataset.input = e.target.value + "\n";
-        }}
-      />
+            parent.dataset.input = e.target.value + "\n";
+          }}
+        />
+      </div>
     </div>
   );
 });
