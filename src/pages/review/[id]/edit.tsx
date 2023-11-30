@@ -164,9 +164,7 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
         condition: () => getValues("image") !== oldImage,
         baselineMs: 500,
         retries: 5,
-      })
-        .then(console.log)
-        .catch(console.error);
+      }).catch(console.error);
     },
   });
 
@@ -395,6 +393,7 @@ const fileReader = browser ? new FileReader() : null;
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const [localSrc, setLocalSrc] = useState<string>();
   const src = value === null ? null : localSrc ?? savedImage;
+  const noImage = !src && !savedImage;
 
   function updateImage(file: typeof value) {
     setValue(file);
@@ -440,13 +439,13 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
             </div>
           )}
         </div>
-        {(!!src || !!savedImage) && (
+        {!noImage && (
           <Button
             className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
               src ? "text-rose-700" : "text-neutral-950"
             }`}
             onClick={() => {
-              setValue(src ? null : undefined);
+              updateImage(src ? null : undefined);
             }}
             aria-label={src ? "Delete image" : "Reset image"}
           >
