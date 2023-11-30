@@ -96,9 +96,8 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
           categories: categories.map((x) => x.name),
         },
         {
-          async onSuccess(data) {
-            if (!data.ok) toast.error(data.error);
-            else if (!!image) {
+          async onSuccess() {
+            if (!!image) {
               const compressedImage = await compressImage(image, 511 * 1024);
               await startUpload([compressedImage ?? image], { barcode }).catch((err) => {
                 console.error(err);
@@ -113,9 +112,6 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
                     onError(error) {
                       console.error(error);
                       toast.error(`Erorr while deleting image - ${error.data?.code}`);
-                    },
-                    onSuccess(data) {
-                      if (!data.ok) toast.error(data.error);
                     },
                   }
                 );

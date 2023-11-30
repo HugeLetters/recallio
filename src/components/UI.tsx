@@ -1,5 +1,6 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
 import type { Icon, StrictOmit } from "@/utils";
+import { Overlay } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
@@ -158,14 +159,16 @@ export const AutoresizableInput = forwardRef(function LOL(
 ) {
   return (
     <div
-      className={`relative overflow-hidden after:invisible after:break-words after:content-[attr(data-input)] ${
+      className={`relative flex overflow-hidden after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)] ${
         rootClassName ?? ""
       }`}
-      data-input={initialContent}
+      data-input={initialContent + "\n"}
     >
       <textarea
         ref={ref}
-        className={`absolute h-full w-full resize-none break-words outline-none ${className ?? ""}`}
+        className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
+          className ?? ""
+        }`}
         {...props}
         onChange={(e) => {
           onChange?.(e);
@@ -173,9 +176,24 @@ export const AutoresizableInput = forwardRef(function LOL(
           const parent = e.target.parentElement;
           if (!parent) return;
 
-          parent.dataset.input = e.target.value;
+          parent.dataset.input = e.target.value + "\n";
         }}
       />
     </div>
   );
 });
+
+export function DialogOverlay({
+  children,
+  className,
+  ...props
+}: PropsWithChildren & ComponentPropsWithRef<typeof Overlay>) {
+  return (
+    <Overlay
+      {...props}
+      className={`fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40 ${className}`}
+    >
+      {children}
+    </Overlay>
+  );
+}

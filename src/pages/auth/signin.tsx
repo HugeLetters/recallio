@@ -60,7 +60,7 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
       </WithLabel>
       <Button
         type="submit"
-        className="font-semibold group-valid:primary group-invalid:ghost group-invalid:transform-none group-invalid:cursor-default group-invalid:text-neutral-400"
+        className="font-semibold group-valid:primary group-invalid:disabled group-invalid:ghost group-invalid:text-neutral-400"
       >
         Continue
       </Button>

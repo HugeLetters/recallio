@@ -1,7 +1,14 @@
 import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { SEARCH_QUERY_KEY } from "@/components/Search";
-import { AutoresizableInput, Button, ImageInput, LabeledSwitch, Star } from "@/components/UI";
+import {
+  AutoresizableInput,
+  Button,
+  DialogOverlay,
+  ImageInput,
+  LabeledSwitch,
+  Star,
+} from "@/components/UI";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import {
   backoffCallback,
@@ -229,14 +236,11 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
         Update
       </Button>
       <div className="w-full pb-5">
-        <Button
-          className="destructive w-full"
-          onClick={() => {
+        <DeleteButton
+          deleteReview={() => {
             deleteReview({ barcode });
           }}
-        >
-          Delete review
-        </Button>
+        />
       </div>
     </form>
   );
@@ -345,7 +349,7 @@ function ProsConsComment({
     <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green focus-within:outline-2">
       <PlusIcon className="h-fit w-full text-app-green" />
       <AutoresizableInput
-        className="mt-1.5"
+        rootClassName="pt-1.5"
         initialContent={review.pros ?? ""}
         {...registerPros}
         placeholder="Pros"
@@ -353,14 +357,14 @@ function ProsConsComment({
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
       <MinusIcon className="h-fit w-full text-rose-700" />
       <AutoresizableInput
-        className="mt-1.5"
+        rootClassName="pt-1.5"
         initialContent={review.cons ?? ""}
         {...registerCons}
         placeholder="Cons"
       />
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
       <AutoresizableInput
-        rootClassName="col-span-2 min-h-[2.5rem]"
+        rootClassName="col-span-2 min-h-[2.5rem] pt-1.5"
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"
@@ -499,15 +503,20 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
                 <span className="whitespace-nowrap py-2">Add category</span>
               </Dialog.Trigger>
             </Toolbar.Button>
-            {values.map((value, index) => (
+            {values.map((value) => (
               <Toolbar.Button
                 className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
                 type="button"
-                // helps retains focus when an element is deleted
-                key={index}
+                key={value}
                 aria-label={`Delete label ${value}`}
-                onClick={() => {
+                onClick={(e) => {
                   remove(value);
+
+                  // switch focus to next button
+                  const next = e.currentTarget.nextSibling ?? e.currentTarget.previousSibling;
+                  if (next instanceof HTMLElement) {
+                    next?.focus();
+                  }
                 }}
               >
                 <span>{value}</span>
@@ -517,7 +526,7 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
           </Toolbar.Root>
         </div>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
+          <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
             <Dialog.Content className="w-full max-w-app overflow-y-auto bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
               <input
                 autoFocus
@@ -591,9 +600,29 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
                 )}
               </div>
             </Dialog.Content>
-          </Dialog.Overlay>
+          </DialogOverlay>
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+  );
+}
+
+type DeleteButtonProps = { deleteReview: () => void };
+function DeleteButton({ deleteReview }: DeleteButtonProps) {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <Button className="destructive w-full">Delete review</Button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
+          <Dialog.Content>
+            <Dialog.Title>Are you sure you want to delete the review?</Dialog.Title>
+            <Dialog.Close onClick={deleteReview}>Delete</Dialog.Close>
+            <Dialog.Close>Close</Dialog.Close>
+          </Dialog.Content>
+        </DialogOverlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

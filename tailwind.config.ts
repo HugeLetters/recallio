@@ -40,19 +40,20 @@ export default {
       matchVariant("not", (value) => `&:not(${value})`);
 
       addComponents({
+        ".disabled": {
+          cursor: "default",
+        },
         ".btn": {
           borderRadius: "0.75rem",
           padding: "0.875rem 0.625rem",
-          transitionProperty: "transform, filter, color, background-color",
+          transitionProperty: "transform, filter, color, background-color, outline-color",
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-          transitionDuration: "150ms",
-          "&:active": {
+          transitionDuration: "200ms",
+          "&:active:not([class*=disabled])": {
             "--tw-brightness": "brightness(1.1)",
             filter:
               "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
-          },
-          "@media (prefers-reduced-motion: no-preference)": {
-            "&:active": {
+            "@media (prefers-reduced-motion: no-preference)": {
               "--tw-scale-x": ".95",
               "--tw-scale-y": ".95",
               transform:
@@ -71,16 +72,18 @@ export default {
           backgroundColor: "rgb(245 245 245 / var(--tw-bg-opacity))",
           "--tw-text-opacity": "1",
           color: "rgb(26 46 5 / var(--tw-text-opacity))",
-          outlineStyle: "solid",
-          outlineColor: "rgb(163 163 163 / 0.3)",
+          outline: "2px solid rgb(163 163 163 / 0.3)",
           "&:focus-within": {
-            outlineWidth: "2px",
             outlineColor: "rgb(163 163 163 / 0.7)",
           },
         },
         ".destructive": {
           backgroundColor: "rgb(153 27 27 / 0.1)",
           color: "rgb(153 27 27 / 0.8)",
+          outline: "2px solid transparent",
+          "&:focus-within": {
+            outlineColor: "rgb(153 27 27 / 0.4)",
+          },
         },
       });
 

@@ -7,7 +7,7 @@ import { mapUtKeysToUrls } from "@/server/utils";
 import getScrapedProducts from "@/server/utils/scrapers";
 import { getTopQuadruplet } from "@/utils";
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gt, inArray, like, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 
 export const productRouter = createTRPCRouter({
@@ -82,17 +82,6 @@ export const productRouter = createTRPCRouter({
       const direction = sort.desc ? desc : asc;
 
       const sortBy = getSortByColumn();
-      const inArrayClause = filter
-        ? inArray(
-            review.barcode,
-            db
-              .select({ barcode: review.barcode })
-              .from(review)
-              .where(and(like(review.name, `${filter}%`), eq(review.isPrivate, false)))
-              .groupBy(review.barcode)
-          )
-        : undefined;
-
       const sq = db
         .select({
           barcode: review.barcode,
@@ -104,7 +93,7 @@ export const productRouter = createTRPCRouter({
           image: sql<string>`min(${review.imageKey})`.as("image"),
         })
         .from(review)
-        .where(and(eq(review.isPrivate, false), inArrayClause))
+        .where(eq(review.isPrivate, false))
         .groupBy(review.barcode)
         .as("names-subquery");
 

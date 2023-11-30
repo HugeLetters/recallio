@@ -9,6 +9,7 @@ import { Flipped, Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
 import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
+import { DialogOverlay } from "./UI";
 
 export const SEARCH_QUERY_KEY = "search";
 type HeaderSearchBarProps = { right?: ReactNode; title: string };
@@ -117,7 +118,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-10 flex animate-fade-in items-end justify-center bg-black/40">
+        <DialogOverlay className="items-end">
           <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
@@ -151,7 +152,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
               </RadioGroup.Root>
             </Flipper>
           </Dialog.Content>
-        </Dialog.Overlay>
+        </DialogOverlay>
       </Dialog.Portal>
     </Dialog.Root>
   );

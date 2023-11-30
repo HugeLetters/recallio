@@ -68,7 +68,7 @@ export default function Page() {
         <div className="w-full px-1">
           <Button
             type="submit"
-            className="w-full group-valid:primary group-invalid:ghost group-invalid:transform-none group-invalid:cursor-default"
+            className="w-full group-valid:primary group-invalid:disabled group-invalid:ghost"
           >
             Submit PIN
           </Button>
