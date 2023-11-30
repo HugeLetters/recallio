@@ -19,22 +19,20 @@ import GithubIcon from "~icons/mdi/github";
 import StarIcon from "~icons/typcn/star-full-outline";
 
 type ClickableProps = ComponentPropsWithoutRef<"button">;
-export function Button({
-  className,
-  type,
-  children,
-  ...restProps
-}: PropsWithChildren<ClickableProps>) {
-  return (
-    <button
-      type={type ?? "button"}
-      className={`btn ${className ?? ""}`}
-      {...restProps}
-    >
-      {children}
-    </button>
-  );
-}
+export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableProps>>(
+  function Button({ className, type, children, ...restProps }, ref) {
+    return (
+      <button
+        ref={ref}
+        type={type ?? "button"}
+        className={`btn ${className ?? ""}`}
+        {...restProps}
+      >
+        {children}
+      </button>
+    );
+  }
+);
 
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
@@ -183,17 +181,17 @@ export const AutoresizableInput = forwardRef(function LOL(
   );
 });
 
-export function DialogOverlay({
-  children,
-  className,
-  ...props
-}: PropsWithChildren & ComponentPropsWithRef<typeof Overlay>) {
+export const DialogOverlay = forwardRef<
+  HTMLDivElement,
+  PropsWithChildren & ComponentPropsWithRef<typeof Overlay>
+>(function DialogOverlay({ children, className, ...props }, ref) {
   return (
     <Overlay
+      ref={ref}
       {...props}
       className={`fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40 ${className}`}
     >
       {children}
     </Overlay>
   );
-}
+});
