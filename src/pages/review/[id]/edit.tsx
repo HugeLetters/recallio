@@ -564,6 +564,12 @@ function CategorySearch({ enabled, append, remove, includes, debounceRef }: Cate
     }
   );
 
+  // since it's displayed only at the top anyway it's enough to check only the first page for that match
+  const isShowInputCategory =
+    !!search &&
+    !includes(search) &&
+    !categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
+
   return (
     <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
@@ -599,7 +605,7 @@ function CategorySearch({ enabled, append, remove, includes, debounceRef }: Cate
         </button>
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
-        {!!search && !includes(search) && !categoriesQuery.data?.pages[0]?.includes(search) && (
+        {isShowInputCategory && (
           <button
             onClick={() => {
               // a little delay for the animation to play out
@@ -661,7 +667,7 @@ function DeleteButton({ deleteReview }: DeleteButtonProps) {
         <Button className="destructive w-full">Delete review</Button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <DialogOverlay className="items-center">
+        <DialogOverlay className="items-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
             <Dialog.Content className="flex animate-scale-in flex-col gap-4 rounded-3xl bg-white p-5">
               <Dialog.Title className="text-center text-2xl font-semibold">
