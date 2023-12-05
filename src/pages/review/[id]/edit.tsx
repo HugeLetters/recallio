@@ -150,7 +150,7 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
   });
 
   const router = useRouter();
-  const apiUtils = api.useContext();
+  const apiUtils = api.useUtils();
   const { mutate: deleteReview } = api.review.deleteReview.useMutation({
     onMutate() {
       router.push("/profile").catch(console.error);

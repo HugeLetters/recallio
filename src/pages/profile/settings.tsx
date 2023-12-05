@@ -121,7 +121,7 @@ function UserName({ username }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { data: accounts } = api.user.getAccountProviders.useQuery();
   const { mutate: deleteAccount } = api.user.deleteAccount.useMutation({
     onMutate({ provider }) {
