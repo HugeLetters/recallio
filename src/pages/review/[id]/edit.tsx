@@ -73,7 +73,7 @@ type ReviewWrapperProps = { barcode: string };
 function ReviewWrapper({ barcode }: ReviewWrapperProps) {
   const reviewQuery = api.review.getUserReview.useQuery(
     { barcode },
-    { staleTime: Infinity, select: transformReview }
+    { staleTime: Infinity, select: transformReview },
   );
   const namesQuery = api.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
   const [isPrivate] = useReviewPrivateDefault();
@@ -104,6 +104,7 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
           isPrivate,
         }
       }
+      hasReview={!!reviewQuery.data}
       names={namesQuery.data}
     />
   );
@@ -112,10 +113,11 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
 type ReviewProps = {
   refetchData: (callback: (data: ReviewForm) => void) => void;
   review: ReviewForm;
+  hasReview: boolean;
   names: string[];
   barcode: string;
 };
-function Review({ refetchData, barcode, review, names }: ReviewProps) {
+function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps) {
   const { register, control, reset, handleSubmit, setValue, getValues } = useForm({
     defaultValues: review,
   });
@@ -244,14 +246,15 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
       >
         Save
       </Button>
-      <div className="w-full pb-5">
-        {/* todo - dont show this when creating new review */}
+      {hasReview && (
         <DeleteButton
           deleteReview={() => {
             deleteReview({ barcode });
           }}
         />
-      </div>
+      )}
+      {/* forces padding at the bottom */}
+      <div className="pb-px" />
     </form>
   );
 }
@@ -571,7 +574,7 @@ function CategorySearch({
         return page.at(-1);
       },
       staleTime: minutesToMs(5),
-    }
+    },
   );
 
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
