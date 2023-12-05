@@ -37,6 +37,7 @@ import MilkIcon from "~icons/custom/milk";
 import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
+import EnterIcon from "~icons/fluent/arrow-enter-24-regular";
 import SearchIcon from "~icons/iconamoon/search-light";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
@@ -528,9 +529,9 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
             <Dialog.Content className="w-full max-w-app">
               <CategorySearch
                 enabled={isOpen}
-                append={append}
+                append={(value) => append(value.toLowerCase())}
                 remove={remove}
-                includes={(value) => categorySet.has(value)}
+                includes={(value) => categorySet.has(value.toLowerCase())}
                 debounceRef={debouncedQuery}
               />
             </Dialog.Content>
@@ -597,18 +598,19 @@ function CategorySearch({ enabled, append, remove, includes, debounceRef }: Cate
           <ResetInputIcon className="h-7 w-7" />
         </button>
       </div>
-      <div className="flex basis-full flex-col gap-2 overflow-y-auto p-5">
-        {!!searchParam && (
+      <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
+        {!!search && !includes(search) && !categoriesQuery.data?.pages[0]?.includes(search) && (
           <button
             onClick={() => {
-              const action = includes(searchParam) ? append : remove;
-              action(searchParam);
+              // a little delay for the animation to play out
+              setTimeout(() => append(search), 200);
             }}
-            className={`outline outline-app-gold ${
-              includes(searchParam) ? "bg-green-300" : "bg-neutral-300"
-            }`}
+            className="flex items-center justify-between p-0 text-left italic transition-transform duration-200 active:scale-95"
           >
-            {searchParam}
+            <span className="shrink-0">
+              Add <span className="capitalize">{`"${search}"`}</span>...
+            </span>
+            <EnterIcon className="h-6 w-6" />
           </button>
         )}
         {categoriesQuery.isSuccess ? (
@@ -625,11 +627,11 @@ function CategorySearch({ enabled, append, remove, includes, debounceRef }: Cate
             {(category) => (
               <label
                 key={category}
-                className="flex w-full cursor-pointer justify-between p-2 capitalize"
+                className="flex w-full cursor-pointer justify-between capitalize"
               >
                 <span>{category}</span>
                 <Checkbox.Root
-                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors data-[state=checked]:border-app-green data-[state=checked]:bg-app-green"
+                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none"
                   checked={includes(category)}
                   onCheckedChange={(e) => {
                     const action = e === true ? append : remove;
