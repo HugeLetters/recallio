@@ -36,7 +36,7 @@ function ReviewBlock({ barcode }: ReviewBlockProps) {
     {
       select: transformReview,
       staleTime: Infinity,
-    }
+    },
   );
 
   if (!isSuccess) return <>loading...</>;
@@ -113,7 +113,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
                       console.error(error);
                       toast.error(`Erorr while deleting image - ${error.data?.code}`);
                     },
-                  }
+                  },
                 );
               });
             }
@@ -124,7 +124,7 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
             toast.error(error.data?.code);
             syncWithServer();
           },
-        }
+        },
       );
     });
 
