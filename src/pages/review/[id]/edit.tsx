@@ -22,6 +22,7 @@ import {
 } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage } from "@/utils/image";
+import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
@@ -29,14 +30,17 @@ import * as Separator from "@radix-ui/react-separator";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Controller, useFieldArray, useForm, type UseFormRegisterReturn } from "react-hook-form";
+import Checkmark from "~icons/custom/checkmark";
 import MilkIcon from "~icons/custom/milk";
 import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
+import SearchIcon from "~icons/iconamoon/search-light";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
+import ResetInputIcon from "~icons/radix-icons/cross-1";
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = Omit<
@@ -474,18 +478,7 @@ type CategoryListProps = {
 function CategoryList({ append, remove, values }: CategoryListProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const searchParam = getQueryParam(router.query[SEARCH_QUERY_KEY]);
   const debouncedQuery = useRef<number>();
-  const categoriesQuery = api.product.getCategories.useInfiniteQuery(
-    { filter: searchParam ?? "", limit: 30 },
-    {
-      enabled: isOpen,
-      getNextPageParam(page) {
-        return page.at(-1);
-      },
-      staleTime: minutesToMs(5),
-    }
-  );
   const categorySet = useMemo<Set<string>>(() => new Set(values), [values]);
 
   return (
@@ -532,82 +525,128 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
         </div>
         <Dialog.Portal>
           <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
-            <Dialog.Content className="w-full max-w-app overflow-y-auto bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
-              <input
-                autoFocus
-                defaultValue={searchParam}
-                onChange={(e) => {
-                  window.clearTimeout(debouncedQuery.current);
-                  debouncedQuery.current = window.setTimeout(() => {
-                    setQueryParam(router, SEARCH_QUERY_KEY, e.target.value);
-                  }, 500);
-                }}
+            <Dialog.Content className="w-full max-w-app">
+              <CategorySearch
+                enabled={isOpen}
+                append={append}
+                remove={remove}
+                includes={(value) => categorySet.has(value)}
+                debounceRef={debouncedQuery}
               />
-              <button
-                type="button"
-                onClick={() => {
-                  window.clearTimeout(debouncedQuery.current);
-                  setQueryParam(router, SEARCH_QUERY_KEY, null);
-                }}
-              >
-                reset
-              </button>
-              <div className="flex flex-col gap-2">
-                {!!searchParam && (
-                  <button
-                    onClick={() => {
-                      if (categorySet.has(searchParam)) {
-                        remove(searchParam);
-                        return;
-                      }
-
-                      append(searchParam);
-                    }}
-                    className={`outline outline-app-gold ${
-                      categorySet.has(searchParam) ? "bg-green-300" : "bg-neutral-300"
-                    }`}
-                  >
-                    {searchParam}
-                  </button>
-                )}
-                {categoriesQuery.isSuccess ? (
-                  <InfiniteScroll
-                    pages={categoriesQuery.data.pages}
-                    getPageValues={(page) => page}
-                    getKey={(category) => category}
-                    getNextPage={() => {
-                      if (categoriesQuery.isFetching) return;
-
-                      categoriesQuery.fetchNextPage().catch(console.error);
-                    }}
-                  >
-                    {(category) => (
-                      <button
-                        key={category}
-                        onClick={() => {
-                          if (categorySet.has(category)) {
-                            remove(category);
-                            return;
-                          }
-
-                          append(category);
-                        }}
-                        className={`w-full ${
-                          categorySet.has(category) ? "bg-green-300" : "bg-neutral-300"
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    )}
-                  </InfiniteScroll>
-                ) : (
-                  "Loading..."
-                )}
-              </div>
             </Dialog.Content>
           </DialogOverlay>
         </Dialog.Portal>
       </Dialog.Root>
+    </div>
+  );
+}
+
+type CategorySearchProps = {
+  enabled: boolean;
+  append: (value: string) => void;
+  remove: (value: string) => void;
+  includes: (value: string) => boolean;
+  debounceRef: MutableRefObject<number | undefined>;
+};
+function CategorySearch({ enabled, append, remove, includes, debounceRef }: CategorySearchProps) {
+  const router = useRouter();
+  const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
+  const [search, setSearch] = useState(searchParam);
+  const categoriesQuery = api.product.getCategories.useInfiniteQuery(
+    { filter: searchParam, limit: 30 },
+    {
+      enabled,
+      getNextPageParam(page) {
+        return page.at(-1);
+      },
+      staleTime: minutesToMs(5),
+    }
+  );
+
+  return (
+    <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
+      <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
+        <SearchIcon className="h-7 w-7 shrink-0" />
+        <input
+          // key helps refocus input when clear button is pressed
+          key={`${!!search}`}
+          autoFocus
+          className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
+          placeholder="Search"
+          value={search}
+          onChange={(e) => {
+            const { value } = e.target;
+            setSearch(value);
+
+            window.clearTimeout(debounceRef.current);
+            debounceRef.current = window.setTimeout(() => {
+              setQueryParam(router, SEARCH_QUERY_KEY, value);
+            }, 500);
+          }}
+        />
+        <button
+          aria-label="Reset search filter"
+          className="ml-1"
+          onClick={() => {
+            setSearch("");
+
+            window.clearTimeout(debounceRef.current);
+            setQueryParam(router, SEARCH_QUERY_KEY, null);
+          }}
+        >
+          <ResetInputIcon className="h-7 w-7" />
+        </button>
+      </div>
+      <div className="flex basis-full flex-col gap-2 overflow-y-auto p-5">
+        {!!searchParam && (
+          <button
+            onClick={() => {
+              const action = includes(searchParam) ? append : remove;
+              action(searchParam);
+            }}
+            className={`outline outline-app-gold ${
+              includes(searchParam) ? "bg-green-300" : "bg-neutral-300"
+            }`}
+          >
+            {searchParam}
+          </button>
+        )}
+        {categoriesQuery.isSuccess ? (
+          <InfiniteScroll
+            pages={categoriesQuery.data.pages}
+            getPageValues={(page) => page}
+            getKey={(category) => category}
+            getNextPage={() => {
+              if (categoriesQuery.isFetching) return;
+
+              categoriesQuery.fetchNextPage().catch(console.error);
+            }}
+          >
+            {(category) => (
+              <label
+                key={category}
+                className="flex w-full cursor-pointer justify-between p-2 capitalize"
+              >
+                <span>{category}</span>
+                <Checkbox.Root
+                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors data-[state=checked]:border-app-green data-[state=checked]:bg-app-green"
+                  checked={includes(category)}
+                  onCheckedChange={(e) => {
+                    const action = e === true ? append : remove;
+                    action(category);
+                  }}
+                >
+                  <Checkbox.Indicator className="h-full w-full p-1 text-white">
+                    <Checkmark className="checkmark h-full w-full" />
+                  </Checkbox.Indicator>
+                </Checkbox.Root>
+              </label>
+            )}
+          </InfiniteScroll>
+        ) : (
+          "Loading..."
+        )}
+      </div>
     </div>
   );
 }
@@ -621,22 +660,26 @@ function DeleteButton({ deleteReview }: DeleteButtonProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="items-center">
-          <Dialog.Content className="flex w-full max-w-app animate-scale-in flex-col gap-5 rounded-lg bg-white p-5">
-            <Dialog.Title className="basis-full text-center text-xl">
-              Are you sure you want to delete the review?
-            </Dialog.Title>
-            <div className="grid grid-cols-[1fr_auto] justify-end gap-3">
+          <div className="w-full max-w-app p-4">
+            <Dialog.Content className="flex animate-scale-in flex-col gap-4 rounded-3xl bg-white p-5">
+              <Dialog.Title className="text-center text-2xl font-semibold">
+                Delete Review?
+              </Dialog.Title>
+              <Dialog.Description className="basis-full text-center text-xl text-neutral-400">
+                Are you sure you want to delete this review? Once deleted, this action cannot be
+                undone.
+              </Dialog.Description>
               <Dialog.Close
                 onClick={deleteReview}
                 asChild
               >
-                <Button className="destructive w-full">Delete</Button>
+                <Button className="bg-app-red font-semibold text-white">Delete</Button>
               </Dialog.Close>
               <Dialog.Close asChild>
-                <Button className="ghost w-full min-w-[6rem]">Close</Button>
+                <Button className="ghost font-semibold ">Cancel</Button>
               </Dialog.Close>
-            </div>
-          </Dialog.Content>
+            </Dialog.Content>
+          </div>
         </DialogOverlay>
       </Dialog.Portal>
     </Dialog.Root>
