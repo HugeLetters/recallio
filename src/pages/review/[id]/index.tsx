@@ -1,5 +1,5 @@
 import { Layout } from "@/components/Layout";
-import { Button, ImageInput, Star, Switch } from "@/components/UI";
+import { Button, ImageInput, LabeledSwitch, Star, Switch } from "@/components/UI";
 import { hasFocusWithin, useUploadThing } from "@/hooks";
 import { browser, getQueryParam, type ModelProps, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
@@ -263,10 +263,11 @@ function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) 
           </button>
         </div>
       </div>
-      <label className="flex items-center justify-between  rounded-2xl bg-neutral-100 px-3 py-4 font-bold ">
-        Private review
-        <Switch defaultChecked />
-      </label>
+      <LabeledSwitch
+        label="Private review"
+        className="flex items-center justify-between  rounded-2xl bg-neutral-100 px-3 py-4 font-bold "
+        defaultChecked
+      />
       <button
         onClick={syncWithServer}
         type="button"

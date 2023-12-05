@@ -245,6 +245,7 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
         Save
       </Button>
       <div className="w-full pb-5">
+        {/* todo - dont show this when creating new review */}
         <DeleteButton
           deleteReview={() => {
             deleteReview({ barcode });
@@ -532,14 +533,9 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
                 append={(value) => append(value.toLowerCase())}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}
+                close={() => setIsOpen(false)}
                 debounceRef={debouncedQuery}
               />
-              <Button
-                className="primary fixed inset-x-5 bottom-5"
-                onClick={() => setIsOpen(false)}
-              >
-                OK
-              </Button>
             </Dialog.Content>
           </DialogOverlay>
         </Dialog.Portal>
@@ -553,9 +549,17 @@ type CategorySearchProps = {
   append: (value: string) => void;
   remove: (value: string) => void;
   includes: (value: string) => boolean;
+  close: () => void;
   debounceRef: MutableRefObject<number | undefined>;
 };
-function CategorySearch({ enabled, append, remove, includes, debounceRef }: CategorySearchProps) {
+function CategorySearch({
+  enabled,
+  append,
+  remove,
+  includes,
+  close,
+  debounceRef,
+}: CategorySearchProps) {
   const router = useRouter();
   const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
   const [search, setSearch] = useState(searchParam);
@@ -577,7 +581,7 @@ function CategorySearch({ enabled, append, remove, includes, debounceRef }: Cate
     !categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
   return (
-    <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
+    <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="h-7 w-7 shrink-0" />
         <input
@@ -661,6 +665,12 @@ function CategorySearch({ enabled, append, remove, includes, debounceRef }: Cate
           "Loading..."
         )}
       </div>
+      <Button
+        className="primary absolute inset-x-5 bottom-5"
+        onClick={close}
+      >
+        OK
+      </Button>
     </div>
   );
 }

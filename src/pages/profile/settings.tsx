@@ -4,7 +4,6 @@ import {
   ImageInput,
   Input,
   LabeledSwitch,
-  Switch,
   UserPic,
   WithLabel,
   providers,
@@ -150,28 +149,29 @@ function LinkedAccounts() {
         {providers.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
-            <div
+            <LabeledSwitch
               key={provider}
-              className="flex items-center gap-2 px-4 py-2 capitalize not-[:first-child]:border-t-2 not-[:first-child]:border-t-neutral-400/10"
-            >
-              <Icon className="h-full w-7" />
-              <span className="mr-auto">{provider}</span>
-              <Switch
-                aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
-                checked={isLinked}
-                onCheckedChange={(value) => {
-                  if (value) {
-                    // optimistic update
-                    trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
-                      return [...(providers ?? []), provider];
-                    });
-                    void signIn(provider);
-                  } else {
-                    deleteAccount({ provider });
-                  }
-                }}
-              />
-            </div>
+              className="w-full rounded-none capitalize not-[:first-child]:border-t-2 not-[:first-child]:border-t-neutral-400/10"
+              label={
+                <div className="flex items-center gap-2">
+                  <Icon className="h-full w-7" />
+                  <span>{provider}</span>
+                </div>
+              }
+              aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+              checked={isLinked}
+              onCheckedChange={(value) => {
+                if (value) {
+                  // optimistic update
+                  trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                    return [...(providers ?? []), provider];
+                  });
+                  void signIn(provider);
+                } else {
+                  deleteAccount({ provider });
+                }
+              }}
+            />
           );
         })}
       </div>

@@ -4,7 +4,6 @@
 
 html {
   font-family: theme("fontFamily.lato");
-  overflow: hidden;
 }
 
 @media (pointer: fine), (pointer: none) {

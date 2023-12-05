@@ -9,6 +9,7 @@ import type {
   ComponentPropsWithRef,
   ComponentPropsWithoutRef,
   PropsWithChildren,
+  ReactNode,
   Ref,
 } from "react";
 import { forwardRef } from "react";
@@ -106,11 +107,16 @@ export function Switch(props: SwitchProps) {
   );
 }
 
-type LabeledSwitchProps = { label: string; className?: string } & SwitchProps;
+type LabeledSwitchProps = { label: ReactNode; className?: string } & SwitchProps;
 export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitchProps) {
   return (
-    <label className={`flex items-center justify-between rounded-lg px-4 py-2 ${className ?? ""}`}>
-      <span>{label}</span>
+    <label
+      // Inside of forms switch appends a hidden sr-only checkbox input which can screw up the layout - this mititgates the damage somewhat
+      className={`relative flex items-center justify-between rounded-lg px-4 py-2 ${
+        className ?? ""
+      }`}
+    >
+      {typeof label === "string" ? <span>{label}</span> : label}
       <Switch {...switchProps} />
     </label>
   );
