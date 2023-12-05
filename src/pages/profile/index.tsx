@@ -109,7 +109,7 @@ function ReviewCards() {
       initialCursor: 0,
       staleTime: minutesToMs(5),
       enabled: router.isReady,
-    }
+    },
   );
 
   return (

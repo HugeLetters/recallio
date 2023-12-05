@@ -1,10 +1,10 @@
 import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { account, user } from "@/database/schema/auth";
+import { utapi } from "@/server/uploadthing";
 import { isValidUrlString } from "@/utils";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
-import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -26,7 +26,7 @@ export const userRouter = createTRPCRouter({
             code: "INTERNAL_SERVER_ERROR",
             message: "Error while trying to update username",
           });
-        }
+        },
       );
   }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
@@ -59,7 +59,7 @@ export const userRouter = createTRPCRouter({
               code: "INTERNAL_SERVER_ERROR",
               message: "Error while trying to update your avatar",
             });
-          }
+          },
         );
     });
   }),
@@ -73,7 +73,7 @@ export const userRouter = createTRPCRouter({
         .select()
         .from(account)
         .where(eq(account.userId, user.id))
-        .then((accounts) => accounts.map((account) => account.provider))
+        .then((accounts) => accounts.map((account) => account.provider)),
   ),
   deleteAccount: protectedProcedure.input(z.object({ provider: z.string() })).mutation(
     ({
@@ -100,7 +100,7 @@ export const userRouter = createTRPCRouter({
               code: "INTERNAL_SERVER_ERROR",
               message: `Error while trying to unlink your ${provider} account`,
             });
-          }
-        )
+          },
+        ),
   ),
 });

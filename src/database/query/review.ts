@@ -5,7 +5,7 @@ import { category, review, reviewsToCategories } from "../schema/product";
 
 export async function upsertReview(
   reviewValue: StrictOmit<InferInsertModel<typeof review>, "updatedAt" | "imageKey">,
-  categories: Array<InferInsertModel<typeof category>["name"]> | undefined
+  categories: Array<InferInsertModel<typeof category>["name"]> | undefined,
 ) {
   return db
     .transaction(async (tx) => {
@@ -42,8 +42,8 @@ export async function upsertReview(
         .where(
           and(
             eq(reviewsToCategories.userId, reviewValue.userId),
-            eq(reviewsToCategories.barcode, reviewValue.barcode)
-          )
+            eq(reviewsToCategories.barcode, reviewValue.barcode),
+          ),
         );
 
       const categoriesForReview = categories.map((category) => ({

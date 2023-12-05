@@ -66,7 +66,7 @@ export default function Page() {
       if (Math.abs(x) < 90) return;
       dispatchSelection(isNext ? "next" : "prev");
     },
-    { axis: "x", filterTaps: true }
+    { axis: "x", filterTaps: true },
   );
 
   return (

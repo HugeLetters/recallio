@@ -14,7 +14,7 @@ export default function Page() {
 
   const productListQuery = api.product.getProductSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
-    { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady }
+    { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady },
   );
 
   return (
@@ -50,7 +50,7 @@ export default function Page() {
                       image={value.image}
                       label={match}
                       subtext={value.names.filter(
-                        (x): x is NonNullable<typeof x> => !!x && x !== match
+                        (x): x is NonNullable<typeof x> => !!x && x !== match,
                       )}
                     >
                       <div className="flex h-5 items-center gap-0.5">

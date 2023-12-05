@@ -24,7 +24,7 @@ export function hasFocusWithin(callback: (hasFocusWithin: boolean) => void) {
 const reviewPrivateDefaultKey = "review-private-default";
 export function useReviewPrivateDefault() {
   const [value, setStateValue] = useState(() =>
-    browser ? localStorage.getItem(reviewPrivateDefaultKey) !== "false" : true
+    browser ? localStorage.getItem(reviewPrivateDefaultKey) !== "false" : true,
   );
 
   function setValue(value: boolean) {

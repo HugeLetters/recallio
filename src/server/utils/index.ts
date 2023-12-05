@@ -5,11 +5,11 @@ export function mapUtKeysToUrls<
   T,
   P extends keyof T,
   K extends PropertyKey,
-  Image extends Record<K, string | null>
+  Image extends Record<K, string | null>,
 >(
   list: T[],
   imageKeyProp: P,
-  imageProp: Exclude<K, keyof T>
+  imageProp: Exclude<K, keyof T>,
 ): MaybePromise<Array<Omit<T, P> & Image>> {
   return list.map((el) => {
     const { [imageKeyProp]: imageKey, ...summary } = el;

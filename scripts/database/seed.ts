@@ -2,11 +2,11 @@ import { db } from "@/database";
 import { upsertReview } from "@/database/query/review";
 import { user } from "@/database/schema/auth";
 import { category, review, reviewsToCategories } from "@/database/schema/product";
+import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
 import { faker } from "@faker-js/faker";
 import { and, eq, like } from "drizzle-orm";
 import task from "tasuku";
-import { utapi } from "uploadthing/server";
 
 seed().catch(console.error);
 async function seed() {
@@ -52,14 +52,14 @@ async function seedReviews(reviewCount: number, userCount: number) {
   for (let i = 0; i < reviewCount / 10; i++) {
     await createMockReview(
       { user: faker.helpers.arrayElement(users), barcode: randomBarcode() },
-      files
+      files,
     );
   }
 }
 
 async function createMockReview(
   data: { user: string; barcode: string; names?: string[]; rating?: number },
-  files: string[]
+  files: string[],
 ) {
   await upsertReview(
     {
@@ -78,10 +78,10 @@ async function createMockReview(
       () =>
         faker.helpers.uniqueArray(
           () => faker.word.adjective(),
-          faker.number.int({ min: 0, max: 10 })
+          faker.number.int({ min: 0, max: 10 }),
         ),
-      { probability: 0.9 }
-    )
+      { probability: 0.9 },
+    ),
   );
   await db
     .update(review)
@@ -120,6 +120,6 @@ function createTestUsers(userCount: number) {
         () => faker.image.url(),
         () => null,
       ])(),
-    }))
+    })),
   );
 }

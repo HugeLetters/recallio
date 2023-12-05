@@ -2,7 +2,7 @@ import { db } from "@/database";
 import { upsertReview } from "@/database/query/review";
 import { aggregateArrayColumn, count, findFirst } from "@/database/query/utils";
 import { review, reviewsToCategories } from "@/database/schema/product";
-import { getFileUrl } from "@/server/uploadthing";
+import { getFileUrl, utapi } from "@/server/uploadthing";
 import { mapUtKeysToUrls } from "@/server/utils";
 import type { StrictOmit } from "@/utils";
 import { TRPCError } from "@trpc/server";
@@ -17,7 +17,6 @@ import {
   or,
   type InferColumnsDataTypes,
 } from "drizzle-orm";
-import { utapi } from "uploadthing/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -36,7 +35,7 @@ export const reviewRouter = createTRPCRouter({
           categories: z.array(z.string().min(1).max(25)).optional(),
         })
         // enforce default behaviour - we don't wanna update imageKey here
-        .strip()
+        .strip(),
     )
     .mutation(async ({ input, ctx }) => {
       const { categories, ...value } = input;
@@ -64,8 +63,8 @@ export const reviewRouter = createTRPCRouter({
           reviewsToCategories,
           and(
             eq(review.userId, reviewsToCategories.userId),
-            eq(review.barcode, reviewsToCategories.barcode)
-          )
+            eq(review.barcode, reviewsToCategories.barcode),
+          ),
         )
         .groupBy(review.barcode, review.userId)
         .limit(1)
@@ -88,7 +87,7 @@ export const reviewRouter = createTRPCRouter({
         }),
         /** Filter by name or category */
         filter: z.string().optional(),
-      })
+      }),
     )
     .query(
       async ({
@@ -113,20 +112,20 @@ export const reviewRouter = createTRPCRouter({
                         .where(
                           and(
                             eq(reviewsToCategories.userId, ctx.session.user.id),
-                            like(reviewsToCategories.category, `${filter}%`)
-                          )
-                        )
-                    )
+                            like(reviewsToCategories.category, `${filter}%`),
+                          ),
+                        ),
+                    ),
                   )
-                : undefined
-            )
+                : undefined,
+            ),
           )
           .leftJoin(
             reviewsToCategories,
             and(
               eq(review.userId, reviewsToCategories.userId),
-              eq(review.barcode, reviewsToCategories.barcode)
-            )
+              eq(review.barcode, reviewsToCategories.barcode),
+            ),
           )
           .groupBy(review.barcode, review.userId)
           .limit(limit)
@@ -139,17 +138,17 @@ export const reviewRouter = createTRPCRouter({
           cursor: page.length === limit ? cursor + 1 : undefined,
           page,
         };
-      }
+      },
     ),
   getReviewCount: protectedProcedure.query(({ ctx }) =>
-    count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count)
+    count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count),
   ),
   deleteReview: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findFirst(
         review,
-        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode))
+        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
       ).then(
         ([reviewData]) => {
           if (!reviewData) {
@@ -165,7 +164,7 @@ export const reviewRouter = createTRPCRouter({
           console.error(err);
 
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
+        },
       );
 
       return db
@@ -175,8 +174,8 @@ export const reviewRouter = createTRPCRouter({
             .where(
               and(
                 eq(reviewsToCategories.userId, ctx.session.user.id),
-                eq(reviewsToCategories.barcode, barcode)
-              )
+                eq(reviewsToCategories.barcode, barcode),
+              ),
             );
 
           await tx
@@ -202,7 +201,7 @@ export const reviewRouter = createTRPCRouter({
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findFirst(
         review,
-        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode))
+        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
       ).then(
         ([reviewData]) => {
           if (!reviewData) {
@@ -218,7 +217,7 @@ export const reviewRouter = createTRPCRouter({
           console.error(err);
 
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
+        },
       );
 
       return db
@@ -254,10 +253,9 @@ const reviewSummaryCols = {
   rating: review.rating,
   categories: aggregateArrayColumn<string>(reviewsToCategories.category),
 };
-type ReviewSummary =
-  | StrictOmit<
-      InferColumnsDataTypes<StrictOmit<typeof reviewSummaryCols, "categories">> & {
-        categories: string[];
-      },
-      "imageKey"
-    > & { image: string | null };
+type ReviewSummary = StrictOmit<
+  InferColumnsDataTypes<StrictOmit<typeof reviewSummaryCols, "categories">> & {
+    categories: string[];
+  },
+  "imageKey"
+> & { image: string | null };

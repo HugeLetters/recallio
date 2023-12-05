@@ -40,7 +40,7 @@ export const review = mysqlTable(
     ratingIndex: index("rating-index").on(table.rating),
     updatedAtIndex: index("updated-at-index").on(table.updatedAt),
     isPrivateIndex: index("is-private-index").on(table.isPrivate),
-  })
+  }),
 );
 export const reviewRelations = relations(review, ({ many, one }) => ({
   categories: many(reviewsToCategories),
@@ -61,7 +61,7 @@ export const reviewsToCategories = mysqlTable(
     compoundKey: primaryKey(table.userId, table.barcode, table.category),
     barcodeIndex: index("barcode-index").on(table.barcode),
     categoryIndex: index("category-index").on(table.category),
-  })
+  }),
 );
 export const reviewsToCategoriesRelations = relations(reviewsToCategories, ({ one }) => ({
   review: one(review, {

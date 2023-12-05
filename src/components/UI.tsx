@@ -32,7 +32,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableP
         {children}
       </button>
     );
-  }
+  },
 );
 
 type StarProps = { highlight?: boolean };
@@ -45,7 +45,7 @@ export function Star({ highlight }: StarProps) {
 type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
 export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function ImageInput(
   { children, className, isImageSet, ...inputAttributes },
-  ref
+  ref,
 ) {
   return (
     <label className={`cursor-pointer focus-within:outline ${className ?? ""}`}>
@@ -159,7 +159,7 @@ type AutoresizableInputProps = {
 } & ComponentPropsWithoutRef<"textarea">;
 export const AutoresizableInput = forwardRef(function LOL(
   { initialContent, rootClassName, className, onChange, ...props }: AutoresizableInputProps,
-  ref: Ref<HTMLTextAreaElement>
+  ref: Ref<HTMLTextAreaElement>,
 ) {
   return (
     <div className={`overflow-hidden ${rootClassName ?? ""}`}>

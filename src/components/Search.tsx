@@ -43,7 +43,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
         <>
           {createPortal(
             <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
-            document.body
+            document.body,
           )}
           {searchIcon}
           <input

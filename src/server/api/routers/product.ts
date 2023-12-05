@@ -28,14 +28,14 @@ export const productRouter = createTRPCRouter({
         cursor: z.string().optional(),
         filter: z.string(),
         limit: z.number(),
-      })
+      }),
     )
     .query(({ input: { filter, cursor, limit } }) =>
       db
         .select()
         .from(category)
         .where(
-          and(like(category.name, `${filter}%`), cursor ? gt(category.name, cursor) : undefined)
+          and(like(category.name, `${filter}%`), cursor ? gt(category.name, cursor) : undefined),
         )
         .limit(limit)
         .orderBy(category.name)
@@ -43,7 +43,7 @@ export const productRouter = createTRPCRouter({
         .catch((e) => {
           console.error(e);
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        })
+        }),
     ),
   getProductSummaryList: protectedProcedure
     .input(
@@ -62,7 +62,7 @@ export const productRouter = createTRPCRouter({
         }),
         /** Filter by name */
         filter: z.string().optional(),
-      })
+      }),
     )
     .query(({ input: { limit, cursor, sort, filter } }) => {
       function getSortByColumn(): SQL.Aliased<number> {
@@ -100,7 +100,7 @@ export const productRouter = createTRPCRouter({
       const cursorClause = cursor
         ? or(
             (sort.desc ? lt : gt)(sortBy, cursor.value),
-            and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.value))
+            and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.value)),
           )
         : undefined;
 
@@ -118,8 +118,8 @@ export const productRouter = createTRPCRouter({
           and(
             eq(review.isPrivate, false),
             filter ? like(review.name, `${filter}%`) : undefined,
-            cursorClause
-          )
+            cursorClause,
+          ),
         )
         .leftJoin(sq, eq(review.barcode, sq.barcode))
         .groupBy(review.barcode)

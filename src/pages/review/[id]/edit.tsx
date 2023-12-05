@@ -244,7 +244,7 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
         type="submit"
         className="primary"
       >
-        Save
+        {hasReview ? "Update" : "Save"}
       </Button>
       {hasReview && (
         <DeleteButton

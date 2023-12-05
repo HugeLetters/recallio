@@ -108,7 +108,7 @@ export default {
             return { [shadowAroundOpacity]: `${String(value)}` };
           },
         },
-        { values: { ...theme("opacity"), 15: "0.15" } }
+        { values: { ...theme("opacity"), 15: "0.15" } },
       );
       matchUtilities(
         {
@@ -116,7 +116,7 @@ export default {
             return { [shadowAroundRadius]: `${value}` };
           },
         },
-        { values: theme("width") }
+        { values: theme("width") },
       );
     }),
   ],

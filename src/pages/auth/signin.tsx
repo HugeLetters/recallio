@@ -101,7 +101,7 @@ type ErrorCode =
   | "Default";
 
 function getErrorMessage(
-  errorCode: ErrorCode | (string & NonNullable<unknown>) | undefined
+  errorCode: ErrorCode | (string & NonNullable<unknown>) | undefined,
 ): string | null {
   if (!errorCode) return null;
   switch (errorCode) {
