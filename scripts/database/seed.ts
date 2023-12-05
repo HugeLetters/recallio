@@ -1,5 +1,5 @@
 import { db } from "@/database";
-import { createReview } from "@/database/query/review";
+import { upsertReview } from "@/database/query/review";
 import { user } from "@/database/schema/auth";
 import { category, review, reviewsToCategories } from "@/database/schema/product";
 import { clamp } from "@/utils";
@@ -61,7 +61,7 @@ async function createMockReview(
   data: { user: string; barcode: string; names?: string[]; rating?: number },
   files: string[]
 ) {
-  await createReview(
+  await upsertReview(
     {
       userId: data.user,
       barcode: data.barcode,

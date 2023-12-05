@@ -75,7 +75,7 @@ type ReviewFormProps<T> = {
   barcode: string;
 };
 function ReviewForm({ data, getServerValue, barcode }: ReviewFormProps<Review>) {
-  const { mutate: updateReview } = api.review.createReview.useMutation();
+  const { mutate: updateReview } = api.review.upsertReview.useMutation();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation();
   const { startUpload } = useUploadThing("reviewImageUploader", {
     onUploadError(e) {

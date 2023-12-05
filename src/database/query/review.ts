@@ -3,7 +3,7 @@ import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
 import { db } from "..";
 import { category, review, reviewsToCategories } from "../schema/product";
 
-export async function createReview(
+export async function upsertReview(
   reviewValue: StrictOmit<InferInsertModel<typeof review>, "updatedAt" | "imageKey">,
   categories: Array<InferInsertModel<typeof category>["name"]> | undefined
 ) {

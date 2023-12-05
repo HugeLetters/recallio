@@ -134,7 +134,7 @@ function Review({ refetchData, barcode, review, names }: ReviewProps) {
   }
 
   const [image, setImage] = useState<File | null>();
-  const { mutate: saveReview } = api.review.createReview.useMutation({
+  const { mutate: saveReview } = api.review.upsertReview.useMutation({
     async onSuccess() {
       if (image === undefined) return sync();
       if (image === null) {
@@ -385,7 +385,7 @@ function ProsConsComment({
 function Private({ value, setValue }: ModelProps<boolean>) {
   return (
     <LabeledSwitch
-      label="Keep review private"
+      label="Private review"
       className={`transition-colors duration-300 ${value ? "bg-app-green/20" : "bg-neutral-200 "}`}
       checked={value}
       onCheckedChange={setValue}
@@ -534,6 +534,12 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
                 includes={(value) => categorySet.has(value.toLowerCase())}
                 debounceRef={debouncedQuery}
               />
+              <Button
+                className="primary fixed inset-x-5 bottom-5"
+                onClick={() => setIsOpen(false)}
+              >
+                OK
+              </Button>
             </Dialog.Content>
           </DialogOverlay>
         </Dialog.Portal>

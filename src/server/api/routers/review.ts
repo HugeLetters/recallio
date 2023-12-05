@@ -1,5 +1,5 @@
 import { db } from "@/database";
-import { createReview } from "@/database/query/review";
+import { upsertReview } from "@/database/query/review";
 import { aggregateArrayColumn, count, findFirst } from "@/database/query/utils";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { getFileUrl } from "@/server/uploadthing";
@@ -22,7 +22,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const reviewRouter = createTRPCRouter({
-  createReview: protectedProcedure
+  upsertReview: protectedProcedure
     .input(
       z
         .object({
@@ -40,7 +40,7 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { categories, ...value } = input;
-      return createReview({ ...value, userId: ctx.session.user.id }, categories?.filter(Boolean))
+      return upsertReview({ ...value, userId: ctx.session.user.id }, categories?.filter(Boolean))
         .then(() => void 0)
         .catch((e) => {
           console.error(e);
