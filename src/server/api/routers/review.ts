@@ -33,7 +33,7 @@ export const reviewRouter = createTRPCRouter({
           cons: z.string().nullish(),
           comment: z.string().nullish(),
           isPrivate: z.boolean(),
-          categories: z.array(z.string()).optional(),
+          categories: z.array(z.string().min(1).max(25)).optional(),
         })
         // enforce default behaviour - we don't wanna update imageKey here
         .strip()
