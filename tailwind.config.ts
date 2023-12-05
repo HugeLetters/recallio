@@ -14,6 +14,7 @@ export default {
         app: {
           gold: "hsla(47, 87%, 56%)",
           green: "hsla(122, 39%, 49%)",
+          red: "hsla(0, 39%, 49%)",
         },
       },
       animation: {
