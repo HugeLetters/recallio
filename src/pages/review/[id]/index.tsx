@@ -7,10 +7,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import MilkIcon from "~icons/custom/milk";
+import RightIcon from "~icons/formkit/right";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
-type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
+// todo - find which components can be reused between this and edit page
 
 export default function Page() {
   const router = useRouter();
@@ -28,7 +29,6 @@ function Review({ barcode }: ReviewProps) {
   const reviewQuery = api.review.getUserReview.useQuery(
     { barcode },
     {
-      staleTime: Infinity,
       select(data) {
         if (!data) {
           void router.push({ pathname: "/review/[id]/edit", query: { id: barcode } });
@@ -39,47 +39,61 @@ function Review({ barcode }: ReviewProps) {
       },
     },
   );
+
   if (!reviewQuery.isSuccess) return <>Loading...</>;
 
   const review = reviewQuery.data;
   return (
     <div className="flex w-full flex-col gap-4 p-4">
-      <div className="h-full w-full overflow-hidden rounded-full">
-        {review.image ? (
-          <Image
-            alt="your attachment"
-            src={review.image}
-            width={144}
-            height={144}
-            sizes="144px"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
-            <MilkIcon className="h-full w-full" />
-          </div>
-        )}
+      <div className="flex items-stretch gap-4">
+        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full">
+          {/* todo - resize on click */}
+          {review.image ? (
+            <Image
+              alt="your attachment"
+              src={review.image}
+              width={144}
+              height={144}
+              sizes="144px"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
+              <MilkIcon className="h-full w-full" />
+            </div>
+          )}
+        </div>
+        <Link
+          href={{ pathname: "/product/[id]", query: { id: barcode } }}
+          aria-label="Open product page for this barcode"
+          className="flex grow items-center justify-between"
+        >
+          <div className="text-xl">{review.name}</div>
+          <RightIcon className="h-7 w-7 text-neutral-400" />
+        </Link>
       </div>
-      <div>{review.name}</div>
-      <div className="flex flex-wrap gap-2 text-xs">
-        {review.categories.map((label) => (
-          <div
-            className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
-            key={label}
-          >
-            {label}
-          </div>
-        ))}
+      <div className="flex flex-col gap-1 text-xs">
+        <div>Category</div>
+        <div className="flex flex-wrap gap-2">
+          {review.categories.map((label) => (
+            <div
+              className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
+              key={label}
+            >
+              {label}
+            </div>
+          ))}
+        </div>
       </div>
       <Rating value={review.rating} />
       <ProsConsComment review={review} />
+      {/* todo - need design for this element */}
       <div>This review is {review.isPrivate ? "" : "not"} private</div>
-
       <Link
         href={{ pathname: "/review/[id]/edit", query: { id: barcode } }}
-        className="btn primary flex items-center justify-center"
+        className="btn ghost flex items-center justify-center"
       >
-        Edit
+        Update review
       </Link>
       {/* forces extra gap at the bottom */}
       <div className="pb-px" />
@@ -93,10 +107,7 @@ function Rating({ value }: RatingProps) {
   return (
     <div className="flex justify-between gap-4 text-6xl">
       {ratingList.map((x) => (
-        <div
-          key={x}
-          className="outline-none transition sa-o-30 sa-r-0.5 focus-within:shadow-around"
-        >
+        <div key={x}>
           <Star highlight={x <= value} />
         </div>
       ))}
@@ -104,6 +115,7 @@ function Rating({ value }: RatingProps) {
   );
 }
 
+type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ProsConsCommentProps = {
   review: StrictPick<ReviewData, "pros" | "cons" | "comment">;
 };
@@ -113,7 +125,7 @@ function ProsConsComment({ review }: ProsConsCommentProps) {
       <PlusIcon className="h-fit w-full text-app-green" />
       <div className="whitespace-pre-wrap pt-1.5">{review.pros}</div>
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
-      <MinusIcon className="h-fit w-full text-rose-700" />
+      <MinusIcon className="h-fit w-full text-app-red" />
       <div className="whitespace-pre-wrap pt-1.5">{review.cons}</div>
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
       <div className="col-span-2 min-h-[2.5rem] whitespace-pre-wrap pt-1.5">{review.comment}</div>

@@ -372,7 +372,7 @@ function ProsConsComment({
         placeholder="Pros"
       />
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
-      <MinusIcon className="h-fit w-full text-rose-700" />
+      <MinusIcon className="h-fit w-full text-app-red" />
       <AutoresizableInput
         rootClassName="pt-1.5"
         initialContent={review.cons ?? ""}
@@ -455,7 +455,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         {!noImage && (
           <Button
             className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
-              src ? "text-rose-700" : "text-neutral-950"
+              src ? "text-app-red" : "text-neutral-950"
             }`}
             onClick={() => {
               updateImage(src ? null : undefined);

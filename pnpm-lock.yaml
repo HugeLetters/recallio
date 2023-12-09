@@ -180,6 +180,9 @@ devDependencies:
   '@iconify-json/fluent-emoji-high-contrast':
     specifier: ^1.1.13
     version: 1.1.13
+  '@iconify-json/formkit':
+    specifier: ^1.1.4
+    version: 1.1.4
   '@iconify-json/ic':
     specifier: ^1.1.16
     version: 1.1.16
@@ -839,6 +842,12 @@ packages:
 
   /@iconify-json/fluent@1.1.43:
     resolution: {integrity: sha512-HrEHb2cuCmQ1XoNScALDpyzkuwJMlHjxgdnS/tri2tH02jl/CZGHgzLEpkSPBuIbgPhhCnBap0nP2aK6P4A5Hw==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: true
+
+  /@iconify-json/formkit@1.1.4:
+    resolution: {integrity: sha512-tTkCvYz9u8nfVr3XOtQ59jndk6Th4PmNKQxUeBu2jHpDxUI3vQgqmJyR9diFvbuO+pOmXX4osIly11bUX4cKWA==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true
