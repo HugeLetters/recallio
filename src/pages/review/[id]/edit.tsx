@@ -37,7 +37,7 @@ import MilkIcon from "~icons/custom/milk";
 import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
-import EnterIcon from "~icons/fluent/arrow-enter-24-regular";
+import CircledPlusIcon from "~icons/fluent/add-circle-28-regular";
 import SearchIcon from "~icons/iconamoon/search-light";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
@@ -126,13 +126,23 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
     replace: setCategories,
     fields: categories,
   } = useFieldArray({ control, name: "categories" });
-  function sync() {
-    return new Promise<void>((resolve) => {
-      refetchData((data) => {
-        reset(data);
-        resolve();
+
+  function sync(condition = () => true) {
+    function _sync() {
+      return new Promise<void>((resolve) => {
+        refetchData((data) => {
+          reset(data);
+          resolve();
+        });
       });
-    });
+    }
+
+    backoffCallback({
+      callback: _sync,
+      condition,
+      baselineMs: 500,
+      retries: 5,
+    }).catch(console.error);
   }
 
   const [image, setImage] = useState<File | null>();
@@ -162,16 +172,10 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
     },
   });
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({ onSuccess: sync });
-  // todo - show image upload status
   const { startUpload } = useUploadThing("reviewImageUploader", {
     onClientUploadComplete() {
       const oldImage = review.image;
-      backoffCallback({
-        callback: sync,
-        condition: () => getValues("image") !== oldImage,
-        baselineMs: 500,
-        retries: 5,
-      }).catch(console.error);
+      sync(() => getValues("image") !== oldImage);
     },
   });
 
@@ -253,7 +257,7 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
           }}
         />
       )}
-      {/* forces padding at the bottom */}
+      {/* forces extra gap at the bottom */}
       <div className="pb-px" />
     </form>
   );
@@ -619,18 +623,21 @@ function CategorySearch({
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
         {isShowInputCategory && (
-          <button
-            onClick={() => {
-              // a little delay for the animation to play out
-              setTimeout(() => append(search), 200);
-            }}
-            className="flex items-center justify-between p-0 text-left italic transition-transform duration-200 active:scale-95"
-          >
+          <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green">
             <span className="shrink-0">
               Add <span className="capitalize">{`"${search}"`}</span>...
             </span>
-            <EnterIcon className="h-6 w-6" />
-          </button>
+            <button
+              onClick={() => {
+                setTimeout(() => {
+                  append(search);
+                }, 200);
+              }}
+              aria-label={`Add ${search} category`}
+            >
+              <CircledPlusIcon className="h-6 w-6 scale-125 text-neutral-400 transition-colors duration-150 group-active:text-app-green" />
+            </button>
+          </label>
         )}
         {categoriesQuery.isSuccess ? (
           <InfiniteScroll

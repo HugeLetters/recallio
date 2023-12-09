@@ -106,13 +106,13 @@ export async function backoffCallback({
   const timeout = backoffTimeout(baselineMs);
   if (retries === Infinity) retries = 1;
 
+  await callback();
   while (!condition()) {
-    await wait(timeout.next().value);
-
-    await callback();
-
     retries--;
     if (retries <= 0) return false;
+
+    await wait(timeout.next().value);
+    await callback();
   }
 
   return true;
