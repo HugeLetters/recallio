@@ -139,10 +139,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
   const { mutate: saveReview } = api.review.upsertReview.useMutation({
     async onSuccess() {
       if (image === undefined) return onReviewUpdate();
-      if (image === null) {
-        deleteImage({ barcode });
-        return;
-      }
+      if (image === null) return deleteImage({ barcode });
 
       const compressedImage = await compressImage(image, 511 * 1024).catch(console.error);
       startUpload([compressedImage ?? image], { barcode }).catch(console.error);

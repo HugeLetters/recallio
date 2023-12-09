@@ -1,7 +1,8 @@
 import { Layout } from "@/components/Layout";
-import { Star } from "@/components/UI";
+import { DialogOverlay, Star } from "@/components/UI";
 import { getQueryParam, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
+import * as Dialog from "@radix-ui/react-dialog";
 import * as Separator from "@radix-ui/react-separator";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +13,6 @@ import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
 // todo - find which components can be reused between this and edit page
-
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
@@ -45,33 +45,11 @@ function Review({ barcode }: ReviewProps) {
   const review = reviewQuery.data;
   return (
     <div className="flex w-full flex-col gap-4 p-4">
-      <div className="flex items-stretch gap-4">
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full">
-          {/* todo - resize on click */}
-          {review.image ? (
-            <Image
-              alt="your attachment"
-              src={review.image}
-              width={144}
-              height={144}
-              sizes="144px"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
-              <MilkIcon className="h-full w-full" />
-            </div>
-          )}
-        </div>
-        <Link
-          href={{ pathname: "/product/[id]", query: { id: barcode } }}
-          aria-label="Open product page for this barcode"
-          className="flex grow items-center justify-between"
-        >
-          <div className="text-xl">{review.name}</div>
-          <RightIcon className="h-7 w-7 text-neutral-400" />
-        </Link>
-      </div>
+      <AttachedImage
+        barcode={barcode}
+        image={review.image}
+        name={review.name}
+      />
       <div className="flex flex-col gap-1 text-xs">
         <div>Category</div>
         <div className="flex flex-wrap gap-2">
@@ -101,6 +79,58 @@ function Review({ barcode }: ReviewProps) {
   );
 }
 
+type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
+type AttachedImageProps = { barcode: string } & StrictPick<ReviewData, "image" | "name">;
+function AttachedImage({ image, name, barcode }: AttachedImageProps) {
+  return (
+    <div className="flex items-stretch gap-4">
+      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full">
+        {image ? (
+          <Dialog.Root>
+            <Dialog.Trigger className="h-full w-full">
+              {/* todo - resize on click */}
+              <Image
+                alt="your attachment"
+                src={image}
+                width={144}
+                height={144}
+                sizes="144px"
+                className="h-full w-full object-cover"
+              />
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <DialogOverlay className="items-center">
+                <Dialog.Content className="w-full max-w-app">
+                  <Image
+                    alt="your attachment"
+                    src={image}
+                    width={650}
+                    height={999999}
+                    sizes="900px"
+                    className="h-full w-full object-contain"
+                  />
+                </Dialog.Content>
+              </DialogOverlay>
+            </Dialog.Portal>
+          </Dialog.Root>
+        ) : (
+          <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
+            <MilkIcon className="h-full w-full" />
+          </div>
+        )}
+      </div>
+      <Link
+        href={{ pathname: "/product/[id]", query: { id: barcode } }}
+        aria-label="Open product page for this barcode"
+        className="flex grow items-center justify-between"
+      >
+        <div className="text-xl">{name}</div>
+        <RightIcon className="h-7 w-7 text-neutral-400" />
+      </Link>
+    </div>
+  );
+}
+
 const ratingList = [1, 2, 3, 4, 5] as const;
 type RatingProps = { value: number };
 function Rating({ value }: RatingProps) {
@@ -115,7 +145,6 @@ function Rating({ value }: RatingProps) {
   );
 }
 
-type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ProsConsCommentProps = {
   review: StrictPick<ReviewData, "pros" | "cons" | "comment">;
 };
