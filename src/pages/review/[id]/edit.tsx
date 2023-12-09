@@ -11,7 +11,6 @@ import {
 } from "@/components/UI";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import {
-  backoffCallback,
   browser,
   getQueryParam,
   minutesToMs,
@@ -31,7 +30,13 @@ import * as Toolbar from "@radix-ui/react-toolbar";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
-import { Controller, useFieldArray, useForm, type UseFormRegisterReturn } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  type Control,
+  type UseFormRegisterReturn,
+} from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
 import MilkIcon from "~icons/custom/milk";
 import LucidePen from "~icons/custom/pen";
@@ -82,15 +87,6 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
 
   return (
     <Review
-      refetchData={(callback) => {
-        reviewQuery
-          .refetch()
-          .then(({ data }) => {
-            if (!data) return;
-            callback(data);
-          })
-          .catch(console.error);
-      }}
       barcode={barcode}
       review={
         reviewQuery.data ?? {
@@ -111,44 +107,38 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
 }
 
 type ReviewProps = {
-  refetchData: (callback: (data: ReviewForm) => void) => void;
   review: ReviewForm;
   hasReview: boolean;
   names: string[];
   barcode: string;
 };
-function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps) {
-  const { register, control, reset, handleSubmit, setValue, getValues } = useForm({
-    defaultValues: review,
-  });
-  const {
-    append: addCategory,
-    replace: setCategories,
-    fields: categories,
-  } = useFieldArray({ control, name: "categories" });
+function Review({ barcode, review, hasReview, names }: ReviewProps) {
+  const { register, control, handleSubmit, setValue } = useForm({ defaultValues: review });
 
-  function sync(condition = () => true) {
-    function _sync() {
-      return new Promise<void>((resolve) => {
-        refetchData((data) => {
-          reset(data);
-          resolve();
-        });
-      });
-    }
-
-    backoffCallback({
-      callback: _sync,
-      condition,
-      baselineMs: 500,
-      retries: 5,
-    }).catch(console.error);
+  const router = useRouter();
+  const apiUtils = api.useUtils();
+  function onReviewUpdate() {
+    apiUtils.review.getUserReview
+      .invalidate({ barcode })
+      .then(() => {
+        void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+      })
+      .catch(console.error);
   }
 
   const [image, setImage] = useState<File | null>();
+  const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
+    onSuccess: onReviewUpdate,
+  });
+  const { startUpload } = useUploadThing("reviewImageUploader", {
+    onClientUploadComplete() {
+      // hope 1.5s is enough for the update to catch up...
+      setTimeout(onReviewUpdate, 1500);
+    },
+  });
   const { mutate: saveReview } = api.review.upsertReview.useMutation({
     async onSuccess() {
-      if (image === undefined) return sync();
+      if (image === undefined) return onReviewUpdate();
       if (image === null) {
         deleteImage({ barcode });
         return;
@@ -159,8 +149,6 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
     },
   });
 
-  const router = useRouter();
-  const apiUtils = api.useUtils();
   const { mutate: deleteReview } = api.review.deleteReview.useMutation({
     onMutate() {
       router.push("/profile").catch(console.error);
@@ -169,13 +157,6 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
       void apiUtils.review.getUserReviewSummaryList.invalidate();
       void apiUtils.review.getReviewCount.invalidate();
       void apiUtils.product.getProductSummaryList.invalidate();
-    },
-  });
-  const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({ onSuccess: sync });
-  const { startUpload } = useUploadThing("reviewImageUploader", {
-    onClientUploadComplete() {
-      const oldImage = review.image;
-      sync(() => getValues("image") !== oldImage);
     },
   });
 
@@ -207,15 +188,7 @@ function Review({ refetchData, barcode, review, hasReview, names }: ReviewProps)
           setValue("name", value);
         }}
       />
-      <CategoryList
-        append={(value) => {
-          addCategory({ name: value });
-        }}
-        remove={(value) => {
-          setCategories(categories.filter((category) => category.name !== value));
-        }}
-        values={categories.map((x) => x.name)}
-      />
+      <CategoryList control={control} />
       <Controller
         control={control}
         name="rating"
@@ -480,15 +453,21 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 }
 
 type CategoryListProps = {
-  append: (value: string) => void;
-  remove: (value: string) => void;
-  values: string[];
+  control: Control<ReviewForm>;
 };
-function CategoryList({ append, remove, values }: CategoryListProps) {
+function CategoryList({ control }: CategoryListProps) {
+  const { append, replace, fields: categories } = useFieldArray({ control, name: "categories" });
+  const categorySet = useMemo<Set<string>>(
+    () => new Set(categories.map((x) => x.name)),
+    [categories],
+  );
+  function remove(value: string) {
+    replace(categories.filter((category) => category.name !== value));
+  }
+
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const debouncedQuery = useRef<number>();
-  const categorySet = useMemo<Set<string>>(() => new Set(values), [values]);
 
   return (
     <div>
@@ -510,14 +489,14 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
                 <span className="whitespace-nowrap py-2">Add category</span>
               </Dialog.Trigger>
             </Toolbar.Button>
-            {values.map((value) => (
+            {categories.map(({ name }) => (
               <Toolbar.Button
                 className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
                 type="button"
-                key={value}
-                aria-label={`Delete label ${value}`}
+                key={name}
+                aria-label={`Delete label ${name}`}
                 onClick={(e) => {
-                  remove(value);
+                  remove(name);
 
                   // switch focus to next button
                   const next = e.currentTarget.nextSibling ?? e.currentTarget.previousSibling;
@@ -526,7 +505,7 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
                   }
                 }}
               >
-                <span>{value}</span>
+                <span>{name}</span>
                 <DeleteIcon className="h-3 w-3" />
               </Toolbar.Button>
             ))}
@@ -537,7 +516,7 @@ function CategoryList({ append, remove, values }: CategoryListProps) {
             <Dialog.Content className="w-full max-w-app">
               <CategorySearch
                 enabled={isOpen}
-                append={(value) => append(value.toLowerCase())}
+                append={(value) => append({ name: value.toLowerCase() })}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}
                 close={() => setIsOpen(false)}

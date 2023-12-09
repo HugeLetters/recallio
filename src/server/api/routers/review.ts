@@ -20,6 +20,7 @@ import {
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
+const trimmedStringSchema = z.string().transform((string) => string.trim());
 export const reviewRouter = createTRPCRouter({
   upsertReview: protectedProcedure
     .input(
@@ -28,9 +29,9 @@ export const reviewRouter = createTRPCRouter({
           barcode: z.string(),
           name: z.string(),
           rating: z.number(),
-          pros: z.string().nullish(),
-          cons: z.string().nullish(),
-          comment: z.string().nullish(),
+          pros: trimmedStringSchema.nullish(),
+          cons: trimmedStringSchema.nullish(),
+          comment: trimmedStringSchema.nullish(),
           isPrivate: z.boolean(),
           categories: z.array(z.string().min(1).max(25)).optional(),
         })
