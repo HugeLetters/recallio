@@ -240,7 +240,7 @@ function Name({ names, register, setValue }: NameProps) {
       <div className="flex rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2">
         <input
           {...register}
-          placeholder="name"
+          placeholder="Name"
           autoComplete="off"
           className="grow outline-none"
           aria-label="Product name"
