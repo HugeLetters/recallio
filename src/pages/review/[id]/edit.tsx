@@ -9,7 +9,15 @@ import {
   LabeledSwitch,
   Star,
 } from "@/components/UI";
-import { ConsIcon, ProsConsCommentWrapper, ProsIcon } from "@/components/page/Review";
+import {
+  CategoryButton,
+  ConsIcon,
+  ImagePreview,
+  ImagePreviewWrapper,
+  NoImagePreview,
+  ProsConsCommentWrapper,
+  ProsIcon,
+} from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import {
   browser,
@@ -27,7 +35,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Toolbar from "@radix-ui/react-toolbar";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import {
@@ -38,7 +45,6 @@ import {
   type UseFormRegisterReturn,
 } from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
-import MilkIcon from "~icons/custom/milk";
 import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
@@ -390,23 +396,8 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative h-16 w-16">
-        <div className="h-full w-full overflow-hidden rounded-full">
-          {src ? (
-            <Image
-              alt="your attachment"
-              src={src}
-              width={144}
-              height={144}
-              sizes="144px"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
-              <MilkIcon className="h-full w-full" />
-            </div>
-          )}
-        </div>
+      <ImagePreviewWrapper>
+        {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {hasImage && (
           <Button
             className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
@@ -420,7 +411,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
             {src ? <DeleteIcon /> : <ResetIcon />}
           </Button>
         )}
-      </div>
+      </ImagePreviewWrapper>
       <ImageInput
         isImageSet={!!value}
         onChange={(e) => {
@@ -463,19 +454,21 @@ function CategoryList({ control }: CategoryListProps) {
           setQueryParam(router, SEARCH_QUERY_KEY, null);
         }}
       >
-        <div className="flex flex-wrap gap-2 text-xs">
-          <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
-            <Toolbar.Button asChild>
-              <Dialog.Trigger className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 px-3 py-1 text-neutral-400 outline-neutral-300">
+        <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
+          <Toolbar.Button asChild>
+            <Dialog.Trigger asChild>
+              <CategoryButton>
                 <PlusIcon className="h-6 w-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
-              </Dialog.Trigger>
-            </Toolbar.Button>
-            {categories.map(({ name }) => (
-              <Toolbar.Button
-                className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
-                type="button"
-                key={name}
+              </CategoryButton>
+            </Dialog.Trigger>
+          </Toolbar.Button>
+          {categories.map(({ name }) => (
+            <Toolbar.Button
+              key={name}
+              asChild
+            >
+              <CategoryButton
                 aria-label={`Delete label ${name}`}
                 onClick={(e) => {
                   remove(name);
@@ -488,11 +481,13 @@ function CategoryList({ control }: CategoryListProps) {
                 }}
               >
                 <span>{name}</span>
-                <DeleteIcon className="h-3 w-3" />
-              </Toolbar.Button>
-            ))}
-          </Toolbar.Root>
-        </div>
+                <div className="flex h-6 items-center">
+                  <DeleteIcon className="h-3 w-3" />
+                </div>
+              </CategoryButton>
+            </Toolbar.Button>
+          ))}
+        </Toolbar.Root>
         <Dialog.Portal>
           <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
             <Dialog.Content className="w-full max-w-app">

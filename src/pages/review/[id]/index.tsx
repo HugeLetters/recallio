@@ -1,16 +1,22 @@
 import { Layout } from "@/components/Layout";
 import { Button, DialogOverlay, Star } from "@/components/UI";
-import { ConsIcon, ProsConsCommentWrapper, ProsIcon } from "@/components/page/Review";
+import {
+  CategoryButton,
+  ConsIcon,
+  ImagePreview,
+  ImagePreviewWrapper,
+  NoImagePreview,
+  ProsConsCommentWrapper,
+  ProsIcon,
+} from "@/components/page/Review";
 import { getQueryParam, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import MilkIcon from "~icons/custom/milk";
 import RightIcon from "~icons/formkit/right";
 
-// todo - find which components can be reused between this and edit page
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
@@ -53,12 +59,14 @@ function Review({ barcode }: ReviewProps) {
           <div>Category</div>
           <div className="flex flex-wrap gap-2">
             {review.categories.map((label) => (
-              <div
-                className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
+              <CategoryButton
+                disabled
+                className="disabled"
+                role="generic"
                 key={label}
               >
                 {label}
-              </div>
+              </CategoryButton>
             ))}
           </div>
         </div>
@@ -90,21 +98,14 @@ type AttachedImageProps = { barcode: string } & StrictPick<ReviewData, "image" |
 function AttachedImage({ image, name, barcode }: AttachedImageProps) {
   return (
     <div className="flex items-stretch gap-4">
-      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full">
+      <ImagePreviewWrapper>
         {image ? (
           <Dialog.Root>
             <Dialog.Trigger
               className="h-full w-full"
               aria-label="Open full image view"
             >
-              <Image
-                alt="Review image"
-                src={image}
-                width={144}
-                height={144}
-                sizes="144px"
-                className="h-full w-full object-cover"
-              />
+              <ImagePreview src={image} />
             </Dialog.Trigger>
             <Dialog.Portal>
               <DialogOverlay className="items-center">
@@ -128,11 +129,9 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
             </Dialog.Portal>
           </Dialog.Root>
         ) : (
-          <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
-            <MilkIcon className="h-full w-full" />
-          </div>
+          <NoImagePreview />
         )}
-      </div>
+      </ImagePreviewWrapper>
       <Link
         href={{ pathname: "/product/[id]", query: { id: barcode } }}
         aria-label="Open product page for this barcode"
