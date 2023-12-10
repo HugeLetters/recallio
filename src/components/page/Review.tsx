@@ -1,5 +1,5 @@
 import * as Separator from "@radix-ui/react-separator";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
@@ -12,10 +12,10 @@ export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps
   return (
     <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green focus-within:outline-2">
       {filtered.map((element, i) => (
-        <>
+        <Fragment key={i}>
           {element}
           {i !== lastIndex && separator}
-        </>
+        </Fragment>
       ))}
     </div>
   );
@@ -26,5 +26,5 @@ export function ProsIcon() {
 }
 
 export function ConsIcon() {
-  return <MinusIcon className="h-fit w-full text-app-green" />;
+  return <MinusIcon className="h-fit w-full text-app-red" />;
 }
