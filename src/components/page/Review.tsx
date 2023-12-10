@@ -2,6 +2,7 @@ import * as Separator from "@radix-ui/react-separator";
 import Image from "next/image";
 import {
   Fragment,
+  forwardRef,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
   type ReactNode,
@@ -69,15 +70,18 @@ export function NoImagePreview() {
 }
 
 type CategoryButtonProps = PropsWithChildren<ComponentPropsWithoutRef<"button">>;
-export function CategoryButton({ children, className, ...props }: CategoryButtonProps) {
-  return (
-    <Button
-      className={`flex h-10 items-center gap-1 rounded-xl bg-neutral-400/10 px-3 py-1 capitalize text-neutral-400 outline-neutral-300 ${
-        className ?? ""
-      }`}
-      {...props}
-    >
-      {children}
-    </Button>
-  );
-}
+export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>(
+  function CategoryButton({ children, className, ...props }, ref) {
+    return (
+      <Button
+        ref={ref}
+        className={`flex h-10 items-center gap-1 rounded-xl bg-neutral-400/10 px-3 py-1 capitalize text-neutral-400 outline-neutral-300 ${
+          className ?? ""
+        }`}
+        {...props}
+      >
+        {children}
+      </Button>
+    );
+  },
+);

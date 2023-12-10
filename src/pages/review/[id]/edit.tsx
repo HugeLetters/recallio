@@ -118,13 +118,17 @@ type ReviewProps = {
   barcode: string;
 };
 function Review({ barcode, review, hasReview, names }: ReviewProps) {
-  // todo - if not dirty - dont update at all, yeah?
-  // todo - consider if only image was changed tho
-  const { register, control, handleSubmit, setValue } = useForm({ defaultValues: review });
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    formState: { isDirty: isFormDirty },
+  } = useForm({ defaultValues: review });
 
   const router = useRouter();
   const apiUtils = api.useUtils();
-  function onReviewUpdate() {
+  function onReviewUpdateEnd() {
     apiUtils.review.getUserReview
       .invalidate({ barcode })
       .then(() => {
@@ -133,25 +137,25 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       .catch(console.error);
   }
 
+  async function onReviewUpsert() {
+    if (image === undefined) return onReviewUpdateEnd();
+    if (image === null) return deleteImage({ barcode });
+
+    const compressedImage = await compressImage(image, 511 * 1024).catch(console.error);
+    startUpload([compressedImage ?? image], { barcode }).catch(console.error);
+  }
+
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
-    onSuccess: onReviewUpdate,
+    onSuccess: onReviewUpdateEnd,
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
     onClientUploadComplete() {
       // hope 1.5s is enough for the update to catch up...
-      setTimeout(onReviewUpdate, 1500);
+      setTimeout(onReviewUpdateEnd, 1500);
     },
   });
-  const { mutate: saveReview } = api.review.upsertReview.useMutation({
-    async onSuccess() {
-      if (image === undefined) return onReviewUpdate();
-      if (image === null) return deleteImage({ barcode });
-
-      const compressedImage = await compressImage(image, 511 * 1024).catch(console.error);
-      startUpload([compressedImage ?? image], { barcode }).catch(console.error);
-    },
-  });
+  const { mutate: saveReview } = api.review.upsertReview.useMutation({ onSuccess: onReviewUpsert });
 
   return (
     <form
@@ -159,6 +163,8 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit((data) => {
+          if (!isFormDirty) return onReviewUpsert();
+
           const { categories, image: _, ...review } = data;
           saveReview({
             ...review,
