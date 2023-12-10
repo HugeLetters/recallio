@@ -9,6 +9,7 @@ import {
   LabeledSwitch,
   Star,
 } from "@/components/UI";
+import { ConsIcon, ProsConsCommentWrapper, ProsIcon } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import {
   browser,
@@ -25,7 +26,6 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
-import * as Separator from "@radix-ui/react-separator";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -45,7 +45,6 @@ import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 import CircledPlusIcon from "~icons/fluent/add-circle-28-regular";
 import SearchIcon from "~icons/iconamoon/search-light";
 import PlusIcon from "~icons/material-symbols/add-rounded";
-import MinusIcon from "~icons/material-symbols/remove-rounded";
 import ResetInputIcon from "~icons/radix-icons/cross-1";
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
@@ -317,30 +316,32 @@ function ProsConsComment({
   review,
 }: ProsConsCommentProps) {
   return (
-    <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green focus-within:outline-2">
-      <PlusIcon className="h-fit w-full text-app-green" />
-      <AutoresizableInput
-        rootClassName="pt-1.5"
-        initialContent={review.pros ?? ""}
-        {...registerPros}
-        placeholder="Pros"
-      />
-      <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
-      <MinusIcon className="h-fit w-full text-app-red" />
-      <AutoresizableInput
-        rootClassName="pt-1.5"
-        initialContent={review.cons ?? ""}
-        {...registerCons}
-        placeholder="Cons"
-      />
-      <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
+    <ProsConsCommentWrapper>
+      <>
+        <ProsIcon />
+        <AutoresizableInput
+          rootClassName="pt-1.5"
+          initialContent={review.pros ?? ""}
+          {...registerPros}
+          placeholder="Pros"
+        />
+      </>
+      <>
+        <ConsIcon />
+        <AutoresizableInput
+          rootClassName="pt-1.5"
+          initialContent={review.cons ?? ""}
+          {...registerCons}
+          placeholder="Cons"
+        />
+      </>
       <AutoresizableInput
         rootClassName="col-span-2 pt-1.5"
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"
       />
-    </div>
+    </ProsConsCommentWrapper>
   );
 }
 

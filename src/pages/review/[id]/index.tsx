@@ -1,19 +1,16 @@
 import { Layout } from "@/components/Layout";
 import { Button, DialogOverlay, Star } from "@/components/UI";
+import { ConsIcon, ProsConsCommentWrapper, ProsIcon } from "@/components/page/Review";
 import { getQueryParam, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Separator from "@radix-ui/react-separator";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import MilkIcon from "~icons/custom/milk";
 import RightIcon from "~icons/formkit/right";
-import PlusIcon from "~icons/material-symbols/add-rounded";
-import MinusIcon from "~icons/material-symbols/remove-rounded";
 
 // todo - find which components can be reused between this and edit page
-// todo - hide empty elements
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
@@ -68,8 +65,13 @@ function Review({ barcode }: ReviewProps) {
       )}
       <Rating value={review.rating} />
       <ProsConsComment review={review} />
-      {/* todo - need design for this element */}
-      <div>This review is {review.isPrivate ? "" : "not"} private</div>
+      <div
+        className={`rounded-lg px-4 py-4 ${
+          review.isPrivate ? "bg-app-green/20" : "bg-neutral-200"
+        }`}
+      >
+        {review.isPrivate ? "Private" : "Public"} review
+      </div>
       <Link
         href={{ pathname: "/review/[id]/edit", query: { id: barcode } }}
         className="btn ghost flex items-center justify-center"
@@ -95,7 +97,6 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
               className="h-full w-full"
               aria-label="Open full image view"
             >
-              {/* todo - resize on click */}
               <Image
                 alt="Review image"
                 src={image}
@@ -165,27 +166,21 @@ function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentPro
   if (!pros && !cons && !comment) return null;
 
   return (
-    <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green focus-within:outline-2">
+    <ProsConsCommentWrapper>
       {!!pros && (
         <>
-          <PlusIcon className="h-fit w-full text-app-green" />
+          <ProsIcon />
           <div className="whitespace-pre-wrap pt-1.5">{pros}</div>
         </>
       )}
       {!!cons && (
         <>
-          {!!pros && <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />}
-          <MinusIcon className="h-fit w-full text-app-red" />
+          <ConsIcon />
           <div className="whitespace-pre-wrap pt-1.5">{cons}</div>
         </>
       )}
-      {!!comment && (
-        <>
-          {(!!cons || !!pros) && <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />}
-          <div className="col-span-2 whitespace-pre-wrap pt-1.5">{comment}</div>
-        </>
-      )}
-    </div>
+      {!!comment && <div className="col-span-2 whitespace-pre-wrap pt-1.5">{comment}</div>}
+    </ProsConsCommentWrapper>
   );
 }
 
