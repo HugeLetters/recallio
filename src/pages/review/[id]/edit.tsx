@@ -113,6 +113,8 @@ type ReviewProps = {
   barcode: string;
 };
 function Review({ barcode, review, hasReview, names }: ReviewProps) {
+  // todo - if not dirty - dont update at all, yeah?
+  // todo - consider if only image was changed tho
   const { register, control, handleSubmit, setValue } = useForm({ defaultValues: review });
 
   const router = useRouter();
@@ -143,17 +145,6 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
 
       const compressedImage = await compressImage(image, 511 * 1024).catch(console.error);
       startUpload([compressedImage ?? image], { barcode }).catch(console.error);
-    },
-  });
-
-  const { mutate: deleteReview } = api.review.deleteReview.useMutation({
-    onMutate() {
-      router.push("/profile").catch(console.error);
-    },
-    onSuccess() {
-      void apiUtils.review.getUserReviewSummaryList.invalidate();
-      void apiUtils.review.getReviewCount.invalidate();
-      void apiUtils.product.getProductSummaryList.invalidate();
     },
   });
 
@@ -220,13 +211,6 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       >
         {hasReview ? "Update" : "Save"}
       </Button>
-      {hasReview && (
-        <DeleteButton
-          deleteReview={() => {
-            deleteReview({ barcode });
-          }}
-        />
-      )}
       {/* forces extra gap at the bottom */}
       <div className="pb-px" />
     </form>
@@ -376,7 +360,7 @@ const fileReader = browser ? new FileReader() : null;
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const [localSrc, setLocalSrc] = useState<string>();
   const src = value === null ? null : localSrc ?? savedImage;
-  const noImage = !src && !savedImage;
+  const hasImage = !!src || !!savedImage;
 
   function updateImage(file: typeof value) {
     setValue(file);
@@ -422,7 +406,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
             </div>
           )}
         </div>
-        {!noImage && (
+        {hasImage && (
           <Button
             className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
               src ? "text-app-red" : "text-neutral-950"
@@ -658,40 +642,5 @@ function CategorySearch({
         OK
       </Button>
     </div>
-  );
-}
-
-type DeleteButtonProps = { deleteReview: () => void };
-function DeleteButton({ deleteReview }: DeleteButtonProps) {
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        <Button className="destructive w-full">Delete review</Button>
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <DialogOverlay className="items-center backdrop-blur-sm">
-          <div className="w-full max-w-app p-4">
-            <Dialog.Content className="flex animate-scale-in flex-col gap-4 rounded-3xl bg-white p-5">
-              <Dialog.Title className="text-center text-2xl font-semibold">
-                Delete Review?
-              </Dialog.Title>
-              <Dialog.Description className="basis-full text-center text-xl text-neutral-400">
-                Are you sure you want to delete this review? Once deleted, this action cannot be
-                undone.
-              </Dialog.Description>
-              <Dialog.Close
-                onClick={deleteReview}
-                asChild
-              >
-                <Button className="bg-app-red font-semibold text-white">Delete</Button>
-              </Dialog.Close>
-              <Dialog.Close asChild>
-                <Button className="ghost font-semibold ">Cancel</Button>
-              </Dialog.Close>
-            </Dialog.Content>
-          </div>
-        </DialogOverlay>
-      </Dialog.Portal>
-    </Dialog.Root>
   );
 }

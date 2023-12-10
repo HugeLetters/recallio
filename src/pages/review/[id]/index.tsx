@@ -1,5 +1,5 @@
 import { Layout } from "@/components/Layout";
-import { DialogOverlay, Star } from "@/components/UI";
+import { Button, DialogOverlay, Star } from "@/components/UI";
 import { getQueryParam, type StrictPick } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -13,6 +13,7 @@ import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
 // todo - find which components can be reused between this and edit page
+// todo - hide empty elements
 export default function Page() {
   const router = useRouter();
   const barcode = getQueryParam(router.query.id);
@@ -73,6 +74,7 @@ function Review({ barcode }: ReviewProps) {
       >
         Update review
       </Link>
+      <DeleteButton barcode={barcode} />
       {/* forces extra gap at the bottom */}
       <div className="pb-px" />
     </div>
@@ -165,5 +167,53 @@ function ProsConsComment({ review }: ProsConsCommentProps) {
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
       <div className="col-span-2 min-h-[2.5rem] whitespace-pre-wrap pt-1.5">{review.comment}</div>
     </div>
+  );
+}
+
+type DeleteButtonProps = { barcode: string };
+function DeleteButton({ barcode }: DeleteButtonProps) {
+  const router = useRouter();
+  const apiUtils = api.useUtils();
+  const { mutate } = api.review.deleteReview.useMutation({
+    onMutate() {
+      router.push("/profile").catch(console.error);
+    },
+    onSuccess() {
+      void apiUtils.review.getUserReviewSummaryList.invalidate();
+      void apiUtils.review.getReviewCount.invalidate();
+      void apiUtils.product.getProductSummaryList.invalidate();
+    },
+  });
+
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger asChild>
+        <Button className="destructive w-full">Delete review</Button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <DialogOverlay className="items-center backdrop-blur-sm">
+          <div className="w-full max-w-app p-4">
+            <Dialog.Content className="flex animate-scale-in flex-col gap-4 rounded-3xl bg-white p-5">
+              <Dialog.Title className="text-center text-2xl font-semibold">
+                Delete Review?
+              </Dialog.Title>
+              <Dialog.Description className="basis-full text-center text-xl text-neutral-400">
+                Are you sure you want to delete this review? Once deleted, this action cannot be
+                undone.
+              </Dialog.Description>
+              <Dialog.Close
+                asChild
+                onClick={() => mutate({ barcode })}
+              >
+                <Button className="bg-app-red font-semibold text-white">Delete</Button>
+              </Dialog.Close>
+              <Dialog.Close asChild>
+                <Button className="ghost font-semibold ">Cancel</Button>
+              </Dialog.Close>
+            </Dialog.Content>
+          </div>
+        </DialogOverlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
