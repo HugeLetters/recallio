@@ -335,7 +335,7 @@ function ProsConsComment({
       />
       <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
       <AutoresizableInput
-        rootClassName="col-span-2 min-h-[2.5rem] pt-1.5"
+        rootClassName="col-span-2 pt-1.5"
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"

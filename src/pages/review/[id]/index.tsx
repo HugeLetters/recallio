@@ -51,19 +51,21 @@ function Review({ barcode }: ReviewProps) {
         image={review.image}
         name={review.name}
       />
-      <div className="flex flex-col gap-1 text-xs">
-        <div>Category</div>
-        <div className="flex flex-wrap gap-2">
-          {review.categories.map((label) => (
-            <div
-              className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
-              key={label}
-            >
-              {label}
-            </div>
-          ))}
+      {!!review.categories.length && (
+        <div className="flex flex-col gap-1 text-xs">
+          <div>Category</div>
+          <div className="flex flex-wrap gap-2">
+            {review.categories.map((label) => (
+              <div
+                className="btn flex items-center gap-1 rounded-xl bg-neutral-400/10 p-3 capitalize text-neutral-400 outline-neutral-300"
+                key={label}
+              >
+                {label}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <Rating value={review.rating} />
       <ProsConsComment review={review} />
       {/* todo - need design for this element */}
@@ -89,7 +91,10 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full">
         {image ? (
           <Dialog.Root>
-            <Dialog.Trigger className="h-full w-full">
+            <Dialog.Trigger
+              className="h-full w-full"
+              aria-label="Open full image view"
+            >
               {/* todo - resize on click */}
               <Image
                 alt="Review image"
@@ -108,7 +113,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
                     aria-label="Close full image view"
                   >
                     <Image
-                      alt="Review image full-size"
+                      alt="Full-size review image"
                       src={image}
                       width={999999}
                       height={999999}
@@ -156,16 +161,30 @@ function Rating({ value }: RatingProps) {
 type ProsConsCommentProps = {
   review: StrictPick<ReviewData, "pros" | "cons" | "comment">;
 };
-function ProsConsComment({ review }: ProsConsCommentProps) {
+function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentProps) {
+  if (!pros && !cons && !comment) return null;
+
   return (
     <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green focus-within:outline-2">
-      <PlusIcon className="h-fit w-full text-app-green" />
-      <div className="whitespace-pre-wrap pt-1.5">{review.pros}</div>
-      <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
-      <MinusIcon className="h-fit w-full text-app-red" />
-      <div className="whitespace-pre-wrap pt-1.5">{review.cons}</div>
-      <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />
-      <div className="col-span-2 min-h-[2.5rem] whitespace-pre-wrap pt-1.5">{review.comment}</div>
+      {!!pros && (
+        <>
+          <PlusIcon className="h-fit w-full text-app-green" />
+          <div className="whitespace-pre-wrap pt-1.5">{pros}</div>
+        </>
+      )}
+      {!!cons && (
+        <>
+          {!!pros && <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />}
+          <MinusIcon className="h-fit w-full text-app-red" />
+          <div className="whitespace-pre-wrap pt-1.5">{cons}</div>
+        </>
+      )}
+      {!!comment && (
+        <>
+          {(!!cons || !!pros) && <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />}
+          <div className="col-span-2 whitespace-pre-wrap pt-1.5">{comment}</div>
+        </>
+      )}
     </div>
   );
 }
