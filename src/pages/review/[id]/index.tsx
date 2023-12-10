@@ -90,7 +90,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
             <Dialog.Trigger className="h-full w-full">
               {/* todo - resize on click */}
               <Image
-                alt="your attachment"
+                alt="Review image"
                 src={image}
                 width={144}
                 height={144}
@@ -100,15 +100,21 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
             </Dialog.Trigger>
             <Dialog.Portal>
               <DialogOverlay className="items-center">
-                <Dialog.Content className="w-full max-w-app">
-                  <Image
-                    alt="your attachment"
-                    src={image}
-                    width={650}
-                    height={999999}
-                    sizes="900px"
-                    className="h-full w-full object-contain"
-                  />
+                <Dialog.Content className="max-h-screen max-w-app overflow-y-auto">
+                  <Dialog.Close
+                    className="flex"
+                    aria-label="Close full image view"
+                  >
+                    <Image
+                      alt="Review image full-size"
+                      src={image}
+                      width={999999}
+                      height={999999}
+                      quality={100}
+                      sizes="99999px"
+                      className="h-full w-full object-contain"
+                    />
+                  </Dialog.Close>
                 </Dialog.Content>
               </DialogOverlay>
             </Dialog.Portal>
