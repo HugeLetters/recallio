@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations, sql, type InferInsertModel } from "drizzle-orm";
 import {
   boolean,
   datetime,
@@ -49,6 +49,7 @@ export const reviewRelations = relations(review, ({ many, one }) => ({
     references: [user.id],
   }),
 }));
+export type ReviewInsert = InferInsertModel<typeof review>;
 
 export const reviewsToCategories = mysqlTable(
   "reviews-to-categories",

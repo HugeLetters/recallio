@@ -88,6 +88,7 @@ function Footer({ Icon }: FooterProps) {
   const { pathname } = useRouter();
   Icon ??= ScanIcon;
 
+  // todo - add pretty effect from this tweet - https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ
   return (
     <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-15 sa-r-2">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] items-center justify-items-center">

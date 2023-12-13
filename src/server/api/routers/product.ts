@@ -65,6 +65,7 @@ export const productRouter = createTRPCRouter({
       }),
     )
     .query(({ input: { limit, cursor, sort, filter } }) => {
+      // todo - optimize this shit...
       function getSortByColumn(): SQL.Aliased<number> {
         switch (sort.by) {
           case "reviews":
