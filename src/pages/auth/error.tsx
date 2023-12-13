@@ -12,7 +12,7 @@ export default function Page() {
 
 type ErrorCode = "Configuration" | "AccessDenied" | "Verification" | "Default";
 function getErrorMessage(
-  errorCode: ErrorCode | (string & NonNullable<unknown>) | undefined
+  errorCode: ErrorCode | (string & NonNullable<unknown>) | undefined,
 ): string | null {
   if (!errorCode) return null;
 

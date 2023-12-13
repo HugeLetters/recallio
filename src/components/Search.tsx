@@ -9,6 +9,7 @@ import { Flipped, Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
 import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
+import { DialogOverlay } from "./UI";
 
 export const SEARCH_QUERY_KEY = "search";
 type HeaderSearchBarProps = { right?: ReactNode; title: string };
@@ -20,7 +21,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
   const [search, setSearch] = useState(searchParam);
 
-  const searchIcon = <SearchIcon className="h-7 w-7" />;
+  const searchIcon = <SearchIcon className="h-7 w-7 shrink-0" />;
 
   // keeps filter in sync on back/forward
   useEffect(() => {
@@ -42,14 +43,14 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
         <>
           {createPortal(
             <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
-            document.body
+            document.body,
           )}
           {searchIcon}
           <input
             // key helps refocus input when clear button is pressed
             key={`${!!search}`}
             autoFocus
-            className="h-full grow p-1 caret-app-green outline-none placeholder:p-1"
+            className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
             placeholder="Search"
             value={search}
             onChange={(e) => {
@@ -59,7 +60,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
               window.clearTimeout(debounceTimeoutRef.current);
               debounceTimeoutRef.current = window.setTimeout(() => {
                 setQueryParam(router, SEARCH_QUERY_KEY, value);
-              }, 1000);
+              }, 500);
             }}
           />
           <button
@@ -117,9 +118,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
         <span className="capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-10 animate-fade-in bg-black/40" />
-        <Dialog.Content className="fixed bottom-0 left-0 z-10 flex w-full justify-center duration-150 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
-          <div className="w-full max-w-app rounded-t-xl bg-white p-5">
+        <DialogOverlay className="items-end">
+          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
@@ -151,8 +151,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
                 ))}
               </RadioGroup.Root>
             </Flipper>
-          </div>
-        </Dialog.Content>
+          </Dialog.Content>
+        </DialogOverlay>
       </Dialog.Portal>
     </Dialog.Root>
   );

@@ -12,7 +12,7 @@ export async function compressImage(file: File, targetBytes: number): Promise<Fi
 
   if (file.size < targetBytes) {
     return drawImage(bitmap, 1, ctx, canvas).then((blob) =>
-      blob ? blobToFile(blob, file.name) : null
+      blob ? blobToFile(blob, file.name) : null,
     );
   }
 
@@ -51,7 +51,7 @@ function drawImage(
   bitmap: ImageBitmap,
   scale: number,
   ctx: CanvasRenderingContext2D,
-  canvas: HTMLCanvasElement
+  canvas: HTMLCanvasElement,
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   canvas.width /= scale;

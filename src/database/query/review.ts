@@ -1,17 +1,17 @@
-import { nonEmptyArray, type StrictPick } from "@/utils";
+import { nonEmptyArray, type StrictOmit, type StrictPick } from "@/utils";
 import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
 import { db } from "..";
-import { category, review, reviewsToCategories } from "../schema/product";
+import { category, review, reviewsToCategories, type ReviewInsert } from "../schema/product";
 
-export async function createReview(
-  reviewValue: InferInsertModel<typeof review>,
-  categories: Array<InferInsertModel<typeof category>["name"]> | undefined
+export async function upsertReview(
+  reviewValue: StrictOmit<ReviewInsert, "updatedAt" | "imageKey">,
+  categories: Array<InferInsertModel<typeof category>["name"]> | undefined,
 ) {
   return db
     .transaction(async (tx) => {
       // override updatedAt value with current time
       Object.assign(reviewValue, { updatedAt: new Date() } satisfies StrictPick<
-        typeof reviewValue,
+        ReviewInsert,
         "updatedAt"
       >);
 
@@ -37,13 +37,14 @@ export async function createReview(
           throw Error("Error saving categories for review");
         });
 
+      // todo - a better way to store this?..
       await tx
         .delete(reviewsToCategories)
         .where(
           and(
             eq(reviewsToCategories.userId, reviewValue.userId),
-            eq(reviewsToCategories.barcode, reviewValue.barcode)
-          )
+            eq(reviewsToCategories.barcode, reviewValue.barcode),
+          ),
         );
 
       const categoriesForReview = categories.map((category) => ({

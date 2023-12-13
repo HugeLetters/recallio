@@ -1,20 +1,19 @@
 import { Layout } from "@/components/Layout";
 import {
-  Clickable,
+  Button,
   ImageInput,
   Input,
-  Switch,
+  LabeledSwitch,
   UserPic,
   WithLabel,
   providers,
 } from "@/components/UI";
-import { useUploadThing } from "@/hooks";
-import { browser } from "@/utils";
+import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
 export default function Page() {
@@ -28,15 +27,14 @@ export default function Page() {
           <UserName username={data.user.name} />
           <LinkedAccounts />
           <AppSettings />
-          <Clickable
-            variant="destructive"
-            className="mt-2"
+          <Button
+            className="destructive mt-2"
             onClick={() => {
               void signOut({ redirect: false });
             }}
           >
             Sign Out
-          </Clickable>
+          </Button>
         </div>
       ) : (
         "Loading"
@@ -48,7 +46,11 @@ export default function Page() {
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
-  const { startUpload } = useUploadThing("userImageUploader");
+  const { startUpload } = useUploadThing("userImageUploader", {
+    onClientUploadComplete: () => {
+      update().catch(console.error);
+    },
+  });
   const { mutate: remove } = api.user.deleteImage.useMutation({ onSettled: update });
 
   return (
@@ -61,6 +63,7 @@ function UserImage({ user }: UserImageProps) {
             onClick={() => {
               remove();
             }}
+            aria-label="Delete avatar"
           >
             <DeleteIcon />
           </button>
@@ -74,11 +77,7 @@ function UserImage({ user }: UserImageProps) {
           if (!file) return;
           compressImage(file, 511 * 1024)
             .then((image) => {
-              startUpload([image ?? file])
-                .catch(console.error)
-                .finally(() => {
-                  update().catch(console.error);
-                });
+              startUpload([image ?? file]).catch(console.error);
             })
             .catch(console.error);
         }}
@@ -122,23 +121,24 @@ function UserName({ username }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const trpcUtils = api.useContext();
+  const trpcUtils = api.useUtils();
   const { data: accounts } = api.user.getAccountProviders.useQuery();
   const { mutate: deleteAccount } = api.user.deleteAccount.useMutation({
     onMutate({ provider }) {
       // optimistic update
       const prevProviders = trpcUtils.user.getAccountProviders.getData();
 
-      trpcUtils.user.getAccountProviders.setData(undefined, (providers) =>
-        providers?.filter((name) => name !== provider)
+      trpcUtils.user.getAccountProviders.setData(
+        undefined,
+        (providers) => providers?.filter((name) => name !== provider),
       );
 
       return prevProviders;
     },
-    onSettled(data, error, _, prevProviders) {
-      if ((!!data && !data.ok) || !!error) {
-        trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
-      }
+    onError(_, __, prevProviders) {
+      trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
+    },
+    onSettled() {
       void trpcUtils.user.getAccountProviders.invalidate();
     },
   });
@@ -150,28 +150,29 @@ function LinkedAccounts() {
         {providers.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
-            <div
+            <LabeledSwitch
               key={provider}
-              className="flex items-center gap-2 px-4 py-2 capitalize not-[:first-child]:border-t-2 not-[:first-child]:border-t-neutral-400/10"
-            >
-              <Icon className="h-full w-7" />
-              <span className="mr-auto">{provider}</span>
-              <Switch
-                aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
-                checked={isLinked}
-                onCheckedChange={(value) => {
-                  if (value) {
-                    // optimistic update
-                    trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
-                      return [...(providers ?? []), provider];
-                    });
-                    void signIn(provider);
-                  } else {
-                    deleteAccount({ provider });
-                  }
-                }}
-              />
-            </div>
+              className="w-full rounded-none capitalize not-[:first-child]:border-t-2 not-[:first-child]:border-t-neutral-400/10"
+              label={
+                <div className="flex items-center gap-2">
+                  <Icon className="h-full w-7" />
+                  <span>{provider}</span>
+                </div>
+              }
+              aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+              checked={isLinked}
+              onCheckedChange={(value) => {
+                if (value) {
+                  // optimistic update
+                  trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                    return [...(providers ?? []), provider];
+                  });
+                  void signIn(provider);
+                } else {
+                  deleteAccount({ provider });
+                }
+              }}
+            />
           );
         })}
       </div>
@@ -179,32 +180,18 @@ function LinkedAccounts() {
   );
 }
 
-const reviewPrivateDefaultKey = "review-private-default";
-function useReviewPrivateDefault() {
-  const [value, setStateValue] = useState(() =>
-    browser ? localStorage.getItem(reviewPrivateDefaultKey) !== "false" : true
-  );
-
-  function setValue(value: boolean) {
-    setStateValue(value);
-    localStorage.setItem(reviewPrivateDefaultKey, `${value}`);
-  }
-
-  return [value, useCallback(setValue, [])] as const;
-}
 function AppSettings() {
   const [reviewPrivateDefault, setReviewPrivateDefault] = useReviewPrivateDefault();
 
   return (
     <div>
       <p className="p-2 text-sm">App settings</p>
-      <label className="flex items-center justify-between rounded-lg bg-app-green/20 px-4 py-2">
-        Reviews are private by default
-        <Switch
-          checked={reviewPrivateDefault}
-          onCheckedChange={setReviewPrivateDefault}
-        />
-      </label>
+      <LabeledSwitch
+        label="Reviews are private by default"
+        className="bg-app-green/20"
+        checked={reviewPrivateDefault}
+        onCheckedChange={setReviewPrivateDefault}
+      />
     </div>
   );
 }

@@ -11,7 +11,7 @@ export default function setupInterceptor() {
       console.log(`Delaying request to ${req.url.href} for ${delayDuration}ms`);
       await delay(delayDuration);
       return req.passthrough();
-    })
+    }),
   );
 
   void worker.start().catch(console.error);

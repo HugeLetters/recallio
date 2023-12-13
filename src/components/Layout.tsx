@@ -29,12 +29,12 @@ type HeaderProps = DiscriminatedUnion<
 >;
 function Header({ header, left, right, title }: HeaderProps) {
   return (
-    <header className="z-10 flex h-14 justify-center bg-white shadow-around sa-o-10 sa-r-2.5">
+    <header className="z-10 flex h-14 min-w-0 justify-center bg-white shadow-around sa-o-15 sa-r-2">
       <div className="w-full max-w-app p-2">
         {header !== undefined ? (
           header
         ) : (
-          <div className="grid h-full w-full grid-cols-3 items-center">
+          <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center">
             <div className="justify-self-start">
               {left !== undefined ? (
                 left
@@ -47,7 +47,9 @@ function Header({ header, left, right, title }: HeaderProps) {
                 />
               )}
             </div>
-            <h1 className="col-start-2 justify-self-center text-xl">{title}</h1>
+            <div className="col-start-2 justify-self-center text-xl">
+              {typeof title === "string" ? <h1>{title}</h1> : title}
+            </div>
             <div className="justify-self-end">{right}</div>
           </div>
         )}
@@ -83,16 +85,17 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 type FooterProps = { Icon?: Icon };
 function Footer({ Icon }: FooterProps) {
-  const route = useRouter().pathname;
+  const { pathname } = useRouter();
   Icon ??= ScanIcon;
 
+  // todo - add pretty effect from this tweet - https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ
   return (
-    <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-10 sa-r-2.5">
+    <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-15 sa-r-2">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] items-center justify-items-center">
         <Link
           href="/search"
           className={`flex flex-col items-center transition-colors ${
-            route.startsWith("/search") ? "text-app-green" : ""
+            pathname.startsWith("/search") ? "text-app-green" : ""
           }`}
         >
           <SearchIcon className="h-7 w-7" />
@@ -101,7 +104,7 @@ function Footer({ Icon }: FooterProps) {
         <Link
           href="/scan"
           className={`flex h-16 w-16 -translate-y-1/3 items-center justify-center rounded-full p-4 transition-colors ${
-            route.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
+            pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
           }`}
         >
           <Icon className="h-full w-full" />
@@ -109,7 +112,7 @@ function Footer({ Icon }: FooterProps) {
         <Link
           href="/profile"
           className={`flex flex-col items-center transition-colors ${
-            route.startsWith("/profile") ? "text-app-green" : ""
+            pathname.startsWith("/profile") ? "text-app-green" : ""
           }`}
         >
           <ProfileIcon className="h-7 w-7" />

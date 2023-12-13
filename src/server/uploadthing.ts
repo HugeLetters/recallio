@@ -2,14 +2,17 @@ import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { user } from "@/database/schema/auth";
 import { review } from "@/database/schema/product";
+import { env } from "@/env.mjs";
 import { isValidUrlString } from "@/utils";
 import { and, eq } from "drizzle-orm";
 import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
-import { utapi } from "uploadthing/server";
+import { UTApi } from "uploadthing/server";
 import { z } from "zod";
 import { getServerAuthSession } from "./auth";
 
 const uploadthing = createUploadthing();
+
+export const utapi = new UTApi({ apiKey: env.UPLOADTHING_SECRET });
 
 export const appFileRouter = {
   reviewImageUploader: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
@@ -22,7 +25,7 @@ export const appFileRouter = {
 
       const [reviewData] = await findFirst(
         review,
-        and(eq(review.userId, session.user.id), eq(review.barcode, barcode))
+        and(eq(review.userId, session.user.id), eq(review.barcode, barcode)),
       );
       if (!reviewData) throw Error("Can't upload image without a corresponding review");
 

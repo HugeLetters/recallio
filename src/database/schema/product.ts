@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations, sql, type InferInsertModel } from "drizzle-orm";
 import {
   boolean,
   datetime,
@@ -9,17 +9,6 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 import { user } from "./auth";
-
-export const productName = mysqlTable(
-  "product-name",
-  {
-    barcode: varchar("barcode", { length: 55 }).notNull(),
-    name: varchar("name", { length: 255 }).notNull(),
-  },
-  (table) => ({
-    compoundKey: primaryKey(table.barcode, table.name),
-  })
-);
 
 export const category = mysqlTable("category", {
   name: varchar("name", { length: 31 }).primaryKey(),
@@ -51,7 +40,7 @@ export const review = mysqlTable(
     ratingIndex: index("rating-index").on(table.rating),
     updatedAtIndex: index("updated-at-index").on(table.updatedAt),
     isPrivateIndex: index("is-private-index").on(table.isPrivate),
-  })
+  }),
 );
 export const reviewRelations = relations(review, ({ many, one }) => ({
   categories: many(reviewsToCategories),
@@ -60,6 +49,7 @@ export const reviewRelations = relations(review, ({ many, one }) => ({
     references: [user.id],
   }),
 }));
+export type ReviewInsert = InferInsertModel<typeof review>;
 
 export const reviewsToCategories = mysqlTable(
   "reviews-to-categories",
@@ -72,7 +62,7 @@ export const reviewsToCategories = mysqlTable(
     compoundKey: primaryKey(table.userId, table.barcode, table.category),
     barcodeIndex: index("barcode-index").on(table.barcode),
     categoryIndex: index("category-index").on(table.category),
-  })
+  }),
 );
 export const reviewsToCategoriesRelations = relations(reviewsToCategories, ({ one }) => ({
   review: one(review, {

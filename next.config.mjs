@@ -45,7 +45,7 @@ const config = {
         customCollections: {
           custom: FileSystemIconLoader("./src/assets/icons"),
         },
-      })
+      }),
     );
     return config;
   },

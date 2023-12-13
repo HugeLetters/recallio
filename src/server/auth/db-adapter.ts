@@ -16,7 +16,7 @@ export function DatabaseAdapter(): Adapter {
         Object.assign(data, {
           id,
           name: data.name ?? uniqueNamesGenerator(generatorConfig),
-        })
+        }),
       );
 
       return findFirst(user, eq(user.id, id)).then(([user]) => {
@@ -78,7 +78,7 @@ export function DatabaseAdapter(): Adapter {
     getUserByAccount({ provider, providerAccountId }) {
       return findFirst(
         account,
-        and(eq(account.provider, provider), eq(account.providerAccountId, providerAccountId))
+        and(eq(account.provider, provider), eq(account.providerAccountId, providerAccountId)),
       )
         .innerJoin(user, eq(user.id, account.userId))
         .then(([data]) => {
@@ -104,8 +104,8 @@ export function DatabaseAdapter(): Adapter {
         verificationToken,
         and(
           eq(verificationToken.identifier, token.identifier),
-          eq(verificationToken.token, token.token)
-        )
+          eq(verificationToken.token, token.token),
+        ),
       ).then(([data]) => data);
     },
     async useVerificationToken(token) {
@@ -113,8 +113,8 @@ export function DatabaseAdapter(): Adapter {
         verificationToken,
         and(
           eq(verificationToken.identifier, token.identifier),
-          eq(verificationToken.token, token.token)
-        )
+          eq(verificationToken.token, token.token),
+        ),
       );
 
       if (tokenToDelete) {
@@ -124,10 +124,10 @@ export function DatabaseAdapter(): Adapter {
             or(
               and(
                 eq(verificationToken.identifier, token.identifier),
-                eq(verificationToken.token, token.token)
+                eq(verificationToken.token, token.token),
               ),
-              lt(verificationToken.expires, new Date())
-            )
+              lt(verificationToken.expires, new Date()),
+            ),
           );
       }
 
@@ -146,7 +146,7 @@ export function DatabaseAdapter(): Adapter {
       await db
         .delete(account)
         .where(
-          and(eq(account.providerAccountId, providerAccountId), eq(account.provider, provider))
+          and(eq(account.providerAccountId, providerAccountId), eq(account.provider, provider)),
         );
       return undefined;
     },

@@ -12,7 +12,7 @@ function UPCDatabaseCom(code: string) {
     .then(
       (doc) =>
         doc.querySelectorAll("table.data tr").find((el) => el.innerText.includes("Description"))
-          ?.lastChild.innerText
+          ?.lastChild.innerText,
     );
 }
 
@@ -40,6 +40,6 @@ export default function getScrapedProducts(code: string) {
         arr.push(el.value);
       }
       return arr;
-    }, [])
+    }, []),
   );
 }

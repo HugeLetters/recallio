@@ -13,7 +13,7 @@ import { browser } from ".";
 const getBaseUrl = () => {
   if (browser) return ""; // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
-  return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+  return `http://localhost:${process.env.PORT ?? 1853}`; // dev SSR should use localhost
 };
 
 /** A set of type-safe react-query hooks for your tRPC API. */
@@ -65,6 +65,3 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  * @example type HelloOutput = RouterOutputs['example']['hello']
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
-
-export type Result<V, E> = { ok: true; data: V } | { ok: false; error: E };
-export type AsyncResult<V, E> = Promise<Result<V, E>>;
