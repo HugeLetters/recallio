@@ -1,4 +1,5 @@
-import { nonEmptyArray, type StrictOmit, type StrictPick } from "@/utils";
+import { nonEmptyArray } from "@/utils";
+import { type StrictOmit, type StrictPick } from "@/utils/type";
 import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
 import { db } from "..";
 import { category, review, reviewsToCategories, type ReviewInsert } from "../schema/product";

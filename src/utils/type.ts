@@ -1,0 +1,20 @@
+import type { NextPage } from "next";
+import { type ReactNode } from "react";
+import type IconFC from "~icons/";
+
+export type Icon = typeof IconFC;
+export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
+export type StrictPick<T, K extends keyof T> = Pick<T, K>;
+export type ModelProps<T> = { value: T; setValue: (value: T) => void };
+export type DiscriminatedUnion<
+  V extends Record<string, unknown>,
+  U extends Record<string, unknown>,
+> =
+  | (V & { [K in Exclude<keyof U, keyof V>]?: never })
+  | (U & { [K in Exclude<keyof V, keyof U>]?: never });
+export type MaybePromise<T> = T | Promise<T>;
+
+export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
+  noAuth?: boolean;
+  getLayout?: (page: ReactNode) => ReactNode;
+};

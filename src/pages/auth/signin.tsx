@@ -1,13 +1,12 @@
 import { Button, Input, WithLabel, providers } from "@/components/UI";
 import { getQueryParam } from "@/utils";
+import type { NextPageWithLayout } from "@/utils/type";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import Logo from "~icons/custom/logo";
 import AlertIcon from "~icons/jam/alert-f";
 
-// todo redirect if signed in
-Page.noAuth = true;
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const callbackUrl = getQueryParam(query.callbackUrl);
   const error = getErrorMessage(getQueryParam(query.error));
@@ -32,7 +31,12 @@ export default function Page() {
       </div>
     </div>
   );
-}
+};
+
+// todo redirect if signed in
+Page.noAuth = true;
+
+export default Page;
 
 type EmailSignInProps = { callbackUrl: string | undefined };
 function EmailSignIn({ callbackUrl }: EmailSignInProps) {

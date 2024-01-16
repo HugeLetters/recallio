@@ -12,6 +12,7 @@ import {
 import {
   CategoryButton,
   ConsIcon,
+  HeaderWithBarcodeTitle,
   ImagePreview,
   ImagePreviewWrapper,
   NoImagePreview,
@@ -19,17 +20,15 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import {
-  browser,
-  getQueryParam,
-  minutesToMs,
-  setQueryParam,
-  type ModelProps,
-  type StrictOmit,
-  type StrictPick,
-} from "@/utils";
+import { browser, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage } from "@/utils/image";
+import {
+  type ModelProps,
+  type NextPageWithLayout,
+  type StrictOmit,
+  type StrictPick,
+} from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -53,6 +52,18 @@ import SearchIcon from "~icons/iconamoon/search-light";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import ResetInputIcon from "~icons/radix-icons/cross-1";
 
+const Page: NextPageWithLayout = function () {
+  const { query } = useRouter();
+  const barcode = getQueryParam(query.id);
+
+  return !!barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
+};
+
+Page.getLayout = (page) => {
+  return <Layout header={<HeaderWithBarcodeTitle />}>{page}</Layout>;
+};
+export default Page;
+
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = Omit<
   StrictOmit<ReviewData, "updatedAt" | "categories"> & {
@@ -65,18 +76,6 @@ function transformReview(data: ReviewData | null): ReviewForm | null {
   const { categories, updatedAt: _, ...rest } = data;
 
   return Object.assign(rest, { categories: categories.map((x) => ({ name: x })) });
-}
-
-export default function Page() {
-  const router = useRouter();
-  const barcode = getQueryParam(router.query.id);
-
-  const title = barcode ?? "Recallio";
-  return (
-    <Layout header={{ title }}>
-      {!!barcode ? <ReviewWrapper barcode={barcode} /> : "Loading..."}
-    </Layout>
-  );
 }
 
 type ReviewWrapperProps = { barcode: string };

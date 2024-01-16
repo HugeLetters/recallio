@@ -1,4 +1,4 @@
-import { Layout } from "@/components/Layout";
+import { Header, Layout } from "@/components/Layout";
 import {
   Button,
   ImageInput,
@@ -11,37 +11,37 @@ import {
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
+import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const { data } = useSession();
-  return (
-    <Layout header={{ title: "Settings" }}>
-      {/* Can't rely on status since during session refetches it reports loading */}
-      {!!data ? (
-        <div className="flex w-full flex-col items-stretch gap-3 p-4">
-          <UserImage user={data.user} />
-          <UserName username={data.user.name} />
-          <LinkedAccounts />
-          <AppSettings />
-          <Button
-            className="destructive mt-2"
-            onClick={() => {
-              void signOut({ redirect: false });
-            }}
-          >
-            Sign Out
-          </Button>
-        </div>
-      ) : (
-        "Loading"
-      )}
-    </Layout>
+  // Can't rely on status since during session refetches it reports loading
+  return !!data ? (
+    <div className="flex w-full flex-col items-stretch gap-3 p-4">
+      <UserImage user={data.user} />
+      <UserName username={data.user.name} />
+      <LinkedAccounts />
+      <AppSettings />
+      <Button
+        className="destructive mt-2"
+        onClick={() => {
+          void signOut({ redirect: false });
+        }}
+      >
+        Sign Out
+      </Button>
+    </div>
+  ) : (
+    "Loading"
   );
-}
+};
+Page.getLayout = (page) => <Layout header={<Header title="Settings" />}>{page}</Layout>;
+
+export default Page;
 
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {

@@ -1,14 +1,14 @@
 import { Error } from "@/components/Error";
 import { getQueryParam } from "@/utils";
+import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
-Page.noAuth = true;
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const error = getErrorMessage(getQueryParam(query.error));
 
   return <Error errorMessage={error ?? "Authentication error"} />;
-}
+};
 
 type ErrorCode = "Configuration" | "AccessDenied" | "Verification" | "Default";
 function getErrorMessage(
@@ -27,3 +27,6 @@ function getErrorMessage(
       return null;
   }
 }
+Page.noAuth = true;
+
+export default Page;

@@ -1,5 +1,5 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import type { Icon, StrictOmit } from "@/utils";
+import type { Icon, StrictOmit } from "@/utils/type";
 import { Overlay } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
@@ -47,6 +47,7 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   { children, className, isImageSet, ...inputAttributes },
   ref,
 ) {
+  // todo - reset value through input.files
   return (
     <label className={`cursor-pointer focus-within:outline ${className ?? ""}`}>
       {children}

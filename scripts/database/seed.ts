@@ -9,31 +9,27 @@ import {
 import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
 import { faker } from "@faker-js/faker";
-import { like, sql, type InferInsertModel } from "drizzle-orm";
-import task from "tasuku";
+import { and, asc, like, lt, sql, type InferInsertModel, type SQL } from "drizzle-orm";
+import type { MySqlTableWithColumns, TableConfig } from "drizzle-orm/mysql-core";
+import task, { type Task } from "tasuku";
 
 seed().catch(console.error);
 async function seed() {
-  await seedReviews(1000000, 150, 10).catch(console.error);
+  await seedReviews(100000, 150, 10).catch(console.error);
 }
 
 type BarcodeData = { barcode: string; rating: number; names: string[] };
+const TEST_USER_ID_PREFIX = "test-user-";
 
 async function seedReviews(
   reviewCount: number,
   reviewsPerUser: number,
-  unqieReviewsPerUser: number,
+  uniqieReviewsPerUser: number,
 ) {
-  await db.delete(reviewsToCategories);
-  await db.delete(category);
-  await db.delete(review);
-  await db.delete(user).where(like(user.id, `${testUserIdPrefix}%`));
+  const [, files] = await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
   await createTestUsers(reviewCount / reviewsPerUser);
 
   const users = (await db.select().from(user)).map((user) => user.id);
-  const files = (await utapi.listFiles())
-    .filter(({ status }) => status === "Uploaded")
-    .map((file) => file.key);
 
   const barcodePool: BarcodeData[] = faker.helpers
     .uniqueArray(randomBarcode, users.length)
@@ -47,12 +43,12 @@ async function seedReviews(
         setTitle(`User ${user} processing`);
         const barcodes = faker.helpers.arrayElements(
           barcodePool,
-          reviewsPerUser - unqieReviewsPerUser,
+          reviewsPerUser - uniqieReviewsPerUser,
         );
         await createReviews(user, barcodes, files).catch(console.error);
 
         const unqieBarcodes = faker.helpers
-          .uniqueArray(randomBarcode, unqieReviewsPerUser)
+          .uniqueArray(randomBarcode, uniqieReviewsPerUser)
           .map((barcode) => createBarcodeData(barcode, 1));
         await createReviews(user, unqieBarcodes, files).catch(console.error);
         setOuterStatus(`${((100 * ++usersProcessed) / users.length).toFixed(2)}%`);
@@ -140,13 +136,12 @@ function createBarcodeData(barcode: string, namecount: number) {
   };
 }
 
-const testUserIdPrefix = "test-user-";
 function createTestUsers(userCount: number) {
   const userIdSuffixList = faker.helpers.uniqueArray(() => faker.word.words(1), userCount);
 
   return db.insert(user).values(
     userIdSuffixList.map((idSuffix) => ({
-      id: `${testUserIdPrefix}${idSuffix}`,
+      id: `${TEST_USER_ID_PREFIX}${idSuffix}`,
       name: faker.helpers.arrayElement([
         () => faker.person.fullName(),
         () => faker.internet.displayName(),
@@ -160,4 +155,96 @@ function createTestUsers(userCount: number) {
       ])(),
     })),
   );
+}
+
+async function cleanDatabase(rowLimitPerOperation: number) {
+  await task("Cleaning database", async ({ task }) => {
+    await cleanTable({
+      task,
+      taskName: "Cleaning reviews-to-categories",
+      table: reviewsToCategories,
+      primaryKey: "barcode",
+      rowLimitPerOperation,
+    });
+
+    await cleanTable({
+      task,
+      taskName: "Cleaning categories",
+      table: category,
+      primaryKey: "name",
+      rowLimitPerOperation,
+    });
+
+    await cleanTable({
+      task,
+      taskName: "Cleaning reviews",
+      table: review,
+      primaryKey: "barcode",
+      rowLimitPerOperation,
+    });
+
+    await cleanTable({
+      task,
+      taskName: "Cleaning test users",
+      table: user,
+      primaryKey: "id",
+      rowLimitPerOperation,
+      where: like(user.id, `${TEST_USER_ID_PREFIX}%`),
+    });
+  });
+}
+
+type CleanTableOptions<T extends TableConfig> = {
+  task: Task;
+  taskName: string;
+  table: MySqlTableWithColumns<T>;
+  primaryKey: keyof T["columns"];
+  rowLimitPerOperation: number;
+  where?: SQL;
+};
+async function cleanTable<T extends TableConfig>({
+  task,
+  taskName,
+  table,
+  primaryKey,
+  rowLimitPerOperation,
+  where,
+}: CleanTableOptions<T>) {
+  return task(taskName, async ({ setStatus }) => {
+    let rowsDeleted = 0;
+    const primaryColumn = table[primaryKey];
+    while (true) {
+      const [row] = await db
+        .select({ id: primaryColumn })
+        .from(table)
+        .limit(1)
+        .offset(rowLimitPerOperation)
+        .orderBy(asc(primaryColumn));
+
+      const { rowsAffected } = await db
+        .delete(table)
+        .where(and(row ? lt(primaryColumn, row.id) : undefined, where));
+
+      rowsDeleted += rowsAffected;
+      setStatus(`Deleted ${rowsDeleted} rows`);
+      if (!rowsAffected) return;
+    }
+  });
+}
+
+async function cleanUTFiles() {
+  const { uploaded, failed } = await utapi.listFiles().then((files) => {
+    return files.reduce<{ uploaded: string[]; failed: string[] }>(
+      (result, file) => {
+        file.status === "Uploaded" ? result.uploaded.push(file.key) : result.failed.push(file.key);
+        return result;
+      },
+      { uploaded: [], failed: [] },
+    );
+  });
+
+  if (failed.length) {
+    await utapi.deleteFiles(failed);
+  }
+  return uploaded;
 }

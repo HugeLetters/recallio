@@ -4,7 +4,7 @@ import { aggregateArrayColumn, count, findFirst } from "@/database/query/utils";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
 import { mapUtKeysToUrls } from "@/server/utils";
-import type { StrictOmit } from "@/utils";
+import type { StrictOmit } from "@/utils/type";
 import { TRPCError } from "@trpc/server";
 import {
   and,

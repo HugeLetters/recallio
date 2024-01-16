@@ -1,13 +1,12 @@
 import { Button } from "@/components/UI";
+import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import EmailIcon from "~icons/carbon/email";
 
 const PIN_LENGTH = 6;
-
 // todo redirect if signed in
-Page.noAuth = true;
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const [pin, setPin] = useState("");
 
@@ -76,4 +75,7 @@ export default function Page() {
       </form>
     </div>
   );
-}
+};
+Page.noAuth = true;
+
+export default Page;

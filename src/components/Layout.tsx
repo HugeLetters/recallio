@@ -1,24 +1,40 @@
-import type { DiscriminatedUnion, Icon } from "@/utils";
+import { indexOf } from "@/utils";
+import type { DiscriminatedUnion, Icon } from "@/utils/type";
+import { useAtomValue } from "jotai/react";
+import { atomWithReducer } from "jotai/utils";
+import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
-import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
+import {
+  useState,
+  type ComponentPropsWithoutRef,
+  type PropsWithChildren,
+  type ReactNode,
+} from "react";
+import LucidePen from "~icons/custom/pen";
+import UploadIcon from "~icons/custom/photo-upload";
 import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 
 type LayoutProps = {
-  header?: ComponentPropsWithoutRef<typeof Header>;
-  footer?: ComponentPropsWithoutRef<typeof Footer>;
+  header?: ReactNode;
 };
-export function Layout({ children, header, footer }: PropsWithChildren<LayoutProps>) {
+export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   return (
     <div className="grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950">
-      <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
+      {header ?? (
+        <Header
+          title="Recallio"
+          left={null}
+          right={null}
+        />
+      )}
       <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
         {children}
       </main>
-      <Footer {...footer} />
+      <Footer />
     </div>
   );
 }
@@ -27,7 +43,7 @@ type HeaderProps = DiscriminatedUnion<
   { title: ReactNode; left?: ReactNode; right?: ReactNode },
   { header: Exclude<ReactNode, undefined> }
 >;
-function Header({ header, left, right, title }: HeaderProps) {
+export function Header({ header, left, right, title }: HeaderProps) {
   return (
     <header className="z-10 flex h-14 min-w-0 justify-center bg-white shadow-around sa-o-15 sa-r-2">
       <div className="w-full max-w-app p-2">
@@ -83,42 +99,90 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
   );
 }
 
-type FooterProps = { Icon?: Icon };
-function Footer({ Icon }: FooterProps) {
+function Footer() {
   const { pathname } = useRouter();
-  Icon ??= ScanIcon;
+  const selection = useAtomValue(selectionAtom);
+  const ScannerIcon = getFooterIcon(selection);
 
   // todo - add pretty effect from this tweet - https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ
   return (
     <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-15 sa-r-2">
-      <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] items-center justify-items-center">
-        <Link
+      <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
+        <FooterItem
           href="/search"
-          className={`flex flex-col items-center transition-colors ${
-            pathname.startsWith("/search") ? "text-app-green" : ""
-          }`}
-        >
-          <SearchIcon className="h-7 w-7" />
-          <span>Search</span>
-        </Link>
+          label="Search"
+          active={pathname.startsWith("/search")}
+          Icon={SearchIcon}
+        />
         <Link
           href="/scan"
-          className={`flex h-16 w-16 -translate-y-1/3 items-center justify-center rounded-full p-4 transition-colors ${
+          className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors ${
             pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
           }`}
         >
-          <Icon className="h-full w-full" />
+          <ScannerIcon className="h-full w-full" />
         </Link>
-        <Link
+        <FooterItem
           href="/profile"
-          className={`flex flex-col items-center transition-colors ${
-            pathname.startsWith("/profile") ? "text-app-green" : ""
-          }`}
-        >
-          <ProfileIcon className="h-7 w-7" />
-          <span>Profile</span>
-        </Link>
+          label="Profile"
+          active={pathname.startsWith("/profile")}
+          Icon={ProfileIcon}
+        />
       </nav>
     </footer>
   );
+}
+
+type FooterItemProps = {
+  href: LinkProps["href"];
+  label: string;
+  active: boolean;
+  Icon: Icon;
+};
+function FooterItem({ active, Icon, label, href }: FooterItemProps) {
+  return (
+    <Link
+      href={href}
+      className={`relative flex flex-col items-center justify-center overflow-hidden px-6 transition-colors ${
+        active ? "text-app-green" : ""
+      }`}
+    >
+      <Icon className="h-7 w-7" />
+      <span>{label}</span>
+      {active && <div className="absolute inset-0 inset-x-6 -z-10 bg-app-green/30 blur-lg" />}
+    </Link>
+  );
+}
+
+const selection = ["upload", "scan", "input"] as const;
+type Selection = (typeof selection)[number];
+type SelectionEvent = Selection | "next" | "prev";
+export const selectionAtom = atomWithReducer<Selection, SelectionEvent>("scan", (value, action) => {
+  switch (action) {
+    case "upload":
+    case "scan":
+    case "input":
+      return action;
+    case "next":
+      return selection[(indexOf(selection, value) ?? selection.length) + 1] ?? selection[2];
+    case "prev":
+      return selection[(indexOf(selection, value) ?? 0) - 1] ?? selection[0];
+    default: {
+      return value;
+    }
+  }
+});
+
+function getFooterIcon(selection: Selection) {
+  switch (selection) {
+    case "upload":
+      return UploadIcon;
+    case "input":
+      return LucidePen;
+    case "scan":
+      return ScanIcon;
+    default:
+      const x: never = selection;
+      return x;
+  }
 }

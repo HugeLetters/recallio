@@ -1,4 +1,4 @@
-import type { StrictOmit } from "@/utils";
+import type { StrictOmit } from "@/utils/type";
 import Image from "next/image";
 import Link from "next/link";
 import {

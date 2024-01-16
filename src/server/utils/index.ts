@@ -1,4 +1,5 @@
-import { isNonEmptyString, type MaybePromise } from "@/utils";
+import { isNonEmptyString } from "@/utils";
+import { type MaybePromise } from "@/utils/type";
 import { getFileUrl } from "../uploadthing";
 
 export function mapUtKeysToUrls<

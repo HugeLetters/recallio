@@ -1,46 +1,56 @@
-import { HeaderLink, Layout } from "@/components/Layout";
+import { Header, HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
 import { getQueryParam, minutesToMs } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
+import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import type { ReactNode } from "react";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const { data, status } = useSession();
 
+  return status === "authenticated" ? (
+    <div className="flex w-full flex-col gap-6 p-4">
+      <ProfileInfo user={data.user} />
+      <Reviews />
+    </div>
+  ) : (
+    "Loading"
+  );
+};
+
+Page.getLayout = (page: ReactNode) => {
   return (
     <Layout
-      header={{
-        header: (
-          <HeaderSearchBar
-            right={
-              <HeaderLink
-                Icon={SettingsIcon}
-                href="/profile/settings"
-              />
-            }
-            title="Profile"
-          />
-        ),
-      }}
+      header={
+        <Header
+          header={
+            <HeaderSearchBar
+              right={
+                <HeaderLink
+                  Icon={SettingsIcon}
+                  href="/profile/settings"
+                />
+              }
+              title="Profile"
+            />
+          }
+        />
+      }
     >
-      {status === "authenticated" ? (
-        <div className="flex w-full flex-col gap-6 p-4">
-          <ProfileInfo user={data.user} />
-          <Reviews />
-        </div>
-      ) : (
-        "Loading"
-      )}
+      {page}
     </Layout>
   );
-}
+};
+
+export default Page;
 
 type ProfileInfoProps = {
   user: Session["user"];

@@ -1,24 +1,28 @@
-import { Layout } from "@/components/Layout";
+import { Header, Layout, selectionAtom } from "@/components/Layout";
 import { ImageInput } from "@/components/UI";
-import { indexOf } from "@/utils";
+import type { NextPageWithLayout } from "@/utils/type";
 import { useDrag } from "@use-gesture/react";
 import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
+import { useAtom } from "jotai";
 import { useRouter } from "next/router";
-import { useEffect, useId, useReducer, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import LucidePen from "~icons/custom/pen";
-import UploadIcon from "~icons/custom/photo-upload";
-import ScanIcon from "~icons/custom/scan";
+
 import SearchIcon from "~icons/iconamoon/search";
 
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [selection, dispatchSelection] = useReducer(selectionReducer, "scan");
+  const [selection, dispatchSelection] = useAtom(selectionAtom);
   useEffect(() => {
     if (selection !== "upload") return;
     fileInputRef.current?.click();
   }, [selection]);
+  useEffect(() => {
+    return function () {
+      dispatchSelection("scan");
+    };
+  }, [dispatchSelection]);
 
   const [barcode, setBarcode] = useState("");
   const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
@@ -70,81 +74,82 @@ export default function Page() {
   );
 
   return (
-    <Layout
-      header={{ title: "Scanner" }}
-      footer={{ Icon: getFooterIcon(selection) }}
+    <form
+      className="relative isolate flex h-full w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
+      onSubmit={(e) => e.preventDefault()}
+      {...drag()}
     >
-      <form
-        className="relative isolate flex h-full w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
-        onSubmit={(e) => e.preventDefault()}
-        {...drag()}
+      <div
+        id={id}
+        className="!absolute -z-10 flex h-full w-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
+      />
+      {selection === "input" && (
+        <label className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green focus-within:outline-4">
+          <input
+            className="grow outline-none"
+            placeholder="barcode"
+            autoFocus
+            onChange={(e) => setBarcode(e.target.value)}
+          />
+          <button
+            aria-label="open review page of the specified barcode"
+            role="navigation"
+            disabled={!barcode}
+            className="text-app-green"
+            onClick={() => goToReview(barcode)}
+          >
+            <SearchIcon className="h-7 w-7" />
+          </button>
+        </label>
+      )}
+      <div
+        className={`grid grid-cols-3 pb-8 text-white ${!offset ? "transition-transform" : ""}`}
+        style={{ transform }}
       >
-        <div
-          id={id}
-          className="!absolute -z-10 flex h-full w-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
-        />
-        {selection === "input" && (
-          <label className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green focus-within:outline-4">
-            <input
-              className="grow outline-none"
-              placeholder="barcode"
-              autoFocus
-              onChange={(e) => setBarcode(e.target.value)}
-            />
-            <button
-              aria-label="open review page of the specified barcode"
-              role="navigation"
-              disabled={!barcode}
-              className="text-app-green"
-              onClick={() => goToReview(barcode)}
-            >
-              <SearchIcon className="h-7 w-7" />
-            </button>
-          </label>
-        )}
-        <div
-          className={`grid grid-cols-3 pb-8 text-white ${!offset ? "transition-transform" : ""}`}
-          style={{ transform }}
+        <ImageInput
+          ref={fileInputRef}
+          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 ${
+            selection === "upload" ? "bg-app-green" : "bg-black/50"
+          }`}
+          aria-label="Scan from file"
+          isImageSet={true}
+          onChange={(e) => {
+            const image = e.target.files?.item(0);
+            if (!image) return;
+            handleImage(image);
+          }}
+          onClick={() => dispatchSelection("upload")}
         >
-          <ImageInput
-            ref={fileInputRef}
-            className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 ${
-              selection === "upload" ? "bg-app-green" : "bg-black/50"
-            }`}
-            aria-label="Scan from file"
-            isImageSet={true}
-            onChange={(e) => {
-              const image = e.target.files?.item(0);
-              if (!image) return;
-              handleImage(image);
-            }}
-            onClick={() => dispatchSelection("upload")}
-          >
-            Upload
-          </ImageInput>
-          <button
-            className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
-              selection === "scan" ? "bg-app-green" : "bg-black/50"
-            }`}
-            onClick={() => dispatchSelection("scan")}
-            type="button"
-          >
-            Scan
-          </button>
-          <button
-            className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
-              selection === "input" ? "bg-app-green" : "bg-black/50"
-            }`}
-            onClick={() => dispatchSelection("input")}
-            type="button"
-          >
-            Input
-          </button>
-        </div>
-      </form>
-    </Layout>
+          Upload
+        </ImageInput>
+        <button
+          className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
+            selection === "scan" ? "bg-app-green" : "bg-black/50"
+          }`}
+          onClick={() => dispatchSelection("scan")}
+          type="button"
+        >
+          Scan
+        </button>
+        <button
+          className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
+            selection === "input" ? "bg-app-green" : "bg-black/50"
+          }`}
+          onClick={() => dispatchSelection("input")}
+          type="button"
+        >
+          Input
+        </button>
+      </div>
+    </form>
   );
-}
+};
+
+Page.getLayout = function useLayout(page) {
+  return <Layout header={<Header title="Scanner" />}>{page}</Layout>;
+};
+
+export default Page;
 
 type Scanner = Html5Qrcode;
 type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
@@ -221,38 +226,4 @@ function createScanner(id: string) {
     useBarCodeDetectorIfSupported: true,
     verbose: false,
   });
-}
-
-function getFooterIcon(selection: Selection) {
-  switch (selection) {
-    case "upload":
-      return UploadIcon;
-    case "input":
-      return LucidePen;
-    case "scan":
-      return ScanIcon;
-    default:
-      const x: never = selection;
-      return x;
-  }
-}
-
-const selection = ["upload", "scan", "input"] as const;
-type Selection = (typeof selection)[number];
-type SelectionEvent = Selection | "next" | "prev";
-function selectionReducer(state: Selection, payload: SelectionEvent) {
-  switch (payload) {
-    case "upload":
-    case "scan":
-    case "input":
-      return payload;
-    case "next":
-      return selection[(indexOf(selection, state) ?? selection.length) + 1] ?? selection[2];
-    case "prev":
-      return selection[(indexOf(selection, state) ?? 0) - 1] ?? selection[0];
-    default: {
-      const x: never = payload;
-      return x;
-    }
-  }
 }

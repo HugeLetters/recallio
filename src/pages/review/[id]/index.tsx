@@ -3,29 +3,33 @@ import { Button, DialogOverlay, Star } from "@/components/UI";
 import {
   CategoryButton,
   ConsIcon,
+  HeaderWithBarcodeTitle,
   ImagePreview,
   ImagePreviewWrapper,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { getQueryParam, type StrictPick } from "@/utils";
+import { getQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
+import { type NextPageWithLayout, type StrictPick } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import RightIcon from "~icons/formkit/right";
 
-export default function Page() {
-  const router = useRouter();
-  const barcode = getQueryParam(router.query.id);
+const Page: NextPageWithLayout = function () {
+  const { query } = useRouter();
+  const barcode = getQueryParam(query.id);
 
-  const title = barcode ?? "Recallio";
-  return (
-    <Layout header={{ title }}>{!!barcode ? <Review barcode={barcode} /> : "Loading..."}</Layout>
-  );
-}
+  return !!barcode ? <Review barcode={barcode} /> : "Loading...";
+};
+
+Page.getLayout = (page) => {
+  return <Layout header={<HeaderWithBarcodeTitle />}>{page}</Layout>;
+};
+export default Page;
 
 type ReviewProps = { barcode: string };
 function Review({ barcode }: ReviewProps) {

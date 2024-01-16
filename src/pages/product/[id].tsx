@@ -1,6 +1,9 @@
+import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
-export default function Page() {
+const Page: NextPageWithLayout = function () {
   const router = useRouter();
   return <div>{router.query.id}</div>;
-}
+};
+
+export default Page;

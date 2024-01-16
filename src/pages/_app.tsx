@@ -2,10 +2,11 @@ import { env } from "@/env.mjs";
 import "@/styles/globals.css";
 import { browser } from "@/utils";
 import { api } from "@/utils/api";
+import type { NextPageWithLayout } from "@/utils/type";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
-import { type AppType } from "next/app";
+import type { AppProps } from "next/app";
 import { Lato } from "next/font/google";
 import Head from "next/head";
 import { useEffect, type ReactNode } from "react";
@@ -18,10 +19,8 @@ const lato = Lato({
   weight: ["100", "300", "400", "700", "900"],
 });
 
-const MyApp: AppType<{ session: Session | null }> = ({
-  Component,
-  pageProps: { session, ...pageProps },
-}) => {
+type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
+const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
   useEffect(() => {
     if (env.NEXT_PUBLIC_NODE_ENV == "production" || !browser) return;
 
@@ -35,6 +34,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
     };
   }, []);
 
+  const getLayout = Component.getLayout ?? ((x) => x);
+  const page = getLayout(<Component {...pageProps} />);
+
   return (
     <Providers session={session}>
       <ToastContainer />
@@ -46,13 +48,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         />
       </Head>
       <div className={`contents font-lato ${lato.variable}`}>
-        {!Component.noAuth ? (
-          <AuthProtection>
-            <Component {...pageProps} />
-          </AuthProtection>
-        ) : (
-          <Component {...pageProps} />
-        )}
+        {!Component.noAuth ? <AuthProtection>{page}</AuthProtection> : page}
       </div>
     </Providers>
   );
