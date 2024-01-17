@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
-import { SEARCH_QUERY_KEY } from "@/components/Search";
+import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
 import {
   AutoresizableInput,
   Button,
@@ -50,7 +50,6 @@ import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 import CircledPlusIcon from "~icons/fluent/add-circle-28-regular";
 import SearchIcon from "~icons/iconamoon/search-light";
 import PlusIcon from "~icons/material-symbols/add-rounded";
-import ResetInputIcon from "~icons/radix-icons/cross-1";
 
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
@@ -552,35 +551,11 @@ function CategorySearch({
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="h-7 w-7 shrink-0" />
-        <input
-          // key helps refocus input when clear button is pressed
-          key={`${!!search}`}
-          autoFocus
-          className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
-          placeholder="Search"
+        <HeaderSearchControls
           value={search}
-          onChange={(e) => {
-            const { value } = e.target;
-            setSearch(value);
-
-            window.clearTimeout(debounceRef.current);
-            debounceRef.current = window.setTimeout(() => {
-              setQueryParam(router, SEARCH_QUERY_KEY, value);
-            }, 500);
-          }}
+          setValue={setSearch}
+          debounceRef={debounceRef}
         />
-        <button
-          aria-label="Reset search filter"
-          className="ml-1"
-          onClick={() => {
-            setSearch("");
-
-            window.clearTimeout(debounceRef.current);
-            setQueryParam(router, SEARCH_QUERY_KEY, null);
-          }}
-        >
-          <ResetInputIcon className="h-7 w-7" />
-        </button>
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
         {isShowInputCategory && (

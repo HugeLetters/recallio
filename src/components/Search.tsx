@@ -1,9 +1,10 @@
 import { hasFocusWithin } from "@/hooks";
 import { getQueryParam, includes, setQueryParam } from "@/utils";
+import type { ModelProps } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Flipped, Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
@@ -15,7 +16,7 @@ export const SEARCH_QUERY_KEY = "search";
 type HeaderSearchBarProps = { right?: ReactNode; title: string };
 export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const debounceTimeoutRef = useRef<number>();
+  const debouncedQuery = useRef<number>();
 
   const router = useRouter();
   const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
@@ -46,36 +47,12 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             document.body,
           )}
           {searchIcon}
-          <input
-            // key helps refocus input when clear button is pressed
-            key={`${!!search}`}
-            autoFocus
-            className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
-            placeholder="Search"
+          <HeaderSearchControls
             value={search}
-            onChange={(e) => {
-              const { value } = e.target;
-              setSearch(value);
-
-              window.clearTimeout(debounceTimeoutRef.current);
-              debounceTimeoutRef.current = window.setTimeout(() => {
-                setQueryParam(router, SEARCH_QUERY_KEY, value);
-              }, 500);
-            }}
+            setValue={setSearch}
+            debounceRef={debouncedQuery}
+            onReset={() => setIsOpen(false)}
           />
-          <button
-            aria-label="Reset search filter"
-            className="ml-1"
-            onClick={() => {
-              setSearch("");
-              setIsOpen(false);
-
-              window.clearTimeout(debounceTimeoutRef.current);
-              setQueryParam(router, SEARCH_QUERY_KEY, null);
-            }}
-          >
-            <ResetIcon className="h-7 w-7" />
-          </button>
         </>
       ) : (
         <>
@@ -92,6 +69,55 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
         </>
       )}
     </div>
+  );
+}
+
+type HeaderSearchControlsProps = ModelProps<string> & {
+  onReset?: () => void;
+  debounceRef: MutableRefObject<number | undefined>;
+};
+export function HeaderSearchControls({
+  value,
+  setValue,
+  onReset,
+  debounceRef,
+}: HeaderSearchControlsProps) {
+  const router = useRouter();
+
+  return (
+    <>
+      <input
+        // key helps refocus input when clear button is pressed
+        key={`${!!value}`}
+        autoFocus
+        className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
+        placeholder="Search"
+        value={value}
+        onChange={(e) => {
+          const { value: newValue } = e.target;
+          setValue(newValue);
+
+          window.clearTimeout(debounceRef.current);
+          debounceRef.current = window.setTimeout(() => {
+            console.log(1);
+            setQueryParam(router, SEARCH_QUERY_KEY, newValue);
+          }, 300);
+        }}
+      />
+      <button
+        aria-label="Reset search filter"
+        className="ml-1"
+        onClick={() => {
+          onReset?.();
+          setValue("");
+
+          window.clearTimeout(debounceRef.current);
+          setQueryParam(router, SEARCH_QUERY_KEY, null);
+        }}
+      >
+        <ResetIcon className="h-7 w-7" />
+      </button>
+    </>
   );
 }
 
