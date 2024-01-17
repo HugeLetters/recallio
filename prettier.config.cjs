@@ -4,6 +4,7 @@ const config = {
   printWidth: 100,
   singleAttributePerLine: true,
   trailingComma: "all",
+  endOfLine: "crlf",
 };
 
 module.exports = config;
