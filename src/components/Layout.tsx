@@ -6,11 +6,12 @@ import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
 import {
-  useState,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
+  type ReactElement,
   type ReactNode,
 } from "react";
+import { Flipped, Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen";
 import UploadIcon from "~icons/custom/photo-upload";
 import ScanIcon from "~icons/custom/scan";
@@ -101,33 +102,54 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
+  const isScanPage = pathname.startsWith("/scan");
   const selection = useAtomValue(selectionAtom);
   const ScannerIcon = getFooterIcon(selection);
 
-  // todo - add pretty effect from this tweet - https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ
+  // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
+  const activeBackground = (
+    <Flipped
+      flipId="active-icon-bg"
+      key="active-icon-bg"
+    >
+      <div
+        className={`absolute inset-0 inset-x-4 -z-10 bg-app-green/30 blur-lg ${
+          isScanPage ? "opacity-0" : ""
+        }`}
+      />
+    </Flipped>
+  );
+
   return (
     <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-15 sa-r-2">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
-        <FooterItem
-          href="/search"
-          label="Search"
-          active={pathname.startsWith("/search")}
-          Icon={SearchIcon}
-        />
-        <Link
-          href="/scan"
-          className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors ${
-            pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
-          }`}
+        <Flipper
+          flipKey={pathname}
+          spring={{ stiffness: 350, damping: 25 }}
+          className="contents"
         >
-          <ScannerIcon className="h-full w-full" />
-        </Link>
-        <FooterItem
-          href="/profile"
-          label="Profile"
-          active={pathname.startsWith("/profile")}
-          Icon={ProfileIcon}
-        />
+          <FooterItem
+            href="/search"
+            label="Search"
+            activeBackground={pathname.startsWith("/search") ? activeBackground : null}
+            Icon={SearchIcon}
+          />
+          <Link
+            href="/scan"
+            className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors ${
+              isScanPage ? "bg-app-green text-white" : "bg-neutral-100"
+            }`}
+          >
+            <ScannerIcon className="h-full w-full" />
+            {isScanPage ? activeBackground : null}
+          </Link>
+          <FooterItem
+            href="/profile"
+            label="Profile"
+            activeBackground={pathname.startsWith("/profile") ? activeBackground : null}
+            Icon={ProfileIcon}
+          />
+        </Flipper>
       </nav>
     </footer>
   );
@@ -136,20 +158,20 @@ function Footer() {
 type FooterItemProps = {
   href: LinkProps["href"];
   label: string;
-  active: boolean;
+  activeBackground: ReactElement | null;
   Icon: Icon;
 };
-function FooterItem({ active, Icon, label, href }: FooterItemProps) {
+function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
   return (
     <Link
       href={href}
-      className={`relative flex flex-col items-center justify-center overflow-hidden px-6 transition-colors ${
-        active ? "text-app-green" : ""
+      className={`relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors ${
+        activeBackground ? "text-app-green" : ""
       }`}
     >
       <Icon className="h-7 w-7" />
       <span>{label}</span>
-      {active && <div className="absolute inset-0 inset-x-6 -z-10 bg-app-green/30 blur-lg" />}
+      {activeBackground}
     </Link>
   );
 }
