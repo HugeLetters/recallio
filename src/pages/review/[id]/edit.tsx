@@ -161,7 +161,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit((data) => {
-          if (!isFormDirty) return onReviewUpsert();
+          if (!isFormDirty && hasReview) return onReviewUpsert();
 
           const { categories, image: _, ...review } = data;
           saveReview({
