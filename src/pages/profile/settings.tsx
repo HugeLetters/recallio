@@ -128,9 +128,8 @@ function LinkedAccounts() {
       // optimistic update
       const prevProviders = trpcUtils.user.getAccountProviders.getData();
 
-      trpcUtils.user.getAccountProviders.setData(
-        undefined,
-        (providers) => providers?.filter((name) => name !== provider),
+      trpcUtils.user.getAccountProviders.setData(undefined, (providers) =>
+        providers?.filter((name) => name !== provider),
       );
 
       return prevProviders;
