@@ -113,7 +113,7 @@ function Footer() {
       key="active-icon-bg"
     >
       <div
-        className={`absolute inset-0 inset-x-4 -z-10 bg-app-green/30 blur-lg ${
+        className={`absolute inset-0 inset-x-4 -z-10 bg-app-green/20 blur-lg ${
           isScanPage ? "opacity-0" : ""
         }`}
       />
