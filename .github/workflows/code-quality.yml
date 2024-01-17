@@ -1,27 +1,1 @@
-name: code-quality
-on:
-  pull_request:
-    branches: "main"
-    types: [opened, synchronize, reopened, ready_for_review]
-  push:
-    branches: "main"
-jobs:
-  code-quality:
-    if: github.event.pull_request.draft==false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        name: Setup workspace
-      - uses: pnpm/action-setup@v2.4.0
-        name: Setup pnpm
-      - uses: actions/setup-node@v3
-        name: Setup node
-        id: node
-        with:
-          node-version: ">=18.10.0"
-          cache: "pnpm"
-          cache-dependency-path: "pnpm-lock.yaml"
-      - run: pnpm install
-        name: Setup node_modules
-      - run: pnpm check-format
-        name: Format
+name: code-qualityon:  pull_request:    branches: "main"    types: [opened, synchronize, reopened, ready_for_review]  push:    branches: "main"jobs:  code-quality:    if: github.event.pull_request.draft==false    runs-on: ubuntu-latest    steps:      - uses: actions/checkout@v3        name: Setup workspace      - uses: pnpm/action-setup@v2.4.0        name: Setup pnpm      - uses: actions/setup-node@v3        name: Setup node        id: node        with:          node-version: ">=18.10.0"          cache: "pnpm"          cache-dependency-path: "pnpm-lock.yaml"      - run: pnpm install        name: Setup node_modules      - run: pnpm check-format        name: Format
