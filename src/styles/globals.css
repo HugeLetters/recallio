@@ -1,17 +1,1 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-html {
-  font-family: theme("fontFamily.lato");
-}
-
-::-webkit-scrollbar {
-  background-color: theme("colors.transparent");
-  width: theme("width.1");
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: theme("colors.app.green");
-  border-radius: theme("borderRadius.full");
-}
+@tailwind base;@tailwind components;@tailwind utilities;html {  font-family: theme("fontFamily.lato");}@media (pointer: fine), (pointer: none) {  ::-webkit-scrollbar {    background-color: theme("colors.transparent");    width: theme("width.1");  }  ::-webkit-scrollbar-thumb {    background-color: theme("colors.app.green");    border-radius: theme("borderRadius.full");  }}
