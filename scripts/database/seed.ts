@@ -15,7 +15,7 @@ import task, { type Task } from "tasuku";
 
 seed().catch(console.error);
 async function seed() {
-  await seedReviews(100000, 150, 10).catch(console.error);
+  await seedReviews(10000, 150, 10).catch(console.error);
 }
 
 type BarcodeData = { barcode: string; rating: number; names: string[] };
@@ -236,7 +236,7 @@ async function cleanUTFiles() {
   const { uploaded, failed } = await utapi.listFiles().then((files) => {
     return files.reduce<{ uploaded: string[]; failed: string[] }>(
       (result, file) => {
-        file.status === "Uploaded" ? result.uploaded.push(file.key) : result.failed.push(file.key);
+        file.status !== "Failed" ? result.uploaded.push(file.key) : result.failed.push(file.key);
         return result;
       },
       { uploaded: [], failed: [] },
