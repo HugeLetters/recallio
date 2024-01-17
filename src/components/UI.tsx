@@ -12,7 +12,7 @@ import type {
   ReactNode,
   Ref,
 } from "react";
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
 import GoogleIcon from "~icons/logos/google-icon";
 import LinkedinIcon from "~icons/logos/linkedin-icon";
@@ -45,9 +45,15 @@ export function Star({ highlight }: StarProps) {
 type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
 export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function ImageInput(
   { children, className, isImageSet, ...inputAttributes },
-  ref,
+  outerRef,
 ) {
-  // todo - reset value through input.files
+  const innerRef = useRef<HTMLInputElement>(null);
+  const ref = outerRef ?? innerRef;
+  useEffect(() => {
+    if (!("current" in ref) || !ref.current || isImageSet) return;
+    ref.current.value = "";
+  }, [isImageSet, ref]);
+
   return (
     <label className={`cursor-pointer focus-within:outline ${className ?? ""}`}>
       {children}
@@ -56,7 +62,6 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
         className="sr-only"
         accept="image/*"
         type="file"
-        value={isImageSet ? undefined : ""}
         ref={ref}
       />
     </label>
