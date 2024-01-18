@@ -1,4 +1,3 @@
-import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
 import {
@@ -12,9 +11,9 @@ import {
 import {
   CategoryButton,
   ConsIcon,
-  HeaderWithBarcodeTitle,
   ImagePreview,
   ImagePreviewWrapper,
+  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -54,7 +53,7 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (page) => {
-  return <Layout header={<HeaderWithBarcodeTitle />}>{page}</Layout>;
+  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
 };
 export default Page;
 

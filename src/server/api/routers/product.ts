@@ -226,10 +226,10 @@ export const productRouter = createTRPCRouter({
 
       return db
         .select({
-          mostPopularName: aggregateArrayColumn(review.name).mapWith(mostCommonItems(1)<string>),
-          averageRating: sql`avg(${review.rating})`.mapWith((x) => +x),
+          name: aggregateArrayColumn(review.name).mapWith(mostCommonItems(1)<string>),
+          rating: sql`avg(${review.rating})`.mapWith((x) => +x),
           reviewCount: countCol(),
-          imageKey: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
+          image: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
           categories: categorySq.categories,
         })
         .from(review)
@@ -237,7 +237,7 @@ export const productRouter = createTRPCRouter({
         .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
         .groupBy(review.barcode)
         .limit(1)
-        .then(([x]) => x)
+        .then(([x]) => x ?? null)
         .catch(throwDefaultError);
     }),
 });

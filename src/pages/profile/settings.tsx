@@ -1,4 +1,4 @@
-import { Header, Layout } from "@/components/Layout";
+import { Layout } from "@/components/Layout";
 import {
   Button,
   ImageInput,
@@ -39,7 +39,7 @@ const Page: NextPageWithLayout = function () {
     "Loading"
   );
 };
-Page.getLayout = (page) => <Layout header={<Header title="Settings" />}>{page}</Layout>;
+Page.getLayout = (page) => <Layout header={{ title: "Settings" }}>{page}</Layout>;
 
 export default Page;
 

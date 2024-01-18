@@ -6,6 +6,7 @@ import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
 import {
+  type ComponentProps,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
   type ReactElement,
@@ -20,18 +21,12 @@ import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 
 type LayoutProps = {
-  header?: ReactNode;
+  header?: ComponentProps<typeof Header>;
 };
 export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   return (
     <div className="grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950">
-      {header ?? (
-        <Header
-          title="Recallio"
-          left={null}
-          right={null}
-        />
-      )}
+      <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
         {children}
       </main>

@@ -1,4 +1,4 @@
-import { Header, HeaderLink, Layout } from "@/components/Layout";
+import { HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
@@ -27,27 +27,19 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (page: ReactNode) => {
-  return (
-    <Layout
-      header={
-        <Header
-          header={
-            <HeaderSearchBar
-              right={
-                <HeaderLink
-                  Icon={SettingsIcon}
-                  href="/profile/settings"
-                />
-              }
-              title="Profile"
-            />
-          }
-        />
-      }
-    >
-      {page}
-    </Layout>
+  const right = (
+    <HeaderLink
+      Icon={SettingsIcon}
+      href="/profile/settings"
+    />
   );
+  const header = (
+    <HeaderSearchBar
+      right={right}
+      title="Profile"
+    />
+  );
+  return <Layout header={{ header }}>{page}</Layout>;
 };
 
 export default Page;
