@@ -34,12 +34,9 @@ export function InfiniteScroll<P, V>({
   getNextPage,
   className,
 }: InfiniteScrollProps<P, V>) {
-  const lastPage = pages.at(-1);
   const triggerElement = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!triggerElement.current) return;
-
     const observer = new IntersectionObserver((events) => {
       events.forEach((event) => {
         if (event.target !== triggerElement.current || !event.isIntersecting) return;
@@ -55,6 +52,7 @@ export function InfiniteScroll<P, V>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages]);
 
+  const lastPage = pages.at(-1);
   return (
     <>
       {pages.map((page) => {
@@ -73,7 +71,7 @@ export function InfiniteScroll<P, V>({
               {children(value)}
               {isTriggerValue && (
                 <div
-                  className="sr-only"
+                  className="sr-only left-1/2 top-1/2"
                   ref={triggerElement}
                 />
               )}
@@ -119,7 +117,7 @@ export function Card({
         </div>
       )}
       <div className="flex h-full min-w-0 flex-col items-start gap-1">
-        <span className="text-sm capitalize">{label}</span>
+        <span className="w-full overflow-hidden text-ellipsis text-sm capitalize">{label}</span>
         {!!subtext.length && (
           <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">
             {subtext.join(", ")}

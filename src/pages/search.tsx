@@ -1,4 +1,4 @@
-import { Header, Layout } from "@/components/Layout";
+import { Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
@@ -72,7 +72,7 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (page) => {
-  return <Layout header={<Header header={<HeaderSearchBar title="Search" />} />}>{page}</Layout>;
+  return <Layout header={{ header: <HeaderSearchBar title="Search" /> }}>{page}</Layout>;
 };
 export default Page;
 

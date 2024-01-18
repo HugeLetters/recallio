@@ -32,6 +32,9 @@ const config = {
       { hostname: "media.licdn.com", pathname: "**" },
       { hostname: "uploadthing.com", pathname: "/f/**" },
       { hostname: "utfs.io", pathname: "/f/**" },
+      { hostname: "picsum.photos", pathname: "/seed/**" },
+      { hostname: "loremflickr.com" },
+      { hostname: "cloudflare-ipfs.com", pathname: "/ipfs/**" },
     ],
   },
   /** @type { (config:{plugins: unknown[]})=> typeof config } */

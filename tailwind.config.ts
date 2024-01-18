@@ -18,9 +18,9 @@ export default {
         },
       },
       animation: {
-        "slide-up": "slide-up 200ms ease-in-out",
-        "fade-in": "fade-in 200ms ease-in-out",
-        "scale-in": "scale-in 200ms ease-in-out",
+        "slide-up": "slide-up 200ms ease-in-out var(--tw-animation-reverse, normal)",
+        "fade-in": "fade-in 200ms ease-in-out var(--tw-animation-reverse, normal)",
+        "scale-in": "scale-in 200ms ease-in-out var(--tw-animation-reverse, normal)",
       },
       keyframes: {
         "slide-up": {
@@ -100,6 +100,9 @@ export default {
           "--tw-drop-shadow": `drop-shadow(0 0 var(${shadowAroundRadius}) rgb(0 0 0 / var(${shadowAroundOpacity})))`,
           filter:
             "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
+        },
+        ".animation-reverse": {
+          "--tw-animation-reverse": "reverse",
         },
       });
       matchUtilities(

@@ -1,4 +1,4 @@
-import { Header, HeaderLink, Layout } from "@/components/Layout";
+import { HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
@@ -27,27 +27,19 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (page: ReactNode) => {
-  return (
-    <Layout
-      header={
-        <Header
-          header={
-            <HeaderSearchBar
-              right={
-                <HeaderLink
-                  Icon={SettingsIcon}
-                  href="/profile/settings"
-                />
-              }
-              title="Profile"
-            />
-          }
-        />
-      }
-    >
-      {page}
-    </Layout>
+  const right = (
+    <HeaderLink
+      Icon={SettingsIcon}
+      href="/profile/settings"
+    />
   );
+  const header = (
+    <HeaderSearchBar
+      right={right}
+      title="Profile"
+    />
+  );
+  return <Layout header={{ header }}>{page}</Layout>;
 };
 
 export default Page;
@@ -59,7 +51,10 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="h-16 w-16">
-        <UserPic user={user} />
+        <UserPic
+          className="text-2xl"
+          user={user}
+        />
       </div>
       <span className="text-2xl font-bold">{user.name}</span>
     </div>
@@ -92,9 +87,9 @@ type SortQuery = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
     case "recent":
-      return { by: "updatedAt", desc: true };
+      return { by: "date", desc: true };
     case "earliest":
-      return { by: "updatedAt", desc: false };
+      return { by: "date", desc: false };
     case "best rated":
       return { by: "rating", desc: true };
     case "worst rated":
@@ -108,12 +103,14 @@ function parseSortParam(param: SortOption): SortQuery {
 const limit = 20;
 function ReviewCards() {
   const router = useRouter();
-  const filter = getQueryParam(router.query[SEARCH_QUERY_KEY]);
   const sortParam = useParseSort(sortOptionList);
-  const sort = parseSortParam(sortParam);
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
-    { limit, filter, sort },
+    {
+      limit,
+      filter: getQueryParam(router.query[SEARCH_QUERY_KEY]),
+      sort: parseSortParam(sortParam),
+    },
     {
       getNextPageParam: (lastPage) => lastPage.cursor,
       initialCursor: 0,

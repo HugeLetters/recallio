@@ -1,15 +1,19 @@
 import { Button, Input, WithLabel, providers } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Logo from "~icons/custom/logo";
 import AlertIcon from "~icons/jam/alert-f";
 
 const Page: NextPageWithLayout = function () {
-  const { query } = useRouter();
-  const callbackUrl = getQueryParam(query.callbackUrl);
-  const error = getErrorMessage(getQueryParam(query.error));
+  const router = useRouter();
+  const { status } = useSession();
+  if (status === "authenticated") {
+    void router.push("/profile");
+  }
+  const callbackUrl = getQueryParam(router.query.callbackUrl);
+  const error = getErrorMessage(getQueryParam(router.query.error));
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-app flex-col p-4">
@@ -32,8 +36,6 @@ const Page: NextPageWithLayout = function () {
     </div>
   );
 };
-
-// todo redirect if signed in
 Page.noAuth = true;
 
 export default Page;

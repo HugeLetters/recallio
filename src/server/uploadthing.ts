@@ -3,7 +3,7 @@ import { findFirst } from "@/database/query/utils";
 import { user } from "@/database/schema/auth";
 import { review } from "@/database/schema/product";
 import { env } from "@/env.mjs";
-import { isValidUrlString } from "@/utils";
+import { isUrl } from "@/utils";
 import { and, eq } from "drizzle-orm";
 import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
 import { UTApi } from "uploadthing/server";
@@ -58,7 +58,7 @@ export const appFileRouter = {
 
       return {
         userId: session.user.id,
-        userImageKey: userData.image && !isValidUrlString(userData.image) ? userData.image : null,
+        userImageKey: userData.image && !isUrl(userData.image) ? userData.image : null,
       };
     })
     .onUploadError(({ error }) => {
