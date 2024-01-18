@@ -12,7 +12,7 @@ import {
 } from "@/components/page/Review";
 import { getQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
-import { type NextPageWithLayout, type StrictPick } from "@/utils/type";
+import { type NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
@@ -98,7 +98,7 @@ function Review({ barcode }: ReviewProps) {
 }
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
-type AttachedImageProps = { barcode: string } & StrictPick<ReviewData, "image" | "name">;
+type AttachedImageProps = { barcode: string } & Pick<ReviewData, "image" | "name">;
 function AttachedImage({ image, name, barcode }: AttachedImageProps) {
   return (
     <div className="flex items-stretch gap-4">
@@ -163,7 +163,7 @@ function Rating({ value }: RatingProps) {
 }
 
 type ProsConsCommentProps = {
-  review: StrictPick<ReviewData, "pros" | "cons" | "comment">;
+  review: Pick<ReviewData, "pros" | "cons" | "comment">;
 };
 function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentProps) {
   if (!pros && !cons && !comment) return null;

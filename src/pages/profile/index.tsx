@@ -92,9 +92,9 @@ type SortQuery = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
     case "recent":
-      return { by: "updatedAt", desc: true };
+      return { by: "date", desc: true };
     case "earliest":
-      return { by: "updatedAt", desc: false };
+      return { by: "date", desc: false };
     case "best rated":
       return { by: "rating", desc: true };
     case "worst rated":

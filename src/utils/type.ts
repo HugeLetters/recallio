@@ -4,7 +4,7 @@ import type IconFC from "~icons/";
 
 export type Icon = typeof IconFC;
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
-export type StrictPick<T, K extends keyof T> = Pick<T, K>;
+export type TransformType<O, K extends keyof O, T> = Omit<StrictOmit<O, K> & Record<K, T>, never>;
 export type ModelProps<T> = { value: T; setValue: (value: T) => void };
 export type DiscriminatedUnion<
   V extends Record<string, unknown>,

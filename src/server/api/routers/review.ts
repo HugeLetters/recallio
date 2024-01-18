@@ -3,24 +3,12 @@ import { upsertReview } from "@/database/query/review";
 import { aggregateArrayColumn, count, findFirst, nullableMap } from "@/database/query/utils";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
-import type { NonEmptyArray, StrictOmit } from "@/utils/type";
 import { TRPCError } from "@trpc/server";
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  getTableColumns,
-  inArray,
-  like,
-  or,
-  sql,
-  type InferColumnsDataTypes,
-} from "drizzle-orm";
+import { and, asc, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
-import { createPaginationCursor } from "../utils/pagination";
+import { createPaginationCursor, type Paginated } from "../utils/pagination";
 
 const trimmedStringSchema = z.string().transform((string) => string.trim());
 export const reviewRouter = createTRPCRouter({
@@ -48,10 +36,16 @@ export const reviewRouter = createTRPCRouter({
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: z.string() }))
-    .query(async ({ ctx, input: { barcode } }): Promise<UserReview> => {
-      const data = await db
+    .query(async ({ ctx, input: { barcode } }) => {
+      return db
         .select({
-          ...userReviewCols,
+          name: review.name,
+          rating: review.rating,
+          comment: review.comment,
+          pros: review.pros,
+          cons: review.cons,
+          isPrivate: review.isPrivate,
+          image: sql`${review.imageKey}`.mapWith(nullableMap(getFileUrl)),
           categories: aggregateArrayColumn<string>(reviewsToCategories.category),
         })
         .from(review)
@@ -65,12 +59,8 @@ export const reviewRouter = createTRPCRouter({
         )
         .groupBy(review.barcode, review.userId)
         .limit(1)
-        .then(([data]) => data);
-
-      if (!data) return null;
-
-      const { imageKey, ...reviewData } = data;
-      return Object.assign(reviewData, { image: imageKey ? getFileUrl(imageKey) : null });
+        .then(([data]) => data ?? null)
+        .catch(throwDefaultError);
     }),
   getUserReviewSummaryList: protectedProcedure
     .input(
@@ -79,64 +69,74 @@ export const reviewRouter = createTRPCRouter({
           /** Filter by name or category */
           filter: z.string().optional(),
         })
-        .merge(
-          createPaginationCursor(z.number().int().min(0), [
-            "updatedAt",
-            "rating",
-          ] satisfies NonEmptyArray<ReviewColumns>),
-        ),
+        .merge(createPaginationCursor(z.number().int().min(0), ["date", "rating"])),
     )
-    .query(
-      async ({
-        input: { cursor, limit, sort, filter },
-        ctx,
-      }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
-        cursor ??= 0;
-        const direction = sort.desc ? desc : asc;
-        const page = await db
-          .select(reviewSummaryCols)
-          .from(review)
-          .where(
-            and(
-              eq(review.userId, ctx.session.user.id),
-              filter
-                ? or(
-                    like(review.name, `${filter}%`),
-                    inArray(
-                      review.barcode,
-                      db
-                        .select({ barcode: reviewsToCategories.barcode })
-                        .from(reviewsToCategories)
-                        .where(
-                          and(
-                            eq(reviewsToCategories.userId, ctx.session.user.id),
-                            like(reviewsToCategories.category, `${filter}%`),
-                          ),
-                        ),
-                    ),
-                  )
-                : undefined,
-            ),
-          )
-          .leftJoin(
-            reviewsToCategories,
-            and(
-              eq(review.userId, reviewsToCategories.userId),
-              eq(review.barcode, reviewsToCategories.barcode),
-            ),
-          )
-          .groupBy(review.barcode, review.userId)
-          .limit(limit)
-          .offset(cursor * limit)
-          .orderBy(direction(review[sort.by]), review.barcode);
+    .query(async ({ input: { cursor = 0, limit, sort, filter }, ctx }) => {
+      function getSortByColumn() {
+        switch (sort.by) {
+          case "date":
+            return review.updatedAt;
+          case "rating":
+            return review.rating;
+          default:
+            const x: never = sort.by;
+            return x;
+        }
+      }
 
-        return {
-          // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
-          cursor: page.length === limit ? cursor + 1 : undefined,
-          page,
-        };
-      },
-    ),
+      const direction = sort.desc ? desc : asc;
+      const sortBy = getSortByColumn();
+
+      return db
+        .select({
+          barcode: review.barcode,
+          name: review.name,
+          image: sql`${review.imageKey}`.mapWith(nullableMap(getFileUrl)),
+          rating: review.rating,
+          categories: aggregateArrayColumn<string>(reviewsToCategories.category),
+        })
+        .from(review)
+        .where(
+          and(
+            eq(review.userId, ctx.session.user.id),
+            filter
+              ? or(
+                  like(review.name, `${filter}%`),
+                  inArray(
+                    review.barcode,
+                    db
+                      .select({ barcode: reviewsToCategories.barcode })
+                      .from(reviewsToCategories)
+                      .where(
+                        and(
+                          eq(reviewsToCategories.userId, ctx.session.user.id),
+                          like(reviewsToCategories.category, `${filter}%`),
+                        ),
+                      ),
+                  ),
+                )
+              : undefined,
+          ),
+        )
+        .leftJoin(
+          reviewsToCategories,
+          and(
+            eq(review.userId, reviewsToCategories.userId),
+            eq(review.barcode, reviewsToCategories.barcode),
+          ),
+        )
+        .groupBy(review.barcode, review.userId)
+        .limit(limit)
+        .offset(cursor * limit)
+        .orderBy(direction(sortBy), review.barcode)
+        .then((page): Paginated<typeof page, number> => {
+          return {
+            // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
+            cursor: page.length === limit ? cursor + 1 : null,
+            page,
+          };
+        });
+    }),
   getReviewCount: protectedProcedure.query(({ ctx }) =>
     count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count),
   ),
@@ -208,26 +208,3 @@ export const reviewRouter = createTRPCRouter({
         .catch((e) => throwDefaultError(e, "Couldn't delete image"));
     }),
 });
-
-const { barcode: _, userId: __, ...userReviewCols } = getTableColumns(review);
-type UserReview =
-  | (StrictOmit<InferColumnsDataTypes<typeof userReviewCols>, "imageKey"> & {
-      image: string | null;
-      categories: string[];
-    })
-  | null;
-
-type ReviewColumns = keyof ReturnType<typeof getTableColumns<typeof review>>;
-const reviewSummaryCols = {
-  barcode: review.barcode,
-  name: review.name,
-  image: sql`${review.imageKey}`.mapWith(nullableMap(getFileUrl)),
-  rating: review.rating,
-  categories: aggregateArrayColumn<string>(reviewsToCategories.category),
-};
-type ReviewSummary = InferColumnsDataTypes<
-  StrictOmit<typeof reviewSummaryCols, "categories" | "image">
-> & {
-  categories: string[];
-  image: string | null;
-};

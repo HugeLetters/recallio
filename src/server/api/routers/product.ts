@@ -6,7 +6,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { getTopQuadruplet } from "@/utils";
+import { mostCommonItems } from "@/utils";
 import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
@@ -44,8 +44,8 @@ const productSummaryListQuery = protectedProcedure
     const sq = db
       .select({
         barcode: review.barcode,
-        names: aggregateArrayColumn<string>(review.name)
-          .mapWith(getTopQuadruplet<string>)
+        names: aggregateArrayColumn(review.name)
+          .mapWith(mostCommonItems(4)<string>)
           .as("names"),
         averageRating: ratingCol,
         reviewCount: reviewCol,
@@ -204,7 +204,7 @@ export const productRouter = createTRPCRouter({
         .select({
           barcode: reviewsToCategories.barcode,
           categories: aggregateArrayColumn(reviewsToCategories.category)
-            .mapWith(getTopQuadruplet<string>)
+            .mapWith(mostCommonItems(3)<string>)
             .as("categories"),
         })
         .from(reviewsToCategories)
@@ -226,9 +226,7 @@ export const productRouter = createTRPCRouter({
 
       return db
         .select({
-          mostPopularName: aggregateArrayColumn(review.name).mapWith(
-            (v: Array<string>) => getTopQuadruplet(v)[0]!,
-          ),
+          mostPopularName: aggregateArrayColumn(review.name).mapWith(mostCommonItems(1)<string>),
           averageRating: sql`avg(${review.rating})`.mapWith((x) => +x),
           reviewCount: countCol(),
           imageKey: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),

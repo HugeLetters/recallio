@@ -52,31 +52,19 @@ export function isNonEmptyString(value: unknown): value is string {
   return !!value && typeof value === "string";
 }
 
-const indexList = [0, 1, 2, 3] as const;
-type Quadruplet<T> = [T?, T?, T?, T?];
-export function getTopQuadruplet<T>(arr: T[]) {
-  const counter = new Map<T, number>();
-  for (const element of arr) {
-    if (element == null) continue;
+export function mostCommonItems(count: number) {
+  return function <T>(arr: T[]): T[] {
+    const counter = new Map<T, number>();
+    for (const element of arr) {
+      if (element == null) continue;
 
-    const count = counter.get(element) ?? 0;
-    counter.set(element, count + 1);
-  }
-
-  const quadruplet: Quadruplet<T> = [];
-  function checkIndex(index: 0 | 1 | 2 | 3, count: number, element: T) {
-    const value = quadruplet[index];
-    if (value && count <= (counter.get(value) ?? -Infinity)) return false;
-
-    for (let i = 3; i > index; i--) {
-      quadruplet[i] = quadruplet[i - 1];
+      const count = counter.get(element) ?? 0;
+      counter.set(element, count + 1);
     }
-    quadruplet[index] = element;
-    return true;
-  }
 
-  for (const [element, count] of counter) {
-    indexList.some((index) => checkIndex(index, count, element));
-  }
-  return quadruplet;
+    return Array.from(counter)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, count)
+      .map(([v]) => v);
+  };
 }

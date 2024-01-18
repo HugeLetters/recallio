@@ -23,12 +23,7 @@ import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { browser, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage } from "@/utils/image";
-import {
-  type ModelProps,
-  type NextPageWithLayout,
-  type StrictOmit,
-  type StrictPick,
-} from "@/utils/type";
+import { type ModelProps, type NextPageWithLayout, type TransformType } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -64,15 +59,10 @@ Page.getLayout = (page) => {
 export default Page;
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
-type ReviewForm = Omit<
-  StrictOmit<ReviewData, "updatedAt" | "categories"> & {
-    [K in keyof StrictPick<ReviewData, "categories">]: Array<{ name: string }>;
-  },
-  never
->;
+type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
-  const { categories, updatedAt: _, ...rest } = data;
+  const { categories, ...rest } = data;
 
   return Object.assign(rest, { categories: categories.map((x) => ({ name: x })) });
 }
@@ -317,7 +307,7 @@ type ProsConsCommentProps = {
   registerPros: UseFormRegisterReturn;
   registerCons: UseFormRegisterReturn;
   registerComment: UseFormRegisterReturn;
-  review: StrictPick<ReviewForm, "pros" | "cons" | "comment">;
+  review: Pick<ReviewForm, "pros" | "cons" | "comment">;
 };
 function ProsConsComment({
   registerPros,

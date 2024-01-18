@@ -3,7 +3,7 @@ import type { MySqlColumn, MySqlTable } from "drizzle-orm/mysql-core";
 import { db } from "..";
 
 export function aggregateArrayColumn<T>(column: MySqlColumn) {
-  return sql<T>`JSON_ARRAYAGG(${column})`;
+  return sql<T[]>`JSON_ARRAYAGG(${column})`;
 }
 
 export function countCol<T extends MySqlColumn>(column?: T) {
