@@ -72,7 +72,7 @@ function getInitials(name: string) {
   const [first, second] = name.split(/[\s_+.-]/);
   return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
 }
-type UserPicProps = { user: Session["user"]; className?: string };
+type UserPicProps = { user: Pick<Session["user"], "image" | "name">; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
     <div className={`aspect-square h-full w-full select-none ${className ?? ""}`}>
@@ -93,7 +93,7 @@ export function UserPic({ user, className }: UserPicProps) {
             src={BlankAvatarBg}
             alt=""
           />
-          <span className="absolute text-2xl font-bold">{getInitials(user.name)}</span>
+          <span className="absolute font-bold">{getInitials(user.name)}</span>
         </div>
       )}
     </div>

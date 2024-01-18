@@ -2,7 +2,7 @@ import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { account, user } from "@/database/schema/auth";
 import { utapi } from "@/server/uploadthing";
-import { isValidUrlString } from "@/utils";
+import { isUrl } from "@/utils";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -44,7 +44,7 @@ export const userRouter = createTRPCRouter({
               throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
             }
 
-            if (!isValidUrlString(image)) {
+            if (!isUrl(image)) {
               utapi.deleteFiles([image]).catch(console.error);
             }
           },

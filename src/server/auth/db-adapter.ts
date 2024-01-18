@@ -1,7 +1,7 @@
 import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
-import { isValidUrlString } from "@/utils";
+import { isUrl } from "@/utils";
 import { and, eq, lt, or, type InferSelectModel } from "drizzle-orm";
 import type { Adapter } from "next-auth/adapters";
 import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
@@ -155,6 +155,6 @@ export function DatabaseAdapter(): Adapter {
 
 type User = InferSelectModel<typeof user>;
 function userWithImageUrl(user: User): User {
-  if (!user.image || isValidUrlString(user.image)) return user;
+  if (!user.image || isUrl(user.image)) return user;
   return { ...user, image: getFileUrl(user.image) };
 }

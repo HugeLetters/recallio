@@ -51,7 +51,10 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="h-16 w-16">
-        <UserPic user={user} />
+        <UserPic
+          className="text-2xl"
+          user={user}
+        />
       </div>
       <span className="text-2xl font-bold">{user.name}</span>
     </div>

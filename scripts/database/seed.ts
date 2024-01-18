@@ -100,6 +100,7 @@ function createReviewValue(
       cons: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       isPrivate: Math.random() > 0.5,
       imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)),
+      updatedAt: faker.date.past({ years: 3 }),
     },
     categories: faker.helpers.maybe(
       () =>

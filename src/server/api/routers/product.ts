@@ -6,7 +6,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { mostCommonItems } from "@/utils";
+import { isUrl, mostCommonItems } from "@/utils";
 import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
@@ -140,7 +140,11 @@ const productReviewsQuery = protectedProcedure
         comment: review.comment,
         updatedAt: review.updatedAt,
         authorId: review.userId,
-        authorAvatar: sql`${user.image}`.mapWith(nullableMap(getFileUrl)),
+        authorAvatar: sql`${user.image}`.mapWith((imageKey: string | null) => {
+          if (!imageKey) return null;
+          return isUrl(imageKey) ? imageKey : getFileUrl(imageKey);
+        }),
+        authorName: user.name,
       })
       .from(review)
       .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false), cursorClause))

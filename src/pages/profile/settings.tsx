@@ -56,7 +56,10 @@ function UserImage({ user }: UserImageProps) {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative h-16 w-16">
-        <UserPic user={user} />
+        <UserPic
+          className="text-2xl"
+          user={user}
+        />
         {!!user.image && (
           <button
             className="absolute right-0 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"

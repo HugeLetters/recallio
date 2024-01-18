@@ -39,7 +39,7 @@ export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;
 }
 
-export function isValidUrlString(url: string) {
+export function isUrl(url: string) {
   try {
     new URL(url);
     return true;
