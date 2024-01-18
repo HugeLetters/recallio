@@ -1,7 +1,7 @@
 import { db } from "@/database";
 import { aggregateArrayColumn, countCol, nullableMap } from "@/database/query/utils";
 import { user } from "@/database/schema/auth";
-import { category, review } from "@/database/schema/product";
+import { category, review, reviewsToCategories } from "@/database/schema/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
@@ -138,9 +138,9 @@ const productReviewsQuery = protectedProcedure
         pros: review.pros,
         cons: review.cons,
         comment: review.comment,
-        date: review.updatedAt,
-        author: review.userId,
-        userImage: sql`${user.image}`.mapWith(nullableMap(getFileUrl)),
+        updatedAt: review.updatedAt,
+        authorId: review.userId,
+        authorAvatar: sql`${user.image}`.mapWith(nullableMap(getFileUrl)),
       })
       .from(review)
       .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false), cursorClause))
@@ -155,8 +155,8 @@ const productReviewsQuery = protectedProcedure
         return {
           page,
           cursor: {
-            author: lastPage.author,
-            sorted: sort.by === "rating" ? lastPage.rating : lastPage.date,
+            author: lastPage.authorId,
+            sorted: sort.by === "rating" ? lastPage.rating : lastPage.updatedAt,
           },
         };
       })
@@ -205,9 +205,19 @@ export const productRouter = createTRPCRouter({
           averageRating: sql`avg(${review.rating})`.mapWith((x) => +x),
           reviewCount: countCol(),
           imageKey: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
+          categories: aggregateArrayColumn(reviewsToCategories.category).mapWith(
+            getTopQuadruplet<string>,
+          ),
         })
         .from(review)
         .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))
+        .leftJoin(
+          reviewsToCategories,
+          and(
+            eq(reviewsToCategories.userId, review.userId),
+            eq(reviewsToCategories.barcode, review.barcode),
+          ),
+        )
         .groupBy(review.barcode)
         .limit(1)
         .then(([x]) => x)

@@ -57,6 +57,8 @@ type Quadruplet<T> = [T?, T?, T?, T?];
 export function getTopQuadruplet<T>(arr: T[]) {
   const counter = new Map<T, number>();
   for (const element of arr) {
+    if (element == null) continue;
+
     const count = counter.get(element) ?? 0;
     counter.set(element, count + 1);
   }
@@ -64,7 +66,7 @@ export function getTopQuadruplet<T>(arr: T[]) {
   const quadruplet: Quadruplet<T> = [];
   function checkIndex(index: 0 | 1 | 2 | 3, count: number, element: T) {
     const value = quadruplet[index];
-    if (value && count <= (counter.get(value) ?? -1)) return false;
+    if (value && count <= (counter.get(value) ?? -Infinity)) return false;
 
     for (let i = 3; i > index; i--) {
       quadruplet[i] = quadruplet[i - 1];
