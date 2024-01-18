@@ -226,7 +226,9 @@ export const productRouter = createTRPCRouter({
 
       return db
         .select({
-          name: aggregateArrayColumn(review.name).mapWith(mostCommonItems(1)<string>),
+          name: aggregateArrayColumn(review.name).mapWith(
+            (arr: string[]) => mostCommonItems(1)(arr)[0]!,
+          ),
           rating: sql`avg(${review.rating})`.mapWith((x) => +x),
           reviewCount: countCol(),
           image: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),

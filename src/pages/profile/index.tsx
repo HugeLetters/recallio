@@ -100,12 +100,14 @@ function parseSortParam(param: SortOption): SortQuery {
 const limit = 20;
 function ReviewCards() {
   const router = useRouter();
-  const filter = getQueryParam(router.query[SEARCH_QUERY_KEY]);
   const sortParam = useParseSort(sortOptionList);
-  const sort = parseSortParam(sortParam);
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
-    { limit, filter, sort },
+    {
+      limit,
+      filter: getQueryParam(router.query[SEARCH_QUERY_KEY]),
+      sort: parseSortParam(sortParam),
+    },
     {
       getNextPageParam: (lastPage) => lastPage.cursor,
       initialCursor: 0,

@@ -78,7 +78,7 @@ export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>
     return (
       <Button
         ref={ref}
-        className={`flex h-10 items-center gap-1 rounded-xl bg-neutral-400/10 px-3 py-1 capitalize text-neutral-400 outline-neutral-300 ${
+        className={`flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-400 outline-neutral-300 ${
           className ?? ""
         }`}
         {...props}
