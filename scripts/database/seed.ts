@@ -15,7 +15,7 @@ import task, { type Task } from "tasuku";
 
 seed().catch(console.error);
 async function seed() {
-  await seedReviews(10000, 150, 10).catch(console.error);
+  await seedReviews(30000, 150, 10).catch(console.error);
 }
 
 type BarcodeData = { barcode: string; rating: number; names: string[] };

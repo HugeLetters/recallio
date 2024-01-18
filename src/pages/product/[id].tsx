@@ -16,6 +16,8 @@ import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
+// todo - show my review it exists - allow to go to it
+
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
@@ -79,8 +81,8 @@ function Summary({
           {image ? <ImagePreview src={image} /> : <NoImagePreview />}
         </ImagePreviewWrapper>
         <div className="flex flex-col justify-between py-0.5">
-          <h2 className="text-xl capitalize">{name}</h2>
-          <div className="-ml-1 flex h-6 min-h-0 w-fit items-center gap-0.5">
+          <h2 className="pl-1.5 text-xl capitalize">{name}</h2>
+          <div className="flex h-6 min-h-0 w-fit items-center gap-0.5">
             <Star highlight />
             <span>{rating.toFixed(1)}</span>
             <span className="text-sm text-neutral-400">({reviewCount})</span>
@@ -192,7 +194,7 @@ function ReviewCard({
   review: { authorAvatar, authorName, rating, pros, cons, comment, updatedAt },
 }: ReviewCardProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="h-7">
           <UserPic
@@ -217,7 +219,7 @@ const ratingList = [1, 2, 3, 4, 5];
 type RatingProps = { value: number };
 function Rating({ value }: RatingProps) {
   return (
-    <div className="-ml-0.5 flex text-3xl">
+    <div className="flex text-3xl">
       {ratingList.map((x) => (
         <div key={x}>
           <Star highlight={x <= value} />
