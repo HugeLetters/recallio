@@ -15,7 +15,7 @@ import task, { type Task } from "tasuku";
 
 seed().catch(console.error);
 async function seed() {
-  await seedReviews(100000, 150, 10).catch(console.error);
+  await seedReviews(30000, 150, 10).catch(console.error);
 }
 
 type BarcodeData = { barcode: string; rating: number; names: string[] };
@@ -100,6 +100,7 @@ function createReviewValue(
       cons: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       isPrivate: Math.random() > 0.5,
       imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)),
+      updatedAt: faker.date.past({ years: 3 }),
     },
     categories: faker.helpers.maybe(
       () =>
@@ -236,7 +237,7 @@ async function cleanUTFiles() {
   const { uploaded, failed } = await utapi.listFiles().then((files) => {
     return files.reduce<{ uploaded: string[]; failed: string[] }>(
       (result, file) => {
-        file.status === "Uploaded" ? result.uploaded.push(file.key) : result.failed.push(file.key);
+        file.status !== "Failed" ? result.uploaded.push(file.key) : result.failed.push(file.key);
         return result;
       },
       { uploaded: [], failed: [] },

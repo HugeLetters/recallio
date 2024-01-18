@@ -1,4 +1,3 @@
-import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
 import {
@@ -12,9 +11,9 @@ import {
 import {
   CategoryButton,
   ConsIcon,
-  HeaderWithBarcodeTitle,
   ImagePreview,
   ImagePreviewWrapper,
+  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -23,12 +22,7 @@ import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { browser, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage } from "@/utils/image";
-import {
-  type ModelProps,
-  type NextPageWithLayout,
-  type StrictOmit,
-  type StrictPick,
-} from "@/utils/type";
+import { type ModelProps, type NextPageWithLayout, type TransformType } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -59,20 +53,15 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (page) => {
-  return <Layout header={<HeaderWithBarcodeTitle />}>{page}</Layout>;
+  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
 };
 export default Page;
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
-type ReviewForm = Omit<
-  StrictOmit<ReviewData, "updatedAt" | "categories"> & {
-    [K in keyof StrictPick<ReviewData, "categories">]: Array<{ name: string }>;
-  },
-  never
->;
+type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
-  const { categories, updatedAt: _, ...rest } = data;
+  const { categories, ...rest } = data;
 
   return Object.assign(rest, { categories: categories.map((x) => ({ name: x })) });
 }
@@ -161,7 +150,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit((data) => {
-          if (!isFormDirty) return onReviewUpsert();
+          if (!isFormDirty && hasReview) return onReviewUpsert();
 
           const { categories, image: _, ...review } = data;
           saveReview({
@@ -317,7 +306,7 @@ type ProsConsCommentProps = {
   registerPros: UseFormRegisterReturn;
   registerCons: UseFormRegisterReturn;
   registerComment: UseFormRegisterReturn;
-  review: StrictPick<ReviewForm, "pros" | "cons" | "comment">;
+  review: Pick<ReviewForm, "pros" | "cons" | "comment">;
 };
 function ProsConsComment({
   registerPros,
@@ -571,7 +560,7 @@ function CategorySearch({
               }}
               aria-label={`Add ${search} category`}
             >
-              <CircledPlusIcon className="h-6 w-6 scale-125 text-neutral-400 transition-colors duration-150 group-active:text-app-green" />
+              <CircledPlusIcon className="h-6 w-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green" />
             </button>
           </label>
         )}
@@ -587,10 +576,7 @@ function CategorySearch({
             }}
           >
             {(category) => (
-              <label
-                key={category}
-                className="flex w-full cursor-pointer justify-between capitalize"
-              >
+              <label className="flex w-full cursor-pointer justify-between capitalize">
                 <span>{category}</span>
                 <Checkbox.Root
                   className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none"

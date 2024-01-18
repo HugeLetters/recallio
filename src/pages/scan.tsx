@@ -1,4 +1,4 @@
-import { Header, Layout, selectionAtom } from "@/components/Layout";
+import { Layout, selectionAtom } from "@/components/Layout";
 import { ImageInput } from "@/components/UI";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useDrag } from "@use-gesture/react";
@@ -146,7 +146,7 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = function useLayout(page) {
-  return <Layout header={<Header title="Scanner" />}>{page}</Layout>;
+  return <Layout header={{ title: "Scanner" }}>{page}</Layout>;
 };
 
 export default Page;

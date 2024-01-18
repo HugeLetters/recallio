@@ -1,18 +1,17 @@
-import { Layout } from "@/components/Layout";
 import { Button, DialogOverlay, Star } from "@/components/UI";
 import {
   CategoryButton,
   ConsIcon,
-  HeaderWithBarcodeTitle,
   ImagePreview,
   ImagePreviewWrapper,
+  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
 import { getQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
-import { type NextPageWithLayout, type StrictPick } from "@/utils/type";
+import { type NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,7 +26,7 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (page) => {
-  return <Layout header={<HeaderWithBarcodeTitle />}>{page}</Layout>;
+  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
 };
 export default Page;
 
@@ -98,7 +97,7 @@ function Review({ barcode }: ReviewProps) {
 }
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
-type AttachedImageProps = { barcode: string } & StrictPick<ReviewData, "image" | "name">;
+type AttachedImageProps = { barcode: string } & Pick<ReviewData, "image" | "name">;
 function AttachedImage({ image, name, barcode }: AttachedImageProps) {
   return (
     <div className="flex items-stretch gap-4">
@@ -148,7 +147,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
   );
 }
 
-const ratingList = [1, 2, 3, 4, 5] as const;
+const ratingList = [1, 2, 3, 4, 5];
 type RatingProps = { value: number };
 function Rating({ value }: RatingProps) {
   return (
@@ -163,7 +162,7 @@ function Rating({ value }: RatingProps) {
 }
 
 type ProsConsCommentProps = {
-  review: StrictPick<ReviewData, "pros" | "cons" | "comment">;
+  review: Pick<ReviewData, "pros" | "cons" | "comment">;
 };
 function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentProps) {
   if (!pros && !cons && !comment) return null;

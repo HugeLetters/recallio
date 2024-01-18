@@ -6,6 +6,7 @@ import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
 import {
+  type ComponentProps,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
   type ReactElement,
@@ -20,18 +21,12 @@ import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 
 type LayoutProps = {
-  header?: ReactNode;
+  header?: ComponentProps<typeof Header>;
 };
 export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   return (
     <div className="grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950">
-      {header ?? (
-        <Header
-          title="Recallio"
-          left={null}
-          right={null}
-        />
-      )}
+      <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
         {children}
       </main>
@@ -102,7 +97,6 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
-  const isScanPage = pathname.startsWith("/scan");
   const selection = useAtomValue(selectionAtom);
   const ScannerIcon = getFooterIcon(selection);
 
@@ -111,12 +105,16 @@ function Footer() {
     <Flipped
       flipId="active-icon-bg"
       key="active-icon-bg"
+      onAppear={(element) => {
+        element.classList.add("animate-scale-in");
+        element.style.opacity = "1";
+      }}
+      onExit={(element, _, remove) => {
+        element.classList.add("animate-scale-in", "animation-reverse");
+        element.addEventListener("animationend", remove, { once: true });
+      }}
     >
-      <div
-        className={`absolute inset-0 inset-x-4 -z-10 bg-app-green/30 blur-lg ${
-          isScanPage ? "opacity-0" : ""
-        }`}
-      />
+      <div className="absolute -inset-y-6 inset-x-2 -z-10 bg-app-green/35 blur-xl" />
     </Flipped>
   );
 
@@ -136,12 +134,11 @@ function Footer() {
           />
           <Link
             href="/scan"
-            className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors ${
-              isScanPage ? "bg-app-green text-white" : "bg-neutral-100"
+            className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 ${
+              pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
             }`}
           >
             <ScannerIcon className="h-full w-full" />
-            {isScanPage ? activeBackground : null}
           </Link>
           <FooterItem
             href="/profile"

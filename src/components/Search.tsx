@@ -139,9 +139,13 @@ export function SortDialog({ optionList }: SortDialogProps) {
 
   return (
     <Dialog.Root>
-      <Dialog.Trigger className="flex items-center text-sm">
+      <Dialog.Trigger className="relative flex items-center gap-1 text-sm">
         <SwapIcon className="h-8 w-8 p-1" />
-        <span className="capitalize">{sortBy}</span>
+        {/* keep trigger always the same size */}
+        <span className="invisible capitalize">
+          {[...optionList].sort((a, b) => b.length - a.length)[0]}
+        </span>
+        <span className="absolute right-1 capitalize">{sortBy}</span>
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="items-end">

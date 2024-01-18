@@ -1,14 +1,171 @@
 import { db } from "@/database";
-import { aggregateArrayColumn } from "@/database/query/utils";
-import { category, review } from "@/database/schema/product";
+import { aggregateArrayColumn, countCol, nullableMap } from "@/database/query/utils";
+import { user } from "@/database/schema/auth";
+import { category, review, reviewsToCategories } from "@/database/schema/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
-import { mapUtKeysToUrls } from "@/server/utils";
+import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { getTopQuadruplet } from "@/utils";
-import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
+import { isUrl, mostCommonItems } from "@/utils";
+import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
+import { throwDefaultError } from "../utils";
+import { createPaginationCursor, type Paginated } from "../utils/pagination";
+
+const productSummaryListCursorSchema = z.object({
+  barcode: z.string(),
+  sorted: z.number(),
+});
+type ProductSummaryListCursor = z.infer<typeof productSummaryListCursorSchema>;
+const productSummaryListQuery = protectedProcedure
+  .input(
+    z
+      .object({ filter: z.string().optional() })
+      .merge(createPaginationCursor(productSummaryListCursorSchema, ["reviews", "rating"])),
+  )
+  .query(({ input: { limit, cursor, sort, filter } }) => {
+    function getSortByColumn(): SQL.Aliased<number> {
+      switch (sort.by) {
+        case "reviews":
+          return reviewCol;
+        case "rating":
+          return ratingCol;
+        default:
+          const x: never = sort.by;
+          return x;
+      }
+    }
+
+    const reviewCol = countCol().as("review-count");
+    const ratingCol = sql`avg(${review.rating})`.mapWith((x) => +x).as("average-rating");
+    const direction = sort.desc ? desc : asc;
+
+    const sortBy = getSortByColumn();
+    const sq = db
+      .select({
+        barcode: review.barcode,
+        names: aggregateArrayColumn(review.name)
+          .mapWith(mostCommonItems(4)<string>)
+          .as("names"),
+        averageRating: ratingCol,
+        reviewCount: reviewCol,
+        image: sql<string>`min(${review.imageKey})`.as("image"),
+      })
+      .from(review)
+      .where(eq(review.isPrivate, false))
+      .groupBy(review.barcode)
+      .as("names-subquery");
+
+    const cursorClause = cursor
+      ? or(
+          (sort.desc ? lt : gt)(sortBy, cursor.sorted),
+          and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.sorted)),
+        )
+      : undefined;
+
+    return db
+      .select({
+        barcode: review.barcode,
+        matchedName: sql<string>`min(${review.name})`,
+        names: sq.names,
+        averageRating: sq.averageRating,
+        reviewCount: sq.reviewCount,
+        image: sql`${sq.image}`.mapWith(nullableMap(getFileUrl)),
+      })
+      .from(review)
+      .where(
+        and(
+          eq(review.isPrivate, false),
+          filter ? like(review.name, `${filter}%`) : undefined,
+          cursorClause,
+        ),
+      )
+      .leftJoin(sq, eq(review.barcode, sq.barcode))
+      .groupBy(review.barcode)
+      .orderBy(direction(sortBy), asc(review.barcode))
+      .limit(limit)
+      .then((page): Paginated<typeof page, ProductSummaryListCursor> => {
+        if (!page.length) return { page, cursor: null };
+        const lastPage = page.at(-1);
+        if (!lastPage) return { page, cursor: null };
+
+        return {
+          page,
+          cursor: {
+            barcode: lastPage.barcode,
+            sorted: sort.by === "rating" ? lastPage.averageRating : lastPage.reviewCount,
+          },
+        };
+      })
+      .catch(throwDefaultError);
+  });
+
+const productReviewsCursorSchema = z.object({
+  author: z.string(),
+  sorted: z.number().or(z.coerce.date()),
+});
+type ProductReviewsCursor = z.infer<typeof productReviewsCursorSchema>;
+const productReviewsQuery = protectedProcedure
+  .input(
+    z
+      .object({ barcode: z.string() })
+      .merge(createPaginationCursor(productReviewsCursorSchema, ["date", "rating"])),
+  )
+  .query(({ input: { barcode, limit, sort, cursor } }) => {
+    function getSortByColumn() {
+      switch (sort.by) {
+        case "date":
+          return review.updatedAt;
+        case "rating":
+          return review.rating;
+        default:
+          const x: never = sort.by;
+          return x;
+      }
+    }
+    const direction = sort.desc ? desc : asc;
+    const sortBy = getSortByColumn();
+    const cursorClause = cursor
+      ? or(
+          (sort.desc ? lt : gt)(sortBy, cursor.sorted),
+          and(gt(review.userId, cursor.author), eq(sortBy, cursor.sorted)),
+        )
+      : undefined;
+
+    return db
+      .select({
+        rating: review.rating,
+        pros: review.pros,
+        cons: review.cons,
+        comment: review.comment,
+        updatedAt: review.updatedAt,
+        authorId: review.userId,
+        authorAvatar: sql`${user.image}`.mapWith((imageKey: string | null) => {
+          if (!imageKey) return null;
+          return isUrl(imageKey) ? imageKey : getFileUrl(imageKey);
+        }),
+        authorName: user.name,
+      })
+      .from(review)
+      .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false), cursorClause))
+      .innerJoin(user, eq(user.id, review.userId))
+      .limit(limit)
+      .orderBy(direction(sortBy), asc(review.userId))
+      .then((page): Paginated<typeof page, ProductReviewsCursor> => {
+        if (!page.length) return { page, cursor: null };
+        const lastPage = page.at(-1);
+        if (!lastPage) return { page, cursor: null };
+
+        return {
+          page,
+          cursor: {
+            author: lastPage.authorId,
+            sorted: sort.by === "rating" ? lastPage.rating : lastPage.updatedAt,
+          },
+        };
+      })
+      .catch(throwDefaultError);
+  });
 
 export const productRouter = createTRPCRouter({
   getProductNames: protectedProcedure
@@ -40,109 +197,53 @@ export const productRouter = createTRPCRouter({
         .limit(limit)
         .orderBy(category.name)
         .then((data) => data.map((x) => x.name))
-        .catch((e) => {
-          console.error(e);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }),
+        .catch(throwDefaultError),
     ),
-  getProductSummaryList: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().int().min(1).max(100),
-        /** last barcode from previous page */
-        cursor: z
-          .object({
-            barcode: z.string(),
-            value: z.number(),
-          })
-          .optional(),
-        sort: z.object({
-          by: z.enum(["reviews", "rating"]),
-          desc: z.boolean(),
-        }),
-        /** Filter by name */
-        filter: z.string().optional(),
-      }),
-    )
-    .query(({ input: { limit, cursor, sort, filter } }) => {
-      function getSortByColumn(): SQL.Aliased<number> {
-        switch (sort.by) {
-          case "reviews":
-            return reviewCol;
-          case "rating":
-            return ratingCol;
-          default:
-            const x: never = sort.by;
-            return x;
-        }
-      }
-
-      const reviewCol = sql`count(*)`.mapWith((x) => +x).as("review-count");
-      const ratingCol = sql`sum(${review.rating})/count(*)`.mapWith((x) => +x).as("average-rating");
-      const direction = sort.desc ? desc : asc;
-
-      const sortBy = getSortByColumn();
-      const sq = db
+  getProductSummaryList: productSummaryListQuery,
+  getProductReviews: productReviewsQuery,
+  getProductSummary: protectedProcedure
+    .input(z.object({ barcode: z.string() }))
+    .query(({ input: { barcode } }) => {
+      const categorySq = db
         .select({
-          barcode: review.barcode,
-          names: aggregateArrayColumn<string>(review.name)
-            .mapWith(getTopQuadruplet<string>)
-            .as("names"),
-          averageRating: ratingCol,
-          reviewCount: reviewCol,
-          image: sql<string>`min(${review.imageKey})`.as("image"),
+          barcode: reviewsToCategories.barcode,
+          categories: aggregateArrayColumn(reviewsToCategories.category)
+            .mapWith(mostCommonItems(3)<string>)
+            .as("categories"),
         })
-        .from(review)
-        .where(eq(review.isPrivate, false))
-        .groupBy(review.barcode)
-        .as("names-subquery");
-
-      const cursorClause = cursor
-        ? or(
-            (sort.desc ? lt : gt)(sortBy, cursor.value),
-            and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.value)),
-          )
-        : undefined;
+        .from(reviewsToCategories)
+        .where(
+          and(
+            eq(reviewsToCategories.barcode, barcode),
+            exists(
+              db
+                .select()
+                .from(review)
+                .where(
+                  and(eq(review.barcode, reviewsToCategories.barcode), eq(review.isPrivate, false)),
+                ),
+            ),
+          ),
+        )
+        .groupBy(reviewsToCategories.barcode)
+        .as("category-subquery");
 
       return db
         .select({
-          barcode: review.barcode,
-          matchedName: sql<string>`min(${review.name})`,
-          names: sq.names,
-          averageRating: sq.averageRating,
-          reviewCount: sq.reviewCount,
-          imageKey: sq.image,
+          name: aggregateArrayColumn(review.name).mapWith(
+            (arr: string[]) => mostCommonItems(1)(arr)[0]!,
+          ),
+          rating: sql`avg(${review.rating})`.mapWith((x) => +x),
+          reviewCount: countCol(),
+          image: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
+          categories: categorySq.categories,
         })
         .from(review)
-        .where(
-          and(
-            eq(review.isPrivate, false),
-            filter ? like(review.name, `${filter}%`) : undefined,
-            cursorClause,
-          ),
-        )
-        .leftJoin(sq, eq(review.barcode, sq.barcode))
+        .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))
+        .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
         .groupBy(review.barcode)
-        .orderBy(direction(sortBy), asc(review.barcode))
-        .limit(limit)
-        .then((summaryList) => mapUtKeysToUrls(summaryList, "imageKey", "image"))
-        .then((page) => {
-          return {
-            // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
-            cursor:
-              page.length === limit
-                ? {
-                    barcode: page.at(-1)?.barcode,
-                    value:
-                      sort.by === "rating" ? page.at(-1)?.averageRating : page.at(-1)?.reviewCount,
-                  }
-                : undefined,
-            page,
-          };
-        })
-        .catch((e) => {
-          console.error(e);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        });
+        .limit(1)
+        .then(([x]) => x ?? null)
+        .catch(throwDefaultError);
     }),
 });

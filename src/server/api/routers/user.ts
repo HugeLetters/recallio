@@ -2,11 +2,12 @@ import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { account, user } from "@/database/schema/auth";
 import { utapi } from "@/server/uploadthing";
-import { isValidUrlString } from "@/utils";
+import { isUrl } from "@/utils";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { throwDefaultError } from "../utils";
 
 export const userRouter = createTRPCRouter({
   setName: protectedProcedure.input(z.string()).mutation(({ input, ctx: { session } }) => {
@@ -20,13 +21,7 @@ export const userRouter = createTRPCRouter({
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
           }
         },
-        (e) => {
-          console.error(e);
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Error while trying to update username",
-          });
-        },
+        (e) => throwDefaultError(e, "Error while trying to update username"),
       );
   }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
@@ -49,17 +44,11 @@ export const userRouter = createTRPCRouter({
               throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
             }
 
-            if (!isValidUrlString(image)) {
+            if (!isUrl(image)) {
               utapi.deleteFiles([image]).catch(console.error);
             }
           },
-          (e) => {
-            console.error(e);
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: "Error while trying to update your avatar",
-            });
-          },
+          (e) => throwDefaultError(e, "Error while trying to update your avatar"),
         );
     });
   }),
@@ -94,13 +83,7 @@ export const userRouter = createTRPCRouter({
               });
             }
           },
-          (e) => {
-            console.error(e);
-            throw new TRPCError({
-              code: "INTERNAL_SERVER_ERROR",
-              message: `Error while trying to unlink your ${provider} account`,
-            });
-          },
+          (e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`),
         ),
   ),
 });
