@@ -153,14 +153,14 @@ const productReviewsQuery = protectedProcedure
       .orderBy(direction(sortBy), asc(review.userId))
       .then((page): Paginated<typeof page, ProductReviewsCursor> => {
         if (!page.length) return { page, cursor: null };
-        const lastPage = page.at(-1);
-        if (!lastPage) return { page, cursor: null };
+        const lastProduct = page.at(-1);
+        if (!lastProduct) return { page, cursor: null };
 
         return {
           page,
           cursor: {
-            author: lastPage.authorId,
-            sorted: sort.by === "rating" ? lastPage.rating : lastPage.updatedAt,
+            author: lastProduct.authorId,
+            sorted: sort.by === "rating" ? lastProduct.rating : lastProduct.updatedAt,
           },
         };
       })
