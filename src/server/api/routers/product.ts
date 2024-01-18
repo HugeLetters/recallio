@@ -7,7 +7,7 @@ import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
 import { getTopQuadruplet } from "@/utils";
-import { and, asc, desc, eq, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
 import { createPaginationCursor, type Paginated } from "../utils/pagination";
@@ -200,24 +200,43 @@ export const productRouter = createTRPCRouter({
   getProductSummary: protectedProcedure
     .input(z.object({ barcode: z.string() }))
     .query(({ input: { barcode } }) => {
+      const categorySq = db
+        .select({
+          barcode: reviewsToCategories.barcode,
+          categories: aggregateArrayColumn(reviewsToCategories.category)
+            .mapWith(getTopQuadruplet<string>)
+            .as("categories"),
+        })
+        .from(reviewsToCategories)
+        .where(
+          and(
+            eq(reviewsToCategories.barcode, barcode),
+            exists(
+              db
+                .select()
+                .from(review)
+                .where(
+                  and(eq(review.barcode, reviewsToCategories.barcode), eq(review.isPrivate, false)),
+                ),
+            ),
+          ),
+        )
+        .groupBy(reviewsToCategories.barcode)
+        .as("category-subquery");
+
       return db
         .select({
+          mostPopularName: aggregateArrayColumn(review.name).mapWith(
+            (v: Array<string>) => getTopQuadruplet(v)[0]!,
+          ),
           averageRating: sql`avg(${review.rating})`.mapWith((x) => +x),
           reviewCount: countCol(),
           imageKey: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
-          categories: aggregateArrayColumn(reviewsToCategories.category).mapWith(
-            getTopQuadruplet<string>,
-          ),
+          categories: categorySq.categories,
         })
         .from(review)
         .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))
-        .leftJoin(
-          reviewsToCategories,
-          and(
-            eq(reviewsToCategories.userId, review.userId),
-            eq(reviewsToCategories.barcode, review.barcode),
-          ),
-        )
+        .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
         .groupBy(review.barcode)
         .limit(1)
         .then(([x]) => x)
