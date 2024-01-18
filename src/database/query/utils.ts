@@ -3,7 +3,7 @@ import type { MySqlColumn, MySqlTable } from "drizzle-orm/mysql-core";
 import { db } from "..";
 
 export function aggregateArrayColumn<T>(column: MySqlColumn) {
-  return sql<T[]>`JSON_ARRAYAGG(${column})`;
+  return sql<T[] | [null]>`JSON_ARRAYAGG(${column})`;
 }
 
 export function countCol<T extends MySqlColumn>(column?: T) {
@@ -20,4 +20,10 @@ export function count<T extends MySqlTable>(table: T, where: SQL | undefined) {
 
 export function nullableMap<I, R>(f: (v: I) => R): (v: I) => R | null {
   return f;
+}
+
+export function removeNullishArray<T>(arr: T[] | [null]): T[] {
+  if (arr.length === 1 && arr[0] === null) return [];
+
+  return arr as T[];
 }

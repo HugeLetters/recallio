@@ -53,8 +53,8 @@ export function isNonEmptyString(value: unknown): value is string {
 }
 
 export function mostCommonItems(count: number) {
-  return function <T>(arr: T[]): T[] {
-    const counter = new Map<T, number>();
+  return function <T>(arr: T[]): NonNullable<T>[] {
+    const counter = new Map<NonNullable<T>, number>();
     for (const element of arr) {
       if (element == null) continue;
 
