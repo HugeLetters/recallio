@@ -1,13 +1,18 @@
 import { Button } from "@/components/UI";
 import type { NextPageWithLayout } from "@/utils/type";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import EmailIcon from "~icons/carbon/email";
 
 const PIN_LENGTH = 6;
-// todo redirect if signed in
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
+  const { status } = useSession();
+  if (status === "authenticated") {
+    void router.push("/profile");
+  }
+
   const [pin, setPin] = useState("");
 
   return (
