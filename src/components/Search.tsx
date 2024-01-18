@@ -143,7 +143,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
         <SwapIcon className="h-8 w-8 p-1" />
         {/* keep trigger always the same size */}
         <span className="invisible capitalize">
-          {optionList.toSorted((a, b) => b.length - a.length)[0]}
+          {[...optionList].sort((a, b) => b.length - a.length)[0]}
         </span>
         <span className="absolute right-1 capitalize">{sortBy}</span>
       </Dialog.Trigger>
