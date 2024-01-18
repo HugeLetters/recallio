@@ -571,7 +571,7 @@ function CategorySearch({
               }}
               aria-label={`Add ${search} category`}
             >
-              <CircledPlusIcon className="h-6 w-6 scale-125 text-neutral-400 transition-colors duration-150 group-active:text-app-green" />
+              <CircledPlusIcon className="h-6 w-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green" />
             </button>
           </label>
         )}

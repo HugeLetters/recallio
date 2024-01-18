@@ -102,22 +102,24 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
-  const isScanPage = pathname.startsWith("/scan");
   const selection = useAtomValue(selectionAtom);
   const ScannerIcon = getFooterIcon(selection);
 
-  // todo - implement proper transition in and out
   // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
   const activeBackground = (
     <Flipped
       flipId="active-icon-bg"
       key="active-icon-bg"
+      onAppear={(element) => {
+        element.classList.add("animate-scale-in");
+        element.style.opacity = "1";
+      }}
+      onExit={(element, _, remove) => {
+        element.classList.add("animate-scale-in", "animation-reverse");
+        element.addEventListener("animationend", remove, { once: true });
+      }}
     >
-      <div
-        className={`absolute inset-0 inset-x-4 -z-10 bg-app-green/20 blur-lg ${
-          isScanPage ? "opacity-0" : ""
-        }`}
-      />
+      <div className="absolute -inset-y-6 inset-x-2 -z-10 bg-app-green/35 blur-xl" />
     </Flipped>
   );
 
@@ -137,12 +139,11 @@ function Footer() {
           />
           <Link
             href="/scan"
-            className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors ${
-              isScanPage ? "bg-app-green text-white" : "bg-neutral-100"
+            className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 ${
+              pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
             }`}
           >
             <ScannerIcon className="h-full w-full" />
-            {isScanPage ? activeBackground : null}
           </Link>
           <FooterItem
             href="/profile"
