@@ -587,10 +587,7 @@ function CategorySearch({
             }}
           >
             {(category) => (
-              <label
-                key={category}
-                className="flex w-full cursor-pointer justify-between capitalize"
-              >
+              <label className="flex w-full cursor-pointer justify-between capitalize">
                 <span>{category}</span>
                 <Checkbox.Root
                   className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none"

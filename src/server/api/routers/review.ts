@@ -1,10 +1,9 @@
 import { db } from "@/database";
 import { upsertReview } from "@/database/query/review";
-import { aggregateArrayColumn, count, findFirst } from "@/database/query/utils";
+import { aggregateArrayColumn, count, findFirst, nullableMap } from "@/database/query/utils";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
-import { mapUtKeysToUrls } from "@/server/utils";
-import type { StrictOmit } from "@/utils/type";
+import type { NonEmptyArray, StrictOmit } from "@/utils/type";
 import { TRPCError } from "@trpc/server";
 import {
   and,
@@ -15,10 +14,13 @@ import {
   inArray,
   like,
   or,
+  sql,
   type InferColumnsDataTypes,
 } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { throwDefaultError } from "../utils";
+import { createPaginationCursor } from "../utils/pagination";
 
 const trimmedStringSchema = z.string().transform((string) => string.trim());
 export const reviewRouter = createTRPCRouter({
@@ -42,13 +44,7 @@ export const reviewRouter = createTRPCRouter({
       const { categories, ...value } = input;
       return upsertReview({ ...value, userId: ctx.session.user.id }, categories?.filter(Boolean))
         .then(() => void 0)
-        .catch((e) => {
-          console.error(e);
-          throw new TRPCError({
-            message: "Couldn't post the review",
-            code: "INTERNAL_SERVER_ERROR",
-          });
-        });
+        .catch((e) => throwDefaultError(e, "Couldn't post the review"));
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: z.string() }))
@@ -78,23 +74,24 @@ export const reviewRouter = createTRPCRouter({
     }),
   getUserReviewSummaryList: protectedProcedure
     .input(
-      z.object({
-        limit: z.number().int().min(1).max(100),
-        /** zero-based index */
-        cursor: z.number().int().min(0),
-        sort: z.object({
-          by: z.enum(["updatedAt", "rating"] satisfies [ReviewColumns, ...ReviewColumns[]]),
-          desc: z.boolean(),
-        }),
-        /** Filter by name or category */
-        filter: z.string().optional(),
-      }),
+      z
+        .object({
+          /** Filter by name or category */
+          filter: z.string().optional(),
+        })
+        .merge(
+          createPaginationCursor(z.number().int().min(0), [
+            "updatedAt",
+            "rating",
+          ] satisfies NonEmptyArray<ReviewColumns>),
+        ),
     )
     .query(
       async ({
         input: { cursor, limit, sort, filter },
         ctx,
       }): Promise<{ cursor: number | undefined; page: ReviewSummary[] }> => {
+        cursor ??= 0;
         const direction = sort.desc ? desc : asc;
         const page = await db
           .select(reviewSummaryCols)
@@ -131,8 +128,7 @@ export const reviewRouter = createTRPCRouter({
           .groupBy(review.barcode, review.userId)
           .limit(limit)
           .offset(cursor * limit)
-          .orderBy(direction(review[sort.by]), review.barcode)
-          .then((summaries) => mapUtKeysToUrls(summaries, "imageKey", "image"));
+          .orderBy(direction(review[sort.by]), review.barcode);
 
         return {
           // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
@@ -150,23 +146,16 @@ export const reviewRouter = createTRPCRouter({
       const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      ).then(
-        ([reviewData]) => {
-          if (!reviewData) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: `Couldn't find your review for barcode ${barcode}.`,
-            });
-          }
+      ).then(([reviewData]) => {
+        if (!reviewData) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Couldn't find your review for barcode ${barcode}.`,
+          });
+        }
 
-          return reviewData;
-        },
-        (err) => {
-          console.error(err);
-
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        },
-      );
+        return reviewData;
+      }, throwDefaultError);
 
       return db
         .transaction(async (tx) => {
@@ -188,14 +177,7 @@ export const reviewRouter = createTRPCRouter({
 
           utapi.deleteFiles(imageKey).catch(console.error);
         })
-        .catch((err) => {
-          console.error(err);
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: `Couldn't delete your review for barcode ${barcode}.`,
-          });
-        });
+        .catch((e) => throwDefaultError(e, `Couldn't delete your review for barcode ${barcode}.`));
     }),
   deleteReviewImage: protectedProcedure
     .input(z.object({ barcode: z.string() }))
@@ -203,23 +185,16 @@ export const reviewRouter = createTRPCRouter({
       const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      ).then(
-        ([reviewData]) => {
-          if (!reviewData) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: `Couldn't find your review for barcode ${barcode}.`,
-            });
-          }
+      ).then(([reviewData]) => {
+        if (!reviewData) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Couldn't find your review for barcode ${barcode}.`,
+          });
+        }
 
-          return reviewData;
-        },
-        (err) => {
-          console.error(err);
-
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        },
-      );
+        return reviewData;
+      }, throwDefaultError);
 
       return db
         .update(review)
@@ -230,11 +205,7 @@ export const reviewRouter = createTRPCRouter({
 
           utapi.deleteFiles(imageKey).catch(console.error);
         })
-        .catch((err) => {
-          console.error(err);
-
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Couldn't delete image" });
-        });
+        .catch((e) => throwDefaultError(e, "Couldn't delete image"));
     }),
 });
 
@@ -250,13 +221,13 @@ type ReviewColumns = keyof ReturnType<typeof getTableColumns<typeof review>>;
 const reviewSummaryCols = {
   barcode: review.barcode,
   name: review.name,
-  imageKey: review.imageKey,
+  image: sql`${review.imageKey}`.mapWith(nullableMap(getFileUrl)),
   rating: review.rating,
   categories: aggregateArrayColumn<string>(reviewsToCategories.category),
 };
-type ReviewSummary = StrictOmit<
-  InferColumnsDataTypes<StrictOmit<typeof reviewSummaryCols, "categories">> & {
-    categories: string[];
-  },
-  "imageKey"
-> & { image: string | null };
+type ReviewSummary = InferColumnsDataTypes<
+  StrictOmit<typeof reviewSummaryCols, "categories" | "image">
+> & {
+  categories: string[];
+  image: string | null;
+};

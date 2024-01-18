@@ -18,3 +18,5 @@ export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
   noAuth?: boolean;
   getLayout?: (page: ReactNode) => ReactNode;
 };
+
+export type NonEmptyArray<T> = [T, ...Array<T>];

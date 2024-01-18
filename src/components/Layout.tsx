@@ -106,6 +106,7 @@ function Footer() {
   const selection = useAtomValue(selectionAtom);
   const ScannerIcon = getFooterIcon(selection);
 
+  // todo - implement proper transition in and out
   // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
   const activeBackground = (
     <Flipped

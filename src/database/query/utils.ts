@@ -21,3 +21,9 @@ export function findFirst<T extends MySqlTable>(table: T, where: SQL | undefined
 export function count<T extends MySqlTable>(table: T, where: SQL | undefined) {
   return db.select({ count: countCol() }).from(table).where(where).limit(1);
 }
+
+export function nullableMap<I, R>(f: (v: I) => R) {
+  return function (v: I): R | null {
+    return f(v);
+  };
+}
