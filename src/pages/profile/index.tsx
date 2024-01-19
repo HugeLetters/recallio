@@ -76,6 +76,7 @@ function Reviews() {
         </h1>
         <SortDialog optionList={sortOptionList} />
       </div>
+      {/* todo - this is a code smell imo */}
       {/* That way we fetch ReviewCards w/o waiting for countQuery to settle */}
       {!countQuery.isSuccess || !!countQuery.data ? <ReviewCards /> : <NoReviews />}
     </div>
@@ -120,18 +121,15 @@ function ReviewCards() {
   return (
     <div className="flex grow flex-col gap-2">
       {reviewCardsQuery.isSuccess ? (
-        !!reviewCardsQuery.data.pages[0]?.page.length ? (
-          <InfiniteScroll
-            pages={reviewCardsQuery.data.pages}
-            getPageValues={(page) => page.page}
-            getKey={(value) => value.barcode}
-            getNextPage={fetchNextPage(reviewCardsQuery)}
-          >
-            {(value) => <ReviewCard review={value} />}
-          </InfiniteScroll>
-        ) : (
-          <NoResults />
-        )
+        <InfiniteScroll
+          pages={reviewCardsQuery.data.pages}
+          getPageValues={(page) => page.page}
+          getKey={(value) => value.barcode}
+          getNextPage={fetchNextPage(reviewCardsQuery)}
+          fallback={<NoResults />}
+        >
+          {(value) => <ReviewCard review={value} />}
+        </InfiniteScroll>
       ) : (
         "Loading..."
       )}

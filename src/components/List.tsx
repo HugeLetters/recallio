@@ -22,6 +22,8 @@ type InfiniteScrollProps<P, V> = {
   getKey: (value: V) => Key;
   /** This will be invoked upon scrolling further to get more pages */
   getNextPage: () => void;
+  /** Render this element if all pages are empty */
+  fallback?: ReactNode;
 };
 export function InfiniteScroll<P, V>({
   pages,
@@ -29,14 +31,10 @@ export function InfiniteScroll<P, V>({
   children,
   getKey,
   getNextPage,
+  fallback,
 }: InfiniteScrollProps<P, V>) {
   const triggerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    // todo - what if the whole list is empty?
-    if (lastNonEmptyPageIndex === -1) {
-      return;
-    }
     if (!triggerRef.current) return;
     const trigger = triggerRef.current.firstElementChild;
     if (!trigger) return;
@@ -59,24 +57,26 @@ export function InfiniteScroll<P, V>({
   const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
   return (
     <>
-      {pages.map((page, i) => {
-        const isLastPage = i === lastNonEmptyPageIndex;
-        const values = getPageValues(page);
+      {lastNonEmptyPageIndex !== -1
+        ? pages.map((page, i) => {
+            const isLastPage = i === lastNonEmptyPageIndex;
+            const values = getPageValues(page);
 
-        return values.map((value, i) => {
-          const isTrigger = isLastPage && i === Math.floor(values.length / 2);
+            return values.map((value, i) => {
+              const isTrigger = isLastPage && i === Math.floor(values.length / 2);
 
-          return (
-            <div
-              className="contents"
-              key={getKey(value)}
-              ref={isTrigger ? triggerRef : null}
-            >
-              {children(value)}
-            </div>
-          );
-        });
-      })}
+              return (
+                <div
+                  className="contents"
+                  key={getKey(value)}
+                  ref={isTrigger ? triggerRef : null}
+                >
+                  {children(value)}
+                </div>
+              );
+            });
+          })
+        : fallback}
     </>
   );
 }
