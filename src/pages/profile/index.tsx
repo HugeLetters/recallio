@@ -2,7 +2,7 @@ import { HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
-import { getQueryParam, minutesToMs } from "@/utils";
+import { fetchNextPage, getQueryParam, minutesToMs } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
@@ -99,15 +99,14 @@ function parseSortParam(param: SortOption): SortQuery {
       return x;
   }
 }
-// just a magic number which seems to work well
-const limit = 20;
+
 function ReviewCards() {
   const router = useRouter();
   const sortParam = useParseSort(sortOptionList);
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
     {
-      limit,
+      limit: 20,
       filter: getQueryParam(router.query[SEARCH_QUERY_KEY]),
       sort: parseSortParam(sortParam),
     },
@@ -118,27 +117,22 @@ function ReviewCards() {
     },
   );
 
-  return (
-    <div className="flex grow flex-col gap-2">
-      {reviewCardsQuery.isSuccess ? (
-        !!reviewCardsQuery.data.pages[0]?.page.length ? (
-          <InfiniteScroll
-            pages={reviewCardsQuery.data.pages}
-            getPageValues={(page) => page.page}
-            getKey={(value) => value.barcode}
-            getNextPage={() => {
-              !reviewCardsQuery.isFetching && reviewCardsQuery.fetchNextPage().catch(console.error);
-            }}
-          >
-            {(value) => <ReviewCard review={value} />}
-          </InfiniteScroll>
-        ) : (
-          <NoResults />
-        )
-      ) : (
-        "Loading..."
-      )}
-    </div>
+  return reviewCardsQuery.isSuccess ? (
+    !!reviewCardsQuery.data.pages[0]?.page.length ? (
+      <InfiniteScroll
+        className="flex grow flex-col gap-2"
+        pages={reviewCardsQuery.data.pages}
+        getPageValues={(page) => page.page}
+        getKey={(value) => value.barcode}
+        getNextPage={fetchNextPage(reviewCardsQuery)}
+      >
+        {(value) => <ReviewCard review={value} />}
+      </InfiniteScroll>
+    ) : (
+      <NoResults />
+    )
+  ) : (
+    "Loading..."
   );
 }
 

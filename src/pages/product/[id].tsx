@@ -11,7 +11,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { getQueryParam } from "@/utils";
+import { fetchNextPage, getQueryParam } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
@@ -166,10 +166,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
             pages={reviewsQuery.data.pages}
             getPageValues={({ page }) => page}
             getKey={(review) => review.authorId}
-            getNextPage={() => {
-              if (reviewsQuery.isFetching) return;
-              reviewsQuery.fetchNextPage().catch(console.error);
-            }}
+            getNextPage={fetchNextPage(reviewsQuery)}
           >
             {(review) => <ReviewCard review={review} />}
           </InfiniteScroll>

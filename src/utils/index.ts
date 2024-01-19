@@ -1,3 +1,4 @@
+import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
 import type { NextRouter } from "next/router";
 import type { Query } from "nextjs-routes";
 
@@ -66,5 +67,16 @@ export function mostCommonItems(count: number) {
       .sort(([, a], [, b]) => b - a)
       .slice(0, count)
       .map(([v]) => v);
+  };
+}
+
+export function fetchNextPage<Q extends UseTRPCInfiniteQueryResult<unknown, unknown>>({
+  isFetching,
+  hasNextPage,
+  fetchNextPage,
+}: Q) {
+  return function () {
+    if (isFetching || !hasNextPage) return;
+    fetchNextPage().catch(console.error);
   };
 }

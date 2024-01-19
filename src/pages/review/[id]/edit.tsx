@@ -19,7 +19,7 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { browser, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
+import { browser, fetchNextPage, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage } from "@/utils/image";
 import { type ModelProps, type NextPageWithLayout, type TransformType } from "@/utils/type";
@@ -569,11 +569,7 @@ function CategorySearch({
             pages={categoriesQuery.data.pages}
             getPageValues={(page) => page}
             getKey={(category) => category}
-            getNextPage={() => {
-              if (categoriesQuery.isFetching) return;
-
-              categoriesQuery.fetchNextPage().catch(console.error);
-            }}
+            getNextPage={fetchNextPage(categoriesQuery)}
           >
             {(category) => (
               <label className="flex w-full cursor-pointer justify-between capitalize">

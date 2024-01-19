@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
-import { getQueryParam } from "@/utils";
+import { fetchNextPage, getQueryParam } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
@@ -31,10 +31,7 @@ const Page: NextPageWithLayout = function () {
               pages={productListQuery.data?.pages}
               getPageValues={(page) => page.page}
               getKey={(value) => value.barcode}
-              getNextPage={() => {
-                !productListQuery.isFetching &&
-                  productListQuery.fetchNextPage().catch(console.error);
-              }}
+              getNextPage={fetchNextPage(productListQuery)}
             >
               {(value) => {
                 const match = filter ? value.matchedName : value.names[0] ?? value.matchedName;
