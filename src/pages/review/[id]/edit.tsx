@@ -232,7 +232,6 @@ function Name({ names, register, setValue }: NameProps) {
           className="grow outline-none"
           aria-label="Product name"
         />
-        {/* todo - there's no design for this element yet */}
         {!!names.length && (
           <Select.Root
             onValueChange={setValue}

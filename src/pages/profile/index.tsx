@@ -76,9 +76,8 @@ function Reviews() {
         </h1>
         <SortDialog optionList={sortOptionList} />
       </div>
-      {/* todo - this is a code smell imo */}
       {/* That way we fetch ReviewCards w/o waiting for countQuery to settle */}
-      {!countQuery.isSuccess || !!countQuery.data ? <ReviewCards /> : <NoReviews />}
+      {countQuery.isSuccess && !countQuery.data ? <NoReviews /> : <ReviewCards />}
     </div>
   );
 }

@@ -16,8 +16,6 @@ import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
-// todo - show my review if exists - allow to go to it
-
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
