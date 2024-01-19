@@ -93,6 +93,7 @@ function Summary({
         <span className="text-xs">Barcode</span>
         <span className="text-neutral-400">{barcode}</span>
       </div>
+      {/* todo - categories is null if product has no categories attached */}
       {!!categories.length && (
         <div className="flex flex-col gap-2 text-xs">
           <span>Category</span>
