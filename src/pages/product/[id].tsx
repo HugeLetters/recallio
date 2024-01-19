@@ -16,7 +16,7 @@ import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
-// todo - show my review it exists - allow to go to it
+// todo - show my review if exists - allow to go to it
 
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
@@ -93,8 +93,7 @@ function Summary({
         <span className="text-xs">Barcode</span>
         <span className="text-neutral-400">{barcode}</span>
       </div>
-      {/* todo - categories is null if product has no categories attached */}
-      {!!categories.length && (
+      {!!categories?.length && (
         <div className="flex flex-col gap-2 text-xs">
           <span>Category</span>
           <div className="flex gap-3">
