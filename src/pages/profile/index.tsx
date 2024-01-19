@@ -117,22 +117,25 @@ function ReviewCards() {
     },
   );
 
-  return reviewCardsQuery.isSuccess ? (
-    !!reviewCardsQuery.data.pages[0]?.page.length ? (
-      <InfiniteScroll
-        className="flex grow flex-col gap-2"
-        pages={reviewCardsQuery.data.pages}
-        getPageValues={(page) => page.page}
-        getKey={(value) => value.barcode}
-        getNextPage={fetchNextPage(reviewCardsQuery)}
-      >
-        {(value) => <ReviewCard review={value} />}
-      </InfiniteScroll>
-    ) : (
-      <NoResults />
-    )
-  ) : (
-    "Loading..."
+  return (
+    <div className="flex grow flex-col gap-2">
+      {reviewCardsQuery.isSuccess ? (
+        !!reviewCardsQuery.data.pages[0]?.page.length ? (
+          <InfiniteScroll
+            pages={reviewCardsQuery.data.pages}
+            getPageValues={(page) => page.page}
+            getKey={(value) => value.barcode}
+            getNextPage={fetchNextPage(reviewCardsQuery)}
+          >
+            {(value) => <ReviewCard review={value} />}
+          </InfiniteScroll>
+        ) : (
+          <NoResults />
+        )
+      ) : (
+        "Loading..."
+      )}
+    </div>
   );
 }
 

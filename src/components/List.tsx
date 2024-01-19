@@ -56,7 +56,6 @@ export function InfiniteScroll<P, V>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages]);
 
-  // todo - fix all instances of infinite scroll css
   const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
   return (
     <>
