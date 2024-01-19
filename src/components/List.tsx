@@ -116,7 +116,7 @@ export function Card({
           <MilkIcon className="h-full w-full text-white" />
         </div>
       )}
-      <div className="flex h-full min-w-0 flex-col items-start gap-1">
+      <div className="flex h-10 min-w-0 flex-col justify-between">
         <span className="w-full overflow-hidden text-ellipsis text-sm capitalize">{label}</span>
         {!!subtext.length && (
           <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">
@@ -124,7 +124,7 @@ export function Card({
           </span>
         )}
       </div>
-      <div className="ml-auto flex text-lg">{children}</div>
+      <div className="ml-auto flex shrink-0 text-lg">{children}</div>
     </Link>
   );
 }
