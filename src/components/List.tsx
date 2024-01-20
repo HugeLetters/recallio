@@ -113,7 +113,9 @@ export function Card({
         </div>
       )}
       <div className="flex h-10 min-w-0 flex-col justify-between">
-        <span className="w-full overflow-hidden text-ellipsis text-sm capitalize">{label}</span>
+        <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm capitalize">
+          {label}
+        </span>
         {!!subtext.length && (
           <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">
             {subtext.join(", ")}
