@@ -2,7 +2,7 @@ import type { AppFileRouter } from "@/server/uploadthing";
 import { browser } from "@/utils";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import type React from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 
@@ -61,4 +61,13 @@ export function useOptimistic<T>() {
       queuedAction.current = undefined;
     },
   };
+}
+
+export function useAsyncComputed<T, R>(state: T, effect: (draft: T) => Promise<R>) {
+  const [computed, setComputed] = useState<R>();
+  useEffect(() => {
+    effect(state).then(setComputed).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+  return computed;
 }
