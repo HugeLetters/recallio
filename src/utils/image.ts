@@ -62,3 +62,21 @@ function drawImage(
     canvas.toBlob((blob) => resolve(blob), "image/webp");
   });
 }
+
+export function blobToBase64(blob: Blob) {
+  const fileReader = new FileReader();
+  fileReader.readAsDataURL(blob);
+  return new Promise<string>((resolve, reject) => {
+    fileReader.addEventListener("load", (event) => {
+      const result = event.target?.result;
+      if (typeof result === "string") resolve(result);
+      reject("File reader result is not a string");
+    });
+    fileReader.addEventListener("error", (event) => {
+      reject(event.target?.error);
+    });
+    fileReader.addEventListener("abort", () => {
+      reject("File reader aborted");
+    });
+  });
+}
