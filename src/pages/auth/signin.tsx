@@ -10,7 +10,7 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
   if (status === "authenticated") {
-    void router.push("/profile");
+    void router.replace("/profile");
   }
   const callbackUrl = getQueryParam(router.query.callbackUrl);
   const error = getErrorMessage(getQueryParam(router.query.error));

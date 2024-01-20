@@ -38,7 +38,7 @@ function Review({ barcode }: ReviewProps) {
     {
       select(data) {
         if (!data) {
-          void router.push({ pathname: "/review/[id]/edit", query: { id: barcode } });
+          void router.replace({ pathname: "/review/[id]/edit", query: { id: barcode } });
           throw Error("No review found");
         }
 
