@@ -36,7 +36,7 @@ export const appFileRouter = {
     })
     .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
       db.update(review)
-        .set({ imageKey: file.key })
+        .set({ imageKey: file.key, updatedAt: new Date() })
         .where(and(eq(review.userId, userId), eq(review.barcode, barcode)))
         .then((query) => {
           if (!query.rowsAffected || !oldImageKey) return;
