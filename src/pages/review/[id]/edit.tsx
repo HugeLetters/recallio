@@ -388,7 +388,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <ImagePreviewWrapper>
+      <ImagePreviewWrapper className="relative">
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {hasImage && (
           <Button

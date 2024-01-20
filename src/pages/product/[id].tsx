@@ -75,12 +75,14 @@ function Summary({
   return (
     <div className="flex flex-col gap-7">
       <div className="flex h-16 gap-3">
-        <ImagePreviewWrapper>
+        <ImagePreviewWrapper className="shrink-0">
           {image ? <ImagePreview src={image} /> : <NoImagePreview />}
         </ImagePreviewWrapper>
-        <div className="flex flex-col justify-between py-0.5">
-          <h2 className="pl-1.5 text-xl capitalize">{name}</h2>
-          <div className="flex h-6 min-h-0 w-fit items-center gap-0.5">
+        <div className="flex min-w-0 flex-col justify-between py-0.5">
+          <h2 className="overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
+            {name}
+          </h2>
+          <div className="flex h-6 min-h-0 w-fit shrink-0 items-center gap-0.5">
             <Star highlight />
             <span>{rating.toFixed(1)}</span>
             <span className="text-sm text-neutral-400">({reviewCount})</span>
