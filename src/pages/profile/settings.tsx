@@ -8,9 +8,9 @@ import {
   WithLabel,
   providers,
 } from "@/components/UI";
-import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
-import { compressImage } from "@/utils/image";
+import { blobToBase64, compressImage } from "@/utils/image";
 import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -46,26 +46,51 @@ export default Page;
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
+  const { optimistic, setOptimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
+  const optimisticUser = optimistic.isActive ? { ...user, image: optimistic.value } : user;
+
+  function updateUserImage(image: File | null) {
+    if (!image) {
+      setOptimistic(image);
+      queueUpdate(remove);
+      return;
+    }
+
+    compressImage(image, 511 * 1024)
+      .then((compressedImage) => {
+        const resultImage = compressedImage ?? image;
+        queueUpdate(() => {
+          startUpload([resultImage]).catch(console.error);
+        });
+        blobToBase64(resultImage).then(setOptimistic).catch(console.error);
+      })
+      .catch(console.error);
+  }
+
+  function syncUserImage() {
+    setTimeout(() => {
+      update().catch(console.error).finally(onUpdateEnd);
+    }, 500);
+  }
+
   const { startUpload } = useUploadThing("userImageUploader", {
-    onClientUploadComplete: () => {
-      update().catch(console.error);
-    },
+    onClientUploadComplete: syncUserImage,
+    onUploadError: syncUserImage,
   });
-  const { mutate: remove } = api.user.deleteImage.useMutation({ onSettled: update });
+
+  const { mutate: remove } = api.user.deleteImage.useMutation({ onSettled: syncUserImage });
 
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative h-16 w-16">
         <UserPic
           className="text-2xl"
-          user={user}
+          user={optimisticUser}
         />
-        {!!user.image && (
+        {!!optimisticUser.image && (
           <button
             className="absolute right-0 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
-            onClick={() => {
-              remove();
-            }}
+            onClick={() => updateUserImage(null)}
             aria-label="Delete avatar"
           >
             <DeleteIcon />
@@ -78,14 +103,10 @@ function UserImage({ user }: UserImageProps) {
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
-          compressImage(file, 511 * 1024)
-            .then((image) => {
-              startUpload([image ?? file]).catch(console.error);
-            })
-            .catch(console.error);
+          updateUserImage(file);
         }}
       >
-        {!!user.image ? "Change avatar" : "Upload avatar"}
+        {!!optimisticUser.image ? "Change avatar" : "Upload avatar"}
       </ImageInput>
     </div>
   );

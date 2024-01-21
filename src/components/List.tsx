@@ -2,7 +2,6 @@ import type { StrictOmit } from "@/utils/type";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Fragment,
   useEffect,
   useRef,
   type ComponentPropsWithoutRef,
@@ -23,8 +22,8 @@ type InfiniteScrollProps<P, V> = {
   getKey: (value: V) => Key;
   /** This will be invoked upon scrolling further to get more pages */
   getNextPage: () => void;
-  /** This class will be applied to a wrapper div around an element which triggers getNextPage */
-  className?: string;
+  /** Render this element if all pages are empty */
+  fallback?: ReactNode;
 };
 export function InfiniteScroll<P, V>({
   pages,
@@ -32,18 +31,21 @@ export function InfiniteScroll<P, V>({
   children,
   getKey,
   getNextPage,
-  className,
+  fallback,
 }: InfiniteScrollProps<P, V>) {
-  const triggerElement = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!triggerElement.current) return;
+    if (!triggerRef.current) return;
+    const trigger = triggerRef.current.firstElementChild;
+    if (!trigger) return;
+
     const observer = new IntersectionObserver((events) => {
       events.forEach((event) => {
-        if (event.target !== triggerElement.current || !event.isIntersecting) return;
+        if (event.target !== trigger || !event.isIntersecting) return;
         getNextPage();
       });
     });
-    observer.observe(triggerElement.current);
+    observer.observe(trigger);
 
     return () => {
       observer.disconnect();
@@ -52,35 +54,30 @@ export function InfiniteScroll<P, V>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pages]);
 
-  const lastPage = pages.at(-1);
+  const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
   return (
     <>
-      {pages.map((page) => {
-        const isLastPage = page === lastPage;
-        const values = getPageValues(page);
-        const triggerValue = values.at(-values.length / 2) ?? values[0];
+      {lastNonEmptyPageIndex !== -1
+        ? pages.map((page, i) => {
+            const isLastPage = i === lastNonEmptyPageIndex;
+            const values = getPageValues(page);
+            const triggerIndex = Math.floor(values.length / 2);
 
-        return values.map((value) => {
-          const isTriggerValue = isLastPage && value === triggerValue;
-          const key = getKey(value);
-          return isTriggerValue ? (
-            <div
-              className={`!relative ${className ?? ""}`}
-              key={key}
-            >
-              {children(value)}
-              {isTriggerValue && (
+            return values.map((value, i) => {
+              const isTrigger = isLastPage && i === triggerIndex;
+
+              return (
                 <div
-                  className="sr-only left-1/2 top-1/2"
-                  ref={triggerElement}
-                />
-              )}
-            </div>
-          ) : (
-            <Fragment key={key}>{children(value)}</Fragment>
-          );
-        });
-      })}
+                  className="contents"
+                  key={getKey(value)}
+                  ref={isTrigger ? triggerRef : null}
+                >
+                  {children(value)}
+                </div>
+              );
+            });
+          })
+        : fallback}
     </>
   );
 }
@@ -116,15 +113,17 @@ export function Card({
           <MilkIcon className="h-full w-full text-white" />
         </div>
       )}
-      <div className="flex h-full min-w-0 flex-col items-start gap-1">
-        <span className="w-full overflow-hidden text-ellipsis text-sm capitalize">{label}</span>
+      <div className="flex h-10 min-w-0 flex-col justify-between">
+        <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm capitalize">
+          {label}
+        </span>
         {!!subtext.length && (
           <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">
             {subtext.join(", ")}
           </span>
         )}
       </div>
-      <div className="ml-auto flex text-lg">{children}</div>
+      <div className="ml-auto flex shrink-0 text-lg">{children}</div>
     </Link>
   );
 }

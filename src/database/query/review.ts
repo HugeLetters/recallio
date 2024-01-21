@@ -38,7 +38,6 @@ export async function upsertReview(
           throw Error("Error saving categories for review");
         });
 
-      // todo - a better way to store this?..
       await tx
         .delete(reviewsToCategories)
         .where(

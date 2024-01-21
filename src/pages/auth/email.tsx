@@ -10,7 +10,7 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
   if (status === "authenticated") {
-    void router.push("/profile");
+    void router.replace("/profile");
   }
 
   const [pin, setPin] = useState("");
