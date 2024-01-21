@@ -10,20 +10,22 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
 
 export const userRouter = createTRPCRouter({
-  setName: protectedProcedure.input(z.string()).mutation(({ input, ctx: { session } }) => {
-    return db
-      .update(user)
-      .set({ name: input })
-      .where(eq(user.id, session.user.id))
-      .then(
-        (query) => {
-          if (!query.rowsAffected) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-          }
-        },
-        (e) => throwDefaultError(e, "Error while trying to update username"),
-      );
-  }),
+  setName: protectedProcedure
+    .input(z.string().min(4).max(30))
+    .mutation(({ input, ctx: { session } }) => {
+      return db
+        .update(user)
+        .set({ name: input })
+        .where(eq(user.id, session.user.id))
+        .then(
+          (query) => {
+            if (!query.rowsAffected) {
+              throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+            }
+          },
+          (e) => throwDefaultError(e, "Error while trying to update username"),
+        );
+    }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
     return findFirst(user, eq(user.id, session.user.id)).then(([data]) => {
       if (!data) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
