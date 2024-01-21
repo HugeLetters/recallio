@@ -36,8 +36,8 @@ function ProductPage({ barcode }: ProductPageProps) {
     {
       select(data) {
         if (!data) {
-          void router.replace({ pathname: "/review/[id]/edit", query: { id: barcode } });
-          throw Error(`No data for product with barcode ${barcode} exists.`);
+          void router.replace({ pathname: "/review/[id]", query: { id: barcode } });
+          throw Error(`No public reviews for product with barcode ${barcode} exist.`);
         }
         return data;
       },

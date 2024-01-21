@@ -122,18 +122,21 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
   const apiUtils = api.useUtils();
   function onReviewUpdateEnd() {
     apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
+    apiUtils.review.getReviewCount.invalidate().catch(console.error);
   }
 
   function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image?: string | null) {
-    apiUtils.review.getUserReview.setData({ barcode }, (draft) => {
-      if (!draft) {
+    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
+      if (!cache) {
         return { ...review, image: image ?? null };
       }
       if (image === undefined) {
-        return { ...draft, ...review };
+        return { ...cache, ...review };
       }
-      return { ...draft, ...review, image };
+      return { ...cache, ...review, image };
     });
+
     void router.push({ pathname: "/review/[id]", query: { id: barcode } });
   }
   function onReviewUpsert(review: StrictOmit<ReviewData, "image">) {
@@ -143,13 +146,13 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     if (image === undefined) return onReviewUpdateEnd();
     if (image === null) return deleteImage({ barcode });
 
+    blobToBase64(image)
+      .then((image) => setOptimisticReview(review, image))
+      .catch(console.error);
+
     compressImage(image, 511 * 1024)
       .then((compressedImage) => {
         startUpload([compressedImage ?? image], { barcode }).catch(console.error);
-        if (!compressedImage) return;
-        blobToBase64(compressedImage)
-          .then((image) => setOptimisticReview(review, image))
-          .catch(console.error);
       })
       .catch(console.error);
   }
