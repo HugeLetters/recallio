@@ -18,18 +18,23 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { browser, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
+import { useAsyncComputed, useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { fetchNextPage, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
-import { compressImage } from "@/utils/image";
-import { type ModelProps, type NextPageWithLayout, type TransformType } from "@/utils/type";
+import { blobToBase64, compressImage } from "@/utils/image";
+import {
+  type ModelProps,
+  type NextPageWithLayout,
+  type StrictOmit,
+  type TransformType,
+} from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useMemo, useRef, useState, type MutableRefObject } from "react";
 import {
   Controller,
   useFieldArray,
@@ -116,33 +121,56 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
   const router = useRouter();
   const apiUtils = api.useUtils();
   function onReviewUpdateEnd() {
-    apiUtils.review.getUserReview
-      .invalidate({ barcode })
-      .then(() => {
-        void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
+    apiUtils.review.getReviewCount.invalidate().catch(console.error);
+  }
+
+  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image?: string | null) {
+    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
+      if (!cache) {
+        return { ...review, image: image ?? null };
+      }
+      if (image === undefined) {
+        return { ...cache, ...review };
+      }
+      return { ...cache, ...review, image };
+    });
+
+    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+  }
+  function onReviewUpsert(review: StrictOmit<ReviewData, "image">) {
+    if (!image) {
+      setOptimisticReview(review, image);
+    }
+    if (image === undefined) return onReviewUpdateEnd();
+    if (image === null) return deleteImage({ barcode });
+
+    blobToBase64(image)
+      .then((image) => setOptimisticReview(review, image))
+      .catch(console.error);
+
+    compressImage(image, 511 * 1024)
+      .then((compressedImage) => {
+        startUpload([compressedImage ?? image], { barcode }).catch(console.error);
       })
       .catch(console.error);
   }
 
-  async function onReviewUpsert() {
-    if (image === undefined) return onReviewUpdateEnd();
-    if (image === null) return deleteImage({ barcode });
-
-    const compressedImage = await compressImage(image, 511 * 1024).catch(console.error);
-    startUpload([compressedImage ?? image], { barcode }).catch(console.error);
-  }
-
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
-    onSuccess: onReviewUpdateEnd,
+    onSettled: onReviewUpdateEnd,
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
     onClientUploadComplete() {
       // hope 1.5s is enough for the update to catch up...
       setTimeout(onReviewUpdateEnd, 1500);
     },
+    onUploadError: onReviewUpdateEnd,
   });
-  const { mutate: saveReview } = api.review.upsertReview.useMutation({ onSuccess: onReviewUpsert });
+  const { mutate: saveReview } = api.review.upsertReview.useMutation({
+    onError: onReviewUpdateEnd,
+  });
 
   return (
     <form
@@ -150,13 +178,16 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit((data) => {
-          if (!isFormDirty && hasReview) return onReviewUpsert();
-
-          const { categories, image: _, ...review } = data;
-          saveReview({
-            ...review,
+          const { categories, image: _, ...restData } = data;
+          const review = {
+            ...restData,
             barcode,
             categories: categories.map((category) => category.name),
+          };
+          if (!isFormDirty && hasReview) return onReviewUpsert(review);
+
+          saveReview(review, {
+            onSuccess: () => onReviewUpsert(review),
           });
         })(e).catch(console.error);
       }}
@@ -232,7 +263,6 @@ function Name({ names, register, setValue }: NameProps) {
           className="grow outline-none"
           aria-label="Product name"
         />
-        {/* todo - there's no design for this element yet */}
         {!!names.length && (
           <Select.Root
             onValueChange={setValue}
@@ -356,48 +386,25 @@ function Private({ value, setValue }: ModelProps<boolean>) {
 }
 
 type AttachedImageProps = { savedImage: string | null } & ModelProps<File | null | undefined>; // null - delete, undefined - keep as is
-const fileReader = browser ? new FileReader() : null;
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
-  const [localSrc, setLocalSrc] = useState<string>();
-  const src = value === null ? null : localSrc ?? savedImage;
-  const hasImage = !!src || !!savedImage;
-
-  function updateImage(file: typeof value) {
-    setValue(file);
-
-    if (!file) {
-      setLocalSrc(undefined);
-      return;
-    }
-
-    if (!fileReader) return;
-    fileReader.readAsDataURL(file);
-  }
-
-  useEffect(() => {
-    if (!fileReader) return;
-
-    function readeImageFile() {
-      if (!fileReader || typeof fileReader.result !== "string") return;
-
-      setLocalSrc(fileReader.result);
-    }
-
-    fileReader.addEventListener("load", readeImageFile);
-    return () => fileReader.removeEventListener("load", readeImageFile);
-  }, []);
+  const base64Image = useAsyncComputed(value, async (draft) => {
+    if (!draft) return draft;
+    return blobToBase64(draft);
+  });
+  const src = base64Image === null ? null : base64Image ?? savedImage;
+  const isImagePresent = !!src || !!savedImage;
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <ImagePreviewWrapper>
+      <ImagePreviewWrapper className="relative">
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
-        {hasImage && (
+        {isImagePresent && (
           <Button
             className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
               src ? "text-app-red" : "text-neutral-950"
             }`}
             onClick={() => {
-              updateImage(src ? null : undefined);
+              setValue(src ? null : undefined);
             }}
             aria-label={src ? "Delete image" : "Reset image"}
           >
@@ -408,7 +415,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
       <ImageInput
         isImageSet={!!value}
         onChange={(e) => {
-          updateImage(e.target.files?.item(0));
+          setValue(e.target.files?.item(0));
         }}
         className="btn ghost rounded-lg px-4 py-0 outline-1"
       >
@@ -569,11 +576,7 @@ function CategorySearch({
             pages={categoriesQuery.data.pages}
             getPageValues={(page) => page}
             getKey={(category) => category}
-            getNextPage={() => {
-              if (categoriesQuery.isFetching) return;
-
-              categoriesQuery.fetchNextPage().catch(console.error);
-            }}
+            getNextPage={fetchNextPage(categoriesQuery)}
           >
             {(category) => (
               <label className="flex w-full cursor-pointer justify-between capitalize">

@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
-import { getQueryParam } from "@/utils";
+import { fetchNextPage, getQueryParam } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
@@ -26,43 +26,37 @@ const Page: NextPageWithLayout = function () {
       </div>
       <div className="flex grow flex-col gap-2 pb-4">
         {productListQuery.isSuccess ? (
-          !!productListQuery.data.pages[0]?.page.length ? (
-            <InfiniteScroll
-              pages={productListQuery.data?.pages}
-              getPageValues={(page) => page.page}
-              getKey={(value) => value.barcode}
-              getNextPage={() => {
-                !productListQuery.isFetching &&
-                  productListQuery.fetchNextPage().catch(console.error);
-              }}
-            >
-              {(value) => {
-                const match = filter ? value.matchedName : value.names[0] ?? value.matchedName;
+          <InfiniteScroll
+            pages={productListQuery.data.pages}
+            getPageValues={(page) => page.page}
+            getKey={(value) => value.barcode}
+            getNextPage={fetchNextPage(productListQuery)}
+            fallback={<NoResults />}
+          >
+            {(value) => {
+              const match = filter ? value.matchedName : value.names[0] ?? value.matchedName;
 
-                return (
-                  <Card
-                    href={{ pathname: "/product/[id]", query: { id: value.barcode } }}
-                    aria-label={`Go to product ${value.barcode} page`}
-                    image={value.image}
-                    label={match}
-                    subtext={value.names.filter(
-                      (x): x is NonNullable<typeof x> => !!x && x !== match,
-                    )}
-                  >
-                    <div className="flex h-5 items-center gap-0.5">
-                      <Star highlight />
-                      <span className="text-sm">{value.averageRating.toFixed(1)}</span>
-                      <span className="text-xs text-neutral-400">
-                        ({value.reviewCount.toFixed(0)})
-                      </span>
-                    </div>
-                  </Card>
-                );
-              }}
-            </InfiniteScroll>
-          ) : (
-            <NoResults />
-          )
+              return (
+                <Card
+                  href={{ pathname: "/product/[id]", query: { id: value.barcode } }}
+                  aria-label={`Go to product ${value.barcode} page`}
+                  image={value.image}
+                  label={match}
+                  subtext={value.names.filter(
+                    (x): x is NonNullable<typeof x> => !!x && x !== match,
+                  )}
+                >
+                  <div className="flex h-5 items-center gap-0.5">
+                    <Star highlight />
+                    <span className="text-sm">{value.averageRating.toFixed(1)}</span>
+                    <span className="text-xs text-neutral-400">
+                      ({value.reviewCount.toFixed(0)})
+                    </span>
+                  </div>
+                </Card>
+              );
+            }}
+          </InfiniteScroll>
         ) : (
           "Loading..."
         )}

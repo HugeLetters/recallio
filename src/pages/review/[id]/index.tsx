@@ -38,7 +38,7 @@ function Review({ barcode }: ReviewProps) {
     {
       select(data) {
         if (!data) {
-          void router.push({ pathname: "/review/[id]/edit", query: { id: barcode } });
+          void router.replace({ pathname: "/review/[id]/edit", query: { id: barcode } });
           throw Error("No review found");
         }
 
@@ -101,7 +101,7 @@ type AttachedImageProps = { barcode: string } & Pick<ReviewData, "image" | "name
 function AttachedImage({ image, name, barcode }: AttachedImageProps) {
   return (
     <div className="flex items-stretch gap-4">
-      <ImagePreviewWrapper>
+      <ImagePreviewWrapper className="shrink-0">
         {image ? (
           <Dialog.Root>
             <Dialog.Trigger
@@ -138,9 +138,9 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
       <Link
         href={{ pathname: "/product/[id]", query: { id: barcode } }}
         aria-label="Open product page for this barcode"
-        className="flex grow items-center justify-between"
+        className="flex min-w-0 grow items-center justify-between"
       >
-        <div className="text-xl">{name}</div>
+        <div className="overflow-hidden text-ellipsis text-xl">{name}</div>
         <RightIcon className="h-7 w-7 text-neutral-400" />
       </Link>
     </div>

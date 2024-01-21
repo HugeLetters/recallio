@@ -11,12 +11,10 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { getQueryParam } from "@/utils";
+import { fetchNextPage, getQueryParam } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
-
-// todo - show my review it exists - allow to go to it
 
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
@@ -38,8 +36,8 @@ function ProductPage({ barcode }: ProductPageProps) {
     {
       select(data) {
         if (!data) {
-          void router.push({ pathname: "/review/[id]/edit", query: { id: barcode } });
-          throw Error(`No data for product with barcode ${barcode} exists.`);
+          void router.replace({ pathname: "/review/[id]", query: { id: barcode } });
+          throw Error(`No public reviews for product with barcode ${barcode} exist.`);
         }
         return data;
       },
@@ -77,12 +75,14 @@ function Summary({
   return (
     <div className="flex flex-col gap-7">
       <div className="flex h-16 gap-3">
-        <ImagePreviewWrapper>
+        <ImagePreviewWrapper className="shrink-0">
           {image ? <ImagePreview src={image} /> : <NoImagePreview />}
         </ImagePreviewWrapper>
-        <div className="flex flex-col justify-between py-0.5">
-          <h2 className="pl-1.5 text-xl capitalize">{name}</h2>
-          <div className="flex h-6 min-h-0 w-fit items-center gap-0.5">
+        <div className="flex min-w-0 flex-col justify-between py-0.5">
+          <h2 className="overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
+            {name}
+          </h2>
+          <div className="flex h-6 min-h-0 w-fit shrink-0 items-center gap-0.5">
             <Star highlight />
             <span>{rating.toFixed(1)}</span>
             <span className="text-sm text-neutral-400">({reviewCount})</span>
@@ -93,7 +93,7 @@ function Summary({
         <span className="text-xs">Barcode</span>
         <span className="text-neutral-400">{barcode}</span>
       </div>
-      {!!categories.length && (
+      {!!categories?.length && (
         <div className="flex flex-col gap-2 text-xs">
           <span>Category</span>
           <div className="flex gap-3">
@@ -166,10 +166,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
             pages={reviewsQuery.data.pages}
             getPageValues={({ page }) => page}
             getKey={(review) => review.authorId}
-            getNextPage={() => {
-              if (reviewsQuery.isFetching) return;
-              reviewsQuery.fetchNextPage().catch(console.error);
-            }}
+            getNextPage={fetchNextPage(reviewsQuery)}
           >
             {(review) => <ReviewCard review={review} />}
           </InfiniteScroll>

@@ -2,7 +2,7 @@ import type { AppFileRouter } from "@/server/uploadthing";
 import { browser } from "@/utils";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 
@@ -33,4 +33,41 @@ export function useReviewPrivateDefault() {
   }
 
   return [value, useCallback(setValue, [])] as const;
+}
+
+type OptmicticValue<T> = { value: T; isActive: true } | { value?: never; isActive: false };
+export function useOptimistic<T>() {
+  const [optimistic, setOptimistic] = useState<OptmicticValue<T>>({ isActive: false });
+  const queuedAction = useRef<() => void>();
+
+  return {
+    optimistic,
+    setOptimistic: (value: T) => {
+      setOptimistic({ value, isActive: true });
+    },
+    queueUpdate: (callback: () => void) => {
+      if (optimistic.isActive) {
+        queuedAction.current = callback;
+      } else {
+        callback();
+      }
+    },
+    onUpdateEnd: () => {
+      if (!queuedAction.current) {
+        setOptimistic({ isActive: false });
+        return;
+      }
+      queuedAction.current();
+      queuedAction.current = undefined;
+    },
+  };
+}
+
+export function useAsyncComputed<T, R>(state: T, transform: (draft: T) => Promise<R>) {
+  const [computed, setComputed] = useState<R>();
+  useEffect(() => {
+    transform(state).then(setComputed).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+  return computed;
 }

@@ -41,10 +41,17 @@ export function ConsIcon() {
   return <MinusIcon className="h-fit w-full text-app-red" />;
 }
 
-type ImagePreviewWrapperProps = PropsWithChildren;
-export function ImagePreviewWrapper({ children }: ImagePreviewWrapperProps) {
+type ImagePreviewWrapperProps = PropsWithChildren & ComponentPropsWithoutRef<"div">;
+export function ImagePreviewWrapper({
+  children,
+  className,
+  ...divProps
+}: ImagePreviewWrapperProps) {
   return (
-    <div className="relative h-16 w-16">
+    <div
+      className={`h-16 w-16 ${className ?? ""}`}
+      {...divProps}
+    >
       <div className="h-full w-full overflow-hidden rounded-full">{children}</div>
     </div>
   );

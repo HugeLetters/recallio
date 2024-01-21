@@ -207,9 +207,7 @@ export const productRouter = createTRPCRouter({
       const categorySq = db
         .select({
           barcode: reviewsToCategories.barcode,
-          categories: aggregateArrayColumn(reviewsToCategories.category)
-            .mapWith(mostCommonItems(3)<string>)
-            .as("categories"),
+          categories: aggregateArrayColumn(reviewsToCategories.category).as("categories"),
         })
         .from(reviewsToCategories)
         .where(
@@ -236,7 +234,9 @@ export const productRouter = createTRPCRouter({
           rating: sql`avg(${review.rating})`.mapWith((x) => +x),
           reviewCount: countCol(),
           image: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
-          categories: categorySq.categories,
+          categories: sql`${categorySq.categories}`.mapWith(
+            nullableMap(mostCommonItems(3)<string>),
+          ),
         })
         .from(review)
         .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))
