@@ -18,7 +18,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useAsyncComputed, useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { useAsyncComputed, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
 import { fetchNextPage, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { blobToBase64, compressImage } from "@/utils/image";
@@ -438,7 +438,15 @@ function CategoryList({ control }: CategoryListProps) {
     replace(categories.filter((category) => category.name !== value));
   }
 
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen } = useUrlDialog("category-modal");
+  function open() {
+    setIsOpen(true);
+  }
+  function close() {
+    setIsOpen(false);
+    window.clearTimeout(debouncedQuery.current);
+    setQueryParam(router, SEARCH_QUERY_KEY, null);
+  }
   const router = useRouter();
   const debouncedQuery = useRef<number>();
 
@@ -446,13 +454,7 @@ function CategoryList({ control }: CategoryListProps) {
     <div>
       <Dialog.Root
         open={isOpen}
-        onOpenChange={(isOpen) => {
-          setIsOpen(isOpen);
-          if (isOpen) return;
-
-          window.clearTimeout(debouncedQuery.current);
-          setQueryParam(router, SEARCH_QUERY_KEY, null);
-        }}
+        onOpenChange={(isOpen) => (isOpen ? open() : close())}
       >
         <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
           <Toolbar.Button asChild>
@@ -496,7 +498,7 @@ function CategoryList({ control }: CategoryListProps) {
                 append={(value) => append({ name: value.toLowerCase() })}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}
-                close={() => setIsOpen(false)}
+                close={close}
                 debounceRef={debouncedQuery}
               />
             </Dialog.Content>

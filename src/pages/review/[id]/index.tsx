@@ -1,4 +1,4 @@
-import { Button, DialogOverlay, Star } from "@/components/UI";
+import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import {
   CategoryButton,
   ConsIcon,
@@ -103,7 +103,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
     <div className="flex items-stretch gap-4">
       <ImagePreviewWrapper className="shrink-0">
         {image ? (
-          <Dialog.Root>
+          <UrlDialogRoot dialogQueryKey="attached-image-dialog">
             <Dialog.Trigger
               className="h-full w-full"
               aria-label="Open full image view"
@@ -130,7 +130,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
                 </Dialog.Content>
               </DialogOverlay>
             </Dialog.Portal>
-          </Dialog.Root>
+          </UrlDialogRoot>
         ) : (
           <NoImagePreview />
         )}
@@ -202,7 +202,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   });
 
   return (
-    <Dialog.Root>
+    <UrlDialogRoot dialogQueryKey="delete-dialog">
       <Dialog.Trigger asChild>
         <Button className="destructive w-full">Delete review</Button>
       </Dialog.Trigger>
@@ -230,6 +230,6 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
           </div>
         </DialogOverlay>
       </Dialog.Portal>
-    </Dialog.Root>
+    </UrlDialogRoot>
   );
 }

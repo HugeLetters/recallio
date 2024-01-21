@@ -1,6 +1,7 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
+import { useUrlDialog } from "@/hooks";
 import type { Icon, StrictOmit } from "@/utils/type";
-import { Overlay } from "@radix-ui/react-dialog";
+import { Overlay, Root } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
@@ -207,3 +208,16 @@ export const DialogOverlay = forwardRef<
     </Overlay>
   );
 });
+
+type UrlDialogRootProps = { dialogQueryKey: string };
+export function UrlDialogRoot({ children, dialogQueryKey }: PropsWithChildren<UrlDialogRootProps>) {
+  const { isOpen, setIsOpen } = useUrlDialog(dialogQueryKey);
+  return (
+    <Root
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      {children}
+    </Root>
+  );
+}
