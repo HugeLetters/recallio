@@ -152,12 +152,13 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
         handleSubmit((data) => {
           if (!isFormDirty && hasReview) return onReviewUpsert();
 
-          const { categories, image: _, ...review } = data;
-          saveReview({
-            ...review,
+          const { categories, image: _, ...restData } = data;
+          const review = {
+            ...restData,
             barcode,
             categories: categories.map((category) => category.name),
-          });
+          };
+          saveReview(review);
         })(e).catch(console.error);
       }}
     >
