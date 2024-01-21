@@ -22,7 +22,12 @@ import { useAsyncComputed, useReviewPrivateDefault, useUploadThing } from "@/hoo
 import { fetchNextPage, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { blobToBase64, compressImage } from "@/utils/image";
-import { type ModelProps, type NextPageWithLayout, type TransformType } from "@/utils/type";
+import {
+  type ModelProps,
+  type NextPageWithLayout,
+  type StrictOmit,
+  type TransformType,
+} from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -116,33 +121,53 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
   const router = useRouter();
   const apiUtils = api.useUtils();
   function onReviewUpdateEnd() {
-    apiUtils.review.getUserReview
-      .invalidate({ barcode })
-      .then(() => {
-        void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+  }
+
+  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image?: string | null) {
+    apiUtils.review.getUserReview.setData({ barcode }, (draft) => {
+      if (!draft) {
+        return { ...review, image: image ?? null };
+      }
+      if (image === undefined) {
+        return { ...draft, ...review };
+      }
+      return { ...draft, ...review, image };
+    });
+    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+  }
+  function onReviewUpsert(review: StrictOmit<ReviewData, "image">) {
+    if (!image) {
+      setOptimisticReview(review, image);
+    }
+    if (image === undefined) return onReviewUpdateEnd();
+    if (image === null) return deleteImage({ barcode });
+
+    compressImage(image, 511 * 1024)
+      .then((compressedImage) => {
+        startUpload([compressedImage ?? image], { barcode }).catch(console.error);
+        if (!compressedImage) return;
+        blobToBase64(compressedImage)
+          .then((image) => setOptimisticReview(review, image))
+          .catch(console.error);
       })
       .catch(console.error);
   }
 
-  async function onReviewUpsert() {
-    if (image === undefined) return onReviewUpdateEnd();
-    if (image === null) return deleteImage({ barcode });
-
-    const compressedImage = await compressImage(image, 511 * 1024).catch(console.error);
-    startUpload([compressedImage ?? image], { barcode }).catch(console.error);
-  }
-
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
-    onSuccess: onReviewUpdateEnd,
+    onSettled: onReviewUpdateEnd,
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
     onClientUploadComplete() {
       // hope 1.5s is enough for the update to catch up...
       setTimeout(onReviewUpdateEnd, 1500);
     },
+    onUploadError: onReviewUpdateEnd,
   });
-  const { mutate: saveReview } = api.review.upsertReview.useMutation({ onSuccess: onReviewUpsert });
+  const { mutate: saveReview } = api.review.upsertReview.useMutation({
+    onError: onReviewUpdateEnd,
+  });
 
   return (
     <form
@@ -150,15 +175,17 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       onSubmit={(e) => {
         e.preventDefault();
         handleSubmit((data) => {
-          if (!isFormDirty && hasReview) return onReviewUpsert();
-
           const { categories, image: _, ...restData } = data;
           const review = {
             ...restData,
             barcode,
             categories: categories.map((category) => category.name),
           };
-          saveReview(review);
+          if (!isFormDirty && hasReview) return onReviewUpsert(review);
+
+          saveReview(review, {
+            onSuccess: () => onReviewUpsert(review),
+          });
         })(e).catch(console.error);
       }}
     >
