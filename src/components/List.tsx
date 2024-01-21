@@ -61,9 +61,10 @@ export function InfiniteScroll<P, V>({
         ? pages.map((page, i) => {
             const isLastPage = i === lastNonEmptyPageIndex;
             const values = getPageValues(page);
+            const triggerIndex = Math.floor(values.length / 2);
 
             return values.map((value, i) => {
-              const isTrigger = isLastPage && i === Math.floor(values.length / 2);
+              const isTrigger = isLastPage && i === triggerIndex;
 
               return (
                 <div
