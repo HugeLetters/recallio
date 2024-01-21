@@ -6,8 +6,9 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import { env } from "@/env.mjs";
 import { getServerAuthSession } from "@/server/auth";
-import { initTRPC, TRPCError } from "@trpc/server";
+import { TRPCError, initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 import { ZodError } from "zod";
@@ -61,12 +62,12 @@ export const createTRPCContext = async ({ req, res }: CreateNextContextOptions) 
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {
+    const cause = error.cause;
     return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
+      message: cause instanceof ZodError ? `${cause.format()._errors[0]}` : error.message,
+      data:
+        env.NEXT_PUBLIC_NODE_ENV === "production" ? ({} as Partial<typeof shape.data>) : shape.data,
+      code: shape.code,
     };
   },
 });

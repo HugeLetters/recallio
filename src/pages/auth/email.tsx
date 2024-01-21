@@ -6,6 +6,7 @@ import { useState } from "react";
 import EmailIcon from "~icons/carbon/email";
 
 const PIN_LENGTH = 6;
+const SLOTS = Array.from({ length: PIN_LENGTH });
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
@@ -42,7 +43,7 @@ const Page: NextPageWithLayout = function () {
       >
         <label className="group/input my-6 w-full cursor-text">
           <div className="grid w-full grid-cols-6 justify-center gap-2.5 uppercase">
-            {Array.from({ length: PIN_LENGTH }).map((_, i) => (
+            {SLOTS.map((_, i) => (
               <div
                 key={i}
                 className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-400/50 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green"
