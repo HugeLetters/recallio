@@ -88,7 +88,7 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
       review={
         reviewQuery.data ?? {
           name: namesQuery.data[0] ?? "",
-          rating: 0,
+          rating: 5,
           pros: null,
           cons: null,
           comment: null,
@@ -258,6 +258,9 @@ function Name({ names, register, setValue }: NameProps) {
       <div className="flex rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2">
         <input
           {...register}
+          required
+          minLength={6}
+          maxLength={60}
           placeholder="Name"
           autoComplete="off"
           className="grow outline-none"
@@ -541,7 +544,7 @@ function CategorySearch({
 
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
   const isShowInputCategory =
-    !!search &&
+    search.length >= 4 &&
     !includes(search) &&
     !categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 

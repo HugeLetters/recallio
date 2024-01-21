@@ -115,7 +115,7 @@ export const reviewRouter = createTRPCRouter({
       z
         .object({
           barcode: z.string(),
-          name: z.string(),
+          name: z.string().min(6).max(60),
           rating: z.number(),
           pros: trimmedStringSchema.nullish(),
           cons: trimmedStringSchema.nullish(),

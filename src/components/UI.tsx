@@ -11,7 +11,6 @@ import type {
   ComponentPropsWithoutRef,
   PropsWithChildren,
   ReactNode,
-  Ref,
 } from "react";
 import { forwardRef, useEffect, useRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
@@ -147,8 +146,11 @@ export function WithLabel({ children, label, className }: PropsWithChildren<With
   );
 }
 
-type InputProps = ComponentPropsWithRef<"input">;
-export function Input({ ref, className, ...inputProps }: InputProps) {
+type InputProps = ComponentPropsWithoutRef<"input">;
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, ...inputProps },
+  ref,
+) {
   return (
     <input
       ref={ref}
@@ -158,41 +160,43 @@ export function Input({ ref, className, ...inputProps }: InputProps) {
       {...inputProps}
     />
   );
-}
+});
 
 type AutoresizableInputProps = {
   initialContent: string;
   rootClassName?: string;
 } & ComponentPropsWithoutRef<"textarea">;
-export const AutoresizableInput = forwardRef(function AutoresizableInput(
-  { initialContent, rootClassName, className, onChange, ...props }: AutoresizableInputProps,
-  ref: Ref<HTMLTextAreaElement>,
-) {
-  return (
-    <div className={`overflow-hidden ${rootClassName ?? ""}`}>
-      <div
-        className="relative flex after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)]"
-        data-input={initialContent + "\n"}
-      >
-        <textarea
-          ref={ref}
-          className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
-            className ?? ""
-          }`}
-          {...props}
-          onChange={(e) => {
-            onChange?.(e);
+export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableInputProps>(
+  function AutoresizableInput(
+    { initialContent, rootClassName, className, onChange, ...props },
+    ref,
+  ) {
+    return (
+      <div className={`overflow-hidden ${rootClassName ?? ""}`}>
+        <div
+          className="relative flex after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)]"
+          data-input={initialContent + "\n"}
+        >
+          <textarea
+            ref={ref}
+            className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
+              className ?? ""
+            }`}
+            {...props}
+            onChange={(e) => {
+              onChange?.(e);
 
-            const parent = e.target.parentElement;
-            if (!parent) return;
+              const parent = e.target.parentElement;
+              if (!parent) return;
 
-            parent.dataset.input = e.target.value + "\n";
-          }}
-        />
+              parent.dataset.input = e.target.value + "\n";
+            }}
+          />
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export const DialogOverlay = forwardRef<
   HTMLDivElement,
