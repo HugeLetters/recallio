@@ -1,6 +1,7 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import type { Icon, StrictOmit } from "@/utils/type";
-import { Overlay } from "@radix-ui/react-dialog";
+import { useUrlDialog } from "@/hooks";
+import type { Entries, Icon, NonEmptyArray, StrictOmit } from "@/utils/type";
+import { Overlay, Root } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
@@ -10,7 +11,6 @@ import type {
   ComponentPropsWithoutRef,
   PropsWithChildren,
   ReactNode,
-  Ref,
 } from "react";
 import { forwardRef, useEffect, useRef } from "react";
 import DiscordIcon from "~icons/logos/discord-icon";
@@ -128,13 +128,14 @@ export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitc
   );
 }
 
-const providerRecord: Partial<Record<OAuthProviderType, Icon>> = {
+const providerRecord = {
   discord: DiscordIcon,
   github: GithubIcon,
   google: GoogleIcon,
   linkedin: LinkedinIcon,
-};
-export const providers = Object.entries(providerRecord);
+} satisfies Partial<Record<OAuthProviderType, Icon>>;
+export const providers = Object.keys(providerRecord) as NonEmptyArray<keyof typeof providerRecord>;
+export const providerIcons = Object.entries(providerRecord) as Entries<typeof providerRecord>;
 
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {
@@ -146,8 +147,11 @@ export function WithLabel({ children, label, className }: PropsWithChildren<With
   );
 }
 
-type InputProps = ComponentPropsWithRef<"input">;
-export function Input({ ref, className, ...inputProps }: InputProps) {
+type InputProps = ComponentPropsWithoutRef<"input">;
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, ...inputProps },
+  ref,
+) {
   return (
     <input
       ref={ref}
@@ -157,41 +161,43 @@ export function Input({ ref, className, ...inputProps }: InputProps) {
       {...inputProps}
     />
   );
-}
+});
 
 type AutoresizableInputProps = {
   initialContent: string;
   rootClassName?: string;
 } & ComponentPropsWithoutRef<"textarea">;
-export const AutoresizableInput = forwardRef(function AutoresizableInput(
-  { initialContent, rootClassName, className, onChange, ...props }: AutoresizableInputProps,
-  ref: Ref<HTMLTextAreaElement>,
-) {
-  return (
-    <div className={`overflow-hidden ${rootClassName ?? ""}`}>
-      <div
-        className="relative flex after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)]"
-        data-input={initialContent + "\n"}
-      >
-        <textarea
-          ref={ref}
-          className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
-            className ?? ""
-          }`}
-          {...props}
-          onChange={(e) => {
-            onChange?.(e);
+export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableInputProps>(
+  function AutoresizableInput(
+    { initialContent, rootClassName, className, onChange, ...props },
+    ref,
+  ) {
+    return (
+      <div className={`overflow-hidden ${rootClassName ?? ""}`}>
+        <div
+          className="relative flex after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)]"
+          data-input={initialContent + "\n"}
+        >
+          <textarea
+            ref={ref}
+            className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
+              className ?? ""
+            }`}
+            {...props}
+            onChange={(e) => {
+              onChange?.(e);
 
-            const parent = e.target.parentElement;
-            if (!parent) return;
+              const parent = e.target.parentElement;
+              if (!parent) return;
 
-            parent.dataset.input = e.target.value + "\n";
-          }}
-        />
+              parent.dataset.input = e.target.value + "\n";
+            }}
+          />
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 export const DialogOverlay = forwardRef<
   HTMLDivElement,
@@ -207,3 +213,16 @@ export const DialogOverlay = forwardRef<
     </Overlay>
   );
 });
+
+type UrlDialogRootProps = { dialogQueryKey: string };
+export function UrlDialogRoot({ children, dialogQueryKey }: PropsWithChildren<UrlDialogRootProps>) {
+  const { isOpen, setIsOpen } = useUrlDialog(dialogQueryKey);
+  return (
+    <Root
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      {children}
+    </Root>
+  );
+}

@@ -9,11 +9,24 @@ export function getQueryParam(query: Query[string]) {
   return Array.isArray(query) ? query.at(-1) : query;
 }
 
+type SetQueryParamOptions = { push?: boolean };
 /** Deletes falsy values */
-export function setQueryParam(router: NextRouter, key: string, value?: string | null) {
-  if (!value) delete router.query[key];
-  else router.query[key] = value;
+export function setQueryParam(
+  router: NextRouter,
+  key: string,
+  value?: string | null,
+  options?: SetQueryParamOptions,
+) {
+  if (!value) {
+    delete router.query[key];
+  } else {
+    router.query[key] = value;
+  }
 
+  if (options?.push) {
+    void router.push({ query: router.query });
+    return;
+  }
   void router.replace({ query: router.query });
 }
 
@@ -79,4 +92,17 @@ export function fetchNextPage<Q extends UseTRPCInfiniteQueryResult<unknown, unkn
     if (isFetching || !hasNextPage) return;
     fetchNextPage().catch(console.error);
   };
+}
+
+export function setIntersection<T>(a: Set<T>, b: Set<T>) {
+  const intersection = new Set<T>();
+  for (const value of a) {
+    if (b.has(value)) intersection.add(value);
+  }
+  return intersection;
+}
+
+export function isSetEqual<T>(a: Set<T>, b: Set<T>) {
+  const intersection = setIntersection(a, b);
+  return intersection.size === a.size && intersection.size === b.size;
 }

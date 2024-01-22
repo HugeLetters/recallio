@@ -13,6 +13,7 @@ export type DiscriminatedUnion<
   | (V & { [K in Exclude<keyof U, keyof V>]?: never })
   | (U & { [K in Exclude<keyof V, keyof U>]?: never });
 export type MaybePromise<T> = T | Promise<T>;
+export type Nullish<T> = T | null | undefined;
 
 export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
   noAuth?: boolean;
@@ -20,3 +21,7 @@ export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
 };
 
 export type NonEmptyArray<T> = [T, ...Array<T>];
+
+export type Entries<O, $Keys extends keyof O = keyof O> = NonEmptyArray<
+  $Keys extends $Keys ? [$Keys, O[$Keys]] : never
+>;

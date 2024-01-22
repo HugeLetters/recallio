@@ -6,7 +6,7 @@ import {
   LabeledSwitch,
   UserPic,
   WithLabel,
-  providers,
+  providerIcons,
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
@@ -113,12 +113,22 @@ function UserImage({ user }: UserImageProps) {
 }
 
 type UserNameProps = { username: string };
+const USERNAME_MIN_LENGTH = 4;
 function UserName({ username }: UserNameProps) {
   const { update } = useSession();
   const [value, setValue] = useState(username);
-  const setMutation = api.user.setName.useMutation({ onSettled: update });
+  const setMutation = api.user.setName.useMutation({
+    onSettled() {
+      update()
+        .then((session) => {
+          if (!session) return;
+          setValue(session.user.name);
+        })
+        .catch(console.error);
+    },
+  });
   function saveName(value: string) {
-    if (value === username || setMutation.isLoading) return;
+    if (value === username || value.length < USERNAME_MIN_LENGTH) return;
     setMutation.mutate(value);
   }
 
@@ -132,12 +142,14 @@ function UserName({ username }: UserNameProps) {
       <WithLabel label="Name">
         <Input
           value={value}
+          name="username"
+          minLength={USERNAME_MIN_LENGTH}
+          maxLength={30}
           onChange={(e) => {
             setValue(e.target.value);
           }}
-          onBlur={() => {
-            saveName(value);
-          }}
+          onBlur={() => saveName(value)}
+          className="invalid:outline-app-red"
         />
       </WithLabel>
     </form>
@@ -170,7 +182,7 @@ function LinkedAccounts() {
     <div>
       <p className="p-2 text-sm">Linked accounts</p>
       <div className="flex flex-col overflow-hidden rounded-lg bg-neutral-100">
-        {providers.map(([provider, Icon]) => {
+        {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
             <LabeledSwitch

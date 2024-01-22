@@ -18,13 +18,14 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useAsyncComputed, useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { fetchNextPage, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
+import { useAsyncComputed, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
+import { fetchNextPage, getQueryParam, isSetEqual, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { blobToBase64, compressImage } from "@/utils/image";
 import {
   type ModelProps,
   type NextPageWithLayout,
+  type Nullish,
   type StrictOmit,
   type TransformType,
 } from "@/utils/type";
@@ -34,7 +35,7 @@ import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
-import { useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useMemo, useRef, useState, type FormEvent, type MutableRefObject } from "react";
 import {
   Controller,
   useFieldArray,
@@ -42,6 +43,7 @@ import {
   type Control,
   type UseFormRegisterReturn,
 } from "react-hook-form";
+import { toast } from "react-toastify";
 import Checkmark from "~icons/custom/checkmark";
 import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
@@ -88,7 +90,7 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
       review={
         reviewQuery.data ?? {
           name: namesQuery.data[0] ?? "",
-          rating: 0,
+          rating: 5,
           pros: null,
           cons: null,
           comment: null,
@@ -118,32 +120,32 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     formState: { isDirty: isFormDirty },
   } = useForm({ defaultValues: review });
 
-  const router = useRouter();
-  const apiUtils = api.useUtils();
-  function onReviewUpdateEnd() {
-    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
-    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
-    apiUtils.review.getReviewCount.invalidate().catch(console.error);
+  function submitReview(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    handleSubmit((data) => {
+      const { categories: categoriesField, image: _, ...restData } = data;
+      const newCategories = categoriesField.map(({ name }) => name);
+
+      const optimisticReview = { ...restData, barcode, categories: newCategories };
+      if (!isFormDirty && hasReview) {
+        return onReviewSave(optimisticReview);
+      }
+
+      const reviewCategories = review.categories.map(({ name }) => name);
+      const areCategoriesUnchanged = isSetEqual(new Set(newCategories), new Set(reviewCategories));
+      const categories = areCategoriesUnchanged ? undefined : newCategories;
+      const updatedReview = { ...optimisticReview, categories };
+      saveReview(updatedReview, {
+        onSuccess: () => onReviewSave(optimisticReview),
+      });
+    })(e).catch(console.error);
   }
 
-  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image?: string | null) {
-    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
-      if (!cache) {
-        return { ...review, image: image ?? null };
-      }
-      if (image === undefined) {
-        return { ...cache, ...review };
-      }
-      return { ...cache, ...review, image };
-    });
-
-    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
-  }
-  function onReviewUpsert(review: StrictOmit<ReviewData, "image">) {
+  function onReviewSave(review: StrictOmit<ReviewData, "image">) {
     if (!image) {
       setOptimisticReview(review, image);
     }
-    if (image === undefined) return onReviewUpdateEnd();
+    if (image === undefined) return invalidateReviewData();
     if (image === null) return deleteImage({ barcode });
 
     blobToBase64(image)
@@ -157,40 +159,45 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       .catch(console.error);
   }
 
+  const apiUtils = api.useUtils();
+  function invalidateReviewData() {
+    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
+    apiUtils.review.getReviewCount.invalidate().catch(console.error);
+  }
+
+  const router = useRouter();
+  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
+    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
+      if (!cache) {
+        return { ...review, image: image ?? null };
+      }
+      if (image === undefined) {
+        return { ...cache, ...review };
+      }
+      return { ...cache, ...review, image };
+    });
+
+    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+  }
+
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
-    onSettled: onReviewUpdateEnd,
+    onSettled: invalidateReviewData,
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
-    onClientUploadComplete() {
-      // hope 1.5s is enough for the update to catch up...
-      setTimeout(onReviewUpdateEnd, 1500);
-    },
-    onUploadError: onReviewUpdateEnd,
+    // hope 1.5s is enough for the update to catch up...
+    onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
+    onUploadError: invalidateReviewData,
   });
   const { mutate: saveReview } = api.review.upsertReview.useMutation({
-    onError: onReviewUpdateEnd,
+    onError: invalidateReviewData,
   });
 
   return (
     <form
       className="flex w-full flex-col gap-4 p-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit((data) => {
-          const { categories, image: _, ...restData } = data;
-          const review = {
-            ...restData,
-            barcode,
-            categories: categories.map((category) => category.name),
-          };
-          if (!isFormDirty && hasReview) return onReviewUpsert(review);
-
-          saveReview(review, {
-            onSuccess: () => onReviewUpsert(review),
-          });
-        })(e).catch(console.error);
-      }}
+      onSubmit={submitReview}
     >
       <AttachedImage
         key={review.image}
@@ -258,6 +265,9 @@ function Name({ names, register, setValue }: NameProps) {
       <div className="flex rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2">
         <input
           {...register}
+          required
+          minLength={6}
+          maxLength={60}
           placeholder="Name"
           autoComplete="off"
           className="grow outline-none"
@@ -353,6 +363,8 @@ function ProsConsComment({
           initialContent={review.pros ?? ""}
           {...registerPros}
           placeholder="Pros"
+          minLength={1}
+          maxLength={4095}
         />
       </>
       <>
@@ -362,6 +374,8 @@ function ProsConsComment({
           initialContent={review.cons ?? ""}
           {...registerCons}
           placeholder="Cons"
+          minLength={1}
+          maxLength={4095}
         />
       </>
       <AutoresizableInput
@@ -369,6 +383,8 @@ function ProsConsComment({
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"
+        minLength={1}
+        maxLength={2047}
       />
     </ProsConsCommentWrapper>
   );
@@ -385,7 +401,7 @@ function Private({ value, setValue }: ModelProps<boolean>) {
   );
 }
 
-type AttachedImageProps = { savedImage: string | null } & ModelProps<File | null | undefined>; // null - delete, undefined - keep as is
+type AttachedImageProps = { savedImage: string | null } & ModelProps<Nullish<File>>; // null - delete, undefined - keep as is
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useAsyncComputed(value, async (draft) => {
     if (!draft) return draft;
@@ -429,7 +445,7 @@ type CategoryListProps = {
   control: Control<ReviewForm>;
 };
 function CategoryList({ control }: CategoryListProps) {
-  const { append, replace, fields: categories } = useFieldArray({ control, name: "categories" });
+  const { replace, fields: categories } = useFieldArray({ control, name: "categories" });
   const categorySet = useMemo<Set<string>>(
     () => new Set(categories.map((x) => x.name)),
     [categories],
@@ -437,27 +453,45 @@ function CategoryList({ control }: CategoryListProps) {
   function remove(value: string) {
     replace(categories.filter((category) => category.name !== value));
   }
+  function add(value: string) {
+    replace(
+      [...categories, { name: value.toLowerCase() }].sort((a, b) => (a.name > b.name ? 1 : -1)),
+    );
+  }
 
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, setIsOpen } = useUrlDialog("category-modal");
+  function open() {
+    setIsOpen(true);
+  }
+  function close() {
+    setIsOpen(false);
+    window.clearTimeout(debouncedQuery.current);
+    setQueryParam(router, SEARCH_QUERY_KEY, null);
+  }
   const router = useRouter();
   const debouncedQuery = useRef<number>();
+  const categoriesLimit = 25;
+  const isAtCategoryLimit = categories.length >= categoriesLimit;
 
   return (
     <div>
       <Dialog.Root
         open={isOpen}
         onOpenChange={(isOpen) => {
-          setIsOpen(isOpen);
-          if (isOpen) return;
-
-          window.clearTimeout(debouncedQuery.current);
-          setQueryParam(router, SEARCH_QUERY_KEY, null);
+          if (!isOpen) return close();
+          if (isAtCategoryLimit) {
+            return toast.error(`You can't add more than ${categoriesLimit} categories`);
+          }
+          open();
         }}
       >
         <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
           <Toolbar.Button asChild>
-            <Dialog.Trigger asChild>
-              <CategoryButton>
+            <Dialog.Trigger
+              asChild
+              aria-disabled={isAtCategoryLimit}
+            >
+              <CategoryButton className={`${isAtCategoryLimit ? "opacity-60" : ""}`}>
                 <PlusIcon className="h-6 w-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
               </CategoryButton>
@@ -493,10 +527,11 @@ function CategoryList({ control }: CategoryListProps) {
             <Dialog.Content className="w-full max-w-app">
               <CategorySearch
                 enabled={isOpen}
-                append={(value) => append({ name: value.toLowerCase() })}
+                canAddCategories={!isAtCategoryLimit}
+                append={add}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}
-                close={() => setIsOpen(false)}
+                close={close}
                 debounceRef={debouncedQuery}
               />
             </Dialog.Content>
@@ -509,6 +544,7 @@ function CategoryList({ control }: CategoryListProps) {
 
 type CategorySearchProps = {
   enabled: boolean;
+  canAddCategories: boolean;
   append: (value: string) => void;
   remove: (value: string) => void;
   includes: (value: string) => boolean;
@@ -517,6 +553,7 @@ type CategorySearchProps = {
 };
 function CategorySearch({
   enabled,
+  canAddCategories,
   append,
   remove,
   includes,
@@ -537,11 +574,10 @@ function CategorySearch({
     },
   );
 
+  const isSearchCategoryValid = search.length >= 4 && search.length <= 25;
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
-  const isShowInputCategory =
-    !!search &&
-    !includes(search) &&
-    !categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
+  const isSearchCategoryPresent =
+    includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
   return (
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
@@ -554,7 +590,7 @@ function CategorySearch({
         />
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
-        {isShowInputCategory && (
+        {canAddCategories && isSearchCategoryValid && !isSearchCategoryPresent && (
           <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green">
             <span className="shrink-0">
               Add <span className="capitalize">{`"${search}"`}</span>...
@@ -582,11 +618,13 @@ function CategorySearch({
               <label className="flex w-full cursor-pointer justify-between capitalize">
                 <span>{category}</span>
                 <Checkbox.Root
-                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none"
+                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
+                  aria-disabled={!canAddCategories}
                   checked={includes(category)}
-                  onCheckedChange={(e) => {
-                    const action = e === true ? append : remove;
-                    action(category);
+                  onCheckedChange={(checked) => {
+                    if (checked !== true) return remove(category);
+                    if (!canAddCategories) return;
+                    append(category);
                   }}
                 >
                   <Checkbox.Indicator className="h-full w-full p-1 text-white">

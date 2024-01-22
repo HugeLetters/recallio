@@ -11,9 +11,10 @@ import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "dri
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
 import { createPaginationCursor, type Paginated } from "../utils/pagination";
+import { createBarcodeSchema } from "../utils/zod";
 
 const productSummaryListCursorSchema = z.object({
-  barcode: z.string(),
+  barcode: createBarcodeSchema(undefined),
   sorted: z.number(),
 });
 type ProductSummaryListCursor = z.infer<typeof productSummaryListCursorSchema>;
@@ -108,7 +109,9 @@ type ProductReviewsCursor = z.infer<typeof productReviewsCursorSchema>;
 const productReviewsQuery = protectedProcedure
   .input(
     z
-      .object({ barcode: z.string() })
+      .object({
+        barcode: createBarcodeSchema("Barcode is required to get review list for a product"),
+      })
       .merge(createPaginationCursor(productReviewsCursorSchema, ["date", "rating"])),
   )
   .query(({ input: { barcode, limit, sort, cursor } }) => {
@@ -169,15 +172,17 @@ const productReviewsQuery = protectedProcedure
 
 export const productRouter = createTRPCRouter({
   getProductNames: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(z.object({ barcode: createBarcodeSchema(undefined) }))
     .query(async ({ input: { barcode } }): Promise<string[]> => {
-      const cachedProducts = await getProductNames(barcode);
-      if (cachedProducts) return cachedProducts;
-
-      const scrapedProducts = await getScrapedProducts(barcode);
-      cacheProductNames(barcode, scrapedProducts).catch(console.error);
-
-      return scrapedProducts;
+      return getProductNames(barcode)
+        .then((cached) => {
+          if (cached) return cached;
+          return getScrapedProducts(barcode).then((products) => {
+            cacheProductNames(barcode, products).catch(console.error);
+            return products;
+          });
+        })
+        .catch(throwDefaultError);
     }),
   getCategories: protectedProcedure
     .input(
@@ -187,8 +192,8 @@ export const productRouter = createTRPCRouter({
         limit: z.number(),
       }),
     )
-    .query(({ input: { filter, cursor, limit } }) =>
-      db
+    .query(({ input: { filter, cursor, limit } }) => {
+      return db
         .select()
         .from(category)
         .where(
@@ -197,12 +202,14 @@ export const productRouter = createTRPCRouter({
         .limit(limit)
         .orderBy(category.name)
         .then((data) => data.map((x) => x.name))
-        .catch(throwDefaultError),
-    ),
+        .catch(throwDefaultError);
+    }),
   getProductSummaryList: productSummaryListQuery,
   getProductReviews: productReviewsQuery,
   getProductSummary: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(
+      z.object({ barcode: createBarcodeSchema("Barcode is required to request product data") }),
+    )
     .query(({ input: { barcode } }) => {
       const categorySq = db
         .select({
