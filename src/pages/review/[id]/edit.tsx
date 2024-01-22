@@ -118,7 +118,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     handleSubmit,
     setValue,
     formState: { isDirty: isFormDirty },
-  } = useForm<ReviewForm>({ defaultValues: review });
+  } = useForm({ defaultValues: review });
 
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
