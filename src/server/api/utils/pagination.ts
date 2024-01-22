@@ -11,7 +11,6 @@ const cursorBaseSchema = z
   )
   .transform((option) => option.value);
 
-// todo - provide pairs - schema-sort
 export function createPagination<Z extends Zod.Schema, S extends string>(
   cursor: Z,
   sortCols: [S, ...S[]],

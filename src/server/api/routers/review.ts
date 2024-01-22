@@ -25,7 +25,7 @@ import {
 
 const reviewSummaryPagination = createPagination(
   z.object({
-    barcode: z.string(),
+    barcode: createBarcodeSchema(undefined),
     sorted: z.number().or(z.coerce.date()),
   }),
   ["date", "rating"],
@@ -113,7 +113,8 @@ const userReviewSummaryListQuery = protectedProcedure
           }),
           page,
         };
-      });
+      })
+      .catch(throwDefaultError);
   });
 
 export const reviewRouter = createTRPCRouter({
