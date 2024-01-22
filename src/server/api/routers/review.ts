@@ -14,7 +14,7 @@ import { and, asc, desc, eq, gt, inArray, like, lt, or, sql } from "drizzle-orm"
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
-import { createPaginationCursor, type Paginated } from "../utils/pagination";
+import { createPagination, type Paginated } from "../utils/pagination";
 import {
   coercedStringSchema,
   createBarcodeSchema,
@@ -23,11 +23,13 @@ import {
   createMinLengthMessage,
 } from "../utils/zod";
 
-const reviewSummaryCursorSchema = z.object({
-  barcode: z.string(),
-  sorted: z.number().or(z.coerce.date()),
-});
-type ReviewSummaryCursor = z.infer<typeof reviewSummaryCursorSchema>;
+const reviewSummaryPagination = createPagination(
+  z.object({
+    barcode: createBarcodeSchema(undefined),
+    sorted: z.number().or(z.coerce.date()),
+  }),
+  ["date", "rating"],
+);
 const userReviewSummaryListQuery = protectedProcedure
   .input(
     z
@@ -35,9 +37,9 @@ const userReviewSummaryListQuery = protectedProcedure
         /** Filter by name or category */
         filter: z.string().optional(),
       })
-      .merge(createPaginationCursor(reviewSummaryCursorSchema, ["date", "rating"])),
+      .merge(reviewSummaryPagination.schema),
   )
-  .query(async ({ input: { cursor, limit, sort, filter }, ctx }) => {
+  .query(async ({ input: { cursor, limit, sort, filter }, ctx: { session } }) => {
     function getSortByColumn() {
       switch (sort.by) {
         case "date":
@@ -68,7 +70,7 @@ const userReviewSummaryListQuery = protectedProcedure
               .from(reviewsToCategories)
               .where(
                 and(
-                  eq(reviewsToCategories.userId, ctx.session.user.id),
+                  eq(reviewsToCategories.userId, session.user.id),
                   like(reviewsToCategories.category, `${filter}%`),
                 ),
               ),
@@ -88,7 +90,7 @@ const userReviewSummaryListQuery = protectedProcedure
         ),
       })
       .from(review)
-      .where(and(eq(review.userId, ctx.session.user.id), filterClause, cursorClause))
+      .where(and(eq(review.userId, session.user.id), filterClause, cursorClause))
       .leftJoin(
         reviewsToCategories,
         and(
@@ -99,20 +101,20 @@ const userReviewSummaryListQuery = protectedProcedure
       .groupBy(review.userId, review.barcode)
       .limit(limit)
       .orderBy(direction(sortBy), asc(review.barcode))
-      .then((page): Paginated<typeof page, ReviewSummaryCursor> => {
-        if (!page.length) return { page, cursor: null };
+      .then((page): Paginated<typeof page> => {
+        if (!page.length) return { page };
         const lastReview = page.at(-1);
-        if (!lastReview) return { page, cursor: null };
-
+        if (!lastReview) return { page };
         return {
           // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
-          cursor: {
+          cursor: reviewSummaryPagination.encode({
             barcode: lastReview.barcode,
             sorted: sort.by === "date" ? lastReview.updatedAt : lastReview.rating,
-          },
+          }),
           page,
         };
-      });
+      })
+      .catch(throwDefaultError);
   });
 
 export const reviewRouter = createTRPCRouter({

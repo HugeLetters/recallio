@@ -56,18 +56,13 @@ export const userRouter = createTRPCRouter({
         });
     });
   }),
-  getAccountProviders: protectedProcedure.query(
-    ({
-      ctx: {
-        session: { user },
-      },
-    }) =>
-      db
-        .select()
-        .from(account)
-        .where(eq(account.userId, user.id))
-        .then((accounts) => accounts.map((account) => account.provider)),
-  ),
+  getAccountProviders: protectedProcedure.query(({ ctx: { session } }) => {
+    return db
+      .select()
+      .from(account)
+      .where(eq(account.userId, session.user.id))
+      .then((accounts) => accounts.map((account) => account.provider));
+  }),
   deleteAccount: protectedProcedure
     .input(
       z.object({
@@ -78,26 +73,18 @@ export const userRouter = createTRPCRouter({
         }),
       }),
     )
-    .mutation(
-      ({
-        ctx: {
-          session: { user },
-        },
-        input: { provider },
-      }) =>
-        db
-          .delete(account)
-          .where(and(eq(account.userId, user.id), eq(account.provider, provider)))
-          .catch((e) =>
-            throwDefaultError(e, `Error while trying to unlink your ${provider} account`),
-          )
-          .then((query) => {
-            if (!query.rowsAffected) {
-              throw new TRPCError({
-                code: "NOT_FOUND",
-                message: `We couldn't find a ${provider} account linked to your profile`,
-              });
-            }
-          }),
+    .mutation(({ ctx: { session }, input: { provider } }) =>
+      db
+        .delete(account)
+        .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
+        .catch((e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`))
+        .then((query) => {
+          if (!query.rowsAffected) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `We couldn't find a ${provider} account linked to your profile`,
+            });
+          }
+        }),
     ),
 });

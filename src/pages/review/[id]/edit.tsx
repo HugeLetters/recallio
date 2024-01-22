@@ -19,9 +19,10 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { useAsyncComputed, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
-import { fetchNextPage, getQueryParam, isSetEqual, minutesToMs, setQueryParam } from "@/utils";
+import { fetchNextPage, isSetEqual, minutesToMs } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { blobToBase64, compressImage } from "@/utils/image";
+import { getQueryParam, setQueryParam } from "@/utils/query";
 import {
   type ModelProps,
   type NextPageWithLayout,

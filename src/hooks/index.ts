@@ -1,5 +1,6 @@
 import type { AppFileRouter } from "@/server/uploadthing";
-import { browser, getQueryParam, setQueryParam } from "@/utils";
+import { browser } from "@/utils";
+import { getQueryParam, setQueryParam } from "@/utils/query";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import { useRouter } from "next/router";
 import type React from "react";

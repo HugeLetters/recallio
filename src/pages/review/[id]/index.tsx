@@ -9,8 +9,8 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { getQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
+import { getQueryParam } from "@/utils/query";
 import { type NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";

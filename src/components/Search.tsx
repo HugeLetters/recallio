@@ -1,5 +1,6 @@
 import { hasFocusWithin } from "@/hooks";
-import { getQueryParam, includes, setQueryParam } from "@/utils";
+import { includes } from "@/utils/array";
+import { getQueryParam, setQueryParam } from "@/utils/query";
 import type { ModelProps } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
