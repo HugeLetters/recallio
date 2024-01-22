@@ -194,7 +194,6 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     onError: invalidateReviewData,
   });
 
-  // todo - add here constraints from review schema */}
   return (
     <form
       className="flex w-full flex-col gap-4 p-4"
