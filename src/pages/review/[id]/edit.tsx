@@ -1,4 +1,5 @@
 import { InfiniteScroll } from "@/components/List";
+import { Spinner } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
 import {
   AutoresizableInput,
@@ -590,7 +591,7 @@ function CategorySearch({
           debounceRef={debounceRef}
         />
       </div>
-      <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
+      <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pb-20 pt-5">
         {canAddCategories && isSearchCategoryValid && !isSearchCategoryPresent && (
           <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green">
             <span className="shrink-0">
@@ -614,6 +615,7 @@ function CategorySearch({
             getPageValues={(page) => page}
             getKey={(category) => category}
             getNextPage={fetchNextPage(categoriesQuery)}
+            spinner={categoriesQuery.isFetching ? <Spinner className="h-16" /> : null}
           >
             {(category) => (
               <label className="flex w-full cursor-pointer justify-between capitalize">

@@ -1,5 +1,6 @@
 import { HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
+import { Spinner } from "@/components/Loading";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
 import { fetchNextPage, minutesToMs } from "@/utils";
@@ -127,6 +128,7 @@ function ReviewCards() {
           getKey={(value) => value.barcode}
           getNextPage={fetchNextPage(reviewCardsQuery)}
           fallback={<NoResults />}
+          spinner={reviewCardsQuery.isFetching ? <Spinner className="h-16" /> : null}
         >
           {(value) => <ReviewCard review={value} />}
         </InfiniteScroll>
