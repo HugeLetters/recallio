@@ -144,7 +144,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     if (!image) {
       setOptimisticReview(review, image);
     }
-    if (image === undefined) return onReviewUpdateEnd();
+    if (image === undefined) return invalidateReviewData();
     if (image === null) return deleteImage({ barcode });
 
     blobToBase64(image)
@@ -159,7 +159,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
   }
 
   const apiUtils = api.useUtils();
-  function onReviewUpdateEnd() {
+  function invalidateReviewData() {
     apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
     apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
     apiUtils.review.getReviewCount.invalidate().catch(console.error);
@@ -182,15 +182,15 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
 
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
-    onSettled: onReviewUpdateEnd,
+    onSettled: invalidateReviewData,
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
     // hope 1.5s is enough for the update to catch up...
-    onClientUploadComplete: () => setTimeout(onReviewUpdateEnd, 1500),
-    onUploadError: onReviewUpdateEnd,
+    onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
+    onUploadError: invalidateReviewData,
   });
   const { mutate: saveReview } = api.review.upsertReview.useMutation({
-    onError: onReviewUpdateEnd,
+    onError: invalidateReviewData,
   });
 
   // todo - add here constraints from review schema */}
@@ -464,17 +464,31 @@ function CategoryList({ control }: CategoryListProps) {
   }
   const router = useRouter();
   const debouncedQuery = useRef<number>();
+  const categoriesLimit = 25;
+  const areCategoriesValid = categories.length <= categoriesLimit;
 
   return (
     <div>
       <Dialog.Root
         open={isOpen}
-        onOpenChange={(isOpen) => (isOpen ? open() : close())}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) return close();
+          if (!areCategoriesValid) return;
+          open();
+        }}
       >
+        {!areCategoriesValid && (
+          <span className="text-xs text-app-red">
+            {`You can't add more than ${categoriesLimit} categories`}
+          </span>
+        )}
         <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
           <Toolbar.Button asChild>
-            <Dialog.Trigger asChild>
-              <CategoryButton>
+            <Dialog.Trigger
+              asChild
+              aria-disabled={!areCategoriesValid}
+            >
+              <CategoryButton className={`${!areCategoriesValid ? "opacity-60" : ""}`}>
                 <PlusIcon className="h-6 w-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
               </CategoryButton>
@@ -510,6 +524,7 @@ function CategoryList({ control }: CategoryListProps) {
             <Dialog.Content className="w-full max-w-app">
               <CategorySearch
                 enabled={isOpen}
+                canAddCategories={areCategoriesValid}
                 append={add}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}
@@ -526,6 +541,7 @@ function CategoryList({ control }: CategoryListProps) {
 
 type CategorySearchProps = {
   enabled: boolean;
+  canAddCategories: boolean;
   append: (value: string) => void;
   remove: (value: string) => void;
   includes: (value: string) => boolean;
@@ -534,6 +550,7 @@ type CategorySearchProps = {
 };
 function CategorySearch({
   enabled,
+  canAddCategories,
   append,
   remove,
   includes,
@@ -554,11 +571,10 @@ function CategorySearch({
     },
   );
 
+  const isSearchCategoryValid = search.length >= 4 && search.length <= 25;
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
-  const isShowInputCategory =
-    search.length >= 4 &&
-    !includes(search) &&
-    !categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
+  const isSearchCategoryPresent =
+    includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
   return (
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
@@ -571,7 +587,7 @@ function CategorySearch({
         />
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5">
-        {isShowInputCategory && (
+        {canAddCategories && isSearchCategoryValid && !isSearchCategoryPresent && (
           <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green">
             <span className="shrink-0">
               Add <span className="capitalize">{`"${search}"`}</span>...
@@ -599,11 +615,13 @@ function CategorySearch({
               <label className="flex w-full cursor-pointer justify-between capitalize">
                 <span>{category}</span>
                 <Checkbox.Root
-                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none"
+                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
+                  aria-disabled={!canAddCategories}
                   checked={includes(category)}
-                  onCheckedChange={(e) => {
-                    const action = e === true ? append : remove;
-                    action(category);
+                  onCheckedChange={(checked) => {
+                    if (checked !== true) return remove(category);
+                    if (!canAddCategories) return;
+                    append(category);
                   }}
                 >
                   <Checkbox.Indicator className="h-full w-full p-1 text-white">
