@@ -77,7 +77,7 @@ export function useUrlDialog(queryKey: string) {
   const router = useRouter();
   const isOpen = getQueryParam(router.query[queryKey]);
 
-  // persist query params on navigating back
+  // persist query params on navigating back/forward
   useEffect(() => {
     function handler() {
       if (!isOpen) return;
