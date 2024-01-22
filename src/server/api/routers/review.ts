@@ -17,6 +17,7 @@ import { throwDefaultError } from "../utils";
 import { createPaginationCursor, type Paginated } from "../utils/pagination";
 import {
   coercedStringSchema,
+  createBarcodeSchema,
   createLongTextSchema,
   createMaxLengthMessage,
   createMinLengthMessage,
@@ -119,9 +120,7 @@ export const reviewRouter = createTRPCRouter({
     .input(
       z
         .object({
-          barcode: coercedStringSchema({
-            required_error: "Barcode is required to create a review",
-          }).min(5),
+          barcode: createBarcodeSchema("Barcode is required to create a review"),
           name: coercedStringSchema({
             required_error: "Product name is required to create a review",
           })
@@ -156,7 +155,7 @@ export const reviewRouter = createTRPCRouter({
         .catch((e) => throwDefaultError(e, "Couldn't post the review"));
     }),
   getUserReview: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(z.object({ barcode: createBarcodeSchema("Barcode is required to get review data") }))
     .query(async ({ ctx, input: { barcode } }) => {
       return db
         .select({
@@ -186,25 +185,27 @@ export const reviewRouter = createTRPCRouter({
         .catch(throwDefaultError);
     }),
   getUserReviewSummaryList: userReviewSummaryListQuery,
-  getReviewCount: protectedProcedure.query(({ ctx }) =>
-    count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count),
-  ),
+  getReviewCount: protectedProcedure.query(({ ctx }) => {
+    return count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count);
+  }),
   deleteReview: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      ).then(([reviewData]) => {
-        if (!reviewData) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Couldn't find your review for barcode ${barcode}.`,
-          });
-        }
+      )
+        .catch(throwDefaultError)
+        .then(([reviewData]) => {
+          if (!reviewData) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-        return reviewData;
-      }, throwDefaultError);
+          return reviewData;
+        });
 
       return db
         .transaction(async (tx) => {
@@ -229,21 +230,27 @@ export const reviewRouter = createTRPCRouter({
         .catch((e) => throwDefaultError(e, `Couldn't delete your review for barcode ${barcode}.`));
     }),
   deleteReviewImage: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(
+      z.object({
+        barcode: createBarcodeSchema("Barcode is required to delete an image from a review"),
+      }),
+    )
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      ).then(([reviewData]) => {
-        if (!reviewData) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Couldn't find your review for barcode ${barcode}.`,
-          });
-        }
+      )
+        .catch(throwDefaultError)
+        .then(([reviewData]) => {
+          if (!reviewData) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-        return reviewData;
-      }, throwDefaultError);
+          return reviewData;
+        });
 
       return db
         .update(review)

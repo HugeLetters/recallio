@@ -22,3 +22,10 @@ export function createLongTextSchema(name: string, maxLength: number) {
     `${name} has to be between 1 and ${maxLength} characters long`,
   );
 }
+
+export function createBarcodeSchema(requiredError: string | undefined) {
+  return coercedStringSchema({ required_error: requiredError }).min(
+    5,
+    createMinLengthMessage("Barcode", 5),
+  );
+}

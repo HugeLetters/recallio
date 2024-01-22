@@ -365,7 +365,7 @@ function ProsConsComment({
           {...registerPros}
           placeholder="Pros"
           minLength={1}
-          maxLength={30}
+          maxLength={4095}
         />
       </>
       <>
@@ -375,6 +375,8 @@ function ProsConsComment({
           initialContent={review.cons ?? ""}
           {...registerCons}
           placeholder="Cons"
+          minLength={1}
+          maxLength={4095}
         />
       </>
       <AutoresizableInput
@@ -382,6 +384,8 @@ function ProsConsComment({
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"
+        minLength={1}
+        maxLength={2047}
       />
     </ProsConsCommentWrapper>
   );

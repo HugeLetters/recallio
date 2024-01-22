@@ -23,14 +23,12 @@ export const userRouter = createTRPCRouter({
         .update(user)
         .set({ name: input })
         .where(eq(user.id, session.user.id))
-        .then(
-          (query) => {
-            if (!query.rowsAffected) {
-              throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-            }
-          },
-          (e) => throwDefaultError(e, "Error while trying to update username"),
-        );
+        .catch((e) => throwDefaultError(e, "Error while trying to update username"))
+        .then((query) => {
+          if (!query.rowsAffected) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+          }
+        });
     }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
     return findFirst(user, eq(user.id, session.user.id)).then(([data]) => {
@@ -46,18 +44,16 @@ export const userRouter = createTRPCRouter({
         .update(user)
         .set({ image: null })
         .where(eq(user.id, session.user.id))
-        .then(
-          (query) => {
-            if (!query.rowsAffected) {
-              throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-            }
+        .catch((e) => throwDefaultError(e, "Error while trying to update your avatar"))
+        .then((query) => {
+          if (!query.rowsAffected) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+          }
 
-            if (!isUrl(image)) {
-              utapi.deleteFiles([image]).catch(console.error);
-            }
-          },
-          (e) => throwDefaultError(e, "Error while trying to update your avatar"),
-        );
+          if (!isUrl(image)) {
+            utapi.deleteFiles([image]).catch(console.error);
+          }
+        });
     });
   }),
   getAccountProviders: protectedProcedure.query(
@@ -92,16 +88,16 @@ export const userRouter = createTRPCRouter({
         db
           .delete(account)
           .where(and(eq(account.userId, user.id), eq(account.provider, provider)))
-          .then(
-            (query) => {
-              if (!query.rowsAffected) {
-                throw new TRPCError({
-                  code: "NOT_FOUND",
-                  message: `We couldn't find a ${provider} account linked to your profile`,
-                });
-              }
-            },
-            (e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`),
-          ),
+          .catch((e) =>
+            throwDefaultError(e, `Error while trying to unlink your ${provider} account`),
+          )
+          .then((query) => {
+            if (!query.rowsAffected) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: `We couldn't find a ${provider} account linked to your profile`,
+              });
+            }
+          }),
     ),
 });

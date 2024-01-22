@@ -9,7 +9,7 @@ import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
