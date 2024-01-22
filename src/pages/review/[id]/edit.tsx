@@ -479,8 +479,9 @@ function CategoryList({ control }: CategoryListProps) {
         open={isOpen}
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
-          if (isAtCategoryLimit)
+          if (isAtCategoryLimit) {
             return toast.error(`You can't add more than ${categoriesLimit} categories`);
+          }
           open();
         }}
       >
