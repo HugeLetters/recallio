@@ -19,12 +19,13 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { useAsyncComputed, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
-import { fetchNextPage, getQueryParam, minutesToMs, setQueryParam } from "@/utils";
+import { fetchNextPage, getQueryParam, isSetEqual, minutesToMs, setQueryParam } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { blobToBase64, compressImage } from "@/utils/image";
 import {
   type ModelProps,
   type NextPageWithLayout,
+  type Nullish,
   type StrictOmit,
   type TransformType,
 } from "@/utils/type";
@@ -34,7 +35,7 @@ import * as Radio from "@radix-ui/react-radio-group";
 import * as Select from "@radix-ui/react-select";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
-import { useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useMemo, useRef, useState, type FormEvent, type MutableRefObject } from "react";
 import {
   Controller,
   useFieldArray,
@@ -116,30 +117,30 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     handleSubmit,
     setValue,
     formState: { isDirty: isFormDirty },
-  } = useForm({ defaultValues: review });
+  } = useForm<ReviewForm>({ defaultValues: review });
 
-  const router = useRouter();
-  const apiUtils = api.useUtils();
-  function onReviewUpdateEnd() {
-    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
-    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
-    apiUtils.review.getReviewCount.invalidate().catch(console.error);
+  function submitReview(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    handleSubmit((data) => {
+      const { categories: categoriesField, image: _, ...restData } = data;
+      const newCategories = categoriesField.map(({ name }) => name);
+
+      const optimisticReview = { ...restData, barcode, categories: newCategories };
+      if (!isFormDirty && hasReview) {
+        return onReviewSave(optimisticReview);
+      }
+
+      const reviewCategories = review.categories.map(({ name }) => name);
+      const areCategoriesUnchanged = isSetEqual(new Set(newCategories), new Set(reviewCategories));
+      const categories = areCategoriesUnchanged ? undefined : newCategories;
+      const updatedReview = { ...optimisticReview, categories };
+      saveReview(updatedReview, {
+        onSuccess: () => onReviewSave(optimisticReview),
+      });
+    })(e).catch(console.error);
   }
 
-  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image?: string | null) {
-    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
-      if (!cache) {
-        return { ...review, image: image ?? null };
-      }
-      if (image === undefined) {
-        return { ...cache, ...review };
-      }
-      return { ...cache, ...review, image };
-    });
-
-    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
-  }
-  function onReviewUpsert(review: StrictOmit<ReviewData, "image">) {
+  function onReviewSave(review: StrictOmit<ReviewData, "image">) {
     if (!image) {
       setOptimisticReview(review, image);
     }
@@ -157,40 +158,46 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
       .catch(console.error);
   }
 
+  const apiUtils = api.useUtils();
+  function onReviewUpdateEnd() {
+    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
+    apiUtils.review.getReviewCount.invalidate().catch(console.error);
+  }
+
+  const router = useRouter();
+  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
+    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
+      if (!cache) {
+        return { ...review, image: image ?? null };
+      }
+      if (image === undefined) {
+        return { ...cache, ...review };
+      }
+      return { ...cache, ...review, image };
+    });
+
+    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+  }
+
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
     onSettled: onReviewUpdateEnd,
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
-    onClientUploadComplete() {
-      // hope 1.5s is enough for the update to catch up...
-      setTimeout(onReviewUpdateEnd, 1500);
-    },
+    // hope 1.5s is enough for the update to catch up...
+    onClientUploadComplete: () => setTimeout(onReviewUpdateEnd, 1500),
     onUploadError: onReviewUpdateEnd,
   });
   const { mutate: saveReview } = api.review.upsertReview.useMutation({
     onError: onReviewUpdateEnd,
   });
 
+  // todo - add here constraints from review schema */}
   return (
     <form
       className="flex w-full flex-col gap-4 p-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit((data) => {
-          const { categories, image: _, ...restData } = data;
-          const review = {
-            ...restData,
-            barcode,
-            categories: categories.map((category) => category.name),
-          };
-          if (!isFormDirty && hasReview) return onReviewUpsert(review);
-
-          saveReview(review, {
-            onSuccess: () => onReviewUpsert(review),
-          });
-        })(e).catch(console.error);
-      }}
+      onSubmit={submitReview}
     >
       <AttachedImage
         key={review.image}
@@ -388,7 +395,7 @@ function Private({ value, setValue }: ModelProps<boolean>) {
   );
 }
 
-type AttachedImageProps = { savedImage: string | null } & ModelProps<File | null | undefined>; // null - delete, undefined - keep as is
+type AttachedImageProps = { savedImage: string | null } & ModelProps<Nullish<File>>; // null - delete, undefined - keep as is
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useAsyncComputed(value, async (draft) => {
     if (!draft) return draft;
@@ -432,13 +439,18 @@ type CategoryListProps = {
   control: Control<ReviewForm>;
 };
 function CategoryList({ control }: CategoryListProps) {
-  const { append, replace, fields: categories } = useFieldArray({ control, name: "categories" });
+  const { replace, fields: categories } = useFieldArray({ control, name: "categories" });
   const categorySet = useMemo<Set<string>>(
     () => new Set(categories.map((x) => x.name)),
     [categories],
   );
   function remove(value: string) {
     replace(categories.filter((category) => category.name !== value));
+  }
+  function add(value: string) {
+    replace(
+      [...categories, { name: value.toLowerCase() }].sort((a, b) => (a.name > b.name ? 1 : -1)),
+    );
   }
 
   const { isOpen, setIsOpen } = useUrlDialog("category-modal");
@@ -498,7 +510,7 @@ function CategoryList({ control }: CategoryListProps) {
             <Dialog.Content className="w-full max-w-app">
               <CategorySearch
                 enabled={isOpen}
-                append={(value) => append({ name: value.toLowerCase() })}
+                append={add}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}
                 close={close}

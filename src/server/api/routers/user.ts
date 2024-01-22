@@ -9,17 +9,14 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
+import { coercedStringSchema, createMaxLengthMessage, createMinLengthMessage } from "../utils/zod";
 
 export const userRouter = createTRPCRouter({
   setName: protectedProcedure
     .input(
-      z
-        .string({
-          required_error: "Username was not provided",
-          invalid_type_error: "Provided username is not a valid string",
-        })
-        .min(4, "Username has be at least 4 characters long")
-        .max(30, "Username can't be longer than 30 characters"),
+      coercedStringSchema({ required_error: "Username was not provided" })
+        .min(4, createMinLengthMessage("Username", 4))
+        .max(30, createMaxLengthMessage("Username", 30)),
     )
     .mutation(({ input, ctx: { session } }) => {
       return db
