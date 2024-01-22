@@ -1,4 +1,4 @@
-import { Button, Input, WithLabel, providers } from "@/components/UI";
+import { Button, Input, WithLabel, providerIcons } from "@/components/UI";
 import { getQueryParam } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
 import { signIn, useSession } from "next-auth/react";
@@ -78,7 +78,7 @@ type ProviderSignInProps = { callbackUrl: string | undefined };
 function ProviderSignIn({ callbackUrl }: ProviderSignInProps) {
   return (
     <div className="grid w-full grid-cols-4 gap-3">
-      {providers.map(([provider, Icon]) => (
+      {providerIcons.map(([provider, Icon]) => (
         <Button
           className="ghost"
           key={provider}

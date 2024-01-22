@@ -1,6 +1,6 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
 import { useUrlDialog } from "@/hooks";
-import type { Icon, StrictOmit } from "@/utils/type";
+import type { Entries, Icon, NonEmptyArray, StrictOmit } from "@/utils/type";
 import { Overlay, Root } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
@@ -128,13 +128,14 @@ export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitc
   );
 }
 
-const providerRecord: Partial<Record<OAuthProviderType, Icon>> = {
+const providerRecord = {
   discord: DiscordIcon,
   github: GithubIcon,
   google: GoogleIcon,
   linkedin: LinkedinIcon,
-};
-export const providers = Object.entries(providerRecord);
+} satisfies Partial<Record<OAuthProviderType, Icon>>;
+export const providers = Object.keys(providerRecord) as NonEmptyArray<keyof typeof providerRecord>;
+export const providerIcons = Object.entries(providerRecord) as Entries<typeof providerRecord>;
 
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {

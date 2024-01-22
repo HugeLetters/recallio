@@ -64,7 +64,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {
     const cause = error.cause;
     return {
-      message: cause instanceof ZodError ? `${cause.format()._errors[0]}` : error.message,
+      message: cause instanceof ZodError ? `${cause.errors[0]?.message}` : error.message,
       data:
         env.NEXT_PUBLIC_NODE_ENV === "production" ? ({} as Partial<typeof shape.data>) : shape.data,
       code: shape.code,

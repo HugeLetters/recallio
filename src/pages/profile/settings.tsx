@@ -6,7 +6,7 @@ import {
   LabeledSwitch,
   UserPic,
   WithLabel,
-  providers,
+  providerIcons,
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
@@ -182,7 +182,7 @@ function LinkedAccounts() {
     <div>
       <p className="p-2 text-sm">Linked accounts</p>
       <div className="flex flex-col overflow-hidden rounded-lg bg-neutral-100">
-        {providers.map(([provider, Icon]) => {
+        {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
             <LabeledSwitch

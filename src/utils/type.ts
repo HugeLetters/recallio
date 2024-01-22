@@ -20,3 +20,7 @@ export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
 };
 
 export type NonEmptyArray<T> = [T, ...Array<T>];
+
+export type Entries<O, $Keys extends keyof O = keyof O> = NonEmptyArray<
+  $Keys extends $Keys ? [$Keys, O[$Keys]] : never
+>;
