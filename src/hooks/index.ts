@@ -76,6 +76,20 @@ export function useAsyncComputed<T, R>(state: T, transform: (draft: T) => Promis
 export function useUrlDialog(queryKey: string) {
   const router = useRouter();
   const isOpen = getQueryParam(router.query[queryKey]);
+
+  // persist query params on navigating back
+  useEffect(() => {
+    function handler() {
+      if (!isOpen) return;
+      setQueryParam(router, queryKey, null);
+    }
+
+    window.addEventListener("popstate", handler);
+    return () => {
+      window.removeEventListener("popstate", handler);
+    };
+  }, [isOpen, queryKey, router]);
+
   return {
     isOpen: !!isOpen,
     setIsOpen(this: void, open: boolean) {
