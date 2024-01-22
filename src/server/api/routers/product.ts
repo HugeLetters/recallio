@@ -6,23 +6,23 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { isUrl, mostCommonItems } from "@/utils";
+import { isUrl } from "@/utils";
+import { mostCommonItems } from "@/utils/array";
 import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
-import { createPaginationCursor, type Paginated } from "../utils/pagination";
+import { createPagination, type Paginated } from "../utils/pagination";
+import { createBarcodeSchema } from "../utils/zod";
 
-const productSummaryListCursorSchema = z.object({
-  barcode: z.string(),
-  sorted: z.number(),
-});
-type ProductSummaryListCursor = z.infer<typeof productSummaryListCursorSchema>;
+const productSummaryListPagination = createPagination(
+  z.object({
+    barcode: createBarcodeSchema(undefined),
+    sorted: z.number(),
+  }),
+  ["reviews", "rating"],
+);
 const productSummaryListQuery = protectedProcedure
-  .input(
-    z
-      .object({ filter: z.string().optional() })
-      .merge(createPaginationCursor(productSummaryListCursorSchema, ["reviews", "rating"])),
-  )
+  .input(z.object({ filter: z.string().optional() }).merge(productSummaryListPagination.schema))
   .query(({ input: { limit, cursor, sort, filter } }) => {
     function getSortByColumn(): SQL.Aliased<number> {
       switch (sort.by) {
@@ -84,32 +84,36 @@ const productSummaryListQuery = protectedProcedure
       .groupBy(review.barcode)
       .orderBy(direction(sortBy), asc(review.barcode))
       .limit(limit)
-      .then((page): Paginated<typeof page, ProductSummaryListCursor> => {
-        if (!page.length) return { page, cursor: null };
+      .then((page): Paginated<typeof page> => {
+        if (!page.length) return { page };
         const lastPage = page.at(-1);
-        if (!lastPage) return { page, cursor: null };
+        if (!lastPage) return { page };
 
         return {
           page,
-          cursor: {
+          cursor: productSummaryListPagination.encode({
             barcode: lastPage.barcode,
             sorted: sort.by === "rating" ? lastPage.averageRating : lastPage.reviewCount,
-          },
+          }),
         };
       })
       .catch(throwDefaultError);
   });
 
-const productReviewsCursorSchema = z.object({
-  author: z.string(),
-  sorted: z.number().or(z.coerce.date()),
-});
-type ProductReviewsCursor = z.infer<typeof productReviewsCursorSchema>;
+const productReviewsPagination = createPagination(
+  z.object({
+    author: z.string(),
+    sorted: z.number().or(z.coerce.date()),
+  }),
+  ["date", "rating"],
+);
 const productReviewsQuery = protectedProcedure
   .input(
     z
-      .object({ barcode: z.string() })
-      .merge(createPaginationCursor(productReviewsCursorSchema, ["date", "rating"])),
+      .object({
+        barcode: createBarcodeSchema("Barcode is required to get review list for a product"),
+      })
+      .merge(productReviewsPagination.schema),
   )
   .query(({ input: { barcode, limit, sort, cursor } }) => {
     function getSortByColumn() {
@@ -151,17 +155,17 @@ const productReviewsQuery = protectedProcedure
       .innerJoin(user, eq(user.id, review.userId))
       .limit(limit)
       .orderBy(direction(sortBy), asc(review.userId))
-      .then((page): Paginated<typeof page, ProductReviewsCursor> => {
-        if (!page.length) return { page, cursor: null };
+      .then((page): Paginated<typeof page> => {
+        if (!page.length) return { page };
         const lastProduct = page.at(-1);
-        if (!lastProduct) return { page, cursor: null };
+        if (!lastProduct) return { page };
 
         return {
           page,
-          cursor: {
+          cursor: productReviewsPagination.encode({
             author: lastProduct.authorId,
             sorted: sort.by === "rating" ? lastProduct.rating : lastProduct.updatedAt,
-          },
+          }),
         };
       })
       .catch(throwDefaultError);
@@ -169,15 +173,17 @@ const productReviewsQuery = protectedProcedure
 
 export const productRouter = createTRPCRouter({
   getProductNames: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(z.object({ barcode: createBarcodeSchema(undefined) }))
     .query(async ({ input: { barcode } }): Promise<string[]> => {
-      const cachedProducts = await getProductNames(barcode);
-      if (cachedProducts) return cachedProducts;
-
-      const scrapedProducts = await getScrapedProducts(barcode);
-      cacheProductNames(barcode, scrapedProducts).catch(console.error);
-
-      return scrapedProducts;
+      return getProductNames(barcode)
+        .then((cached) => {
+          if (cached) return cached;
+          return getScrapedProducts(barcode).then((products) => {
+            cacheProductNames(barcode, products).catch(console.error);
+            return products;
+          });
+        })
+        .catch(throwDefaultError);
     }),
   getCategories: protectedProcedure
     .input(
@@ -187,8 +193,8 @@ export const productRouter = createTRPCRouter({
         limit: z.number(),
       }),
     )
-    .query(({ input: { filter, cursor, limit } }) =>
-      db
+    .query(({ input: { filter, cursor, limit } }) => {
+      return db
         .select()
         .from(category)
         .where(
@@ -197,12 +203,14 @@ export const productRouter = createTRPCRouter({
         .limit(limit)
         .orderBy(category.name)
         .then((data) => data.map((x) => x.name))
-        .catch(throwDefaultError),
-    ),
+        .catch(throwDefaultError);
+    }),
   getProductSummaryList: productSummaryListQuery,
   getProductReviews: productReviewsQuery,
   getProductSummary: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(
+      z.object({ barcode: createBarcodeSchema("Barcode is required to request product data") }),
+    )
     .query(({ input: { barcode } }) => {
       const categorySq = db
         .select({

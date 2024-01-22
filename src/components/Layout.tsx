@@ -1,4 +1,4 @@
-import { indexOf } from "@/utils";
+import { indexOf } from "@/utils/array";
 import type { DiscriminatedUnion, Icon } from "@/utils/type";
 import { useAtomValue } from "jotai/react";
 import { atomWithReducer } from "jotai/utils";

@@ -14,13 +14,22 @@ import { and, asc, desc, eq, gt, inArray, like, lt, or, sql } from "drizzle-orm"
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
-import { createPaginationCursor, type Paginated } from "../utils/pagination";
+import { createPagination, type Paginated } from "../utils/pagination";
+import {
+  coercedStringSchema,
+  createBarcodeSchema,
+  createLongTextSchema,
+  createMaxLengthMessage,
+  createMinLengthMessage,
+} from "../utils/zod";
 
-const reviewSummaryCursorSchema = z.object({
-  barcode: z.string(),
-  sorted: z.number().or(z.coerce.date()),
-});
-type ReviewSummaryCursor = z.infer<typeof reviewSummaryCursorSchema>;
+const reviewSummaryPagination = createPagination(
+  z.object({
+    barcode: createBarcodeSchema(undefined),
+    sorted: z.number().or(z.coerce.date()),
+  }),
+  ["date", "rating"],
+);
 const userReviewSummaryListQuery = protectedProcedure
   .input(
     z
@@ -28,9 +37,9 @@ const userReviewSummaryListQuery = protectedProcedure
         /** Filter by name or category */
         filter: z.string().optional(),
       })
-      .merge(createPaginationCursor(reviewSummaryCursorSchema, ["date", "rating"])),
+      .merge(reviewSummaryPagination.schema),
   )
-  .query(async ({ input: { cursor, limit, sort, filter }, ctx }) => {
+  .query(async ({ input: { cursor, limit, sort, filter }, ctx: { session } }) => {
     function getSortByColumn() {
       switch (sort.by) {
         case "date":
@@ -61,7 +70,7 @@ const userReviewSummaryListQuery = protectedProcedure
               .from(reviewsToCategories)
               .where(
                 and(
-                  eq(reviewsToCategories.userId, ctx.session.user.id),
+                  eq(reviewsToCategories.userId, session.user.id),
                   like(reviewsToCategories.category, `${filter}%`),
                 ),
               ),
@@ -81,7 +90,7 @@ const userReviewSummaryListQuery = protectedProcedure
         ),
       })
       .from(review)
-      .where(and(eq(review.userId, ctx.session.user.id), filterClause, cursorClause))
+      .where(and(eq(review.userId, session.user.id), filterClause, cursorClause))
       .leftJoin(
         reviewsToCategories,
         and(
@@ -92,36 +101,51 @@ const userReviewSummaryListQuery = protectedProcedure
       .groupBy(review.userId, review.barcode)
       .limit(limit)
       .orderBy(direction(sortBy), asc(review.barcode))
-      .then((page): Paginated<typeof page, ReviewSummaryCursor> => {
-        if (!page.length) return { page, cursor: null };
+      .then((page): Paginated<typeof page> => {
+        if (!page.length) return { page };
         const lastReview = page.at(-1);
-        if (!lastReview) return { page, cursor: null };
-
+        if (!lastReview) return { page };
         return {
           // this does result in an extra request if the last page is exactly the size of a limit but that's a low cost imo
-          cursor: {
+          cursor: reviewSummaryPagination.encode({
             barcode: lastReview.barcode,
             sorted: sort.by === "date" ? lastReview.updatedAt : lastReview.rating,
-          },
+          }),
           page,
         };
-      });
+      })
+      .catch(throwDefaultError);
   });
 
-const trimmedStringSchema = z.string().transform((string) => string.trim());
 export const reviewRouter = createTRPCRouter({
   upsertReview: protectedProcedure
     .input(
       z
         .object({
-          barcode: z.string(),
-          name: z.string(),
-          rating: z.number(),
-          pros: trimmedStringSchema.nullish(),
-          cons: trimmedStringSchema.nullish(),
-          comment: trimmedStringSchema.nullish(),
+          barcode: createBarcodeSchema("Barcode is required to create a review"),
+          name: coercedStringSchema({
+            required_error: "Product name is required to create a review",
+          })
+            .min(6, createMinLengthMessage("Product name", 6))
+            .max(60, createMaxLengthMessage("Product name", 60)),
+          rating: z
+            .number()
+            .int("Rating has to be an integer")
+            .min(0, "Rating can't be less than 0")
+            .max(5, "Rating can't be greater than 5"),
+          pros: createLongTextSchema("Pros", 4095).nullish(),
+          cons: createLongTextSchema("Cons", 4095).nullish(),
+          comment: createLongTextSchema("Comment", 2047).nullish(),
           isPrivate: z.boolean(),
-          categories: z.array(z.string().min(1).max(25)).optional(),
+          categories: z
+            .array(
+              z
+                .string()
+                .min(1, createMinLengthMessage("A single category", 1))
+                .max(25, createMaxLengthMessage("A single category", 25)),
+            )
+            .max(25, "Review can't have more than 25 categories")
+            .optional(),
         })
         // enforce default behaviour - we don't wanna update imageKey here
         .strip(),
@@ -133,7 +157,7 @@ export const reviewRouter = createTRPCRouter({
         .catch((e) => throwDefaultError(e, "Couldn't post the review"));
     }),
   getUserReview: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(z.object({ barcode: createBarcodeSchema("Barcode is required to get review data") }))
     .query(async ({ ctx, input: { barcode } }) => {
       return db
         .select({
@@ -163,25 +187,27 @@ export const reviewRouter = createTRPCRouter({
         .catch(throwDefaultError);
     }),
   getUserReviewSummaryList: userReviewSummaryListQuery,
-  getReviewCount: protectedProcedure.query(({ ctx }) =>
-    count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count),
-  ),
+  getReviewCount: protectedProcedure.query(({ ctx }) => {
+    return count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count);
+  }),
   deleteReview: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      ).then(([reviewData]) => {
-        if (!reviewData) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Couldn't find your review for barcode ${barcode}.`,
-          });
-        }
+      )
+        .catch(throwDefaultError)
+        .then(([reviewData]) => {
+          if (!reviewData) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-        return reviewData;
-      }, throwDefaultError);
+          return reviewData;
+        });
 
       return db
         .transaction(async (tx) => {
@@ -206,21 +232,27 @@ export const reviewRouter = createTRPCRouter({
         .catch((e) => throwDefaultError(e, `Couldn't delete your review for barcode ${barcode}.`));
     }),
   deleteReviewImage: protectedProcedure
-    .input(z.object({ barcode: z.string() }))
+    .input(
+      z.object({
+        barcode: createBarcodeSchema("Barcode is required to delete an image from a review"),
+      }),
+    )
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findFirst(
         review,
         and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      ).then(([reviewData]) => {
-        if (!reviewData) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Couldn't find your review for barcode ${barcode}.`,
-          });
-        }
+      )
+        .catch(throwDefaultError)
+        .then(([reviewData]) => {
+          if (!reviewData) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-        return reviewData;
-      }, throwDefaultError);
+          return reviewData;
+        });
 
       return db
         .update(review)

@@ -1,5 +1,6 @@
 import { hasFocusWithin } from "@/hooks";
-import { getQueryParam, includes, setQueryParam } from "@/utils";
+import { includes } from "@/utils/array";
+import { getQueryParam, setQueryParam } from "@/utils/query";
 import type { ModelProps } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -10,7 +11,7 @@ import { Flipped, Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
 import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
-import { DialogOverlay } from "./UI";
+import { DialogOverlay, UrlDialogRoot } from "./UI";
 
 export const SEARCH_QUERY_KEY = "search";
 type HeaderSearchBarProps = { right?: ReactNode; title: string };
@@ -99,7 +100,6 @@ export function HeaderSearchControls({
 
           window.clearTimeout(debounceRef.current);
           debounceRef.current = window.setTimeout(() => {
-            console.log(1);
             setQueryParam(router, SEARCH_QUERY_KEY, newValue);
           }, 300);
         }}
@@ -138,7 +138,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
   const sortBy = useParseSort(optionList);
 
   return (
-    <Dialog.Root>
+    <UrlDialogRoot dialogQueryKey="sort-drawer">
       <Dialog.Trigger className="flex items-center gap-1 text-sm">
         <SwapIcon className="h-8 w-8 p-1" />
         {/* keeps trigger always the same size */}
@@ -186,6 +186,6 @@ export function SortDialog({ optionList }: SortDialogProps) {
           </Dialog.Content>
         </DialogOverlay>
       </Dialog.Portal>
-    </Dialog.Root>
+    </UrlDialogRoot>
   );
 }

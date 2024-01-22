@@ -24,6 +24,8 @@ type InfiniteScrollProps<P, V> = {
   getNextPage: () => void;
   /** Render this element if all pages are empty */
   fallback?: ReactNode;
+  /** Render a loading spinner at the end of the list */
+  spinner?: ReactNode;
 };
 export function InfiniteScroll<P, V>({
   pages,
@@ -32,6 +34,7 @@ export function InfiniteScroll<P, V>({
   getKey,
   getNextPage,
   fallback,
+  spinner,
 }: InfiniteScrollProps<P, V>) {
   const triggerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -57,8 +60,9 @@ export function InfiniteScroll<P, V>({
   const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
   return (
     <>
-      {lastNonEmptyPageIndex !== -1
-        ? pages.map((page, i) => {
+      {lastNonEmptyPageIndex !== -1 ? (
+        <>
+          {pages.map((page, i) => {
             const isLastPage = i === lastNonEmptyPageIndex;
             const values = getPageValues(page);
             const triggerIndex = Math.floor(values.length / 2);
@@ -76,8 +80,12 @@ export function InfiniteScroll<P, V>({
                 </div>
               );
             });
-          })
-        : fallback}
+          })}
+          {spinner}
+        </>
+      ) : (
+        fallback
+      )}
     </>
   );
 }

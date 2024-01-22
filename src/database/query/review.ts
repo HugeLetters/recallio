@@ -1,4 +1,4 @@
-import { nonEmptyArray } from "@/utils";
+import { nonEmptyArray } from "@/utils/array";
 import { type StrictOmit } from "@/utils/type";
 import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
 import { db } from "..";
@@ -26,6 +26,14 @@ export async function upsertReview(
         });
       if (!categories) return reviewQuery;
 
+      await tx
+        .delete(reviewsToCategories)
+        .where(
+          and(
+            eq(reviewsToCategories.userId, reviewValue.userId),
+            eq(reviewsToCategories.barcode, reviewValue.barcode),
+          ),
+        );
       const categoryValues = categories.map((category) => ({ name: category }));
       if (!nonEmptyArray(categoryValues)) return reviewQuery;
 
@@ -37,15 +45,6 @@ export async function upsertReview(
           console.error(e);
           throw Error("Error saving categories for review");
         });
-
-      await tx
-        .delete(reviewsToCategories)
-        .where(
-          and(
-            eq(reviewsToCategories.userId, reviewValue.userId),
-            eq(reviewsToCategories.barcode, reviewValue.barcode),
-          ),
-        );
 
       const categoriesForReview = categories.map((category) => ({
         barcode: reviewValue.barcode,

@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
+import { Spinner } from "@/components/Loading";
 import { SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
 import {
@@ -11,8 +12,9 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { fetchNextPage, getQueryParam } from "@/utils";
+import { fetchNextPage } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
+import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
@@ -167,6 +169,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
             getPageValues={({ page }) => page}
             getKey={(review) => review.authorId}
             getNextPage={fetchNextPage(reviewsQuery)}
+            spinner={reviewsQuery.isFetching ? <Spinner className="h-16" /> : null}
           >
             {(review) => <ReviewCard review={review} />}
           </InfiniteScroll>

@@ -1,9 +1,11 @@
 import { Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
+import { Spinner } from "@/components/Loading";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
-import { fetchNextPage, getQueryParam } from "@/utils";
+import { fetchNextPage } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
+import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 
@@ -32,6 +34,7 @@ const Page: NextPageWithLayout = function () {
             getKey={(value) => value.barcode}
             getNextPage={fetchNextPage(productListQuery)}
             fallback={<NoResults />}
+            spinner={productListQuery.isFetching ? <Spinner className="h-16" /> : null}
           >
             {(value) => {
               const match = filter ? value.matchedName : value.names[0] ?? value.matchedName;

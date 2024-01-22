@@ -24,7 +24,6 @@ const Page: NextPageWithLayout = function () {
     };
   }, [dispatchSelection]);
 
-  const [barcode, setBarcode] = useState("");
   const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
   useEffect(() => {
     if (!ready) return;
@@ -74,9 +73,8 @@ const Page: NextPageWithLayout = function () {
   );
 
   return (
-    <form
+    <div
       className="relative isolate flex h-full w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
-      onSubmit={(e) => e.preventDefault()}
       {...drag()}
     >
       <div
@@ -84,23 +82,28 @@ const Page: NextPageWithLayout = function () {
         className="!absolute -z-10 flex h-full w-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
       />
       {selection === "input" && (
-        <label className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green focus-within:outline-4">
+        <form
+          className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green focus-within:outline-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const barcode = String(new FormData(e.currentTarget).get("barcode"));
+            goToReview(barcode);
+          }}
+        >
           <input
             className="grow outline-none"
             placeholder="barcode"
+            name="barcode"
             autoFocus
-            onChange={(e) => setBarcode(e.target.value)}
+            required
           />
           <button
-            aria-label="open review page of the specified barcode"
-            role="navigation"
-            disabled={!barcode}
+            aria-label="Open review page of the specified barcode"
             className="text-app-green"
-            onClick={() => goToReview(barcode)}
           >
             <SearchIcon className="h-7 w-7" />
           </button>
-        </label>
+        </form>
       )}
       <div
         className={`grid grid-cols-3 pb-8 text-white ${!offset ? "transition-transform" : ""}`}
@@ -141,7 +144,7 @@ const Page: NextPageWithLayout = function () {
           Input
         </button>
       </div>
-    </form>
+    </div>
   );
 };
 

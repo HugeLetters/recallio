@@ -1,15 +1,17 @@
 import { HeaderLink, Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
+import { Spinner } from "@/components/Loading";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
-import { fetchNextPage, getQueryParam, minutesToMs } from "@/utils";
+import { fetchNextPage, minutesToMs } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
+import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
@@ -126,6 +128,7 @@ function ReviewCards() {
           getKey={(value) => value.barcode}
           getNextPage={fetchNextPage(reviewCardsQuery)}
           fallback={<NoResults />}
+          spinner={reviewCardsQuery.isFetching ? <Spinner className="h-16" /> : null}
         >
           {(value) => <ReviewCard review={value} />}
         </InfiniteScroll>
