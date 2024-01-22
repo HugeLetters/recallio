@@ -1,6 +1,7 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
 import { useUrlDialog } from "@/hooks";
-import type { Entries, Icon, NonEmptyArray, StrictOmit } from "@/utils/type";
+import type { Entries, NonEmptyArray } from "@/utils/array";
+import type { Icon, StrictOmit } from "@/utils/type";
 import { Overlay, Root } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";

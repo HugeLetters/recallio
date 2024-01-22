@@ -2,8 +2,9 @@ import { Layout } from "@/components/Layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
-import { fetchNextPage, getQueryParam } from "@/utils";
+import { fetchNextPage } from "@/utils";
 import { api, type RouterInputs } from "@/utils/api";
+import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 

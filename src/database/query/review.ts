@@ -1,4 +1,4 @@
-import { nonEmptyArray } from "@/utils";
+import { nonEmptyArray } from "@/utils/array";
 import { type StrictOmit } from "@/utils/type";
 import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
 import { db } from "..";

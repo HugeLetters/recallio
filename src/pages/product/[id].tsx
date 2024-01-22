@@ -11,8 +11,9 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { fetchNextPage, getQueryParam } from "@/utils";
+import { fetchNextPage } from "@/utils";
 import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
+import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
 

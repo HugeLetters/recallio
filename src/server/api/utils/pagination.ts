@@ -1,19 +1,18 @@
-import type { Option, SomeOfOption } from "@/utils/type";
+import { isSome } from "@/utils";
+import type { NonEmptyArray } from "@/utils/array";
+import type { Option } from "@/utils/type";
 import { z } from "zod";
 
 const limitBaseSchema = z.number().int().min(1).max(100);
 const cursorBaseSchema = z
   .string({ invalid_type_error: "Pagination cursor has to be a string" })
   .transform(base64ToJson)
-  .refine(
-    (option): option is SomeOfOption<typeof option> => option.ok,
-    "Supplied string is an invalid base64 encoded json",
-  )
+  .refine(isSome, "Supplied string is an invalid base64 encoded json")
   .transform((option) => option.value);
 
 export function createPagination<Z extends Zod.Schema, S extends string>(
   cursor: Z,
-  sortCols: [S, ...S[]],
+  sortCols: NonEmptyArray<S>,
 ) {
   return {
     schema: z.object({

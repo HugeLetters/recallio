@@ -1,4 +1,4 @@
-import { getQueryParam } from "@/utils";
+import { getQueryParam } from "@/utils/query";
 import * as Separator from "@radix-ui/react-separator";
 import Image from "next/image";
 import { useRouter } from "next/router";
