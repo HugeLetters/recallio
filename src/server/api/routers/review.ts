@@ -15,6 +15,12 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
 import { createPaginationCursor, type Paginated } from "../utils/pagination";
+import {
+  coercedStringSchema,
+  createLongTextSchema,
+  createMaxLengthMessage,
+  createMinLengthMessage,
+} from "../utils/zod";
 
 const reviewSummaryCursorSchema = z.object({
   barcode: z.string(),
@@ -108,20 +114,37 @@ const userReviewSummaryListQuery = protectedProcedure
       });
   });
 
-const trimmedStringSchema = z.string().transform((string) => string.trim());
 export const reviewRouter = createTRPCRouter({
   upsertReview: protectedProcedure
     .input(
       z
         .object({
-          barcode: z.string(),
-          name: z.string().min(6).max(60),
-          rating: z.number(),
-          pros: trimmedStringSchema.nullish(),
-          cons: trimmedStringSchema.nullish(),
-          comment: trimmedStringSchema.nullish(),
+          barcode: coercedStringSchema({
+            required_error: "Barcode is required to create a review",
+          }).min(5),
+          name: coercedStringSchema({
+            required_error: "Product name is required to create a review",
+          })
+            .min(6, createMinLengthMessage("Product name", 6))
+            .max(60, createMaxLengthMessage("Product name", 60)),
+          rating: z
+            .number()
+            .int("Rating has to be an integer")
+            .min(0, "Rating can't be less than 0")
+            .max(5, "Rating can't be greater than 5"),
+          pros: createLongTextSchema("Pros", 4095).nullish(),
+          cons: createLongTextSchema("Cons", 4095).nullish(),
+          comment: createLongTextSchema("Comment", 2047).nullish(),
           isPrivate: z.boolean(),
-          categories: z.array(z.string().min(1).max(25)).optional(),
+          categories: z
+            .array(
+              z
+                .string()
+                .min(1, createMinLengthMessage("A single category", 1))
+                .max(25, createMaxLengthMessage("A single category", 25)),
+            )
+            .max(25, "Review can't have more than 25 categories")
+            .optional(),
         })
         // enforce default behaviour - we don't wanna update imageKey here
         .strip(),

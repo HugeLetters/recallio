@@ -43,6 +43,7 @@ import {
   type Control,
   type UseFormRegisterReturn,
 } from "react-hook-form";
+import { toast } from "react-toastify";
 import Checkmark from "~icons/custom/checkmark";
 import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
@@ -363,6 +364,8 @@ function ProsConsComment({
           initialContent={review.pros ?? ""}
           {...registerPros}
           placeholder="Pros"
+          minLength={1}
+          maxLength={30}
         />
       </>
       <>
@@ -465,7 +468,7 @@ function CategoryList({ control }: CategoryListProps) {
   const router = useRouter();
   const debouncedQuery = useRef<number>();
   const categoriesLimit = 25;
-  const areCategoriesValid = categories.length <= categoriesLimit;
+  const isAtCategoryLimit = categories.length >= categoriesLimit;
 
   return (
     <div>
@@ -473,22 +476,18 @@ function CategoryList({ control }: CategoryListProps) {
         open={isOpen}
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
-          if (!areCategoriesValid) return;
+          if (isAtCategoryLimit)
+            return toast.error(`You can't add more than ${categoriesLimit} categories`);
           open();
         }}
       >
-        {!areCategoriesValid && (
-          <span className="text-xs text-app-red">
-            {`You can't add more than ${categoriesLimit} categories`}
-          </span>
-        )}
         <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
           <Toolbar.Button asChild>
             <Dialog.Trigger
               asChild
-              aria-disabled={!areCategoriesValid}
+              aria-disabled={isAtCategoryLimit}
             >
-              <CategoryButton className={`${!areCategoriesValid ? "opacity-60" : ""}`}>
+              <CategoryButton className={`${isAtCategoryLimit ? "opacity-60" : ""}`}>
                 <PlusIcon className="h-6 w-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
               </CategoryButton>
@@ -524,7 +523,7 @@ function CategoryList({ control }: CategoryListProps) {
             <Dialog.Content className="w-full max-w-app">
               <CategorySearch
                 enabled={isOpen}
-                canAddCategories={areCategoriesValid}
+                canAddCategories={!isAtCategoryLimit}
                 append={add}
                 remove={remove}
                 includes={(value) => categorySet.has(value.toLowerCase())}

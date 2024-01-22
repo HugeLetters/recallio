@@ -10,11 +10,15 @@ export function createMaxLengthMessage(name: string, length: number) {
   return `${name} can't be longer than ${length} characters`;
 }
 
-export const trimmedStringSchema = z.string().transform((string) => string.trim());
+export const trimmedStringSchema = z.string().transform((string) => {
+  const trimmed = string.trim();
+  if (trimmed.length) return trimmed;
+  return null;
+});
 
 export function createLongTextSchema(name: string, maxLength: number) {
   return trimmedStringSchema.refine(
-    (value) => value.length >= 1 && value.length <= maxLength,
+    (value) => !value || (value.length >= 1 && value.length <= maxLength),
     `${name} has to be between 1 and ${maxLength} characters long`,
   );
 }
