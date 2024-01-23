@@ -1,10 +1,11 @@
+import { Layout } from "@/components/Layout";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import {
+  BarcodeTitle,
   CategoryButton,
   ConsIcon,
   ImagePreview,
   ImagePreviewWrapper,
-  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -25,9 +26,7 @@ const Page: NextPageWithLayout = function () {
   return !!barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (page) => {
-  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
-};
+Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
 type ReviewProps = { barcode: string };

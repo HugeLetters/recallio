@@ -1,3 +1,4 @@
+import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
@@ -10,11 +11,11 @@ import {
   Star,
 } from "@/components/UI";
 import {
+  BarcodeTitle,
   CategoryButton,
   ConsIcon,
   ImagePreview,
   ImagePreviewWrapper,
-  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -61,9 +62,7 @@ const Page: NextPageWithLayout = function () {
   return !!barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (page) => {
-  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
-};
+Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;

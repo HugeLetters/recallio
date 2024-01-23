@@ -12,7 +12,6 @@ import {
 import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
-import { Layout } from "../Layout";
 import { Button } from "../UI";
 
 type ProsConsCommentWrapperProps = { children: ReactNode[] };
@@ -96,10 +95,8 @@ export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>
   },
 );
 
-export function LayoutWithBarcodeTitle({ children }: PropsWithChildren<unknown>) {
+export function BarcodeTitle() {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
-  const title = barcode ?? "Recallio";
-
-  return <Layout header={{ title }}>{children}</Layout>;
+  return barcode ?? "Recallio";
 }

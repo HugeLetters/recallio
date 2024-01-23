@@ -104,7 +104,6 @@ function Footer() {
   const activeBackground = (
     <Flipped
       flipId="active-icon-bg"
-      key="active-icon-bg"
       onAppear={(element) => {
         element.classList.add("animate-scale-in");
         element.style.opacity = "1";
