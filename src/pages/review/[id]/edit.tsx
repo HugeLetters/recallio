@@ -20,10 +20,10 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useAsyncComputed, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
+import { useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
 import { fetchNextPage, isSetEqual, minutesToMs } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
-import { blobToBase64, compressImage } from "@/utils/image";
+import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
 import {
   type ModelProps,
@@ -149,9 +149,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     if (image === undefined) return invalidateReviewData();
     if (image === null) return deleteImage({ barcode });
 
-    blobToBase64(image)
-      .then((image) => setOptimisticReview(review, image))
-      .catch(console.error);
+    setOptimisticReview(review, URL.createObjectURL(image));
 
     compressImage(image, 511 * 1024)
       .then((compressedImage) => {
@@ -162,7 +160,14 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
 
   const apiUtils = api.useUtils();
   function invalidateReviewData() {
-    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+    const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
+    apiUtils.review.getUserReview
+      .invalidate({ barcode })
+      .then(() => {
+        if (!optimisticImage) return;
+        URL.revokeObjectURL(optimisticImage);
+      })
+      .catch(console.error);
     apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
     apiUtils.review.getReviewCount.invalidate().catch(console.error);
   }
@@ -404,11 +409,8 @@ function Private({ value, setValue }: ModelProps<boolean>) {
 
 type AttachedImageProps = { savedImage: string | null } & ModelProps<Nullish<File>>; // null - delete, undefined - keep as is
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
-  const base64Image = useAsyncComputed(value, async (draft) => {
-    if (!draft) return draft;
-    return blobToBase64(draft);
-  });
-  const src = base64Image === null ? null : base64Image ?? savedImage;
+  const base64Image = useBlobUrl(value);
+  const src = value === null ? null : base64Image ?? savedImage;
   const isImagePresent = !!src || !!savedImage;
 
   return (

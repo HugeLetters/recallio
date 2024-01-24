@@ -65,15 +65,6 @@ export function useOptimistic<T>() {
   };
 }
 
-export function useAsyncComputed<T, R>(state: T, transform: (draft: T) => Promise<R>) {
-  const [computed, setComputed] = useState<R>();
-  useEffect(() => {
-    transform(state).then(setComputed).catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
-  return computed;
-}
-
 export function useUrlDialog(queryKey: string) {
   const router = useRouter();
   const isOpen = getQueryParam(router.query[queryKey]);
