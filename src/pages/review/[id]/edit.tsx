@@ -527,7 +527,7 @@ function CategoryList({ control }: CategoryListProps) {
         </Toolbar.Root>
         <Dialog.Portal>
           <DialogOverlay className="flex justify-center">
-            <Dialog.Content className="data-[state=closed]:animate-fade-out w-full max-w-app animate-fade-in">
+            <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-out">
               <CategorySearch
                 enabled={isOpen}
                 canAddCategories={!isAtCategoryLimit}

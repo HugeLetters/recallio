@@ -111,7 +111,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
             </Dialog.Trigger>
             <Dialog.Portal>
               <DialogOverlay className="flex items-center justify-center">
-                <Dialog.Content className="data-[state=closed]:animate-fade-out max-h-screen max-w-app animate-fade-in overflow-y-auto">
+                <Dialog.Content className="max-h-screen max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
                   <Dialog.Close
                     className="flex"
                     aria-label="Close full image view"
@@ -209,7 +209,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       <Dialog.Portal>
         <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
-            <Dialog.Content className="data-[state=closed]:animate-fade-out flex flex-col gap-4 rounded-3xl bg-white p-5 motion-safe:animate-scale-in">
+            <Dialog.Content className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in">
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>

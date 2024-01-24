@@ -151,7 +151,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
-          <Dialog.Content className="data-[state=closed]:motion-safe:animate-slide-down max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
+          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-down">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
