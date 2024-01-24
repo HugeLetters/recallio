@@ -526,8 +526,8 @@ function CategoryList({ control }: CategoryListProps) {
           ))}
         </Toolbar.Root>
         <Dialog.Portal>
-          <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
-            <Dialog.Content className="w-full max-w-app">
+          <DialogOverlay className="flex justify-center">
+            <Dialog.Content className="data-[state=closed]:animate-fade-out w-full max-w-app animate-fade-in">
               <CategorySearch
                 enabled={isOpen}
                 canAddCategories={!isAtCategoryLimit}
@@ -583,7 +583,7 @@ function CategorySearch({
     includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
   return (
-    <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
+    <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="h-7 w-7 shrink-0" />
         <HeaderSearchControls

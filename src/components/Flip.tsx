@@ -1,12 +1,12 @@
-import { useMemo, type ComponentPropsWithoutRef } from "react";
-import { Flipped as NativeFlipped, Flipper as NativeFlipper } from "react-flip-toolkit";
+import { type ComponentPropsWithoutRef } from "react";
+import { Flipped as NativeFlipped } from "react-flip-toolkit";
 
 export type FlippedProps = ComponentPropsWithoutRef<typeof NativeFlipped> & {
   /** Put your animation class here */
   className?: string;
 };
 export function Flipped({ children, className, onAppear, onExit, ...props }: FlippedProps) {
-  const classList = useMemo(() => className?.split(" "), [className]);
+  const classList = className?.split(" ");
   return (
     <NativeFlipped
       onAppear={(element, index, decisionData) => {
@@ -18,8 +18,9 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
       }}
       onExit={(element, index, remove, decisionData) => {
         if (classList) {
-          element.classList.add(...classList, "animation-reverse");
+          element.classList.add(...classList, "animate-reverse");
           element.addEventListener("animationend", remove, { once: true });
+          element.style.pointerEvents = "none";
         }
         onExit?.(element, index, remove, decisionData);
       }}
@@ -29,15 +30,3 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
     </NativeFlipped>
   );
 }
-
-// export type FlipperProps = ComponentPropsWithoutRef<typeof NativeFlipper>;
-// export function Flipper({ children, flipKey, ...props }: FlipperProps) {
-//   return (
-//     <NativeFlipper
-//       flipKey={flipKey as unknown}
-//       {...props}
-//     >
-//       {children}
-//     </NativeFlipper>
-//   );
-// }

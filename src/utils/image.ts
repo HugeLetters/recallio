@@ -66,7 +66,7 @@ function drawImage(
 
 export function useBlobUrl<B extends Blob | null | undefined>(blob: B) {
   const url = useMemo(
-    () => (blob ? URL.createObjectURL(blob) : (blob as B & (null | undefined))),
+    () => (typeof blob === "undefined" || blob === null ? blob : URL.createObjectURL(blob)),
     [blob],
   );
   const oldUrl = useRef(url);

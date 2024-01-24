@@ -10,7 +10,7 @@ import {
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
-import { blobToBase64, compressImage } from "@/utils/image";
+import { compressImage } from "@/utils/image";
 import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -62,14 +62,21 @@ function UserImage({ user }: UserImageProps) {
         queueUpdate(() => {
           startUpload([resultImage]).catch(console.error);
         });
-        blobToBase64(resultImage).then(setOptimistic).catch(console.error);
+        setOptimistic(URL.createObjectURL(resultImage));
       })
       .catch(console.error);
   }
 
   function syncUserImage() {
     setTimeout(() => {
-      update().catch(console.error).finally(onUpdateEnd);
+      update()
+        .catch(console.error)
+        .finally(() => {
+          if (optimistic.value) {
+            URL.revokeObjectURL(optimistic.value);
+          }
+          onUpdateEnd();
+        });
     }, 500);
   }
 

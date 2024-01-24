@@ -110,8 +110,8 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
               <ImagePreview src={image} />
             </Dialog.Trigger>
             <Dialog.Portal>
-              <DialogOverlay className="items-center">
-                <Dialog.Content className="max-h-screen max-w-app overflow-y-auto">
+              <DialogOverlay className="flex items-center justify-center">
+                <Dialog.Content className="data-[state=closed]:animate-fade-out max-h-screen max-w-app animate-fade-in overflow-y-auto">
                   <Dialog.Close
                     className="flex"
                     aria-label="Close full image view"
@@ -187,6 +187,7 @@ function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentPro
 
 type DeleteButtonProps = { barcode: string };
 function DeleteButton({ barcode }: DeleteButtonProps) {
+  // todo - button should be disabled for first 500ms, add pretty effect to indicate that
   const router = useRouter();
   const apiUtils = api.useUtils();
   const { mutate } = api.review.deleteReview.useMutation({
@@ -206,9 +207,9 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
         <Button className="destructive w-full">Delete review</Button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <DialogOverlay className="items-center backdrop-blur-sm">
+        <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
-            <Dialog.Content className="flex animate-scale-in flex-col gap-4 rounded-3xl bg-white p-5">
+            <Dialog.Content className="data-[state=closed]:animate-fade-out flex flex-col gap-4 rounded-3xl bg-white p-5 motion-safe:animate-scale-in">
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>

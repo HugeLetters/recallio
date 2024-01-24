@@ -2,6 +2,18 @@ import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
 
+const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
+const shadowAroundRadius = "--tw-drop-shadow-around-radius";
+
+const animationDuration = "--tw-animate-duration";
+const animationReverse = "--tw-animate-reverse";
+const slideUp = "slide-up";
+const slideDown = "slide-down";
+const fadeIn = "fade-in";
+const fadeOut = "fade-out";
+const scaleIn = "scale-in";
+const scaleOut = "scale-out";
+
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -18,22 +30,37 @@ export default {
         },
       },
       animation: {
-        "slide-up": "slide-up 200ms ease-in-out var(--tw-animation-reverse, normal)",
-        "fade-in": "fade-in 200ms ease-in-out var(--tw-animation-reverse, normal)",
-        "scale-in": "scale-in 200ms ease-in-out var(--tw-animation-reverse, normal)",
+        "slide-up": `${slideUp} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
+        "slide-down": `${slideDown} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
+        "fade-in": `${fadeIn} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
+        "fade-out": `${fadeOut} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
+        "scale-in": `${scaleIn} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
+        "scale-out": `${scaleOut} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
       },
       keyframes: {
-        "slide-up": {
+        [slideUp]: {
           "0%": { transform: "translateY(100%)" },
           "100%": { transform: "translateY(0)" },
         },
-        "fade-in": {
+        [slideDown]: {
+          "100%": { transform: "translateY(100%)" },
+          "0%": { transform: "translateY(0)" },
+        },
+        [fadeIn]: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        "scale-in": {
+        [fadeOut]: {
+          "0%": { opacity: "1" },
+          "100%": { opacity: "0" },
+        },
+        [scaleIn]: {
           "0%": { scale: "0.7", opacity: "0" },
           "100%": { scale: "1", opacity: "1" },
+        },
+        [scaleOut]: {
+          "0%": { scale: "1", opacity: "1" },
+          "100%": { scale: "0.7", opacity: "0" },
         },
       },
     },
@@ -93,22 +120,30 @@ export default {
         },
       });
 
-      const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
-      const shadowAroundRadius = "--tw-drop-shadow-around-radius";
       addUtilities({
         ".shadow-around": {
           "--tw-drop-shadow": `drop-shadow(0 0 var(${shadowAroundRadius}) rgb(0 0 0 / var(${shadowAroundOpacity})))`,
           filter:
             "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
         },
-        ".animation-reverse": {
-          "--tw-animation-reverse": "reverse",
+        ".animate-reverse": {
+          [animationReverse]: "reverse",
         },
       });
       matchUtilities(
         {
+          "animate-duration"(value) {
+            return {
+              [animationDuration]: String(value),
+            };
+          },
+        },
+        { values: theme("transitionDuration") },
+      );
+      matchUtilities(
+        {
           ["sa-o"](value) {
-            return { [shadowAroundOpacity]: `${String(value)}` };
+            return { [shadowAroundOpacity]: String(value) };
           },
         },
         { values: { ...theme("opacity"), 15: "0.15" } },
@@ -116,7 +151,7 @@ export default {
       matchUtilities(
         {
           ["sa-r"](value) {
-            return { [shadowAroundRadius]: `${value}` };
+            return { [shadowAroundRadius]: String(value) };
           },
         },
         { values: theme("width") },

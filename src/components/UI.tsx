@@ -208,7 +208,7 @@ export const DialogOverlay = forwardRef<
     <Overlay
       ref={ref}
       {...props}
-      className={`fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40 ${className}`}
+      className={`data-[state=closed]:animate-fade-out fixed inset-0 z-10 animate-fade-in bg-black/40 ${className}`}
     >
       {children}
     </Overlay>
