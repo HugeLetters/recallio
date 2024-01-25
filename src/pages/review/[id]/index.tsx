@@ -1,10 +1,11 @@
+import { Layout } from "@/components/Layout";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import {
+  BarcodeTitle,
   CategoryButton,
   ConsIcon,
   ImagePreview,
   ImagePreviewWrapper,
-  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -16,6 +17,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useRef, useState, type CSSProperties } from "react";
 import RightIcon from "~icons/formkit/right";
 
 const Page: NextPageWithLayout = function () {
@@ -25,9 +27,7 @@ const Page: NextPageWithLayout = function () {
   return !!barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (page) => {
-  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
-};
+Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
 type ReviewProps = { barcode: string };
@@ -111,8 +111,8 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
               <ImagePreview src={image} />
             </Dialog.Trigger>
             <Dialog.Portal>
-              <DialogOverlay className="items-center">
-                <Dialog.Content className="max-h-screen max-w-app overflow-y-auto">
+              <DialogOverlay className="flex items-center justify-center">
+                <Dialog.Content className="max-h-screen max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
                   <Dialog.Close
                     className="flex"
                     aria-label="Close full image view"
@@ -187,6 +187,7 @@ function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentPro
 }
 
 type DeleteButtonProps = { barcode: string };
+const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
   const apiUtils = api.useUtils();
@@ -200,16 +201,28 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       void apiUtils.product.getProductSummaryList.invalidate();
     },
   });
+  const [enabled, setEnabled] = useState(false);
+  const timeoutRef = useRef<number>();
 
   return (
-    <UrlDialogRoot dialogQueryKey="delete-dialog">
+    <UrlDialogRoot
+      dialogQueryKey="delete-dialog"
+      onOpenChange={(open) => {
+        clearTimeout(timeoutRef.current);
+        if (!open) {
+          setEnabled(false);
+          return;
+        }
+        timeoutRef.current = window.setTimeout(() => setEnabled(true), deleteTimeout);
+      }}
+    >
       <Dialog.Trigger asChild>
         <Button className="destructive w-full">Delete review</Button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <DialogOverlay className="items-center backdrop-blur-sm">
+        <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
-            <Dialog.Content className="flex animate-scale-in flex-col gap-4 rounded-3xl bg-white p-5">
+            <Dialog.Content className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in">
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
@@ -219,9 +232,26 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
               </Dialog.Description>
               <Dialog.Close
                 asChild
-                onClick={() => mutate({ barcode })}
+                aria-disabled={!enabled}
+                aria-label={
+                  enabled
+                    ? "Delete review"
+                    : `Delete review. The button will be enabled in ${(deleteTimeout / 1000).toFixed(0)} seconds to prevent accidental delete.`
+                }
+                onClick={(e) => {
+                  if (!enabled) {
+                    e.preventDefault();
+                    return;
+                  }
+                  mutate({ barcode });
+                }}
               >
-                <Button className="bg-app-red font-semibold text-white">Delete</Button>
+                <Button
+                  style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
+                  className={`relative overflow-hidden bg-app-red font-semibold text-white after:absolute after:inset-0 after:animate-slide-left after:bg-white/50 after:animate-reverse after:animate-duration-[var(--duration)] ${enabled ? "after:content-none" : "disabled"}`}
+                >
+                  Delete
+                </Button>
               </Dialog.Close>
               <Dialog.Close asChild>
                 <Button className="ghost font-semibold ">Cancel</Button>

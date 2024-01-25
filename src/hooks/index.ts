@@ -44,15 +44,13 @@ export function useOptimistic<T>() {
 
   return {
     optimistic,
-    setOptimistic: (value: T) => {
-      setOptimistic({ value, isActive: true });
-    },
-    queueUpdate: (callback: () => void) => {
+    queueUpdate: (value: T, callback: () => void) => {
       if (optimistic.isActive) {
         queuedAction.current = callback;
       } else {
         callback();
       }
+      setOptimistic({ value, isActive: true });
     },
     onUpdateEnd: () => {
       if (!queuedAction.current) {
@@ -63,15 +61,6 @@ export function useOptimistic<T>() {
       queuedAction.current = undefined;
     },
   };
-}
-
-export function useAsyncComputed<T, R>(state: T, transform: (draft: T) => Promise<R>) {
-  const [computed, setComputed] = useState<R>();
-  useEffect(() => {
-    transform(state).then(setComputed).catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
-  return computed;
 }
 
 export function useUrlDialog(queryKey: string) {

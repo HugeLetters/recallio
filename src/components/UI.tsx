@@ -208,20 +208,27 @@ export const DialogOverlay = forwardRef<
     <Overlay
       ref={ref}
       {...props}
-      className={`fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40 ${className}`}
+      className={`fixed inset-0 z-10 animate-fade-in bg-black/40 data-[state=closed]:animate-fade-out ${className}`}
     >
       {children}
     </Overlay>
   );
 });
 
-type UrlDialogRootProps = { dialogQueryKey: string };
-export function UrlDialogRoot({ children, dialogQueryKey }: PropsWithChildren<UrlDialogRootProps>) {
+type UrlDialogRootProps = { dialogQueryKey: string; onOpenChange?: (open: boolean) => void };
+export function UrlDialogRoot({
+  children,
+  dialogQueryKey,
+  onOpenChange,
+}: PropsWithChildren<UrlDialogRootProps>) {
   const { isOpen, setIsOpen } = useUrlDialog(dialogQueryKey);
   return (
     <Root
       open={isOpen}
-      onOpenChange={setIsOpen}
+      onOpenChange={(open) => {
+        onOpenChange?.(open);
+        setIsOpen(open);
+      }}
     >
       {children}
     </Root>

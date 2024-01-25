@@ -12,13 +12,14 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react";
-import { Flipped, Flipper } from "react-flip-toolkit";
+import { Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen";
 import UploadIcon from "~icons/custom/photo-upload";
 import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
+import { Flipped } from "./Flip";
 
 type LayoutProps = {
   header?: ComponentProps<typeof Header>;
@@ -104,15 +105,7 @@ function Footer() {
   const activeBackground = (
     <Flipped
       flipId="active-icon-bg"
-      key="active-icon-bg"
-      onAppear={(element) => {
-        element.classList.add("animate-scale-in");
-        element.style.opacity = "1";
-      }}
-      onExit={(element, _, remove) => {
-        element.classList.add("animate-scale-in", "animation-reverse");
-        element.addEventListener("animationend", remove, { once: true });
-      }}
+      className="animate-scale-in"
     >
       <div className="absolute -inset-y-6 inset-x-2 -z-10 bg-app-green/35 blur-xl" />
     </Flipped>

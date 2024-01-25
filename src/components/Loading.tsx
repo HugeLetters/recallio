@@ -12,20 +12,20 @@ export function Spinner({ className }: SpinnerProps) {
         {DOTS.map((_, i) => (
           <circle
             key={i}
-            cx="22"
-            cy="12"
-            r="1"
-            transform={`rotate(${i * (360 / DOT_COUNT)})`}
+            cx="12"
+            cy="2"
+            r="0"
+            transform={`rotate(${360 * (i / DOT_COUNT)})`}
             className={`origin-center ${i % 2 ? "fill-app-green" : "fill-app-green/30"}`}
           >
             <animate
               attributeName="r"
               dur={`${DURATION}ms`}
               begin={`${i * (DURATION / DOT_COUNT)}ms`}
-              calcMode="spline"
               keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8"
-              repeatCount="indefinite"
               values="0;2;0;0"
+              calcMode="spline"
+              repeatCount="indefinite"
             />
           </circle>
         ))}
