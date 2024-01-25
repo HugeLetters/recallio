@@ -1,3 +1,4 @@
+import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
@@ -10,19 +11,19 @@ import {
   Star,
 } from "@/components/UI";
 import {
+  BarcodeTitle,
   CategoryButton,
   ConsIcon,
   ImagePreview,
   ImagePreviewWrapper,
-  LayoutWithBarcodeTitle,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useAsyncComputed, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
+import { useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
 import { fetchNextPage, isSetEqual, minutesToMs } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
-import { blobToBase64, compressImage } from "@/utils/image";
+import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
 import {
   type ModelProps,
@@ -61,9 +62,7 @@ const Page: NextPageWithLayout = function () {
   return !!barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (page) => {
-  return <LayoutWithBarcodeTitle>{page}</LayoutWithBarcodeTitle>;
-};
+Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
@@ -150,9 +149,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     if (image === undefined) return invalidateReviewData();
     if (image === null) return deleteImage({ barcode });
 
-    blobToBase64(image)
-      .then((image) => setOptimisticReview(review, image))
-      .catch(console.error);
+    setOptimisticReview(review, URL.createObjectURL(image));
 
     compressImage(image, 511 * 1024)
       .then((compressedImage) => {
@@ -163,7 +160,14 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
 
   const apiUtils = api.useUtils();
   function invalidateReviewData() {
-    apiUtils.review.getUserReview.invalidate({ barcode }).catch(console.error);
+    const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
+    apiUtils.review.getUserReview
+      .invalidate({ barcode })
+      .then(() => {
+        if (!optimisticImage) return;
+        URL.revokeObjectURL(optimisticImage);
+      })
+      .catch(console.error);
     apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
     apiUtils.review.getReviewCount.invalidate().catch(console.error);
   }
@@ -405,11 +409,8 @@ function Private({ value, setValue }: ModelProps<boolean>) {
 
 type AttachedImageProps = { savedImage: string | null } & ModelProps<Nullish<File>>; // null - delete, undefined - keep as is
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
-  const base64Image = useAsyncComputed(value, async (draft) => {
-    if (!draft) return draft;
-    return blobToBase64(draft);
-  });
-  const src = base64Image === null ? null : base64Image ?? savedImage;
+  const base64Image = useBlobUrl(value);
+  const src = value === null ? null : base64Image ?? savedImage;
   const isImagePresent = !!src || !!savedImage;
 
   return (
@@ -525,8 +526,8 @@ function CategoryList({ control }: CategoryListProps) {
           ))}
         </Toolbar.Root>
         <Dialog.Portal>
-          <DialogOverlay className="fixed inset-0 z-10 flex animate-fade-in justify-center bg-black/40">
-            <Dialog.Content className="w-full max-w-app">
+          <DialogOverlay className="flex justify-center">
+            <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-out">
               <CategorySearch
                 enabled={isOpen}
                 canAddCategories={!isAtCategoryLimit}
@@ -582,7 +583,7 @@ function CategorySearch({
     includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
   return (
-    <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up">
+    <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="h-7 w-7 shrink-0" />
         <HeaderSearchControls

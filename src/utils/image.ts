@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef } from "react";
 import { browser } from ".";
 
 export async function compressImage(file: File, targetBytes: number): Promise<File | null> {
@@ -63,20 +64,20 @@ function drawImage(
   });
 }
 
-export function blobToBase64(blob: Blob) {
-  const fileReader = new FileReader();
-  fileReader.readAsDataURL(blob);
-  return new Promise<string>((resolve, reject) => {
-    fileReader.addEventListener(
-      "load",
-      (event) => {
-        const result = event.target?.result;
-        if (typeof result === "string") resolve(result);
-        reject("File reader result is not a string");
-      },
-      { once: true },
-    );
-    fileReader.addEventListener("error", (event) => reject(event.target?.error), { once: true });
-    fileReader.addEventListener("abort", () => reject("File reader aborted"), { once: true });
-  });
+export function useBlobUrl<B extends Blob | null | undefined>(blob: B) {
+  const url = useMemo(
+    () => (typeof blob === "undefined" || blob === null ? blob : URL.createObjectURL(blob)),
+    [blob],
+  );
+  const oldUrl = useRef(url);
+
+  useEffect(() => {
+    if (oldUrl.current) {
+      // timeout so that on onmount it doesn't revoke it before a new element renders
+      setTimeout((url) => URL.revokeObjectURL(url), 1000, oldUrl.current);
+    }
+    oldUrl.current = url;
+  }, [url]);
+
+  return url;
 }

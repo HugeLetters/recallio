@@ -2,6 +2,21 @@ import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
 
+const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
+const shadowAroundRadius = "--tw-drop-shadow-around-radius";
+
+const animationDuration = "--tw-animate-duration";
+const slideUp = "slide-up";
+const slideDown = "slide-down";
+const slideLeft = "slide-left";
+const fadeIn = "fade-in";
+const fadeOut = "fade-out";
+const scaleIn = "scale-in";
+const scaleOut = "scale-out";
+function defineAnimation(animationName: string) {
+  return { [animationName]: `${animationName} var(${animationDuration}, 200ms) ease-in-out` };
+}
+
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -18,22 +33,42 @@ export default {
         },
       },
       animation: {
-        "slide-up": "slide-up 200ms ease-in-out var(--tw-animation-reverse, normal)",
-        "fade-in": "fade-in 200ms ease-in-out var(--tw-animation-reverse, normal)",
-        "scale-in": "scale-in 200ms ease-in-out var(--tw-animation-reverse, normal)",
+        ...defineAnimation(slideUp),
+        ...defineAnimation(slideDown),
+        ...defineAnimation(fadeIn),
+        ...defineAnimation(fadeOut),
+        ...defineAnimation(scaleIn),
+        ...defineAnimation(scaleOut),
+        ...defineAnimation(slideLeft),
       },
       keyframes: {
-        "slide-up": {
-          "0%": { transform: "translateY(100%)" },
-          "100%": { transform: "translateY(0)" },
+        [slideUp]: {
+          "0%": { translate: "0 100%" },
+          "100%": { translate: "0 0" },
         },
-        "fade-in": {
+        [slideDown]: {
+          "0%": { translate: "0 0" },
+          "100%": { translate: "0 100%" },
+        },
+        [slideLeft]: {
+          "0%": { translate: "100% 0" },
+          "100%": { translate: "0 0" },
+        },
+        [fadeIn]: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        "scale-in": {
+        [fadeOut]: {
+          "0%": { opacity: "1" },
+          "100%": { opacity: "0" },
+        },
+        [scaleIn]: {
           "0%": { scale: "0.7", opacity: "0" },
           "100%": { scale: "1", opacity: "1" },
+        },
+        [scaleOut]: {
+          "0%": { scale: "1", opacity: "1" },
+          "100%": { scale: "0.7", opacity: "0" },
         },
       },
     },
@@ -52,19 +87,14 @@ export default {
         ".btn": {
           borderRadius: "0.75rem",
           padding: "0.875rem 0.625rem",
-          transitionProperty: "transform, filter, color, background-color, outline-color",
+          transitionProperty: "scale, transform, filter, color, background-color, outline-color",
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
           transitionDuration: "200ms",
           "&:active:not([class*=disabled])": {
             "--tw-brightness": "brightness(1.1)",
             filter:
               "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
-            "@media (prefers-reduced-motion: no-preference)": {
-              "--tw-scale-x": ".95",
-              "--tw-scale-y": ".95",
-              transform:
-                "translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))",
-            },
+            "@media (prefers-reduced-motion: no-preference)": { scale: ".95" },
           },
         },
         ".primary": {
@@ -93,22 +123,26 @@ export default {
         },
       });
 
-      const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
-      const shadowAroundRadius = "--tw-drop-shadow-around-radius";
       addUtilities({
         ".shadow-around": {
           "--tw-drop-shadow": `drop-shadow(0 0 var(${shadowAroundRadius}) rgb(0 0 0 / var(${shadowAroundOpacity})))`,
           filter:
             "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
         },
-        ".animation-reverse": {
-          "--tw-animation-reverse": "reverse",
-        },
+        ".animate-reverse": { animationDirection: "reverse" },
       });
       matchUtilities(
         {
+          "animate-duration"(value) {
+            return { [animationDuration]: String(value) };
+          },
+        },
+        { values: theme("transitionDuration") },
+      );
+      matchUtilities(
+        {
           ["sa-o"](value) {
-            return { [shadowAroundOpacity]: `${String(value)}` };
+            return { [shadowAroundOpacity]: String(value) };
           },
         },
         { values: { ...theme("opacity"), 15: "0.15" } },
@@ -116,7 +150,7 @@ export default {
       matchUtilities(
         {
           ["sa-r"](value) {
-            return { [shadowAroundRadius]: `${value}` };
+            return { [shadowAroundRadius]: String(value) };
           },
         },
         { values: theme("width") },

@@ -10,7 +10,7 @@ import {
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
-import { blobToBase64, compressImage } from "@/utils/image";
+import { compressImage } from "@/utils/image";
 import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -46,30 +46,35 @@ export default Page;
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
-  const { optimistic, setOptimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
+  const { optimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
   const optimisticUser = optimistic.isActive ? { ...user, image: optimistic.value } : user;
 
   function updateUserImage(image: File | null) {
     if (!image) {
-      setOptimistic(image);
-      queueUpdate(remove);
+      queueUpdate(image, remove);
       return;
     }
 
     compressImage(image, 511 * 1024)
       .then((compressedImage) => {
         const resultImage = compressedImage ?? image;
-        queueUpdate(() => {
+        queueUpdate(URL.createObjectURL(resultImage), () => {
           startUpload([resultImage]).catch(console.error);
         });
-        blobToBase64(resultImage).then(setOptimistic).catch(console.error);
       })
       .catch(console.error);
   }
 
   function syncUserImage() {
     setTimeout(() => {
-      update().catch(console.error).finally(onUpdateEnd);
+      update()
+        .catch(console.error)
+        .finally(() => {
+          if (optimistic.value) {
+            URL.revokeObjectURL(optimistic.value);
+          }
+          onUpdateEnd();
+        });
     }, 500);
   }
 
