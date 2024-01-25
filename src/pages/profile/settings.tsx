@@ -34,6 +34,7 @@ const Page: NextPageWithLayout = function () {
       >
         Sign Out
       </Button>
+      <DeleteProfile />
     </div>
   ) : (
     "Loading"
@@ -233,5 +234,27 @@ function AppSettings() {
         onCheckedChange={setReviewPrivateDefault}
       />
     </div>
+  );
+}
+
+// todo - modal
+function DeleteProfile() {
+  const [_, setValue] = useReviewPrivateDefault();
+  const deleteProfile = api.user.deleteUser.useMutation({
+    onSuccess() {
+      setValue(true);
+      void signOut({ redirect: false });
+    },
+  });
+
+  return (
+    <Button
+      className="destructive"
+      onClick={() => {
+        deleteProfile.mutate();
+      }}
+    >
+      Delete profile
+    </Button>
   );
 }

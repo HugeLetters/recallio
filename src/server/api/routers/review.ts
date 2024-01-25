@@ -152,9 +152,10 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { categories, ...value } = input;
-      return upsertReview({ ...value, userId: ctx.session.user.id }, categories?.filter(Boolean))
-        .then(() => void 0)
-        .catch((e) => throwDefaultError(e, "Couldn't post the review"));
+      return upsertReview(
+        { ...value, userId: ctx.session.user.id },
+        categories?.filter(Boolean),
+      ).catch((e) => throwDefaultError(e, "Couldn't post the review"));
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to get review data") }))
