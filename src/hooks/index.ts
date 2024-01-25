@@ -44,15 +44,13 @@ export function useOptimistic<T>() {
 
   return {
     optimistic,
-    setOptimistic: (value: T) => {
-      setOptimistic({ value, isActive: true });
-    },
-    queueUpdate: (callback: () => void) => {
+    queueUpdate: (value: T, callback: () => void) => {
       if (optimistic.isActive) {
         queuedAction.current = callback;
       } else {
         callback();
       }
+      setOptimistic({ value, isActive: true });
     },
     onUpdateEnd: () => {
       if (!queuedAction.current) {

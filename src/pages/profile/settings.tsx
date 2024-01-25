@@ -46,23 +46,21 @@ export default Page;
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
-  const { optimistic, setOptimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
+  const { optimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
   const optimisticUser = optimistic.isActive ? { ...user, image: optimistic.value } : user;
 
   function updateUserImage(image: File | null) {
     if (!image) {
-      setOptimistic(image);
-      queueUpdate(remove);
+      queueUpdate(image, remove);
       return;
     }
 
     compressImage(image, 511 * 1024)
       .then((compressedImage) => {
         const resultImage = compressedImage ?? image;
-        queueUpdate(() => {
+        queueUpdate(URL.createObjectURL(resultImage), () => {
           startUpload([resultImage]).catch(console.error);
         });
-        setOptimistic(URL.createObjectURL(resultImage));
       })
       .catch(console.error);
   }
