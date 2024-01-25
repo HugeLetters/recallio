@@ -215,13 +215,20 @@ export const DialogOverlay = forwardRef<
   );
 });
 
-type UrlDialogRootProps = { dialogQueryKey: string };
-export function UrlDialogRoot({ children, dialogQueryKey }: PropsWithChildren<UrlDialogRootProps>) {
+type UrlDialogRootProps = { dialogQueryKey: string; onOpenChange?: (open: boolean) => void };
+export function UrlDialogRoot({
+  children,
+  dialogQueryKey,
+  onOpenChange,
+}: PropsWithChildren<UrlDialogRootProps>) {
   const { isOpen, setIsOpen } = useUrlDialog(dialogQueryKey);
   return (
     <Root
       open={isOpen}
-      onOpenChange={setIsOpen}
+      onOpenChange={(open) => {
+        onOpenChange?.(open);
+        setIsOpen(open);
+      }}
     >
       {children}
     </Root>

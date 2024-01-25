@@ -6,13 +6,16 @@ const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
 
 const animationDuration = "--tw-animate-duration";
-const animationReverse = "--tw-animate-reverse";
 const slideUp = "slide-up";
 const slideDown = "slide-down";
+const slideLeft = "slide-left";
 const fadeIn = "fade-in";
 const fadeOut = "fade-out";
 const scaleIn = "scale-in";
 const scaleOut = "scale-out";
+function defineAnimation(animationName: string) {
+  return { [animationName]: `${animationName} var(${animationDuration}, 200ms) ease-in-out` };
+}
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -30,21 +33,26 @@ export default {
         },
       },
       animation: {
-        "slide-up": `${slideUp} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
-        "slide-down": `${slideDown} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
-        "fade-in": `${fadeIn} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
-        "fade-out": `${fadeOut} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
-        "scale-in": `${scaleIn} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
-        "scale-out": `${scaleOut} var(${animationDuration}, 200ms) ease-in-out var(${animationReverse}, normal)`,
+        ...defineAnimation(slideUp),
+        ...defineAnimation(slideDown),
+        ...defineAnimation(fadeIn),
+        ...defineAnimation(fadeOut),
+        ...defineAnimation(scaleIn),
+        ...defineAnimation(scaleOut),
+        ...defineAnimation(slideLeft),
       },
       keyframes: {
         [slideUp]: {
-          "0%": { transform: "translateY(100%)" },
-          "100%": { transform: "translateY(0)" },
+          "0%": { translate: "0 100%" },
+          "100%": { translate: "0 0" },
         },
         [slideDown]: {
-          "100%": { transform: "translateY(100%)" },
-          "0%": { transform: "translateY(0)" },
+          "0%": { translate: "0 0" },
+          "100%": { translate: "0 100%" },
+        },
+        [slideLeft]: {
+          "0%": { translate: "100% 0" },
+          "100%": { translate: "0 0" },
         },
         [fadeIn]: {
           "0%": { opacity: "0" },
@@ -79,19 +87,14 @@ export default {
         ".btn": {
           borderRadius: "0.75rem",
           padding: "0.875rem 0.625rem",
-          transitionProperty: "transform, filter, color, background-color, outline-color",
+          transitionProperty: "scale, transform, filter, color, background-color, outline-color",
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
           transitionDuration: "200ms",
           "&:active:not([class*=disabled])": {
             "--tw-brightness": "brightness(1.1)",
             filter:
               "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
-            "@media (prefers-reduced-motion: no-preference)": {
-              "--tw-scale-x": ".95",
-              "--tw-scale-y": ".95",
-              transform:
-                "translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))",
-            },
+            "@media (prefers-reduced-motion: no-preference)": { scale: ".95" },
           },
         },
         ".primary": {
@@ -126,16 +129,12 @@ export default {
           filter:
             "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
         },
-        ".animate-reverse": {
-          [animationReverse]: "reverse",
-        },
+        ".animate-reverse": { animationDirection: "reverse" },
       });
       matchUtilities(
         {
           "animate-duration"(value) {
-            return {
-              [animationDuration]: String(value),
-            };
+            return { [animationDuration]: String(value) };
           },
         },
         { values: theme("transitionDuration") },
