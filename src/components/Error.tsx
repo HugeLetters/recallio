@@ -12,7 +12,7 @@ export function Error({ errorMessage: error }: ErrorProps) {
       <BrokenEggshellIcon className="h-full w-full px-10" />
       <div className="space-y-2 py-4">
         {!!splitError && (
-          <div className="text-xl font-medium [text-wrap:balance]">
+          <div className="text-balance text-xl font-medium">
             <p>{splitError[0]}</p>
             <p>{splitError[1]}</p>
           </div>

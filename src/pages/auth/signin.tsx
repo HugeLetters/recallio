@@ -20,7 +20,7 @@ const Page: NextPageWithLayout = function () {
       {!!error && (
         <div className="flex w-fit items-center gap-2 self-center rounded-lg bg-red-800/10 px-2.5 py-4 text-red-800/80">
           <AlertIcon className="h-8 w-8 shrink-0" />
-          <span className="text-sm">{error}</span>
+          <span className="whitespace-pre-wrap text-sm">{error}</span>
         </div>
       )}
       <div className="flex grow flex-col items-center justify-center">

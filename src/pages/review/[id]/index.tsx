@@ -226,27 +226,25 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
-              <Dialog.Description className="basis-full text-center text-xl text-neutral-400">
+              <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-400">
                 Are you sure you want to delete this review? Once deleted, this action cannot be
                 undone.
               </Dialog.Description>
-              <Dialog.Close
-                asChild
-                aria-disabled={!enabled}
-                aria-label={
-                  enabled
-                    ? "Delete review"
-                    : `Delete review. The button will be enabled in ${(deleteTimeout / 1000).toFixed(0)} seconds to prevent accidental delete.`
-                }
-                onClick={(e) => {
-                  if (!enabled) {
-                    e.preventDefault();
-                    return;
-                  }
-                  mutate({ barcode });
-                }}
-              >
+              <Dialog.Close asChild>
                 <Button
+                  aria-disabled={!enabled}
+                  aria-label={
+                    enabled
+                      ? "Delete review"
+                      : `Delete review. The button will be enabled in ${(deleteTimeout / 1000).toFixed(0)} seconds to prevent accidental delete.`
+                  }
+                  onClick={(e) => {
+                    if (!enabled) {
+                      e.preventDefault();
+                      return;
+                    }
+                    mutate({ barcode });
+                  }}
                   style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
                   className={`relative overflow-hidden bg-app-red font-semibold text-white after:absolute after:inset-0 after:animate-slide-left after:bg-white/50 after:animate-reverse after:animate-duration-[var(--duration)] ${enabled ? "after:content-none" : "disabled"}`}
                 >

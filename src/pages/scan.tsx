@@ -96,6 +96,7 @@ const Page: NextPageWithLayout = function () {
             name="barcode"
             autoFocus
             required
+            autoComplete="off"
           />
           <button
             aria-label="Open review page of the specified barcode"

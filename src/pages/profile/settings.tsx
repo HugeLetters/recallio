@@ -1,6 +1,8 @@
 import { Layout } from "@/components/Layout";
+import { LoadingIndicator } from "@/components/Loading";
 import {
   Button,
+  DialogOverlay,
   ImageInput,
   Input,
   LabeledSwitch,
@@ -8,10 +10,11 @@ import {
   WithLabel,
   providerIcons,
 } from "@/components/UI";
-import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { useOptimistic, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
 import type { NextPageWithLayout } from "@/utils/type";
+import * as Dialog from "@radix-ui/react-dialog";
 import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useState } from "react";
@@ -27,14 +30,14 @@ const Page: NextPageWithLayout = function () {
       <LinkedAccounts />
       <AppSettings />
       <Button
-        className="destructive mt-2"
+        className="ghost mt-2"
         onClick={() => {
           void signOut({ redirect: false });
         }}
       >
         Sign Out
       </Button>
-      <DeleteProfile />
+      <DeleteProfile username={data.user.name} />
       {/* forces a padding at the bottom */}
       <div className="pb-1.5" />
     </div>
@@ -70,7 +73,6 @@ function UserImage({ user }: UserImageProps) {
 
   function syncUserImage() {
     setTimeout(() => {
-      // todo - this gives incorrect result ffs on image uploads
       update()
         .catch(console.error)
         .finally(() => {
@@ -79,7 +81,7 @@ function UserImage({ user }: UserImageProps) {
           }
           onUpdateEnd();
         });
-    }, 500);
+    }, 1000);
   }
 
   const { startUpload } = useUploadThing("userImageUploader", {
@@ -240,24 +242,74 @@ function AppSettings() {
   );
 }
 
-// todo - modal
-function DeleteProfile() {
+type DeleteProfileProps = { username: string };
+function DeleteProfile({ username }: DeleteProfileProps) {
   const [_, setValue] = useReviewPrivateDefault();
-  const deleteProfile = api.user.deleteUser.useMutation({
+  const { mutate, isLoading } = api.user.deleteUser.useMutation({
     onSuccess() {
+      setIsOpen(false);
       setValue(true);
       void signOut({ redirect: false });
     },
   });
 
+  const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
+  const confirmationPromp = `delete ${username}`;
+
   return (
-    <Button
-      className="destructive"
-      onClick={() => {
-        deleteProfile.mutate();
-      }}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={setIsOpen}
     >
-      Delete profile
-    </Button>
+      <LoadingIndicator show={isLoading} />
+      <Dialog.Trigger asChild>
+        <Button className="destructive w-full">Delete profile</Button>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
+          <div className="w-full max-w-app p-4">
+            <Dialog.Content
+              className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in"
+              asChild
+            >
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (isLoading) return;
+                  mutate();
+                }}
+                className="group"
+              >
+                <Dialog.Title className="text-center text-2xl font-semibold">
+                  Delete Profile?
+                </Dialog.Title>
+                <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-400">
+                  Are you sure you want to delete your profile? Once deleted, this action cannot be
+                  undone.
+                </Dialog.Description>
+                <WithLabel label={`Type in "${confirmationPromp}" to delete your profile.`}>
+                  <Input
+                    name="confirmation"
+                    pattern={confirmationPromp}
+                    required
+                    autoComplete="off"
+                  />
+                </WithLabel>
+                <Button
+                  aria-disabled={isLoading}
+                  type="submit"
+                  className="bg-app-red font-semibold text-white group-invalid:disabled group-invalid:bg-opacity-70"
+                >
+                  Delete profile
+                </Button>
+                <Dialog.Close asChild>
+                  <Button className="ghost font-semibold">Cancel</Button>
+                </Dialog.Close>
+              </form>
+            </Dialog.Content>
+          </div>
+        </DialogOverlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

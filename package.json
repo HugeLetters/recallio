@@ -14,7 +14,7 @@
     "check-format": "prettier . -c",
     "format": "pnpm check-format -w",
     "db-studio": "drizzle-kit studio",
-    "copypaste-audit": "jscpd -i \"**/node_modules/**/*,**/database/migrations/**/*\",**/.next/**/*",
+    "copypaste-audit": "jscpd -i \"**/node_modules/**/*,**/database/migrations/**/*,**/.next/**/*\" -p \"**/src/**/*\"",
     "rscript": "tsx ./scripts/run.ts",
     "db-migrate": "drizzle-kit generate:mysql && pnpm rscript database/migration"
   },

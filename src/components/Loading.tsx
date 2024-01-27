@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+
 const DURATION = 1000;
 const DOT_COUNT = 12;
 const DOTS = Array.from({ length: DOT_COUNT });
@@ -31,5 +33,16 @@ export function Spinner({ className }: SpinnerProps) {
         ))}
       </svg>
     </div>
+  );
+}
+
+type LoadingIndicatorProps = { show: boolean };
+export function LoadingIndicator({ show }: LoadingIndicatorProps) {
+  if (!show) return null;
+
+  // todo - animate out pls?
+  return createPortal(
+    <Spinner className="absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-white/20 p-1 contrast-200" />,
+    document.body,
   );
 }
