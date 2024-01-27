@@ -35,6 +35,7 @@ const Page: NextPageWithLayout = function () {
         Sign Out
       </Button>
       <DeleteProfile />
+      {/* todo - fix padding at the bottom here */}
     </div>
   ) : (
     "Loading"
@@ -68,6 +69,7 @@ function UserImage({ user }: UserImageProps) {
 
   function syncUserImage() {
     setTimeout(() => {
+      // todo - this gives incorrect result ffs on image uploads
       update()
         .catch(console.error)
         .finally(() => {
