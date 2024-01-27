@@ -35,7 +35,8 @@ const Page: NextPageWithLayout = function () {
         Sign Out
       </Button>
       <DeleteProfile />
-      {/* todo - fix padding at the bottom here */}
+      {/* forces a padding at the bottom */}
+      <div className="pb-1.5" />
     </div>
   ) : (
     "Loading"
