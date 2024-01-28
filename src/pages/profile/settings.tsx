@@ -1,5 +1,5 @@
 import { Layout } from "@/components/Layout";
-import { LoadingIndicator } from "@/components/Loading";
+import { useLoadingIndicator } from "@/components/Loading";
 import {
   Button,
   DialogOverlay,
@@ -9,8 +9,9 @@ import {
   UserPic,
   WithLabel,
   providerIcons,
+  useUrlDialog,
 } from "@/components/UI";
-import { useOptimistic, useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
+import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -244,7 +245,8 @@ function AppSettings() {
 
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
-  const [_, setValue] = useReviewPrivateDefault();
+  const [, setValue] = useReviewPrivateDefault();
+  const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
   const { mutate, isLoading } = api.user.deleteUser.useMutation({
     onSuccess() {
       setIsOpen(false);
@@ -252,8 +254,8 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       void signOut({ redirect: false });
     },
   });
+  useLoadingIndicator(isLoading);
 
-  const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
   const confirmationPromp = `delete ${username}`;
 
   return (
@@ -261,7 +263,6 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       open={isOpen}
       onOpenChange={setIsOpen}
     >
-      <LoadingIndicator show={isLoading} />
       <Dialog.Trigger asChild>
         <Button className="destructive w-full">Delete profile</Button>
       </Dialog.Trigger>

@@ -19,7 +19,7 @@ import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
-import { Flipped } from "./Flip";
+import { Flipped } from "./Animation";
 
 type LayoutProps = {
   header?: ComponentProps<typeof Header>;

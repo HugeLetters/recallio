@@ -1,12 +1,13 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import { useUrlDialog } from "@/hooks";
 import type { Entries, NonEmptyArray } from "@/utils/array";
+import { getQueryParam, setQueryParam } from "@/utils/query";
 import type { Icon, StrictOmit } from "@/utils/type";
 import { Overlay, Root } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import type {
   ComponentPropsWithRef,
   ComponentPropsWithoutRef,
@@ -214,6 +215,31 @@ export const DialogOverlay = forwardRef<
     </Overlay>
   );
 });
+
+export function useUrlDialog(queryKey: string) {
+  const router = useRouter();
+  const isOpen = getQueryParam(router.query[queryKey]);
+
+  // persist query params on navigating back/forward
+  useEffect(() => {
+    function handler() {
+      if (!isOpen) return;
+      setQueryParam(router, queryKey, null);
+    }
+
+    window.addEventListener("popstate", handler);
+    return () => {
+      window.removeEventListener("popstate", handler);
+    };
+  }, [isOpen, queryKey, router]);
+
+  return {
+    isOpen: !!isOpen,
+    setIsOpen(this: void, open: boolean) {
+      setQueryParam(router, queryKey, open ? "true" : null, { push: true });
+    },
+  };
+}
 
 type UrlDialogRootProps = { dialogQueryKey: string; onOpenChange?: (open: boolean) => void };
 export function UrlDialogRoot({

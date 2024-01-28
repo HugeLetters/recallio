@@ -9,6 +9,7 @@ import {
   ImageInput,
   LabeledSwitch,
   Star,
+  useUrlDialog,
 } from "@/components/UI";
 import {
   BarcodeTitle,
@@ -20,7 +21,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
+import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, minutesToMs } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";

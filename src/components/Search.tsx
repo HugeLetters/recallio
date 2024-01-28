@@ -7,10 +7,11 @@ import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Flipped, Flipper } from "react-flip-toolkit";
+import { Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
 import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
+import { Flipped } from "./Animation";
 import { DialogOverlay, UrlDialogRoot } from "./UI";
 
 export const SEARCH_QUERY_KEY = "search";
