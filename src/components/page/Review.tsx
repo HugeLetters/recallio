@@ -40,22 +40,6 @@ export function ConsIcon() {
   return <MinusIcon className="h-fit w-full text-app-red" />;
 }
 
-type ImagePreviewWrapperProps = PropsWithChildren & ComponentPropsWithoutRef<"div">;
-export function ImagePreviewWrapper({
-  children,
-  className,
-  ...divProps
-}: ImagePreviewWrapperProps) {
-  return (
-    <div
-      className={`size-16 ${className ?? ""}`}
-      {...divProps}
-    >
-      <div className="size-full overflow-hidden rounded-full">{children}</div>
-    </div>
-  );
-}
-
 type ImagePreviewProps = { src: string };
 export function ImagePreview({ src }: ImagePreviewProps) {
   return (
@@ -65,14 +49,14 @@ export function ImagePreview({ src }: ImagePreviewProps) {
       width={144}
       height={144}
       sizes="144px"
-      className="size-full object-cover"
+      className="size-full rounded-full object-cover"
     />
   );
 }
 
 export function NoImagePreview() {
   return (
-    <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
+    <div className="flex h-full items-center justify-center rounded-full bg-neutral-400 p-2 text-white">
       <MilkIcon className="size-full" />
     </div>
   );

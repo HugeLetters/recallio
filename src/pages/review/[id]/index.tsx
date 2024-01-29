@@ -6,7 +6,6 @@ import {
   CategoryButton,
   ConsIcon,
   ImagePreview,
-  ImagePreviewWrapper,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -102,11 +101,11 @@ type AttachedImageProps = { barcode: string } & Pick<ReviewData, "image" | "name
 function AttachedImage({ image, name, barcode }: AttachedImageProps) {
   return (
     <div className="flex items-stretch gap-4">
-      <ImagePreviewWrapper className="shrink-0">
+      <div className="size-16 shrink-0">
         {image ? (
           <UrlDialogRoot dialogQueryKey="attached-image-dialog">
             <Dialog.Trigger
-              className="size-full"
+              className="size-full rounded-full outline-app-green"
               aria-label="Open full image view"
             >
               <ImagePreview src={image} />
@@ -135,7 +134,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
         ) : (
           <NoImagePreview />
         )}
-      </ImagePreviewWrapper>
+      </div>
       <Link
         href={{ pathname: "/product/[id]", query: { id: barcode } }}
         aria-label="Open product page for this barcode"

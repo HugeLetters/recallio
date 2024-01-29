@@ -127,7 +127,7 @@ function randomBarcode() {
 }
 
 function randomName() {
-  return faker.word.noun();
+  return faker.word.noun({ length: { min: 6, max: 50 } });
 }
 
 function randomBaseRating() {

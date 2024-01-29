@@ -28,7 +28,7 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   return (
     <div className="grid h-screen w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950">
       <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
-      <main className="flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
+      <main className="scrollbar-gutter flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
         {children}
       </main>
       <Footer />

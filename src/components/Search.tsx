@@ -140,8 +140,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
 
   return (
     <UrlDialogRoot dialogQueryKey="sort-drawer">
-      <Dialog.Trigger className="flex items-center gap-1 text-sm">
-        <SwapIcon className="size-8 p-1" />
+      <Dialog.Trigger className="flex items-center gap-1 p-1 text-sm">
+        <SwapIcon className="size-6" />
         {/* keeps trigger always the same size */}
         <div className="relative">
           <span className="invisible whitespace-nowrap capitalize">
@@ -163,13 +163,13 @@ export function SortDialog({ optionList }: SortDialogProps) {
                 onValueChange={(value) => {
                   setQueryParam(router, SORT_QUERY_KEY, value);
                 }}
-                className="flex flex-col gap-7"
+                className="flex flex-col gap-2"
               >
                 {optionList.map((option) => (
                   <RadioGroup.Item
                     value={option}
                     key={option}
-                    className="group flex items-center gap-2"
+                    className="group flex items-center gap-2 rounded-lg px-1 py-2 outline-none transition-colors duration-300 focus-visible:bg-neutral-400/20"
                   >
                     <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
                       <Flipped

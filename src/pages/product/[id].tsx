@@ -7,7 +7,6 @@ import {
   CategoryButton,
   ConsIcon,
   ImagePreview,
-  ImagePreviewWrapper,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -77,9 +76,9 @@ function Summary({
   return (
     <div className="flex flex-col gap-7">
       <div className="flex h-16 gap-3">
-        <ImagePreviewWrapper className="shrink-0">
+        <div className="size-16 shrink-0">
           {image ? <ImagePreview src={image} /> : <NoImagePreview />}
-        </ImagePreviewWrapper>
+        </div>
         <div className="flex min-w-0 flex-col justify-between py-0.5">
           <h2 className="overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
             {name}
