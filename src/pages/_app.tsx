@@ -1,3 +1,4 @@
+import { LoadingIndicatorProvider } from "@/components/Loading";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
 import { browser } from "@/utils";
@@ -63,7 +64,9 @@ function AuthProtection({ children }: { children: ReactNode }) {
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
   return (
     <SessionProvider session={session}>
-      <JotaiProvider>{children}</JotaiProvider>
+      <JotaiProvider>
+        <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+      </JotaiProvider>
     </SessionProvider>
   );
 }

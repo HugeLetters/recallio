@@ -19,8 +19,8 @@ const Page: NextPageWithLayout = function () {
     <div className="mx-auto flex min-h-screen w-full max-w-app flex-col p-4">
       {!!error && (
         <div className="flex w-fit items-center gap-2 self-center rounded-lg bg-red-800/10 px-2.5 py-4 text-red-800/80">
-          <AlertIcon className="h-8 w-8 shrink-0" />
-          <span className="text-sm">{error}</span>
+          <AlertIcon className="size-8 shrink-0" />
+          <span className="whitespace-pre-wrap text-sm">{error}</span>
         </div>
       )}
       <div className="flex grow flex-col items-center justify-center">
@@ -87,7 +87,7 @@ function ProviderSignIn({ callbackUrl }: ProviderSignInProps) {
             void signIn(provider, { callbackUrl });
           }}
         >
-          <Icon className="mx-auto h-7 w-7" />
+          <Icon className="mx-auto size-7" />
         </Button>
       ))}
     </div>

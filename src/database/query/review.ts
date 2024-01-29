@@ -1,3 +1,4 @@
+import { throwDefaultError } from "@/server/api/utils";
 import { nonEmptyArray } from "@/utils/array";
 import { type StrictOmit } from "@/utils/type";
 import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
@@ -16,15 +17,8 @@ export async function upsertReview(
         "updatedAt"
       >);
 
-      const reviewQuery = await tx
-        .insert(review)
-        .values(reviewValue)
-        .onDuplicateKeyUpdate({ set: reviewValue })
-        .catch((e) => {
-          console.error(e);
-          throw Error("Error saving the review");
-        });
-      if (!categories) return reviewQuery;
+      await tx.insert(review).values(reviewValue).onDuplicateKeyUpdate({ set: reviewValue });
+      if (!categories) return;
 
       await tx
         .delete(reviewsToCategories)
@@ -35,16 +29,12 @@ export async function upsertReview(
           ),
         );
       const categoryValues = categories.map((category) => ({ name: category }));
-      if (!nonEmptyArray(categoryValues)) return reviewQuery;
+      if (!nonEmptyArray(categoryValues)) return;
 
       await tx
         .insert(category)
         .values(categoryValues)
-        .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } })
-        .catch((e) => {
-          console.error(e);
-          throw Error("Error saving categories for review");
-        });
+        .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } });
 
       const categoriesForReview = categories.map((category) => ({
         barcode: reviewValue.barcode,
@@ -60,16 +50,7 @@ export async function upsertReview(
             category: sql`${reviewsToCategories.category}`,
             userId: sql`${reviewsToCategories.userId}`,
           },
-        })
-        .catch((e) => {
-          console.error(e);
-          throw Error("Error linking categories for review");
         });
-
-      return reviewQuery;
     })
-    .catch((e: Error) => {
-      console.error(e);
-      throw e;
-    });
+    .catch(throwDefaultError);
 }

@@ -48,10 +48,10 @@ export function ImagePreviewWrapper({
 }: ImagePreviewWrapperProps) {
   return (
     <div
-      className={`h-16 w-16 ${className ?? ""}`}
+      className={`size-16 ${className ?? ""}`}
       {...divProps}
     >
-      <div className="h-full w-full overflow-hidden rounded-full">{children}</div>
+      <div className="size-full overflow-hidden rounded-full">{children}</div>
     </div>
   );
 }
@@ -65,7 +65,7 @@ export function ImagePreview({ src }: ImagePreviewProps) {
       width={144}
       height={144}
       sizes="144px"
-      className="h-full w-full object-cover"
+      className="size-full object-cover"
     />
   );
 }
@@ -73,7 +73,7 @@ export function ImagePreview({ src }: ImagePreviewProps) {
 export function NoImagePreview() {
   return (
     <div className="flex h-full items-center justify-center bg-neutral-400 p-2 text-white">
-      <MilkIcon className="h-full w-full" />
+      <MilkIcon className="size-full" />
     </div>
   );
 }

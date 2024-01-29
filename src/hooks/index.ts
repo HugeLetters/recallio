@@ -1,8 +1,6 @@
 import type { AppFileRouter } from "@/server/uploadthing";
 import { browser } from "@/utils";
-import { getQueryParam, setQueryParam } from "@/utils/query";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
-import { useRouter } from "next/router";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -63,27 +61,10 @@ export function useOptimistic<T>() {
   };
 }
 
-export function useUrlDialog(queryKey: string) {
-  const router = useRouter();
-  const isOpen = getQueryParam(router.query[queryKey]);
-
-  // persist query params on navigating back/forward
+export function useMounted() {
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    function handler() {
-      if (!isOpen) return;
-      setQueryParam(router, queryKey, null);
-    }
-
-    window.addEventListener("popstate", handler);
-    return () => {
-      window.removeEventListener("popstate", handler);
-    };
-  }, [isOpen, queryKey, router]);
-
-  return {
-    isOpen: !!isOpen,
-    setIsOpen(this: void, open: boolean) {
-      setQueryParam(router, queryKey, open ? "true" : null, { push: true });
-    },
-  };
+    setMounted(true);
+  }, []);
+  return mounted;
 }
