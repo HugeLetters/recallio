@@ -57,7 +57,7 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   }, [isImageSet, ref]);
 
   return (
-    <label className={`cursor-pointer focus-within:outline ${className ?? ""}`}>
+    <label className={`cursor-pointer focus-within:outline-app-green ${className ?? ""}`}>
       {children}
       <input
         {...inputAttributes}
@@ -107,7 +107,7 @@ export function Switch(props: SwitchProps) {
   return (
     <BaseSwitch.Root
       {...props}
-      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors data-[state=checked]:bg-app-green"
+      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors focus-visible:outline-app-green data-[state=checked]:bg-app-green data-[state=checked]:focus-visible:outline-lime-950"
     >
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
