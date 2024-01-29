@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
-import { Spinner } from "@/components/Loading";
+import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
 import {
   AutoresizableInput,
@@ -9,6 +9,7 @@ import {
   ImageInput,
   LabeledSwitch,
   Star,
+  useUrlDialog,
 } from "@/components/UI";
 import {
   BarcodeTitle,
@@ -20,7 +21,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
-import { useReviewPrivateDefault, useUploadThing, useUrlDialog } from "@/hooks";
+import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, minutesToMs } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
@@ -162,14 +163,18 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
   function invalidateReviewData() {
     const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
     apiUtils.review.getUserReview
-      .invalidate({ barcode })
+      .invalidate({ barcode }, { refetchType: "all" })
       .then(() => {
         if (!optimisticImage) return;
         URL.revokeObjectURL(optimisticImage);
       })
       .catch(console.error);
-    apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
-    apiUtils.review.getReviewCount.invalidate().catch(console.error);
+    apiUtils.review.getUserReviewSummaryList
+      .invalidate(undefined, { refetchType: "all" })
+      .catch(console.error);
+    apiUtils.review.getReviewCount
+      .invalidate(undefined, { refetchType: "all" })
+      .catch(console.error);
   }
 
   const router = useRouter();
@@ -196,9 +201,10 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
     onUploadError: invalidateReviewData,
   });
-  const { mutate: saveReview } = api.review.upsertReview.useMutation({
+  const { mutate: saveReview, isLoading } = api.review.upsertReview.useMutation({
     onError: invalidateReviewData,
   });
+  useLoadingIndicator(isLoading);
 
   return (
     <form
@@ -419,7 +425,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {isImagePresent && (
           <Button
-            className={`absolute -right-2 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
+            className={`absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
               src ? "text-app-red" : "text-neutral-950"
             }`}
             onClick={() => {
@@ -495,7 +501,7 @@ function CategoryList({ control }: CategoryListProps) {
               aria-disabled={isAtCategoryLimit}
             >
               <CategoryButton className={`${isAtCategoryLimit ? "opacity-60" : ""}`}>
-                <PlusIcon className="h-6 w-6" />
+                <PlusIcon className="size-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
               </CategoryButton>
             </Dialog.Trigger>
@@ -519,7 +525,7 @@ function CategoryList({ control }: CategoryListProps) {
               >
                 <span>{name}</span>
                 <div className="flex h-6 items-center">
-                  <DeleteIcon className="h-3 w-3" />
+                  <DeleteIcon className="size-3" />
                 </div>
               </CategoryButton>
             </Toolbar.Button>
@@ -585,7 +591,7 @@ function CategorySearch({
   return (
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
-        <SearchIcon className="h-7 w-7 shrink-0" />
+        <SearchIcon className="size-7 shrink-0" />
         <HeaderSearchControls
           value={search}
           setValue={setSearch}
@@ -606,7 +612,7 @@ function CategorySearch({
               }}
               aria-label={`Add ${search} category`}
             >
-              <CircledPlusIcon className="h-6 w-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green" />
+              <CircledPlusIcon className="size-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green" />
             </button>
           </label>
         )}
@@ -622,7 +628,7 @@ function CategorySearch({
               <label className="flex w-full cursor-pointer justify-between capitalize">
                 <span>{category}</span>
                 <Checkbox.Root
-                  className="group flex h-6 w-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
+                  className="group flex size-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
                   aria-disabled={!canAddCategories}
                   checked={includes(category)}
                   onCheckedChange={(checked) => {
@@ -631,8 +637,8 @@ function CategorySearch({
                     append(category);
                   }}
                 >
-                  <Checkbox.Indicator className="h-full w-full p-1 text-white">
-                    <Checkmark className="checkmark h-full w-full" />
+                  <Checkbox.Indicator className="size-full p-1 text-white">
+                    <Checkmark className="checkmark size-full" />
                   </Checkbox.Indicator>
                 </Checkbox.Root>
               </label>

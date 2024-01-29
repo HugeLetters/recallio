@@ -74,12 +74,12 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div
-      className="relative isolate flex h-full w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
+      className="relative isolate flex size-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
       {...drag()}
     >
       <div
         id={id}
-        className="!absolute -z-10 flex h-full w-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
+        className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
       />
       {selection === "input" && (
         <form
@@ -96,12 +96,13 @@ const Page: NextPageWithLayout = function () {
             name="barcode"
             autoFocus
             required
+            autoComplete="off"
           />
           <button
             aria-label="Open review page of the specified barcode"
             className="text-app-green"
           >
-            <SearchIcon className="h-7 w-7" />
+            <SearchIcon className="size-7" />
           </button>
         </form>
       )}

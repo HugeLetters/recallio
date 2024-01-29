@@ -18,10 +18,10 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-app flex-col items-center justify-center p-4 text-center text-lime-950">
-      <EmailIcon className="h-10 w-10" />
-      <p className="text-2xl font-semibold">Registration PIN code</p>
-      <div className="mt-2 text-xl font-medium text-neutral-400">
-        <p>To complete registration, we have sent you a PIN code to your email address.</p>
+      <EmailIcon className="size-10" />
+      <p className="text-2xl font-semibold">Authentication PIN code</p>
+      <div className="mt-2 text-balance text-xl font-medium text-neutral-400">
+        <p>To complete sign-in process, we have sent you a PIN code to your email address.</p>
         <p>Please enter it in the field below.</p>
       </div>
       <form

@@ -8,6 +8,7 @@ import {
 } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
+import { filterMap } from "@/utils/array";
 import { faker } from "@faker-js/faker";
 import { and, asc, like, lt, sql, type InferInsertModel, type SQL } from "drizzle-orm";
 import type { MySqlTableWithColumns, TableConfig } from "drizzle-orm/mysql-core";
@@ -26,10 +27,14 @@ async function seedReviews(
   reviewsPerUser: number,
   uniqieReviewsPerUser: number,
 ) {
-  const [, files] = await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
+  await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
   await createTestUsers(reviewCount / reviewsPerUser);
 
-  const users = (await db.select().from(user)).map((user) => user.id);
+  const users = await db
+    .select()
+    .from(user)
+    .then((users) => users.map((user) => user.id));
+  const files = await createTestImages(100);
 
   const barcodePool: BarcodeData[] = faker.helpers
     .uniqueArray(randomBarcode, users.length)
@@ -129,6 +134,10 @@ function randomBaseRating() {
   return faker.number.int({ min: 0, max: 5 });
 }
 
+function randomImage() {
+  return faker.image.url();
+}
+
 function createBarcodeData(barcode: string, namecount: number) {
   return {
     barcode,
@@ -149,12 +158,19 @@ function createTestUsers(userCount: number) {
         () => faker.internet.userName(),
       ])(),
       email: faker.internet.email({ provider: faker.lorem.word() }),
-      image: faker.helpers.arrayElement([
-        () => faker.image.avatar(),
-        () => faker.image.url(),
-        () => null,
-      ])(),
+      image: faker.helpers.maybe(randomImage),
     })),
+  );
+}
+
+function createTestImages(count: number) {
+  const imageUrls = faker.helpers.uniqueArray(randomImage, count);
+  return utapi.uploadFilesFromUrl(imageUrls).then((responses) =>
+    filterMap(
+      responses,
+      (response): response is Exclude<typeof response, { data: null }> => !!response.data,
+      (x) => x.data.key,
+    ),
   );
 }
 
@@ -234,18 +250,8 @@ async function cleanTable<T extends TableConfig>({
 }
 
 async function cleanUTFiles() {
-  const { uploaded, failed } = await utapi.listFiles().then((files) => {
-    return files.reduce<{ uploaded: string[]; failed: string[] }>(
-      (result, file) => {
-        file.status !== "Failed" ? result.uploaded.push(file.key) : result.failed.push(file.key);
-        return result;
-      },
-      { uploaded: [], failed: [] },
-    );
-  });
-
-  if (failed.length) {
-    await utapi.deleteFiles(failed);
+  const files = await utapi.listFiles({}).then((files) => files.map((file) => file.key));
+  if (files.length) {
+    await utapi.deleteFiles(files);
   }
-  return uploaded;
 }

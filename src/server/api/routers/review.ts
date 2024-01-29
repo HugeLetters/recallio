@@ -152,9 +152,10 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { categories, ...value } = input;
-      return upsertReview({ ...value, userId: ctx.session.user.id }, categories?.filter(Boolean))
-        .then(() => void 0)
-        .catch((e) => throwDefaultError(e, "Couldn't post the review"));
+      return upsertReview(
+        { ...value, userId: ctx.session.user.id },
+        categories?.filter(Boolean),
+      ).catch((e) => throwDefaultError(e, "Couldn't post the review"));
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to get review data") }))
@@ -193,21 +194,7 @@ export const reviewRouter = createTRPCRouter({
   deleteReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
     .mutation(async ({ ctx, input: { barcode } }) => {
-      const { imageKey } = await findFirst(
-        review,
-        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      )
-        .catch(throwDefaultError)
-        .then(([reviewData]) => {
-          if (!reviewData) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: `Couldn't find your review for barcode ${barcode}.`,
-            });
-          }
-
-          return reviewData;
-        });
+      const { imageKey } = await findReviewImageKey(ctx.session.user.id, barcode);
 
       return db
         .transaction(async (tx) => {
@@ -238,21 +225,7 @@ export const reviewRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input: { barcode } }) => {
-      const { imageKey } = await findFirst(
-        review,
-        and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)),
-      )
-        .catch(throwDefaultError)
-        .then(([reviewData]) => {
-          if (!reviewData) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: `Couldn't find your review for barcode ${barcode}.`,
-            });
-          }
-
-          return reviewData;
-        });
+      const { imageKey } = await findReviewImageKey(ctx.session.user.id, barcode);
 
       return db
         .update(review)
@@ -266,3 +239,18 @@ export const reviewRouter = createTRPCRouter({
         .catch((e) => throwDefaultError(e, "Couldn't delete image"));
     }),
 });
+
+function findReviewImageKey(userId: string, barcode: string) {
+  return findFirst(review, and(eq(review.userId, userId), eq(review.barcode, barcode)))
+    .catch(throwDefaultError)
+    .then(([reviewData]) => {
+      if (!reviewData) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Couldn't find your review for barcode ${barcode}.`,
+        });
+      }
+
+      return reviewData;
+    });
+}
