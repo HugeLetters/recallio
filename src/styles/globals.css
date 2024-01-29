@@ -2,8 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  font-family: theme("fontFamily.lato");
+@layer base {
+  html {
+    font-family: theme("fontFamily.lato");
+  }
+
+  button,
+  input,
+  a {
+    outline-color: theme("colors.lime.950");
+  }
 }
 
 @media (pointer: fine), (pointer: none) {

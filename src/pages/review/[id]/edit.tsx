@@ -16,7 +16,6 @@ import {
   CategoryButton,
   ConsIcon,
   ImagePreview,
-  ImagePreviewWrapper,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
@@ -421,7 +420,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <ImagePreviewWrapper className="relative">
+      <div className="relative size-16">
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {isImagePresent && (
           <Button
@@ -436,7 +435,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
             {src ? <DeleteIcon /> : <ResetIcon />}
           </Button>
         )}
-      </ImagePreviewWrapper>
+      </div>
       <ImageInput
         isImageSet={!!value}
         onChange={(e) => {

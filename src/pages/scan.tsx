@@ -127,7 +127,7 @@ const Page: NextPageWithLayout = function () {
           Upload
         </ImageInput>
         <button
-          className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
+          className={`mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white ${
             selection === "scan" ? "bg-app-green" : "bg-black/50"
           }`}
           onClick={() => dispatchSelection("scan")}
@@ -136,7 +136,7 @@ const Page: NextPageWithLayout = function () {
           Scan
         </button>
         <button
-          className={`mx-1 rounded-xl p-2 transition-colors duration-300 ${
+          className={`mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white ${
             selection === "input" ? "bg-app-green" : "bg-black/50"
           }`}
           onClick={() => dispatchSelection("input")}

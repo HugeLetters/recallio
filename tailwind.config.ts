@@ -81,6 +81,9 @@ export default {
       matchVariant("not", (value) => `&:not(${value})`);
 
       addComponents({
+        ".scrollbar-gutter": {
+          "@media (pointer: fine), (pointer: none)": { scrollbarGutter: "stable" },
+        },
         ".disabled": {
           cursor: "default",
         },
