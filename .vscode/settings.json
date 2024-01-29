@@ -1,3 +1,4 @@
 {
-  "tailwindCSS.experimental.classRegex": [["ClassName=\"([^\"]*)\""]]
+  "tailwindCSS.experimental.classRegex": [["ClassName=\"([^\"]*)\""]],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

@@ -47,7 +47,7 @@ export function Header({ header, left, right, title }: HeaderProps) {
         {header !== undefined ? (
           header
         ) : (
-          <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center">
+          <div className="grid size-full grid-cols-[1fr_auto_1fr] items-center">
             <div className="justify-self-start">
               {left !== undefined ? (
                 left
@@ -79,7 +79,7 @@ export function HeaderButton({ Icon, type, className, ...butonAttributes }: Head
       className={`flex items-center ${className ?? ""}`}
       {...butonAttributes}
     >
-      <Icon className="h-8 w-8" />
+      <Icon className="size-8" />
     </button>
   );
 }
@@ -91,7 +91,7 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
       className={`flex items-center ${className ?? ""}`}
       {...linkAttributes}
     >
-      <Icon className="h-8 w-8" />
+      <Icon className="size-8" />
     </Link>
   );
 }
@@ -127,11 +127,11 @@ function Footer() {
           />
           <Link
             href="/scan"
-            className={`flex h-16 w-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 ${
+            className={`flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 ${
               pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
             }`}
           >
-            <ScannerIcon className="h-full w-full" />
+            <ScannerIcon className="size-full" />
           </Link>
           <FooterItem
             href="/profile"
@@ -159,7 +159,7 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
         activeBackground ? "text-app-green" : ""
       }`}
     >
-      <Icon className="h-7 w-7" />
+      <Icon className="size-7" />
       <span>{label}</span>
       {activeBackground}
     </Link>

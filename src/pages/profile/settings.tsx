@@ -97,14 +97,14 @@ function UserImage({ user }: UserImageProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative h-16 w-16">
+      <div className="relative size-16">
         <UserPic
           className="text-2xl"
           user={optimisticUser}
         />
         {!!optimisticUser.image && (
           <button
-            className="absolute right-0 top-0 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
+            className="absolute right-0 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
             onClick={() => updateUserImage(null)}
             aria-label="Delete avatar"
           >

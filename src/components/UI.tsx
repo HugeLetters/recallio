@@ -40,7 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableP
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
   return (
-    <StarIcon className={`h-full w-full ${highlight ? "text-amber-400" : "text-neutral-400/20"}`} />
+    <StarIcon className={`size-full ${highlight ? "text-amber-400" : "text-neutral-400/20"}`} />
   );
 }
 
@@ -77,18 +77,18 @@ function getInitials(name: string) {
 type UserPicProps = { user: Pick<Session["user"], "image" | "name">; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`aspect-square h-full w-full select-none ${className ?? ""}`}>
+    <div className={`aspect-square size-full select-none ${className ?? ""}`}>
       {user.image ? (
         <Image
           src={user.image}
           alt="your avatar"
           width={100}
           height={100}
-          className="h-full w-full rounded-full object-cover shadow-around sa-o-10 sa-r-2"
+          className="size-full rounded-full object-cover shadow-around sa-o-10 sa-r-2"
         />
       ) : (
         <div
-          className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full"
+          className="relative flex size-full items-center justify-center overflow-hidden rounded-full"
           aria-label="your avatar placeholder"
         >
           <Image
@@ -182,7 +182,7 @@ export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableI
         >
           <textarea
             ref={ref}
-            className={`absolute inset-0 h-full w-full resize-none break-words outline-none ${
+            className={`absolute inset-0 size-full resize-none break-words outline-none ${
               className ?? ""
             }`}
             {...props}

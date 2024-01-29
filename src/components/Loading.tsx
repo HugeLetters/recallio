@@ -1,5 +1,5 @@
 import { useMounted } from "@/hooks";
-import { useAtomValue, useSetAtom } from "jotai";
+import { atom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithReducer } from "jotai/utils";
 import { useEffect, useId, useRef, type PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
@@ -50,9 +50,10 @@ function stackReducer<T>(draft: T[], action: { type: "ADD" | "REMOVE"; value: T 
 }
 
 const loadingStackAtom = atomWithReducer([], stackReducer<string>);
+const loadingAtom = atom(false);
 export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   const stack = useAtomValue(loadingStackAtom);
-  const show = !!stack.length;
+  const show = useAtomValue(loadingAtom);
   const mounted = useMounted();
 
   return (
@@ -61,7 +62,7 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
       {mounted
         ? createPortal(
             <Transition outClassName="animate-fade-out">
-              {show ? (
+              {!!stack.length || show ? (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
               ) : null}
             </Transition>,
@@ -72,7 +73,10 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   );
 }
 
-// todo - some imperative handle for page transitions
+export function useSetLoadingIndicator() {
+  return useSetAtom(loadingAtom);
+}
+
 export function useLoadingIndicator(show: boolean, delay = 0) {
   const setStack = useSetAtom(loadingStackAtom);
   const timeout = useRef<number>();

@@ -114,11 +114,11 @@ export function Card({
           width={50}
           height={50}
           sizes="50px"
-          className="aspect-square h-9 w-9 rounded-full bg-white object-cover shadow-around sa-o-10 sa-r-0.5"
+          className="aspect-square size-9 shrink-0 rounded-full bg-white object-cover shadow-around sa-o-10 sa-r-0.5"
         />
       ) : (
-        <div className="flex aspect-square h-9 w-9 items-center justify-center rounded-full bg-neutral-400 p-1">
-          <MilkIcon className="h-full w-full text-white" />
+        <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-neutral-400 p-1">
+          <MilkIcon className="size-full text-white" />
         </div>
       )}
       <div className="flex h-10 min-w-0 flex-col justify-between">

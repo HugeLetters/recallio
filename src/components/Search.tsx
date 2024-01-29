@@ -24,7 +24,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
   const [search, setSearch] = useState(searchParam);
 
-  const searchIcon = <SearchIcon className="h-7 w-7 shrink-0" />;
+  const searchIcon = <SearchIcon className="size-7 shrink-0" />;
 
   // keeps filter in sync on back/forward
   useEffect(() => {
@@ -67,7 +67,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             {searchIcon}
           </button>
           <div className="grow text-center">{title}</div>
-          {right ?? <div className="h-7 w-7" />}
+          {right ?? <div className="size-7" />}
         </>
       )}
     </div>
@@ -116,7 +116,7 @@ export function HeaderSearchControls({
           setQueryParam(router, SEARCH_QUERY_KEY, null);
         }}
       >
-        <ResetIcon className="h-7 w-7" />
+        <ResetIcon className="size-7" />
       </button>
     </>
   );
@@ -141,10 +141,10 @@ export function SortDialog({ optionList }: SortDialogProps) {
   return (
     <UrlDialogRoot dialogQueryKey="sort-drawer">
       <Dialog.Trigger className="flex items-center gap-1 text-sm">
-        <SwapIcon className="h-8 w-8 p-1" />
+        <SwapIcon className="size-8 p-1" />
         {/* keeps trigger always the same size */}
         <div className="relative">
-          <span className="invisible capitalize">
+          <span className="invisible whitespace-nowrap capitalize">
             {[...optionList].sort((a, b) => b.length - a.length)[0]}
           </span>
           <span className="absolute left-0 w-full text-left capitalize">{sortBy}</span>

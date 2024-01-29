@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import { useSetLoadingIndicator } from "@/components/Loading";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import {
   BarcodeTitle,
@@ -105,7 +106,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
         {image ? (
           <UrlDialogRoot dialogQueryKey="attached-image-dialog">
             <Dialog.Trigger
-              className="h-full w-full"
+              className="size-full"
               aria-label="Open full image view"
             >
               <ImagePreview src={image} />
@@ -124,7 +125,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
                       height={999999}
                       quality={100}
                       sizes="99999px"
-                      className="h-full w-full object-contain"
+                      className="size-full object-contain"
                     />
                   </Dialog.Close>
                 </Dialog.Content>
@@ -141,7 +142,7 @@ function AttachedImage({ image, name, barcode }: AttachedImageProps) {
         className="flex min-w-0 grow items-center justify-between"
       >
         <div className="overflow-hidden text-ellipsis text-xl">{name}</div>
-        <RightIcon className="h-7 w-7 text-neutral-400" />
+        <RightIcon className="size-7 text-neutral-400" />
       </Link>
     </div>
   );
@@ -191,14 +192,19 @@ const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
   const apiUtils = api.useUtils();
+  const setLoading = useSetLoadingIndicator();
   const { mutate } = api.review.deleteReview.useMutation({
     onMutate() {
+      setLoading(true);
       router.push("/profile").catch(console.error);
     },
     onSuccess() {
       void apiUtils.review.getUserReviewSummaryList.invalidate();
       void apiUtils.review.getReviewCount.invalidate();
       void apiUtils.product.getProductSummaryList.invalidate();
+    },
+    onSettled() {
+      setLoading(false);
     },
   });
   const [enabled, setEnabled] = useState(false);
