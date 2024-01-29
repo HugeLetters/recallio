@@ -57,7 +57,7 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   }, [isImageSet, ref]);
 
   return (
-    <label className={`cursor-pointer focus-within:outline-app-green ${className ?? ""}`}>
+    <label className={`cursor-pointer ${className ?? ""}`}>
       {children}
       <input
         {...inputAttributes}

@@ -112,7 +112,7 @@ const Page: NextPageWithLayout = function () {
       >
         <ImageInput
           ref={fileInputRef}
-          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 ${
+          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 focus-within:outline ${
             selection === "upload" ? "bg-app-green" : "bg-black/50"
           }`}
           aria-label="Scan from file"

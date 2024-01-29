@@ -441,7 +441,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         onChange={(e) => {
           setValue(e.target.files?.item(0));
         }}
-        className="btn ghost rounded-lg px-4 py-0 outline-1"
+        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green"
       >
         {src ? "Change image" : "Upload image"}
       </ImageInput>
