@@ -114,7 +114,7 @@ function UserImage({ user }: UserImageProps) {
       </div>
       <ImageInput
         isImageSet={true}
-        className="rounded-lg border border-neutral-400/10 bg-neutral-100 px-4"
+        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green"
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
