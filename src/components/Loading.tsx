@@ -1,6 +1,7 @@
 import { useMounted } from "@/hooks";
-import { atom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useId, type PropsWithChildren } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { atomWithReducer } from "jotai/utils";
+import { useEffect, useId, useRef, type PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import { Transition } from "./Animation";
 
@@ -38,7 +39,17 @@ export function Spinner({ className }: SpinnerProps) {
   );
 }
 
-const loadingStackAtom = atom<string[]>([]);
+function stackReducer<T>(draft: T[], action: { type: "ADD" | "REMOVE"; value: T }) {
+  if (!action) return draft;
+  switch (action.type) {
+    case "ADD":
+      return [...draft, action.value];
+    case "REMOVE":
+      return draft.filter((frame) => frame !== action.value);
+  }
+}
+
+const loadingStackAtom = atomWithReducer([], stackReducer<string>);
 export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   const stack = useAtomValue(loadingStackAtom);
   const show = !!stack.length;
@@ -61,14 +72,22 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   );
 }
 
-export function useLoadingIndicator(show: boolean) {
+// todo - some imperative handle for page transitions
+export function useLoadingIndicator(show: boolean, delay = 0) {
   const setStack = useSetAtom(loadingStackAtom);
+  const timeout = useRef<number>();
   const id = useId();
 
   useEffect(() => {
-    setStack((stack) => (show ? [...stack, id] : stack.filter((el) => el !== id)));
+    clearTimeout(timeout.current);
+    if (!show) {
+      setStack({ type: "REMOVE", value: id });
+      return;
+    }
+
+    timeout.current = window.setTimeout(() => setStack({ type: "ADD", value: id }), delay);
     return () => {
-      setStack((stack) => stack.filter((el) => el !== id));
+      setStack({ type: "REMOVE", value: id });
     };
-  }, [id, setStack, show]);
+  }, [id, setStack, show, delay]);
 }

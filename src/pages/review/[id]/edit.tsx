@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
-import { Spinner } from "@/components/Loading";
+import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
 import {
   AutoresizableInput,
@@ -197,9 +197,10 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
     onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
     onUploadError: invalidateReviewData,
   });
-  const { mutate: saveReview } = api.review.upsertReview.useMutation({
+  const { mutate: saveReview, isLoading } = api.review.upsertReview.useMutation({
     onError: invalidateReviewData,
   });
+  useLoadingIndicator(isLoading);
 
   return (
     <form

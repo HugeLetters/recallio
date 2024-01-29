@@ -85,12 +85,15 @@ function UserImage({ user }: UserImageProps) {
     }, 1000);
   }
 
-  const { startUpload } = useUploadThing("userImageUploader", {
+  const { startUpload, isUploading } = useUploadThing("userImageUploader", {
     onClientUploadComplete: syncUserImage,
     onUploadError: syncUserImage,
   });
 
-  const { mutate: remove } = api.user.deleteImage.useMutation({ onSettled: syncUserImage });
+  const { mutate: remove, isLoading } = api.user.deleteImage.useMutation({
+    onSettled: syncUserImage,
+  });
+  useLoadingIndicator(isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -129,7 +132,7 @@ const USERNAME_MIN_LENGTH = 4;
 function UserName({ username }: UserNameProps) {
   const { update } = useSession();
   const [value, setValue] = useState(username);
-  const setMutation = api.user.setName.useMutation({
+  const { mutate, isLoading } = api.user.setName.useMutation({
     onSettled() {
       update()
         .then((session) => {
@@ -139,9 +142,11 @@ function UserName({ username }: UserNameProps) {
         .catch(console.error);
     },
   });
+  useLoadingIndicator(isLoading, 300);
+
   function saveName(value: string) {
     if (value === username || value.length < USERNAME_MIN_LENGTH) return;
-    setMutation.mutate(value);
+    mutate(value);
   }
 
   return (
@@ -155,6 +160,7 @@ function UserName({ username }: UserNameProps) {
         <Input
           value={value}
           name="username"
+          required
           minLength={USERNAME_MIN_LENGTH}
           maxLength={30}
           onChange={(e) => {
@@ -171,7 +177,7 @@ function UserName({ username }: UserNameProps) {
 function LinkedAccounts() {
   const trpcUtils = api.useUtils();
   const { data: accounts } = api.user.getAccountProviders.useQuery();
-  const { mutate: deleteAccount } = api.user.deleteAccount.useMutation({
+  const { mutate: deleteAccount, isLoading } = api.user.deleteAccount.useMutation({
     onMutate({ provider }) {
       // optimistic update
       const prevProviders = trpcUtils.user.getAccountProviders.getData();
@@ -189,6 +195,7 @@ function LinkedAccounts() {
       void trpcUtils.user.getAccountProviders.invalidate();
     },
   });
+  useLoadingIndicator(isLoading, 300);
 
   return (
     <div>
