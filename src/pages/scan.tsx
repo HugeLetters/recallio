@@ -96,6 +96,7 @@ const Page: NextPageWithLayout = function () {
             name="barcode"
             autoFocus
             required
+            minLength={5}
             autoComplete="off"
           />
           <button

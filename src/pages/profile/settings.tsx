@@ -311,7 +311,12 @@ function DeleteProfile({ username }: DeleteProfileProps) {
                   Delete profile
                 </Button>
                 <Dialog.Close asChild>
-                  <Button className="ghost font-semibold">Cancel</Button>
+                  <Button
+                    className="ghost font-semibold"
+                    autoFocus
+                  >
+                    Cancel
+                  </Button>
                 </Dialog.Close>
               </form>
             </Dialog.Content>
