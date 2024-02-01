@@ -52,11 +52,13 @@ function Review({ barcode }: ReviewProps) {
   const review = reviewQuery.data;
   return (
     <div className="flex w-full flex-col gap-4 p-4">
-      <AttachedImage
-        barcode={barcode}
-        image={review.image}
-        name={review.name}
-      />
+      <div className="flex items-stretch gap-4">
+        <AttachedImage image={review.image} />
+        <Name
+          barcode={barcode}
+          name={review.name}
+        />
+      </div>
       {!!review.categories.length && (
         <div className="flex flex-col gap-1 text-xs">
           <div>Category</div>
@@ -97,53 +99,64 @@ function Review({ barcode }: ReviewProps) {
 }
 
 type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
-type AttachedImageProps = { barcode: string } & Pick<ReviewData, "image" | "name">;
-function AttachedImage({ image, name, barcode }: AttachedImageProps) {
+type AttachedImageProps = Pick<ReviewData, "image">;
+function AttachedImage({ image }: AttachedImageProps) {
   return (
-    <div className="flex items-stretch gap-4">
-      <div className="size-16 shrink-0">
-        {image ? (
-          <UrlDialogRoot dialogQueryKey="attached-image-dialog">
-            <Dialog.Trigger
-              className="size-full rounded-full outline-app-green"
-              aria-label="Open full image view"
-            >
-              <ImagePreview src={image} />
-            </Dialog.Trigger>
-            <Dialog.Portal>
-              <DialogOverlay className="flex items-center justify-center">
-                <Dialog.Content className="max-h-screen max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
-                  <Dialog.Close
-                    className="flex"
-                    aria-label="Close full image view"
-                  >
-                    <Image
-                      alt="Full-size review image"
-                      src={image}
-                      width={999999}
-                      height={999999}
-                      quality={100}
-                      sizes="99999px"
-                      className="size-full object-contain"
-                    />
-                  </Dialog.Close>
-                </Dialog.Content>
-              </DialogOverlay>
-            </Dialog.Portal>
-          </UrlDialogRoot>
-        ) : (
-          <NoImagePreview />
-        )}
-      </div>
-      <Link
-        href={{ pathname: "/product/[id]", query: { id: barcode } }}
-        aria-label="Open product page for this barcode"
-        className="flex min-w-0 grow items-center justify-between"
-      >
-        <div className="overflow-hidden text-ellipsis text-xl">{name}</div>
-        <RightIcon className="size-7 text-neutral-400" />
-      </Link>
+    <div className="size-16 shrink-0">
+      {image ? (
+        <UrlDialogRoot dialogQueryKey="attached-image-dialog">
+          <Dialog.Trigger
+            className="size-full rounded-full outline-app-green"
+            aria-label="Open full image view"
+          >
+            <ImagePreview src={image} />
+          </Dialog.Trigger>
+          <Dialog.Portal>
+            <DialogOverlay className="flex items-center justify-center">
+              <Dialog.Content className="max-h-screen max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
+                <Dialog.Close
+                  className="flex"
+                  aria-label="Close full image view"
+                >
+                  <Image
+                    alt="Full-size review image"
+                    src={image}
+                    width={999999}
+                    height={999999}
+                    quality={100}
+                    sizes="99999px"
+                    className="size-full object-contain"
+                  />
+                </Dialog.Close>
+              </Dialog.Content>
+            </DialogOverlay>
+          </Dialog.Portal>
+        </UrlDialogRoot>
+      ) : (
+        <NoImagePreview />
+      )}
     </div>
+  );
+}
+
+type NameProps = { barcode: string; name: string };
+function Name({ barcode, name }: NameProps) {
+  const { data } = api.product.getProductSummary.useQuery({ barcode });
+
+  const nameDiv = (
+    <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xl">{name}</div>
+  );
+  return !!data ? (
+    <Link
+      href={{ pathname: "/product/[id]", query: { id: barcode } }}
+      aria-label={`Open product page for barcode ${barcode}`}
+      className="flex min-w-0 grow items-center justify-between"
+    >
+      {nameDiv}
+      <RightIcon className="size-7 animate-scale-in text-neutral-400" />
+    </Link>
+  ) : (
+    <div className="flex min-w-0 items-center">{nameDiv}</div>
   );
 }
 
