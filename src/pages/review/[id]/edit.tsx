@@ -35,7 +35,6 @@ import {
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
-import * as Select from "@radix-ui/react-select";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
 import { useMemo, useRef, useState, type FormEvent, type MutableRefObject } from "react";
@@ -48,7 +47,6 @@ import {
 } from "react-hook-form";
 import { toast } from "react-toastify";
 import Checkmark from "~icons/custom/checkmark";
-import LucidePen from "~icons/custom/pen";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 import CircledPlusIcon from "~icons/fluent/add-circle-28-regular";
@@ -80,17 +78,16 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
     { barcode },
     { staleTime: Infinity, select: transformReview },
   );
-  const namesQuery = api.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
   const [isPrivate] = useReviewPrivateDefault();
 
-  if (!reviewQuery.isSuccess || !namesQuery.isSuccess) return <>Loading...</>;
+  if (!reviewQuery.isSuccess) return <>Loading...</>;
 
   return (
     <Review
       barcode={barcode}
       review={
         reviewQuery.data ?? {
-          name: namesQuery.data[0] ?? "",
+          name: "",
           rating: 5,
           pros: null,
           cons: null,
@@ -101,7 +98,6 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
         }
       }
       hasReview={!!reviewQuery.data}
-      names={namesQuery.data}
     />
   );
 }
@@ -109,15 +105,13 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
 type ReviewProps = {
   review: ReviewForm;
   hasReview: boolean;
-  names: string[];
   barcode: string;
 };
-function Review({ barcode, review, hasReview, names }: ReviewProps) {
+function Review({ barcode, review, hasReview }: ReviewProps) {
   const {
     register,
     control,
     handleSubmit,
-    setValue,
     formState: { isDirty: isFormDirty },
   } = useForm({ defaultValues: review });
 
@@ -217,11 +211,8 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
         setValue={setImage}
       />
       <Name
-        names={names}
+        barcode={barcode}
         register={register("name", { required: true })}
-        setValue={(value) => {
-          setValue("name", value);
-        }}
       />
       <CategoryList control={control} />
       <Controller
@@ -259,17 +250,18 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
         {hasReview ? "Update" : "Save"}
       </Button>
       {/* forces extra gap at the bottom */}
-      <div className="pb-px" />
+      <div className="pb-2" />
     </form>
   );
 }
 
 type NameProps = {
-  names: string[];
+  barcode: string;
   register: UseFormRegisterReturn;
-  setValue: (value: string) => void;
 };
-function Name({ names, register, setValue }: NameProps) {
+function Name({ barcode, register }: NameProps) {
+  const { data } = api.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
+  const listId = "product-names";
   return (
     <label className="flex flex-col">
       <span className="p-2 text-sm">Name</span>
@@ -279,43 +271,13 @@ function Name({ names, register, setValue }: NameProps) {
           required
           minLength={6}
           maxLength={60}
-          placeholder="Name"
+          placeholder={data?.[0] ?? "Name"}
           autoComplete="off"
           className="grow outline-none"
           aria-label="Product name"
+          list={listId}
         />
-        {!!names.length && (
-          <Select.Root
-            onValueChange={setValue}
-            // makes sure you can select the same option multiple times
-            value=""
-          >
-            <Select.Trigger aria-label="product name">
-              <Select.Value>
-                <LucidePen />
-              </Select.Value>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Content
-                position="popper"
-                side="left"
-                className="rounded-xl bg-white p-2 !outline !outline-2 !outline-neutral-200"
-              >
-                <Select.Viewport>
-                  {names.map((name) => (
-                    <Select.Item
-                      key={name}
-                      value={name}
-                      className="cursor-pointer rounded-md outline-none selected:bg-neutral-200"
-                    >
-                      <Select.ItemText>{name}</Select.ItemText>
-                    </Select.Item>
-                  ))}
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
-        )}
+        <datalist id={listId}>{data?.map((name) => <option key={name}>{name}</option>)}</datalist>
       </div>
     </label>
   );

@@ -129,8 +129,9 @@ function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
       </div>
     </div>
   );
+  if (!data) return nameDiv;
 
-  return !!data ? (
+  return (
     <Link
       href={{ pathname: "/review/[id]", query: { id: barcode } }}
       aria-label={`Open personal review page for barcode ${barcode}`}
@@ -139,8 +140,6 @@ function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
       {nameDiv}
       <RightIcon className="size-7 animate-scale-in self-center text-neutral-400" />
     </Link>
-  ) : (
-    nameDiv
   );
 }
 

@@ -1,3 +1,5 @@
+import { filterMap } from "@/utils/array";
+import type { Nullish } from "@/utils/type";
 import { parse } from "node-html-parser";
 
 function UPCDatabaseOrg(code: string) {
@@ -32,14 +34,21 @@ function parseHTMLResponse(response: Response) {
   return response.text().then(parse);
 }
 
-const scrapers = [UPCDatabaseCom, UPCDatabaseOrg, Brocade, GoUPC];
-export default function getScrapedProducts(code: string) {
-  return Promise.allSettled(scrapers.map((query) => query(code))).then((results) =>
-    results.reduce<string[]>((arr, el) => {
-      if (el.status === "fulfilled" && el.value) {
-        arr.push(el.value);
-      }
-      return arr;
-    }, []),
-  );
+const scrapers: Array<(barcode: string) => Promise<Nullish<string>>> = [
+  UPCDatabaseCom,
+  UPCDatabaseOrg,
+  Brocade,
+  GoUPC,
+];
+export default function getScrapedProducts(code: string): Promise<string[]> {
+  return Promise.allSettled(scrapers.map((query) => query(code))).then((results) => {
+    return filterMap(
+      results,
+      (
+        result,
+      ): result is Extract<typeof result, PromiseFulfilledResult<unknown>> & { value: string } =>
+        result.status === "fulfilled" && !!result.value,
+      (result) => result.value,
+    );
+  });
 }
