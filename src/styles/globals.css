@@ -12,6 +12,10 @@
   a {
     outline-color: theme("colors.lime.950");
   }
+
+  input[list]::-webkit-calendar-picker-indicator {
+    visibility: hidden;
+  }
 }
 
 @media (pointer: fine), (pointer: none) {
