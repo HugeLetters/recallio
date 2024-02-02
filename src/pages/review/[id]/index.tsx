@@ -146,7 +146,10 @@ function Name({ barcode, name }: NameProps) {
   const nameDiv = (
     <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xl">{name}</div>
   );
-  return !!data ? (
+
+  if (!data) return <div className="flex min-w-0 items-center">{nameDiv}</div>;
+
+  return (
     <Link
       href={{ pathname: "/product/[id]", query: { id: barcode } }}
       aria-label={`Open product page for barcode ${barcode}`}
@@ -155,8 +158,6 @@ function Name({ barcode, name }: NameProps) {
       {nameDiv}
       <RightIcon className="size-7 animate-scale-in text-neutral-400" />
     </Link>
-  ) : (
-    <div className="flex min-w-0 items-center">{nameDiv}</div>
   );
 }
 
