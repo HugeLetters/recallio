@@ -93,7 +93,7 @@ function Review({ barcode }: ReviewProps) {
       </Link>
       <DeleteButton barcode={barcode} />
       {/* forces extra gap at the bottom */}
-      <div className="pb-px" />
+      <div className="pb-2" />
     </div>
   );
 }

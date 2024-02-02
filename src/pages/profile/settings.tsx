@@ -40,7 +40,7 @@ const Page: NextPageWithLayout = function () {
       </Button>
       <DeleteProfile username={data.user.name} />
       {/* forces a padding at the bottom */}
-      <div className="pb-1.5" />
+      <div className="pb-2" />
     </div>
   ) : (
     "Loading"

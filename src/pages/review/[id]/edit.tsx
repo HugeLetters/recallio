@@ -259,7 +259,7 @@ function Review({ barcode, review, hasReview, names }: ReviewProps) {
         {hasReview ? "Update" : "Save"}
       </Button>
       {/* forces extra gap at the bottom */}
-      <div className="pb-px" />
+      <div className="pb-2" />
     </form>
   );
 }
@@ -290,7 +290,7 @@ function Name({ names, register, setValue }: NameProps) {
             // makes sure you can select the same option multiple times
             value=""
           >
-            <Select.Trigger aria-label="product name">
+            <Select.Trigger aria-label="Product name">
               <Select.Value>
                 <LucidePen />
               </Select.Value>
