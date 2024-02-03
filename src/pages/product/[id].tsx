@@ -130,17 +130,17 @@ function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
       }
       className="flex min-w-0 grow justify-between"
     >
-      <div className="flex min-w-0 flex-col justify-between py-0.5">
-        <h2 className="overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
+      <div className="flex min-w-0 flex-col items-start justify-between py-0.5">
+        <h2 className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
           {name}
         </h2>
-        <div className="flex h-6 min-h-0 w-fit shrink-0 items-center gap-0.5">
+        <div className="flex h-6 items-center gap-0.5">
           <Star highlight />
           <span>{rating.toFixed(1)}</span>
           <span className="text-sm text-neutral-400">({reviewCount})</span>
         </div>
       </div>
-      <RightIcon className="size-7 self-center text-neutral-400" />
+      <RightIcon className="size-7 shrink-0 self-center text-neutral-400" />
     </Link>
   );
 }
