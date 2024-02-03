@@ -36,6 +36,7 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useRef, useState, type FormEvent, type MutableRefObject } from "react";
 import {
@@ -249,6 +250,14 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       >
         {hasReview ? "Update" : "Save"}
       </Button>
+      {hasReview && (
+        <Link
+          href={{ pathname: "/review/[id]", query: { id: barcode } }}
+          className="btn ghost text-center"
+        >
+          Cancel
+        </Link>
+      )}
       {/* forces extra gap at the bottom */}
       <div className="pb-2" />
     </form>
