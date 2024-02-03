@@ -113,7 +113,7 @@ function AttachedImage({ image }: AttachedImageProps) {
           </Dialog.Trigger>
           <Dialog.Portal>
             <DialogOverlay className="flex items-center justify-center">
-              <Dialog.Content className="max-h-screen max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
+              <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
                 <Dialog.Close
                   className="flex"
                   aria-label="Close full image view"

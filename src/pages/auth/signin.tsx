@@ -16,7 +16,7 @@ const Page: NextPageWithLayout = function () {
   const error = getErrorMessage(getQueryParam(router.query.error));
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col p-4">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col p-4">
       {!!error && (
         <div className="flex w-fit items-center gap-2 self-center rounded-lg bg-red-800/10 px-2.5 py-4 text-red-800/80">
           <AlertIcon className="size-8 shrink-0" />

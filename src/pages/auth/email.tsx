@@ -17,7 +17,7 @@ const Page: NextPageWithLayout = function () {
   const [pin, setPin] = useState("");
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-app flex-col items-center justify-center p-4 text-center text-lime-950">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center p-4 text-center text-lime-950">
       <EmailIcon className="size-10" />
       <p className="text-2xl font-semibold">Authentication PIN code</p>
       <div className="mt-2 text-balance text-xl font-medium text-neutral-400">
