@@ -1,13 +1,13 @@
 import { throwDefaultError } from "@/server/api/utils";
 import { nonEmptyArray } from "@/utils/array";
 import { type StrictOmit } from "@/utils/type";
-import { and, eq, sql, type InferInsertModel } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "..";
 import { category, review, reviewsToCategories, type ReviewInsert } from "../schema/product";
 
 export async function upsertReview(
   reviewValue: StrictOmit<ReviewInsert, "updatedAt" | "imageKey">,
-  categories: Array<InferInsertModel<typeof category>["name"]> | undefined,
+  categories: Array<typeof category.$inferInsert.name> | undefined,
 ) {
   return db
     .transaction(async (tx) => {
