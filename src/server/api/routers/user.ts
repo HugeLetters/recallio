@@ -1,4 +1,3 @@
-import { providers } from "@/components/UI";
 import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
@@ -6,6 +5,7 @@ import { review, reviewsToCategories } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { isUrl } from "@/utils";
 import { mapFilter } from "@/utils/array";
+import { providerSchema } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -60,21 +60,13 @@ export const userRouter = createTRPCRouter({
   }),
   getAccountProviders: protectedProcedure.query(({ ctx: { session } }) => {
     return db
-      .select()
+      .select({ provider: account.provider })
       .from(account)
       .where(eq(account.userId, session.user.id))
       .then((accounts) => accounts.map((account) => account.provider));
   }),
   deleteAccount: protectedProcedure
-    .input(
-      z.object({
-        provider: z.enum(providers, {
-          errorMap(_, ctx) {
-            return { message: ctx.defaultError.replace("Invalid enum value", "Invalid provider") };
-          },
-        }),
-      }),
-    )
+    .input(z.object({ provider: providerSchema }))
     .mutation(({ ctx: { session }, input: { provider } }) =>
       db
         .delete(account)

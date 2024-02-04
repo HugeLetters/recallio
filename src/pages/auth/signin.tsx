@@ -1,4 +1,5 @@
-import { Button, Input, WithLabel, providerIcons } from "@/components/UI";
+import { Button, Input, WithLabel } from "@/components/UI";
+import { providerIcons } from "@/utils/providers";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { signIn, useSession } from "next-auth/react";

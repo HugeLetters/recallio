@@ -8,12 +8,12 @@ import {
   LabeledSwitch,
   UserPic,
   WithLabel,
-  providerIcons,
   useUrlDialog,
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
+import { providerIcons } from "@/utils/providers";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { Session } from "next-auth";
