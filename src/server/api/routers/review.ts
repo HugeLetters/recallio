@@ -1,5 +1,4 @@
 import { db } from "@/database";
-import { upsertReview } from "@/database/query/review";
 import {
   aggregateArrayColumn,
   count,
@@ -7,8 +6,14 @@ import {
   nullableMap,
   removeNullishArray,
 } from "@/database/query/utils";
-import { review, reviewsToCategories } from "@/database/schema/product";
+import {
+  category,
+  review,
+  reviewsToCategories,
+  type ReviewInsert,
+} from "@/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
+import { nonEmptyArray } from "@/utils/array";
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, gt, inArray, like, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -152,10 +157,52 @@ export const reviewRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { categories, ...value } = input;
-      return upsertReview(
-        { ...value, userId: ctx.session.user.id },
-        categories?.filter(Boolean),
-      ).catch((e) => throwDefaultError(e, "Couldn't post the review"));
+      const reviewData: ReviewInsert = {
+        ...value,
+        userId: ctx.session.user.id,
+        // override updatedAt value with current time
+        updatedAt: new Date(),
+      };
+
+      return db
+        .transaction(async (tx) => {
+          await tx.insert(review).values(reviewData).onDuplicateKeyUpdate({ set: reviewData });
+          if (!categories) return;
+
+          await tx
+            .delete(reviewsToCategories)
+            .where(
+              and(
+                eq(reviewsToCategories.userId, reviewData.userId),
+                eq(reviewsToCategories.barcode, reviewData.barcode),
+              ),
+            );
+          const categoryValues = categories.filter(Boolean).map((category) => ({ name: category }));
+          if (!nonEmptyArray(categoryValues)) return;
+
+          await tx
+            .insert(category)
+            .values(categoryValues)
+            .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } });
+
+          await tx
+            .insert(reviewsToCategories)
+            .values(
+              categories.map((category) => ({
+                barcode: reviewData.barcode,
+                userId: reviewData.userId,
+                category,
+              })),
+            )
+            .onDuplicateKeyUpdate({
+              set: {
+                barcode: sql`${reviewsToCategories.barcode}`,
+                category: sql`${reviewsToCategories.category}`,
+                userId: sql`${reviewsToCategories.userId}`,
+              },
+            });
+        })
+        .catch((e) => throwDefaultError(e, "Couldn't post the review"));
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to get review data") }))
