@@ -11,15 +11,6 @@ export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;
 }
 
-export function isUrl(url: string) {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function isNonEmptyString(value: unknown): value is string {
   return !!value && typeof value === "string";
 }

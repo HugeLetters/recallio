@@ -3,7 +3,6 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
-import { isUrl } from "@/utils";
 import { mapFilter } from "@/utils/array";
 import { providerSchema } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
@@ -52,7 +51,7 @@ export const userRouter = createTRPCRouter({
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
           }
 
-          if (!isUrl(image)) {
+          if (!URL.canParse(image)) {
             utapi.deleteFiles([image]).catch(console.error);
           }
         });
@@ -115,7 +114,7 @@ export const userRouter = createTRPCRouter({
         await tx.delete(account).where(eq(account.userId, userSession.user.id));
         await tx.delete(user).where(eq(user.id, userSession.user.id));
 
-        if (userAvatar && !isUrl(userAvatar)) {
+        if (userAvatar && !URL.canParse(userAvatar)) {
           userImages.push(userAvatar);
         }
         await utapi.deleteFiles(userImages);
