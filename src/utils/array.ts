@@ -35,20 +35,6 @@ export function mostCommonItems(count: number) {
   };
 }
 
-export function mapFilter<A, B, C extends B>(
-  array: A[],
-  map: (value: A) => B,
-  filter: (value: B) => value is C,
-): C[] {
-  return array.reduce<C[]>((acc, el) => {
-    const mapped = map(el);
-    if (filter(mapped)) {
-      acc.push(mapped);
-    }
-    return acc;
-  }, []);
-}
-
 export function filterMap<A, B extends A, C>(
   array: A[],
   filter: (value: A) => value is B,
