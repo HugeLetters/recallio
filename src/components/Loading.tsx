@@ -83,7 +83,6 @@ export function useLoadingIndicator(show: boolean, delay = 0) {
   const id = useId();
 
   useEffect(() => {
-    clearTimeout(timeout.current);
     if (!show) {
       setStack({ type: "REMOVE", value: id });
       return;
@@ -91,6 +90,7 @@ export function useLoadingIndicator(show: boolean, delay = 0) {
 
     timeout.current = window.setTimeout(() => setStack({ type: "ADD", value: id }), delay);
     return () => {
+      clearTimeout(timeout.current);
       setStack({ type: "REMOVE", value: id });
     };
   }, [id, setStack, show, delay]);
