@@ -14,11 +14,6 @@ const fadeIn = "fade-in";
 const fadeOut = "fade-out";
 const scaleIn = "scale-in";
 const scaleOut = "scale-out";
-function defineAnimation(animationName: string) {
-  return {
-    [animationName]: `${animationName} var(${animationDuration}, 200ms) var(${animationFunction}, ease-in-out)`,
-  };
-}
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -30,7 +25,7 @@ export default {
         app: {
           gold: "hsla(47, 87%, 56%)",
           green: "hsla(122, 39%, 49%)",
-          red: "hsla(0, 39%, 49%)",
+          red: defineColor(0, 39),
         },
       },
       animation: {
@@ -173,3 +168,21 @@ export default {
     }),
   ],
 } satisfies Config;
+
+function defineAnimation(animationName: string) {
+  return {
+    [animationName]: `${animationName} var(${animationDuration}, 200ms) var(${animationFunction}, ease-in-out)`,
+  };
+}
+
+type ColorStep = "1" | "2" | "3" | "5" | "6" | "7" | "8" | "9";
+type ColorVariant = `${ColorStep}00` | `${ColorStep}50` | "50";
+type Color = Record<ColorVariant, string>;
+function defineColor(hue: number, saturation: number) {
+  return Object.fromEntries(
+    Array.from({ length: 19 }, (_, i) => [
+      (i + 1) * 50,
+      `hsl(${hue}, ${saturation}%, ${((100 / 20) * (19 - i)).toFixed(2)}%)`,
+    ]),
+  ) as Color;
+}

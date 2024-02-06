@@ -396,7 +396,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         {isImagePresent && (
           <Button
             className={`absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
-              src ? "text-app-red" : "text-neutral-950"
+              src ? "text-app-red-500" : "text-neutral-950"
             }`}
             onClick={() => {
               setValue(src ? null : undefined);

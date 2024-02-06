@@ -37,7 +37,7 @@ export function ProsIcon() {
 }
 
 export function ConsIcon() {
-  return <MinusIcon className="h-fit w-full text-app-red" />;
+  return <MinusIcon className="h-fit w-full text-app-red-500" />;
 }
 
 type ImagePreviewProps = { src: string };

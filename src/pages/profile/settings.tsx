@@ -167,7 +167,7 @@ function UserName({ username }: UserNameProps) {
             setValue(e.target.value);
           }}
           onBlur={() => saveName(value)}
-          className="invalid:outline-app-red"
+          className="invalid:outline-app-red-500"
         />
       </WithLabel>
     </form>
@@ -306,7 +306,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
                 <Button
                   aria-disabled={isLoading}
                   type="submit"
-                  className="bg-app-red font-semibold text-white group-invalid:disabled group-invalid:bg-opacity-70"
+                  className="bg-app-red-500 font-semibold text-white group-invalid:disabled group-invalid:bg-app-red-350"
                 >
                   Delete profile
                 </Button>
