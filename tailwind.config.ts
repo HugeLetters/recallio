@@ -6,6 +6,7 @@ const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
 
 const animationDuration = "--tw-animate-duration";
+const animationFunction = "--tw-animate-timing";
 const slideUp = "slide-up";
 const slideDown = "slide-down";
 const slideLeft = "slide-left";
@@ -14,7 +15,9 @@ const fadeOut = "fade-out";
 const scaleIn = "scale-in";
 const scaleOut = "scale-out";
 function defineAnimation(animationName: string) {
-  return { [animationName]: `${animationName} var(${animationDuration}, 200ms) ease-in-out` };
+  return {
+    [animationName]: `${animationName} var(${animationDuration}, 200ms) var(${animationFunction}, ease-in-out)`,
+  };
 }
 
 export default {
@@ -139,6 +142,17 @@ export default {
           },
         },
         { values: theme("transitionDuration") },
+      );
+      matchUtilities(
+        {
+          "animate-function"(value) {
+            return {
+              [animationFunction]: String(value),
+              animationTimingFunction: String(value),
+            };
+          },
+        },
+        { values: { "ease-out": "cubic-bezier(.32,.52,.36,.99)" } },
       );
       matchUtilities(
         {
