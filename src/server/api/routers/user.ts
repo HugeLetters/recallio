@@ -1,13 +1,11 @@
-import { providers } from "@/components/UI";
 import { db } from "@/database";
 import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
-import { isUrl } from "@/utils";
-import { mapFilter } from "@/utils/array";
+import { providerSchema } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
@@ -52,7 +50,7 @@ export const userRouter = createTRPCRouter({
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
           }
 
-          if (!isUrl(image)) {
+          if (!URL.canParse(image)) {
             utapi.deleteFiles([image]).catch(console.error);
           }
         });
@@ -60,21 +58,13 @@ export const userRouter = createTRPCRouter({
   }),
   getAccountProviders: protectedProcedure.query(({ ctx: { session } }) => {
     return db
-      .select()
+      .select({ provider: account.provider })
       .from(account)
       .where(eq(account.userId, session.user.id))
       .then((accounts) => accounts.map((account) => account.provider));
   }),
   deleteAccount: protectedProcedure
-    .input(
-      z.object({
-        provider: z.enum(providers, {
-          errorMap(_, ctx) {
-            return { message: ctx.defaultError.replace("Invalid enum value", "Invalid provider") };
-          },
-        }),
-      }),
-    )
+    .input(z.object({ provider: providerSchema }))
     .mutation(({ ctx: { session }, input: { provider } }) =>
       db
         .delete(account)
@@ -92,23 +82,19 @@ export const userRouter = createTRPCRouter({
   deleteUser: protectedProcedure.mutation(({ ctx: { session: userSession } }) => {
     return db
       .transaction(async (tx) => {
-        const userImages = await tx
-          .select({ image: review.imageKey })
-          .from(review)
-          .where(eq(review.userId, userSession.user.id))
-          .then((values) =>
-            mapFilter(
-              values,
-              ({ image }) => image,
-              (image): image is string => !!image,
-            ),
-          );
-        const userAvatar = await tx
-          .select({ image: user.image })
-          .from(user)
-          .where(eq(user.id, userSession.user.id))
-          .limit(1)
-          .then(([user]) => user?.image);
+        const [userImages, userAvatar] = await Promise.all([
+          tx
+            .select({ image: sql<string>`${review.imageKey}` })
+            .from(review)
+            .where(and(eq(review.userId, userSession.user.id), isNotNull(review.imageKey)))
+            .then((values) => values.map(({ image }) => image)),
+          tx
+            .select({ image: user.image })
+            .from(user)
+            .where(eq(user.id, userSession.user.id))
+            .limit(1)
+            .then(([user]) => user?.image),
+        ]);
 
         await tx
           .delete(reviewsToCategories)
@@ -123,7 +109,7 @@ export const userRouter = createTRPCRouter({
         await tx.delete(account).where(eq(account.userId, userSession.user.id));
         await tx.delete(user).where(eq(user.id, userSession.user.id));
 
-        if (userAvatar && !isUrl(userAvatar)) {
+        if (userAvatar && !URL.canParse(userAvatar)) {
           userImages.push(userAvatar);
         }
         await utapi.deleteFiles(userImages);

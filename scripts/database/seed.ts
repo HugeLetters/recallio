@@ -10,7 +10,7 @@ import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array";
 import { faker } from "@faker-js/faker";
-import { and, asc, like, lt, sql, type InferInsertModel, type SQL } from "drizzle-orm";
+import { and, asc, like, lt, sql, type SQL } from "drizzle-orm";
 import type { MySqlTableWithColumns, TableConfig } from "drizzle-orm/mysql-core";
 import task, { type Task } from "tasuku";
 
@@ -68,7 +68,7 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   const reviews: ReviewInsert[] = values.map(({ review }) => review);
   await db.insert(review).values(reviews);
 
-  const categories: InferInsertModel<typeof category>[] = values.flatMap(
+  const categories: Array<typeof category.$inferInsert> = values.flatMap(
     ({ categories }) => categories?.map((name) => ({ name })) ?? [],
   );
   if (!categories.length) return;
@@ -78,7 +78,7 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
     .values(categories)
     .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } });
 
-  const reviewsCategories: InferInsertModel<typeof reviewsToCategories>[] = values.flatMap(
+  const reviewsCategories: Array<typeof reviewsToCategories.$inferInsert> = values.flatMap(
     ({ review, categories }) =>
       categories?.map((category) => ({
         barcode: review.barcode,

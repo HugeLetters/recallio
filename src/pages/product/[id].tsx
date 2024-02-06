@@ -115,30 +115,32 @@ function Summary({
 
 type ProductNameProps = { barcode: string; name: string; reviewCount: number; rating: number };
 function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
-  const { data } = api.review.getUserReview.useQuery({ barcode });
-
-  const nameDiv = (
-    <div className="flex min-w-0 flex-col justify-between py-0.5">
-      <h2 className="overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
-        {name}
-      </h2>
-      <div className="flex h-6 min-h-0 w-fit shrink-0 items-center gap-0.5">
-        <Star highlight />
-        <span>{rating.toFixed(1)}</span>
-        <span className="text-sm text-neutral-400">({reviewCount})</span>
-      </div>
-    </div>
-  );
-  if (!data) return nameDiv;
+  const { data, isSuccess } = api.review.getUserReview.useQuery({ barcode });
 
   return (
     <Link
-      href={{ pathname: "/review/[id]", query: { id: barcode } }}
-      aria-label={`Open personal review page for barcode ${barcode}`}
+      href={{
+        pathname: isSuccess && !data ? "/review/[id]/edit" : "/review/[id]",
+        query: { id: barcode },
+      }}
+      aria-label={
+        data
+          ? `Open personal review page for barcode ${barcode}`
+          : `Create a review for barcode ${barcode}`
+      }
       className="flex min-w-0 grow justify-between"
     >
-      {nameDiv}
-      <RightIcon className="size-7 animate-scale-in self-center text-neutral-400" />
+      <div className="flex min-w-0 flex-col items-start justify-between py-0.5">
+        <h2 className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
+          {name}
+        </h2>
+        <div className="flex h-6 items-center gap-0.5">
+          <Star highlight />
+          <span>{rating.toFixed(1)}</span>
+          <span className="text-sm text-neutral-400">({reviewCount})</span>
+        </div>
+      </div>
+      <RightIcon className="size-7 shrink-0 self-center text-neutral-400" />
     </Link>
   );
 }

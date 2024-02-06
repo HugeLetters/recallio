@@ -1,11 +1,9 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import type { Entries, NonEmptyArray } from "@/utils/array";
 import { getQueryParam, setQueryParam } from "@/utils/query";
-import type { Icon, StrictOmit } from "@/utils/type";
+import type { StrictOmit } from "@/utils/type";
 import { Overlay, Root } from "@radix-ui/react-dialog";
 import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
-import type { OAuthProviderType } from "next-auth/providers";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import type {
@@ -15,10 +13,6 @@ import type {
   ReactNode,
 } from "react";
 import { forwardRef, useEffect, useRef } from "react";
-import DiscordIcon from "~icons/logos/discord-icon";
-import GoogleIcon from "~icons/logos/google-icon";
-import LinkedinIcon from "~icons/logos/linkedin-icon";
-import GithubIcon from "~icons/mdi/github";
 import StarIcon from "~icons/typcn/star-full-outline";
 
 type ClickableProps = ComponentPropsWithoutRef<"button">;
@@ -129,15 +123,6 @@ export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitc
     </label>
   );
 }
-
-const providerRecord = {
-  discord: DiscordIcon,
-  github: GithubIcon,
-  google: GoogleIcon,
-  linkedin: LinkedinIcon,
-} satisfies Partial<Record<OAuthProviderType, Icon>>;
-export const providers = Object.keys(providerRecord) as NonEmptyArray<keyof typeof providerRecord>;
-export const providerIcons = Object.entries(providerRecord) as Entries<typeof providerRecord>;
 
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {
