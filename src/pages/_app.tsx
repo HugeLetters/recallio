@@ -40,7 +40,14 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
 
   return (
     <Providers session={session}>
-      <ToastContainer />
+      <ToastContainer
+        stacked
+        closeOnClick
+        closeButton={false}
+        draggablePercent={30}
+        // todo - implement a smooth transition
+        // transition={undefined}
+      />
       <Head>
         <title>recallio</title>
         <link

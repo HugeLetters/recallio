@@ -5,7 +5,7 @@ import { review } from "@/database/schema/product";
 import { env } from "@/env.mjs";
 import { and, eq } from "drizzle-orm";
 import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
-import { UTApi } from "uploadthing/server";
+import { UTApi, UploadThingError } from "uploadthing/server";
 import { z } from "zod";
 import { getServerAuthSession } from "./auth";
 
@@ -17,17 +17,22 @@ export const appFileRouter = {
   reviewImageUploader: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
     .input(z.object({ barcode: z.string() }))
     .middleware(async ({ req, res, input: { barcode } }) => {
-      if (!barcode) throw Error("No barcode provided");
+      if (!barcode) {
+        throw new UploadThingError("No barcode provided");
+      }
 
       const session = await getServerAuthSession({ req, res });
-      if (!session) throw Error("Unauthorized");
+      if (!session) {
+        throw new UploadThingError("Unauthorized");
+      }
 
       const [reviewData] = await findFirst(
         review,
         and(eq(review.userId, session.user.id), eq(review.barcode, barcode)),
       );
-      if (!reviewData) throw Error("Can't upload image without a corresponding review");
-
+      if (!reviewData) {
+        throw new UploadThingError("Can't upload image without a corresponding review");
+      }
       return { userId: session.user.id, barcode, oldImageKey: reviewData.imageKey };
     })
     .onUploadError(({ error }) => {
@@ -50,10 +55,13 @@ export const appFileRouter = {
   userImageUploader: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
     .middleware(async ({ req, res }) => {
       const session = await getServerAuthSession({ req, res });
-      if (!session) throw Error("Unauthorized");
-
+      if (!session) {
+        throw new UploadThingError("Unauthorized");
+      }
       const [userData] = await findFirst(user, eq(user.id, session.user.id));
-      if (!userData) throw Error("User not found");
+      if (!userData) {
+        throw new UploadThingError("User not found");
+      }
 
       return {
         userId: session.user.id,
