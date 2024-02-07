@@ -15,6 +15,7 @@ const fadeOut = "fade-out";
 const scaleIn = "scale-in";
 const scaleOut = "scale-out";
 
+const appRedColor = defineColor(0, 39);
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -25,7 +26,7 @@ export default {
         app: {
           gold: "hsla(47, 87%, 56%)",
           green: "hsla(122, 39%, 49%)",
-          red: defineColor(0, 39),
+          red: appRedColor,
         },
       },
       animation: {
@@ -75,6 +76,8 @@ export default {
       addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
       addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
       matchVariant("not", (value) => `&:not(${value})`);
+      matchVariant("nth", (value) => `&:nth-child(${value})`);
+      matchVariant("nth-last", (value) => `&:nth-last-child(${value})`);
 
       addComponents({
         ".scrollbar-gutter": {
@@ -113,11 +116,11 @@ export default {
           },
         },
         ".destructive": {
-          backgroundColor: "rgb(153 27 27 / 0.1)",
-          color: "rgb(153 27 27 / 0.8)",
+          backgroundColor: appRedColor[100],
+          color: appRedColor[550],
           outline: "2px solid transparent",
           "&:focus-within": {
-            outlineColor: "rgb(153 27 27 / 0.4)",
+            outlineColor: appRedColor[250],
           },
         },
       });
