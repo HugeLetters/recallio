@@ -1,4 +1,5 @@
 import { LoadingIndicatorProvider } from "@/components/Loading";
+import { ToastProvider } from "@/components/Toast";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
 import { browser } from "@/utils";
@@ -11,8 +12,6 @@ import type { AppProps } from "next/app";
 import { Lato } from "next/font/google";
 import Head from "next/head";
 import { useEffect, type ReactNode } from "react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -40,14 +39,6 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
 
   return (
     <Providers session={session}>
-      <ToastContainer
-        stacked
-        closeOnClick
-        closeButton={false}
-        draggablePercent={30}
-        // todo - implement a smooth transition
-        // transition={undefined}
-      />
       <Head>
         <title>recallio</title>
         <link
@@ -72,7 +63,9 @@ function Providers({ children, session }: { children: ReactNode; session: Sessio
   return (
     <SessionProvider session={session}>
       <JotaiProvider>
-        <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+        <ToastProvider>
+          <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+        </ToastProvider>
       </JotaiProvider>
     </SessionProvider>
   );
