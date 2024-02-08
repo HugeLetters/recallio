@@ -40,31 +40,25 @@ export default {
       },
       keyframes: {
         [slideUp]: {
-          "0%": { translate: "0 100%" },
+          "0%": { translate: "0 100%", opacity: "0" },
           "100%": { translate: "0 0" },
         },
         [slideDown]: {
-          "0%": { translate: "0 0" },
+          "0%": { translate: "0 0", opacity: "0" },
           "100%": { translate: "0 100%" },
         },
         [slideLeft]: {
-          "0%": { translate: "100% 0" },
+          "0%": { translate: "100% 0", opacity: "0" },
           "100%": { translate: "0 0" },
         },
-        [fadeIn]: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        [fadeOut]: {
-          "0%": { opacity: "1" },
-          "100%": { opacity: "0" },
-        },
+        [fadeIn]: { "0%": { opacity: "0" } },
+        [fadeOut]: { "100%": { opacity: "0" } },
         [scaleIn]: {
           "0%": { scale: "0.7", opacity: "0" },
-          "100%": { scale: "1", opacity: "1" },
+          "100%": { scale: "1" },
         },
         [scaleOut]: {
-          "0%": { scale: "1", opacity: "1" },
+          "0%": { scale: "1" },
           "100%": { scale: "0.7", opacity: "0" },
         },
       },
