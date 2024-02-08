@@ -1,8 +1,7 @@
 import { LoadingIndicatorProvider } from "@/components/Loading";
 import { ToastProvider } from "@/components/Toast";
-import { env } from "@/env.mjs";
 import "@/styles/globals.css";
-import { browser, tw } from "@/utils";
+import { tw } from "@/utils";
 import { api } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Provider as JotaiProvider } from "jotai";
@@ -11,7 +10,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import type { AppProps } from "next/app";
 import { Lato } from "next/font/google";
 import Head from "next/head";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -21,19 +20,6 @@ const lato = Lato({
 
 type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
-  useEffect(() => {
-    if (env.NEXT_PUBLIC_NODE_ENV == "production" || !browser) return;
-
-    const worker = import("@/utils/interceptor")
-      .then((module) => module.default)
-      .then((setupInterceptor) => setupInterceptor())
-      .catch(console.error);
-
-    return () => {
-      worker.then((w) => w?.stop()).catch(console.error);
-    };
-  }, []);
-
   const getLayout = Component.getLayout ?? ((x) => x);
   const page = getLayout(<Component {...pageProps} />);
 
