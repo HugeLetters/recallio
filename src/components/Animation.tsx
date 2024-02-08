@@ -18,7 +18,7 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
       onAppear={(element, index, decisionData) => {
         if (classList) {
           element.classList.add(...classList);
-          element.style.opacity = "1";
+          element.style.opacity = "";
         }
         onAppear?.(element, index, decisionData);
       }}
