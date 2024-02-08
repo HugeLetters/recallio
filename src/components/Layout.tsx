@@ -20,6 +20,7 @@ import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 import { Flipped } from "./Animation";
+import { tw } from "@/utils";
 
 type LayoutProps = {
   header?: ComponentProps<typeof Header>;
@@ -76,7 +77,7 @@ export function HeaderButton({ Icon, type, className, ...butonAttributes }: Head
   return (
     <button
       type={type ?? "button"}
-      className={`flex items-center ${className ?? ""}`}
+      className={tw("flex items-center", className)}
       {...butonAttributes}
     >
       <Icon className="size-8" />
@@ -88,7 +89,7 @@ type HeaderLinkProps = { Icon: Icon } & ComponentPropsWithoutRef<typeof Link>;
 export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
   return (
     <Link
-      className={`flex items-center ${className ?? ""}`}
+      className={tw("flex items-center", className)}
       {...linkAttributes}
     >
       <Icon className="size-8" />
@@ -127,9 +128,10 @@ function Footer() {
           />
           <Link
             href="/scan"
-            className={`flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 ${
-              pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
-            }`}
+            className={tw(
+              "flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300",
+              pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100",
+            )}
           >
             <ScannerIcon className="size-full" />
           </Link>
@@ -155,9 +157,10 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
   return (
     <Link
       href={href}
-      className={`relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors ${
-        activeBackground ? "text-app-green" : ""
-      }`}
+      className={tw(
+        "relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors",
+        activeBackground && "text-app-green",
+      )}
     >
       <Icon className="size-7" />
       <span>{label}</span>

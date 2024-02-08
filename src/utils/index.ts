@@ -1,4 +1,5 @@
 import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
+import { filterMap } from "./array";
 import type { Option, Some } from "./type";
 
 export const browser = typeof window !== "undefined";
@@ -41,4 +42,14 @@ export function isSetEqual<T>(a: Set<T>, b: Set<T>) {
 
 export function isSome<O extends Option<unknown>>(option: O): option is Extract<O, Some<unknown>> {
   return option.ok;
+}
+
+type Falsy = undefined | null | false;
+type ClassGroup = Falsy | string | Array<ClassGroup>;
+export function tw(...classGroup: ClassGroup[]): string {
+  return filterMap(
+    classGroup,
+    (x): x is Exclude<ClassGroup, Falsy> => !!x,
+    (classGroup) => (Array.isArray(classGroup) ? tw(...classGroup) : classGroup),
+  ).join(" ");
 }

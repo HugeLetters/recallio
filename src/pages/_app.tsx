@@ -2,7 +2,7 @@ import { LoadingIndicatorProvider } from "@/components/Loading";
 import { ToastProvider } from "@/components/Toast";
 import { env } from "@/env.mjs";
 import "@/styles/globals.css";
-import { browser } from "@/utils";
+import { browser, tw } from "@/utils";
 import { api } from "@/utils/api";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Provider as JotaiProvider } from "jotai";
@@ -46,7 +46,7 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
           href="/favicon.ico"
         />
       </Head>
-      <div className={`contents font-lato ${lato.variable}`}>
+      <div className={tw("contents font-lato", lato.variable)}>
         {!Component.noAuth ? <AuthProtection>{page}</AuthProtection> : page}
       </div>
     </Providers>

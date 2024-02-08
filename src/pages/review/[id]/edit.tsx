@@ -21,7 +21,7 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { fetchNextPage, isSetEqual, minutesToMs } from "@/utils";
+import { fetchNextPage, isSetEqual, minutesToMs, tw } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
@@ -376,7 +376,7 @@ function Private({ value, setValue }: ModelProps<boolean>) {
   return (
     <LabeledSwitch
       label="Private review"
-      className={`transition-colors duration-300 ${value ? "bg-app-green/20" : "bg-neutral-200 "}`}
+      className={tw("transition-colors duration-300", value ? "bg-app-green/20" : "bg-neutral-200")}
       checked={value}
       onCheckedChange={setValue}
     />
@@ -395,9 +395,10 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {isImagePresent && (
           <Button
-            className={`absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 ${
-              src ? "text-app-red-500" : "text-neutral-950"
-            }`}
+            className={tw(
+              "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
+              src ? "text-app-red-500" : "text-neutral-950",
+            )}
             onClick={() => {
               setValue(src ? null : undefined);
             }}
@@ -470,7 +471,7 @@ function CategoryList({ control }: CategoryListProps) {
               asChild
               aria-disabled={isAtCategoryLimit}
             >
-              <CategoryButton className={`${isAtCategoryLimit ? "opacity-60" : ""}`}>
+              <CategoryButton className={tw(isAtCategoryLimit && "opacity-60")}>
                 <PlusIcon className="size-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
               </CategoryButton>

@@ -10,6 +10,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
+import { tw } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import { type NextPageWithLayout } from "@/utils/type";
@@ -79,9 +80,10 @@ function Review({ barcode }: ReviewProps) {
       <Rating value={review.rating} />
       <ProsConsComment review={review} />
       <div
-        className={`rounded-lg px-4 py-4 ${
-          review.isPrivate ? "bg-app-green/20" : "bg-neutral-200"
-        }`}
+        className={tw(
+          "rounded-lg px-4 py-4",
+          review.isPrivate ? "bg-app-green/20" : "bg-neutral-200",
+        )}
       >
         {review.isPrivate ? "Private" : "Public"} review
       </div>
@@ -265,7 +267,10 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                     mutate({ barcode });
                   }}
                   style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
-                  className={`relative overflow-hidden bg-app-red-500 font-semibold text-white after:absolute after:inset-0 after:animate-slide-left after:bg-white/50 after:animate-reverse after:animate-duration-[var(--duration)] ${enabled ? "after:content-none" : "disabled"}`}
+                  className={tw(
+                    "relative overflow-hidden bg-app-red-500 font-semibold text-white after:absolute after:inset-0 after:animate-slide-left after:bg-white/50 after:animate-reverse after:animate-duration-[var(--duration)]",
+                    enabled ? "after:content-none" : "disabled",
+                  )}
                 >
                   Delete
                 </Button>

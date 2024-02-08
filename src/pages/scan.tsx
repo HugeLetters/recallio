@@ -1,5 +1,6 @@
 import { Layout, selectionAtom } from "@/components/Layout";
 import { ImageInput } from "@/components/UI";
+import { tw } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useDrag } from "@use-gesture/react";
 import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
@@ -108,14 +109,15 @@ const Page: NextPageWithLayout = function () {
         </form>
       )}
       <div
-        className={`grid grid-cols-3 pb-8 text-white ${!offset ? "transition-transform" : ""}`}
+        className={tw("grid grid-cols-3 pb-8 text-white", !!offset && "transition-transform")}
         style={{ transform }}
       >
         <ImageInput
           ref={fileInputRef}
-          className={`mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 focus-within:outline ${
-            selection === "upload" ? "bg-app-green" : "bg-black/50"
-          }`}
+          className={tw(
+            "mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 focus-within:outline",
+            selection === "upload" ? "bg-app-green" : "bg-black/50",
+          )}
           aria-label="Scan from file"
           isImageSet={true}
           onChange={(e) => {
@@ -128,18 +130,20 @@ const Page: NextPageWithLayout = function () {
           Upload
         </ImageInput>
         <button
-          className={`mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white ${
-            selection === "scan" ? "bg-app-green" : "bg-black/50"
-          }`}
+          className={tw(
+            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
+            selection === "scan" ? "bg-app-green" : "bg-black/50",
+          )}
           onClick={() => dispatchSelection("scan")}
           type="button"
         >
           Scan
         </button>
         <button
-          className={`mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white ${
-            selection === "input" ? "bg-app-green" : "bg-black/50"
-          }`}
+          className={tw(
+            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
+            selection === "input" ? "bg-app-green" : "bg-black/50",
+          )}
           onClick={() => dispatchSelection("input")}
           type="button"
         >
