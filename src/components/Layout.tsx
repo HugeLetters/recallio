@@ -108,12 +108,12 @@ function Footer() {
       flipId="active-icon-bg"
       className="animate-scale-in"
     >
-      <div className="absolute -inset-y-2 inset-x-4 -z-10 bg-app-green/35 blur-xl lg:-inset-y-6 lg:inset-x-2" />
+      <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green/35 blur-xl lg:inset-x-2" />
     </Flipped>
   );
 
   return (
-    <footer className="flex h-14 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
+    <footer className="flex h-16 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
         <Flipper
           flipKey={pathname}
@@ -129,7 +129,7 @@ function Footer() {
           <Link
             href="/scan"
             className={tw(
-              "flex size-14 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 lg:size-16",
+              "flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300",
               pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100",
             )}
           >
@@ -162,7 +162,7 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
         activeBackground && "text-app-green",
       )}
     >
-      <Icon className="size-5 lg:size-7" />
+      <Icon className="size-6 lg:size-7" />
       <span>{label}</span>
       {activeBackground}
     </Link>
