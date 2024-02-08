@@ -445,7 +445,7 @@ function CategoryList({ control }: CategoryListProps) {
   function close() {
     setIsOpen(false);
     window.clearTimeout(debouncedQuery.current);
-    setQueryParam(router, SEARCH_QUERY_KEY, null);
+    setQueryParam({ router, key: SEARCH_QUERY_KEY, value: null });
   }
   const router = useRouter();
   const debouncedQuery = useRef<number>();

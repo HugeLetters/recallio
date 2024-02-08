@@ -6,23 +6,23 @@ export function getQueryParam(query: Query[string]) {
   return Array.isArray(query) ? query.at(-1) : query;
 }
 
-type SetQueryParamOptions = { push?: boolean };
+type SetQueryParamOptions = {
+  router: NextRouter;
+  key: string;
+  value?: string | null;
+  push?: boolean;
+};
 /** Deletes falsy values */
-export function setQueryParam(
-  router: NextRouter,
-  key: string,
-  value?: string | null,
-  options?: SetQueryParamOptions,
-) {
+export function setQueryParam({ key, router, push, value }: SetQueryParamOptions) {
   if (!value) {
     delete router.query[key];
   } else {
     router.query[key] = value;
   }
 
-  if (options?.push) {
-    void router.push({ query: router.query });
-    return;
+  if (push) {
+    void router.push({ query: router.query }, undefined, { shallow: true });
+  } else {
+    void router.replace({ query: router.query }, undefined, { shallow: true });
   }
-  void router.replace({ query: router.query });
 }

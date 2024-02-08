@@ -209,7 +209,7 @@ export function useUrlDialog(queryKey: string) {
   useEffect(() => {
     function handler() {
       if (!isOpen) return;
-      setQueryParam(router, queryKey, null);
+      setQueryParam({ router, key: queryKey, value: null });
     }
 
     window.addEventListener("popstate", handler);
@@ -221,7 +221,7 @@ export function useUrlDialog(queryKey: string) {
   return {
     isOpen: !!isOpen,
     setIsOpen(this: void, open: boolean) {
-      setQueryParam(router, queryKey, open ? "true" : null, { push: true });
+      setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
     },
   };
 }

@@ -101,7 +101,7 @@ export function HeaderSearchControls({
 
           window.clearTimeout(debounceRef.current);
           debounceRef.current = window.setTimeout(() => {
-            setQueryParam(router, SEARCH_QUERY_KEY, newValue);
+            setQueryParam({ router, key: SEARCH_QUERY_KEY, value: newValue });
           }, 300);
         }}
       />
@@ -113,7 +113,7 @@ export function HeaderSearchControls({
           setValue("");
 
           window.clearTimeout(debounceRef.current);
-          setQueryParam(router, SEARCH_QUERY_KEY, null);
+          setQueryParam({ router, key: SEARCH_QUERY_KEY, value: null });
         }}
       >
         <ResetIcon className="size-7" />
@@ -130,7 +130,7 @@ export function useParseSort<const T extends OptionList>(optionList: T): T[numbe
 
   if (query && includes(optionList, query)) return query;
 
-  if (query !== undefined) setQueryParam(router, SORT_QUERY_KEY, null);
+  if (query !== undefined) setQueryParam({ router, key: SORT_QUERY_KEY, value: null });
   return optionList[0];
 }
 type SortDialogProps = { optionList: OptionList };
@@ -161,7 +161,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
               <RadioGroup.Root
                 value={sortBy}
                 onValueChange={(value) => {
-                  setQueryParam(router, SORT_QUERY_KEY, value);
+                  setQueryParam({ router, key: SORT_QUERY_KEY, value });
                 }}
                 className="flex flex-col gap-2"
               >
