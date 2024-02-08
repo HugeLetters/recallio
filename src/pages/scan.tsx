@@ -109,7 +109,7 @@ const Page: NextPageWithLayout = function () {
         </form>
       )}
       <div
-        className={tw("grid grid-cols-3 pb-8 text-white", !!offset && "transition-transform")}
+        className={tw("grid grid-cols-3 pb-8 text-white", !offset && "transition-transform")}
         style={{ transform }}
       >
         <ImageInput
