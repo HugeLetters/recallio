@@ -22,7 +22,7 @@ export function ToastProvider({ children }: PropsWithChildren) {
     </Toast.Provider>
   );
 }
-// todo - how to deal with error disappearing when stack is closed?
+
 function ToastContainer() {
   const toasts = useSyncExternalStore(
     toastStackStore.subscribe,
@@ -101,11 +101,10 @@ function ToastContainer() {
                   "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
                   "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
                   !isStackOpen && "-bottom-[var(--offset)] -left-[var(--offset)]",
-                  // todo - these appear over the last toast when removing themselves automatically
                   !isStackOpen && !isLast && "pointer-events-none absolute h-full",
                   !isStackOpen && !isLastThree && "opacity-0",
                 )}
-                duration={duration}
+                duration={!isStackOpen && isLast ? duration : Infinity}
               >
                 <div
                   className={tw(
