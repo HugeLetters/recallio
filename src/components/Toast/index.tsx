@@ -104,7 +104,7 @@ function ToastContainer() {
                   !isStackOpen && !isLast && "pointer-events-none absolute h-full",
                   !isStackOpen && !isLastThree && "opacity-0",
                 )}
-                duration={!isStackOpen && isLast ? duration : Infinity}
+                duration={isStackOpen || isLast ? duration : Infinity}
               >
                 <div
                   className={tw(
