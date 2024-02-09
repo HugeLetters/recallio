@@ -24,12 +24,7 @@ export function ToastProvider({ children }: PropsWithChildren) {
 }
 
 function ToastContainer() {
-  const toasts = useSyncExternalStore(
-    toastStackStore.subscribe,
-    toastStackStore.getSnapshot,
-    toastStackStore.getSnapshot,
-  );
-
+  const toasts = useToastStack();
   const [isStacked, setIsStacked] = useState(true);
   const hasMouse = useHasMouse();
   const toastViewportHandlers: ComponentPropsWithoutRef<"ol"> = hasMouse
@@ -57,75 +52,99 @@ function ToastContainer() {
         )}
         {...toastViewportHandlers}
       >
-        {toasts.map(({ content, id, className, duration }, index) => {
-          const isLastThree = toasts.length - index <= 3;
-          const isLast = toasts.length - 1 === index;
+        {toasts.map((toast, index) => {
           return (
-            <Flipped
-              flipId={id}
-              key={id}
-              className="animate-slide-left animate-function-ease-out"
-              scale
-              translate
-            >
-              {/* todo - tabindex on mobile, only the last toast should be focusable */}
-              <Toast.Root
-                onOpenChange={(isToastOpen) => {
-                  if (isToastOpen) return;
-                  toastStackStore.removeToast(id);
-                }}
-                onSwipeMove={({ currentTarget, detail: { delta } }) => {
-                  const newOpacity = `${1 - delta.x / (swipeThreshold * 1.3)}`;
-                  currentTarget.style.setProperty("--opacity", newOpacity);
-                }}
-                onSwipeCancel={({ currentTarget }) => {
-                  currentTarget.style.setProperty("--opacity", null);
-
-                  currentTarget.classList.add("data-[swipe=cancel]:transition");
-                  currentTarget.addEventListener(
-                    "transitionend",
-                    () => {
-                      currentTarget.classList.remove("data-[swipe=cancel]:transition");
-                    },
-                    { once: true },
-                  );
-                }}
-                style={
-                  {
-                    "--offset": isStacked ? `${(toasts.length - 1 - index) / 2}rem` : undefined,
-                  } as CSSProperties
-                }
-                className={tw(
-                  className,
-                  "h-fit w-full transition-opacity duration-300 shadow-around sa-o-10 sa-r-0.5",
-                  "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
-                  "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
-                  isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
-                  isStacked && !isLast && "pointer-events-none absolute h-full",
-                  isStacked && !isLastThree && "opacity-0",
-                )}
-                duration={!isStacked || isLast ? duration : Infinity}
-              >
-                <div
-                  className={tw(
-                    "h-full w-full overflow-hidden transition-opacity",
-                    isStacked && !isLast && "opacity-0",
-                  )}
-                >
-                  <Flipped
-                    inverseFlipId={id}
-                    scale
-                  >
-                    {content}
-                  </Flipped>
-                </div>
-                {/* todo - progress bar */}
-              </Toast.Root>
-            </Flipped>
+            <ToastSlot
+              key={toast.id}
+              toast={toast}
+              isStacked={isStacked}
+              toastCount={toasts.length}
+              toastIndex={index}
+            />
           );
         })}
       </Toast.Viewport>
     </Flipper>
+  );
+}
+
+type ToastSlotProps = {
+  toast: ToastData;
+  isStacked: boolean;
+  toastCount: number;
+  toastIndex: number;
+};
+function ToastSlot({
+  toast: { content, id, className, duration },
+  isStacked,
+  toastCount,
+  toastIndex,
+}: ToastSlotProps) {
+  const isLastThree = toastCount - toastIndex <= 3;
+  const isLast = toastCount - 1 === toastIndex;
+  const toastOffset = isStacked ? `${(toastCount - toastIndex - 1) / 2}rem` : undefined;
+
+  function setSwipeOpacity(e: Toast.SwipeEvent) {
+    const newOpacity = `${1 - e.detail.delta.x / (swipeThreshold * 1.3)}`;
+    e.currentTarget.style.setProperty("--opacity", newOpacity);
+  }
+  function resetSwipeOpacity({ currentTarget }: Toast.SwipeEvent) {
+    currentTarget.style.setProperty("--opacity", null);
+
+    currentTarget.classList.add("data-[swipe=cancel]:transition");
+    currentTarget.addEventListener(
+      "transitionend",
+      () => {
+        currentTarget.classList.remove("data-[swipe=cancel]:transition");
+      },
+      { once: true },
+    );
+  }
+
+  return (
+    <Flipped
+      flipId={id}
+      key={id}
+      className="animate-slide-left animate-function-ease-out"
+      scale
+      translate
+    >
+      {/* todo - tabindex on mobile, only the last toast should be focusable */}
+      <Toast.Root
+        duration={!isStacked || isLast ? duration : Infinity}
+        onOpenChange={(isToastOpen) => {
+          if (isToastOpen) return;
+          toastStackStore.removeToast(id);
+        }}
+        onSwipeMove={setSwipeOpacity}
+        onSwipeCancel={resetSwipeOpacity}
+        style={{ "--offset": toastOffset } as CSSProperties}
+        className={tw(
+          className,
+          "h-fit w-full transition-opacity duration-300 shadow-around sa-o-10 sa-r-0.5",
+          "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
+          "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
+          isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
+          isStacked && !isLast && "pointer-events-none absolute h-full",
+          isStacked && !isLastThree && "opacity-0",
+        )}
+      >
+        <div
+          className={tw(
+            "h-full w-full overflow-hidden transition-opacity",
+            isStacked && !isLast && "opacity-0",
+          )}
+        >
+          <Flipped
+            inverseFlipId={id}
+            scale
+          >
+            {content}
+          </Flipped>
+        </div>
+        {/* todo - progress bar */}
+      </Toast.Root>
+    </Flipped>
   );
 }
 
