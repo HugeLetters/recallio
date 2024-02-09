@@ -1,3 +1,4 @@
+import type { DistributedRecord } from "@/utils/type";
 import type { CSSProperties } from "react";
 import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
@@ -158,7 +159,10 @@ function defineAnimation(animationName: string) {
 
 function defineReversibleAnimation(
   animationName: string,
-  keyframes: Partial<Record<"from" | "to" | `${number}%`, CSSProperties & Record<string, string>>>,
+  keyframes: DistributedRecord<
+    "from" | "to" | `${number}%`,
+    CSSProperties & Record<string, string>
+  >,
 ) {
   const reverseName = `${animationName}-reverse`;
   function reverseStep(step: string) {

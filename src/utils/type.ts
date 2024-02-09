@@ -9,6 +9,7 @@ export type NextPageWithLayout<P = unknown, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactNode) => ReactNode;
 };
 
+export type DistributedRecord<K extends PropertyKey, V> = K extends K ? Record<K, V> : never;
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
 export type TransformType<O, K extends keyof O, T> = Omit<StrictOmit<O, K> & Record<K, T>, never>;
 export type Nullish<T> = T | null | undefined;
