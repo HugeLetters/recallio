@@ -81,11 +81,11 @@ function ToastContainer() {
                 onSwipeCancel={({ currentTarget }) => {
                   currentTarget.style.setProperty("--opacity", null);
 
-                  currentTarget.classList.add("data-[swipe=cancel]:transition-transform");
+                  currentTarget.classList.add("data-[swipe=cancel]:transition");
                   currentTarget.addEventListener(
                     "transitionend",
                     () => {
-                      currentTarget.classList.remove("data-[swipe=cancel]:transition-transform");
+                      currentTarget.classList.remove("data-[swipe=cancel]:transition");
                     },
                     { once: true },
                   );
@@ -98,7 +98,7 @@ function ToastContainer() {
                 className={tw(
                   className,
                   "h-fit w-full transition-opacity shadow-around sa-o-10 sa-r-0.5",
-                  "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)]",
+                  "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
                   "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
                   !isStackOpen && "-bottom-[var(--offset)] -left-[var(--offset)]",
                   // todo - these appear over the last toast when removing themselves automatically
@@ -168,6 +168,7 @@ class ToastStackStore {
 }
 const toastStackStore = new ToastStackStore();
 
+// todo - test other toast styles and how they fit together
 export function errorToast(error: ReactNode) {
   return toastStackStore.addToast(
     <Toast.Close

@@ -18,8 +18,10 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
     <NativeFlipped
       onAppear={(element, index, decisionData) => {
         if (classList) {
-          element.classList.add(...classList);
           element.style.opacity = "";
+          // we have to trigger a reflow here due to how flip library works with opacity
+          element.offsetHeight;
+          element.classList.add(...classList);
         }
         onAppear?.(element, index, decisionData);
       }}
