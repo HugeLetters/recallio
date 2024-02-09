@@ -2,6 +2,7 @@ import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
+import { errorToast } from "@/components/Toast";
 import {
   AutoresizableInput,
   Button,
@@ -46,7 +47,6 @@ import {
   type Control,
   type UseFormRegisterReturn,
 } from "react-hook-form";
-import { toast } from "react-toastify";
 import Checkmark from "~icons/custom/checkmark";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
@@ -460,7 +460,7 @@ function CategoryList({ control }: CategoryListProps) {
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
           if (isAtCategoryLimit) {
-            return toast.error(`You can't add more than ${categoriesLimit} categories`);
+            return errorToast(`You can't add more than ${categoriesLimit} categories`);
           }
           open();
         }}
@@ -504,7 +504,7 @@ function CategoryList({ control }: CategoryListProps) {
         </Toolbar.Root>
         <Dialog.Portal>
           <DialogOverlay className="flex justify-center">
-            <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-out">
+            <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-in-reverse">
               <CategorySearch
                 enabled={isOpen}
                 canAddCategories={!isAtCategoryLimit}

@@ -62,7 +62,7 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
       {children}
       {mounted
         ? createPortal(
-            <Transition outClassName="animate-fade-out">
+            <Transition outClassName="animate-fade-in-reverse">
               {!!stack.length || show ? (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
               ) : null}

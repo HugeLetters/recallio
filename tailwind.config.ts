@@ -1,21 +1,24 @@
+import type { CSSProperties } from "react";
 import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
 
 const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
-
 const animationDuration = "--tw-animate-duration";
 const animationFunction = "--tw-animate-timing";
-const slideUp = "slide-up";
-const slideDown = "slide-down";
-const slideLeft = "slide-left";
-const fadeIn = "fade-in";
-const fadeOut = "fade-out";
-const scaleIn = "scale-in";
-const scaleOut = "scale-out";
 
 const appRedColor = defineColor(0, 39);
+const slideUp = defineReversibleAnimation("slide-up", {
+  from: { translate: "0 70%", opacity: "0" },
+});
+const slideLeft = defineReversibleAnimation("slide-left", {
+  from: { translate: "30% 0", opacity: "0" },
+});
+const fadeIn = defineReversibleAnimation("fade-in", { from: { opacity: "0" } });
+const scaleIn = defineReversibleAnimation("scale-in", { from: { scale: "0.7", opacity: "0" } });
+const expandX = defineReversibleAnimation("expand-x", { from: { scale: "0 1" } });
+
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
@@ -30,37 +33,18 @@ export default {
         },
       },
       animation: {
-        ...defineAnimation(slideUp),
-        ...defineAnimation(slideDown),
-        ...defineAnimation(fadeIn),
-        ...defineAnimation(fadeOut),
-        ...defineAnimation(scaleIn),
-        ...defineAnimation(scaleOut),
-        ...defineAnimation(slideLeft),
+        ...slideUp.animation,
+        ...slideLeft.animation,
+        ...fadeIn.animation,
+        ...scaleIn.animation,
+        ...expandX.animation,
       },
       keyframes: {
-        [slideUp]: {
-          "0%": { translate: "0 100%", opacity: "0" },
-          "100%": { translate: "0 0" },
-        },
-        [slideDown]: {
-          "0%": { translate: "0 0", opacity: "0" },
-          "100%": { translate: "0 100%" },
-        },
-        [slideLeft]: {
-          "0%": { translate: "100% 0", opacity: "0" },
-          "100%": { translate: "0 0" },
-        },
-        [fadeIn]: { "0%": { opacity: "0" } },
-        [fadeOut]: { "100%": { opacity: "0" } },
-        [scaleIn]: {
-          "0%": { scale: "0.7", opacity: "0" },
-          "100%": { scale: "1" },
-        },
-        [scaleOut]: {
-          "0%": { scale: "1" },
-          "100%": { scale: "0.7", opacity: "0" },
-        },
+        ...slideUp.keyframes,
+        ...slideLeft.keyframes,
+        ...fadeIn.keyframes,
+        ...scaleIn.keyframes,
+        ...expandX.keyframes,
       },
     },
   },
@@ -144,7 +128,7 @@ export default {
             };
           },
         },
-        { values: { "ease-out": "cubic-bezier(.32,.52,.36,.99)" } },
+        { values: { "ease-out": "cubic-bezier(.32,.52,.36,.99)", linear: "linear" } },
       );
       matchUtilities(
         {
@@ -169,6 +153,33 @@ export default {
 function defineAnimation(animationName: string) {
   return {
     [animationName]: `${animationName} var(${animationDuration}, 200ms) var(${animationFunction}, ease-in-out)`,
+  };
+}
+
+function defineReversibleAnimation(
+  animationName: string,
+  keyframes: Partial<Record<"from" | "to" | `${number}%`, CSSProperties & Record<string, string>>>,
+) {
+  const reverseName = `${animationName}-reverse`;
+  function reverseStep(step: string) {
+    if (step === "to") return "from";
+    if (step === "from") return "to";
+
+    const match = step.match(/\d+(?=%$)/);
+    if (!match) return step;
+
+    const [percentage] = match;
+    return `${100 - +percentage}%`;
+  }
+
+  return {
+    animation: { ...defineAnimation(animationName), ...defineAnimation(reverseName) },
+    keyframes: {
+      [animationName]: keyframes,
+      [reverseName]: Object.fromEntries(
+        Object.entries(keyframes).map(([step, transform]) => [reverseStep(step), transform]),
+      ),
+    },
   };
 }
 

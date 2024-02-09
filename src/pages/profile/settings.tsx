@@ -280,7 +280,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
         <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
             <Dialog.Content
-              className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in"
+              className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse motion-safe:animate-scale-in"
               asChild
             >
               <form

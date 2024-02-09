@@ -115,7 +115,7 @@ function AttachedImage({ image }: AttachedImageProps) {
           </Dialog.Trigger>
           <Dialog.Portal>
             <DialogOverlay className="flex items-center justify-center">
-              <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
+              <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-in-reverse">
                 <Dialog.Close
                   className="flex"
                   aria-label="Close full image view"
@@ -231,6 +231,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       onOpenChange={(open) => {
         clearTimeout(timeoutRef.current);
         if (!open) {
+          // todo - causes flicker when closing modal
           setEnabled(false);
           return;
         }
@@ -243,7 +244,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       <Dialog.Portal>
         <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
-            <Dialog.Content className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in">
+            <Dialog.Content className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse motion-safe:animate-scale-in">
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
@@ -268,7 +269,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                   }}
                   style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
                   className={tw(
-                    "relative overflow-hidden bg-app-red-500 font-semibold text-white after:absolute after:inset-0 after:animate-slide-left after:bg-white/50 after:animate-reverse after:animate-duration-[var(--duration)]",
+                    "relative overflow-hidden bg-app-red-500 font-semibold text-white after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)]",
                     enabled ? "after:content-none" : "disabled",
                   )}
                 >

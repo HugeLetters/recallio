@@ -44,6 +44,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
     >
       {isOpen ? (
         <>
+          {/* todo - maybe this can be animated out */}
           {createPortal(
             <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
             document.body,
@@ -152,7 +153,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
-          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-down">
+          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse">
             <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}

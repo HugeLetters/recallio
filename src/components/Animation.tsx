@@ -11,6 +11,7 @@ export type FlippedProps = ComponentPropsWithoutRef<typeof NativeFlipped> & {
   /** Put your animation class here */
   className?: string;
 };
+// todo - maybe add option to just define in/out classes
 export function Flipped({ children, className, onAppear, onExit, ...props }: FlippedProps) {
   const classList = getClassList(className);
   return (
