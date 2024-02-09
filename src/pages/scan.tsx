@@ -1,5 +1,5 @@
 import { Layout, selectionAtom } from "@/components/Layout";
-import { errorToast } from "@/components/Toast";
+import { toast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
 import { tw } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -200,7 +200,7 @@ function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
       .catch((e) => {
         console.error(e);
         setState("stopped");
-        errorToast("There was an error trying to start the scanner.");
+        toast.error("There was an error trying to start the scanner.");
       });
   }
 

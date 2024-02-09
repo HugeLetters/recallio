@@ -185,20 +185,30 @@ class ToastStackStore {
   };
 }
 const toastStackStore = new ToastStackStore();
-
-// todo - test other toast styles and how they fit together
-export function errorToast(error: ReactNode) {
-  return toastStackStore.addToast(
-    <Toast.Close
-      aria-label="Close notification"
-      className="w-full break-words p-4 text-app-red-550"
-    >
-      <Toast.Description>{error}</Toast.Description>
-    </Toast.Close>,
-    { className: "bg-app-red-100 rounded-xl" },
+function useToastStack() {
+  return useSyncExternalStore(
+    toastStackStore.subscribe,
+    toastStackStore.getSnapshot,
+    toastStackStore.getSnapshot,
   );
 }
 
-export function closeToast(id: Toast["id"]) {
-  toastStackStore.removeToast(id);
+// todo - test other toast styles and how they fit together
+export const toast = {
+  error(error: string) {
+    return toastStackStore.addToast(
+      <Toast.Close
+        aria-label="Close notification"
+        className="w-full break-words p-4 text-app-red-550"
+      >
+        <Toast.Description>{error}</Toast.Description>
+      </Toast.Close>,
+      { className: "bg-app-red-100 rounded-xl" },
+    );
+  },
+  remove(id: ToastData["id"]) {
+    toastStackStore.removeToast(id);
+  },
+};
+
 }

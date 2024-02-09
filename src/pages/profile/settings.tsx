@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { useLoadingIndicator } from "@/components/Loading";
-import { errorToast } from "@/components/Toast";
+import { toast, toastthree } from "@/components/Toast";
 import {
   Button,
   DialogOverlay,
@@ -92,7 +92,7 @@ function UserImage({ user }: UserImageProps) {
   });
 
   const { mutate: remove, isLoading } = api.user.deleteImage.useMutation({
-    onError: (error) => errorToast(error.message),
+    onError: (error) => toast.error(error.message),
     onSettled: syncUserImage,
   });
   useLoadingIndicator(isUploading || isLoading, 300);

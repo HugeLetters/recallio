@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
-import { errorToast } from "@/components/Toast";
+import { toast } from "@/components/Toast";
 import {
   AutoresizableInput,
   Button,
@@ -460,7 +460,8 @@ function CategoryList({ control }: CategoryListProps) {
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
           if (isAtCategoryLimit) {
-            return errorToast(`You can't add more than ${categoriesLimit} categories`);
+            toast.error(`You can't add more than ${categoriesLimit} categories`);
+            return;
           }
           open();
         }}
