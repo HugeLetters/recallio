@@ -109,7 +109,7 @@ function ToastSlot({
       scale
       translate
     >
-      {/* todo - tabindex on mobile, only the last toast should be focusable */}
+      {/* todo - when stacked only last toast should be focusable */}
       <Toast.Root
         duration={!isStacked || isLast ? duration : Infinity}
         onOpenChange={(isToastOpen) => {
@@ -121,7 +121,7 @@ function ToastSlot({
         style={{ "--offset": toastOffset } as CSSProperties}
         className={tw(
           className,
-          "h-fit w-full transition-opacity duration-300 shadow-around sa-o-10 sa-r-0.5",
+          "h-fit w-full transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
           "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
           "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
           isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
@@ -193,8 +193,18 @@ function useToastStack() {
   );
 }
 
-// todo - test other toast styles and how they fit together
 export const toast = {
+  info(message: string) {
+    return toastStackStore.addToast(
+      <Toast.Close
+        aria-label="Close notification"
+        className="w-full p-4"
+      >
+        <Toast.Description>{message}</Toast.Description>
+      </Toast.Close>,
+      { className: "bg-white rounded-xl" },
+    );
+  },
   error(error: string) {
     return toastStackStore.addToast(
       <Toast.Close

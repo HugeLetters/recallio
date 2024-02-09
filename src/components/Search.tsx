@@ -154,7 +154,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
           <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse">
-            <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
+            <Dialog.Title className="mb-6 text-xl font-semibold">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
               spring={{ stiffness: 700, overshootClamping: true }}

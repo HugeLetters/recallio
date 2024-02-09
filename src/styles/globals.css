@@ -4,7 +4,9 @@
 
 @layer base {
   html {
+    --font-lato: Lato;
     font-family: theme("fontFamily.lato");
+    color: theme("colors.lime.950");
   }
 
   button,

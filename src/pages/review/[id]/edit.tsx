@@ -560,6 +560,7 @@ function CategorySearch({
   const isSearchCategoryPresent =
     includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
+  // todo - allow to add categories from input on enter!
   return (
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">

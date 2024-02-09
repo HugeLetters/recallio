@@ -1,5 +1,6 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
 import { tw } from "@/utils";
+import { lato } from "@/utils/font";
 import { getQueryParam, setQueryParam } from "@/utils/query";
 import type { StrictOmit } from "@/utils/type";
 import { Overlay, Root } from "@radix-ui/react-dialog";
@@ -196,8 +197,9 @@ export const DialogOverlay = forwardRef<
       ref={ref}
       {...props}
       className={tw(
-        "fixed inset-0 z-10 animate-fade-in bg-black/40 data-[state=closed]:animate-fade-in-reverse",
+        "fixed inset-0 z-10 animate-fade-in bg-black/40 font-lato data-[state=closed]:animate-fade-in-reverse",
         className,
+        lato.variable,
       )}
     >
       {children}
