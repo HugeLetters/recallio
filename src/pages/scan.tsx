@@ -1,4 +1,5 @@
 import { Layout, selectionAtom } from "@/components/Layout";
+import { errorToast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
 import { tw } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -7,7 +8,6 @@ import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from
 import { useAtom } from "jotai";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
-import { toast } from "react-toastify";
 
 import SearchIcon from "~icons/iconamoon/search";
 
@@ -200,7 +200,7 @@ function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
       .catch((e) => {
         console.error(e);
         setState("stopped");
-        toast.error("There was an error trying to start the scanner.");
+        errorToast("There was an error trying to start the scanner.");
       });
   }
 
