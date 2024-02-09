@@ -30,21 +30,21 @@ function ToastContainer() {
     toastStackStore.getSnapshot,
   );
 
-  const [isStackOpen, setIsStackOpen] = useState(false);
+  const [isStacked, setIsStacked] = useState(true);
   const hasMouse = useHasMouse();
   const toastViewportHandlers: ComponentPropsWithoutRef<"ol"> = hasMouse
     ? {
-        onMouseEnter: () => setIsStackOpen(true),
+        onMouseEnter: () => setIsStacked(false),
         onMouseLeave: ({ currentTarget }) => {
           if (currentTarget.contains(document.activeElement)) return;
-          setIsStackOpen(false);
+          setIsStacked(true);
         },
-        onFocusCapture: () => setIsStackOpen(true),
-        onBlur: hasFocusWithin(setIsStackOpen),
+        onFocusCapture: () => setIsStacked(false),
+        onBlur: hasFocusWithin((focused) => setIsStacked(!focused)),
       }
     : {};
 
-  const flipKey = useMemo(() => ({ isOpen: isStackOpen, toasts }), [isStackOpen, toasts]);
+  const flipKey = useMemo(() => ({ isStacked, toasts }), [isStacked, toasts]);
   return (
     <Flipper
       flipKey={flipKey}
@@ -53,7 +53,7 @@ function ToastContainer() {
       <Toast.Viewport
         className={tw(
           "fixed right-2 top-2 z-10 w-72 before:absolute before:-inset-2",
-          isStackOpen && "flex flex-col-reverse items-end gap-2",
+          !isStacked && "flex flex-col-reverse items-end gap-2",
         )}
         {...toastViewportHandlers}
       >
@@ -92,7 +92,7 @@ function ToastContainer() {
                 }}
                 style={
                   {
-                    "--offset": !isStackOpen ? `${(toasts.length - 1 - index) / 2}rem` : undefined,
+                    "--offset": isStacked ? `${(toasts.length - 1 - index) / 2}rem` : undefined,
                   } as CSSProperties
                 }
                 className={tw(
@@ -100,16 +100,16 @@ function ToastContainer() {
                   "h-fit w-full transition-opacity duration-300 shadow-around sa-o-10 sa-r-0.5",
                   "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
                   "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
-                  !isStackOpen && "-bottom-[var(--offset)] -left-[var(--offset)]",
-                  !isStackOpen && !isLast && "pointer-events-none absolute h-full",
-                  !isStackOpen && !isLastThree && "opacity-0",
+                  isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
+                  isStacked && !isLast && "pointer-events-none absolute h-full",
+                  isStacked && !isLastThree && "opacity-0",
                 )}
-                duration={isStackOpen || isLast ? duration : Infinity}
+                duration={!isStacked || isLast ? duration : Infinity}
               >
                 <div
                   className={tw(
                     "h-full w-full overflow-hidden transition-opacity",
-                    !isStackOpen && !isLast && "opacity-0",
+                    isStacked && !isLast && "opacity-0",
                   )}
                 >
                   <Flipped
@@ -130,12 +130,12 @@ function ToastContainer() {
 }
 
 type ToastOptions = { className?: string; duration?: number };
-type Toast = { id: string; content: ReactNode } & ToastOptions;
+type ToastData = { id: string; content: ReactNode } & ToastOptions;
 type Subscription = () => void;
 type Unsubscribe = () => void;
 type Subscribe = (subscription: Subscription) => Unsubscribe;
 class ToastStackStore {
-  private toastStack: Toast[] = [];
+  private toastStack: ToastData[] = [];
   private subscriptions = new Set<Subscription>();
   private notify() {
     for (const subscription of this.subscriptions) {
@@ -150,7 +150,7 @@ class ToastStackStore {
 
     return id;
   }
-  removeToast(id: Toast["id"]) {
+  removeToast(id: ToastData["id"]) {
     this.toastStack = this.toastStack.filter((toast) => toast.id !== id);
     this.notify();
   }
