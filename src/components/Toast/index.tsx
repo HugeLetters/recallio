@@ -97,7 +97,7 @@ function ToastContainer() {
                 }
                 className={tw(
                   className,
-                  "h-fit w-full transition-opacity shadow-around sa-o-10 sa-r-0.5",
+                  "h-fit w-full transition-opacity duration-300 shadow-around sa-o-10 sa-r-0.5",
                   "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
                   "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
                   !isStackOpen && "-bottom-[var(--offset)] -left-[var(--offset)]",

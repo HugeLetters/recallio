@@ -1,0 +1,35 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 1366d141dd80a8491c9635239950080c1633f8e2..c8fd5d87b685af7dd878bd2a638782c6115827b4 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -54,8 +54,10 @@ const $054eb8030ebde76e$export$f5d03d415824e0e = (props)=>{
+         toastCount: toastCount,
+         viewport: viewport,
+         onViewportChange: setViewport,
+-        onToastAdd: $eyrYI$useCallback(()=>setToastCount((prevCount)=>prevCount + 1
+-            )
++        onToastAdd: $eyrYI$useCallback(()=>{
++            isClosePausedRef.current = false;
++            setToastCount((prevCount)=>prevCount + 1)
++        }
+         , []),
+         onToastRemove: $eyrYI$useCallback(()=>setToastCount((prevCount)=>prevCount - 1
+             )
+@@ -351,8 +353,8 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+         onClose();
+     });
+     const startTimer = $eyrYI$useCallback((duration)=>{
+-        if (!duration || duration === Infinity) return;
+         window.clearTimeout(closeTimerRef.current);
++        if (!duration || duration === Infinity) return;
+         closeTimerStartTimeRef.current = new Date().getTime();
+         closeTimerRef.current = window.setTimeout(handleClose, duration);
+     }, [
+@@ -388,6 +390,7 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+     // we include `open` in deps because closed !== unmounted when animating
+     // so it could reopen before being completely unmounted
+     $eyrYI$useEffect(()=>{
++        closeTimerRemainingTimeRef.current = duration1;
+         if (open && !context.isClosePausedRef.current) startTimer(duration1);
+     }, [
+         open,
