@@ -47,7 +47,7 @@ function ToastContainer() {
     >
       <Toast.Viewport
         className={tw(
-          "fixed right-2 top-2 z-10 w-72 before:absolute before:-inset-2",
+          "fixed right-2 top-2 z-10 w-72 outline-none before:absolute before:-inset-2",
           !isStacked && "flex flex-col-reverse items-end gap-2",
         )}
         {...toastViewportHandlers}
@@ -121,7 +121,7 @@ function ToastSlot({
         style={{ "--offset": toastOffset } as CSSProperties}
         className={tw(
           className,
-          "h-fit w-full transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
+          "flex h-fit w-full flex-col overflow-hidden transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
           "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
           "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
           isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
@@ -131,7 +131,7 @@ function ToastSlot({
       >
         <div
           className={tw(
-            "h-full w-full overflow-hidden transition-opacity",
+            "w-full grow overflow-hidden transition-opacity",
             isStacked && !isLast && "opacity-0",
           )}
         >
@@ -194,7 +194,7 @@ function useToastStack() {
 }
 
 export const toast = {
-  info(message: string) {
+  info(message: ReactNode) {
     return toastStackStore.addToast(
       <Toast.Close
         aria-label="Close notification"
@@ -205,7 +205,7 @@ export const toast = {
       { className: "bg-white rounded-xl" },
     );
   },
-  error(error: string) {
+  error(error: ReactNode) {
     return toastStackStore.addToast(
       <Toast.Close
         aria-label="Close notification"
