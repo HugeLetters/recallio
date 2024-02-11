@@ -119,12 +119,18 @@ export default {
       matchUtilities(
         {
           "animation-play-state"(value) {
-            return {
-              animationPlayState: String(value),
-            };
+            return { animationPlayState: String(value) };
           },
         },
         { values: { play: "running", pause: "paused" } },
+      );
+      matchUtilities(
+        {
+          "animation-fill-mode"(value) {
+            return { animationFillMode: String(value) };
+          },
+        },
+        { values: { none: "none", forward: "forwards", backward: "backwards", both: "both" } },
       );
       matchUtilities(
         {
