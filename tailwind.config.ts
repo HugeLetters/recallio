@@ -6,10 +6,9 @@ import plugin from "tailwindcss/plugin";
 
 const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
-const animationDuration = "--tw-animate-duration";
-const animationFunction = "--tw-animate-timing";
 
 const appRedColor = defineColor(0, 39);
+
 const slideUp = defineReversibleAnimation("slide-up", {
   from: { translate: "0 70%", opacity: "0" },
 });
@@ -19,6 +18,7 @@ const slideLeft = defineReversibleAnimation("slide-left", {
 const fadeIn = defineReversibleAnimation("fade-in", { from: { opacity: "0" } });
 const scaleIn = defineReversibleAnimation("scale-in", { from: { scale: "0.7", opacity: "0" } });
 const expandX = defineReversibleAnimation("expand-x", { from: { scale: "0 1" } });
+const animations = groupAnimations(slideUp, slideLeft, fadeIn, scaleIn, expandX);
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -33,20 +33,8 @@ export default {
           red: appRedColor,
         },
       },
-      animation: {
-        ...slideUp.animation,
-        ...slideLeft.animation,
-        ...fadeIn.animation,
-        ...scaleIn.animation,
-        ...expandX.animation,
-      },
-      keyframes: {
-        ...slideUp.keyframes,
-        ...slideLeft.keyframes,
-        ...fadeIn.keyframes,
-        ...scaleIn.keyframes,
-        ...expandX.keyframes,
-      },
+      animation: { ...animations.animation },
+      keyframes: { ...animations.keyframes },
     },
   },
   plugins: [
@@ -115,7 +103,7 @@ export default {
       matchUtilities(
         {
           "animate-duration"(value) {
-            return { [animationDuration]: String(value) };
+            return { animationDuration: String(value) };
           },
         },
         { values: theme("transitionDuration") },
@@ -123,13 +111,20 @@ export default {
       matchUtilities(
         {
           "animate-function"(value) {
-            return {
-              [animationFunction]: String(value),
-              animationTimingFunction: String(value),
-            };
+            return { animationTimingFunction: String(value) };
           },
         },
         { values: { "ease-out": "cubic-bezier(.32,.52,.36,.99)", linear: "linear" } },
+      );
+      matchUtilities(
+        {
+          "animation-play-state"(value) {
+            return {
+              animationPlayState: String(value),
+            };
+          },
+        },
+        { values: { play: "running", pause: "paused" } },
       );
       matchUtilities(
         {
@@ -151,20 +146,22 @@ export default {
   ],
 } satisfies Config;
 
-function defineAnimation(animationName: string) {
+type Keyframes = DistributedRecord<
+  "from" | "to" | `${number}%`,
+  CSSProperties & Record<string, string>
+>;
+type Animation = {
+  animation: Record<string, string>;
+  keyframes: Record<string, Keyframes>;
+};
+function defineAnimation(animationName: string, keyframes: Keyframes): Animation {
   return {
-    [animationName]: `${animationName} var(${animationDuration}, 200ms) var(${animationFunction}, ease-in-out)`,
+    animation: { [animationName]: `${animationName} 200ms ease-in-out` },
+    keyframes: { [animationName]: keyframes },
   };
 }
 
-function defineReversibleAnimation(
-  animationName: string,
-  keyframes: DistributedRecord<
-    "from" | "to" | `${number}%`,
-    CSSProperties & Record<string, string>
-  >,
-) {
-  const reverseName = `${animationName}-reverse`;
+function defineReversibleAnimation(animationName: string, keyframes: Keyframes): Animation {
   function reverseStep(step: string) {
     if (step === "to") return "from";
     if (step === "from") return "to";
@@ -176,14 +173,27 @@ function defineReversibleAnimation(
     return `${100 - +percentage}%`;
   }
 
+  const animation = defineAnimation(animationName, keyframes);
+  const reverseAnimation = defineAnimation(
+    `${animationName}-reverse`,
+    Object.fromEntries(
+      Object.entries(keyframes).map(([step, transform]) => [reverseStep(step), transform]),
+    ),
+  );
   return {
-    animation: { ...defineAnimation(animationName), ...defineAnimation(reverseName) },
-    keyframes: {
-      [animationName]: keyframes,
-      [reverseName]: Object.fromEntries(
-        Object.entries(keyframes).map(([step, transform]) => [reverseStep(step), transform]),
-      ),
-    },
+    animation: { ...animation.animation, ...reverseAnimation.animation },
+    keyframes: { ...animation.keyframes, ...reverseAnimation.keyframes },
+  };
+}
+
+function groupAnimations(...animations: Animation[]): Animation {
+  return {
+    animation: Object.fromEntries(
+      animations.flatMap((animation) => Object.entries(animation.animation)),
+    ),
+    keyframes: Object.fromEntries(
+      animations.flatMap((animation) => Object.entries(animation.keyframes)),
+    ),
   };
 }
 
