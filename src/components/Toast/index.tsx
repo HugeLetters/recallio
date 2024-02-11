@@ -105,7 +105,7 @@ function ToastSlot({
     <Flipped
       flipId={id}
       key={id}
-      className="animate-slide-left animate-function-ease-out"
+      className="group animate-slide-left animate-function-ease-out"
       scale
       translate
     >
@@ -121,7 +121,7 @@ function ToastSlot({
         style={{ "--offset": toastOffset } as CSSProperties}
         className={tw(
           className,
-          "flex h-fit w-full flex-col overflow-hidden transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
+          "h-fit w-full overflow-hidden transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
           "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
           "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
           isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
@@ -131,7 +131,7 @@ function ToastSlot({
       >
         <div
           className={tw(
-            "w-full grow overflow-hidden transition-opacity",
+            "relative w-full grow overflow-hidden transition-opacity",
             isStacked && !isLast && "opacity-0",
           )}
         >
@@ -141,8 +141,18 @@ function ToastSlot({
           >
             {content}
           </Flipped>
+          {isLast && duration && duration !== Infinity && (
+            <div
+              style={{ "--duration": `${duration}ms` } as CSSProperties}
+              className={tw(
+                "absolute bottom-0 h-1 w-full origin-left bg-black/10",
+                "animate-expand-x-reverse animate-duration-[var(--duration)] animate-function-linear animation-fill-mode-forward",
+                "transition-opacity duration-300 group-data-[transition=out]:opacity-0",
+                !isStacked && "opacity-0 animation-play-state-pause",
+              )}
+            />
+          )}
         </div>
-        {/* todo - progress bar */}
       </Toast.Root>
     </Flipped>
   );
