@@ -105,11 +105,12 @@ function ToastSlot({
     <Flipped
       flipId={id}
       key={id}
-      className="group animate-slide-left animate-function-ease-out"
+      className="animate-slide-left animate-function-ease-out"
       scale
       translate
     >
       {/* todo - when stacked only last toast should be focusable */}
+      {/* todo - maybe I could retain elapsed duration when a new toast is added? */}
       <Toast.Root
         duration={!isStacked || isLast ? duration : Infinity}
         onOpenChange={(isToastOpen) => {
@@ -121,7 +122,7 @@ function ToastSlot({
         style={{ "--offset": toastOffset } as CSSProperties}
         className={tw(
           className,
-          "h-fit w-full overflow-hidden transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
+          "group h-fit w-full overflow-hidden transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
           "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
           "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
           isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
@@ -147,7 +148,7 @@ function ToastSlot({
               className={tw(
                 "absolute bottom-0 h-1 w-full origin-left bg-black/10",
                 "animate-expand-x-reverse animate-duration-[var(--duration)] animate-function-linear animation-fill-mode-forward",
-                "transition-opacity duration-300 group-data-[transition=out]:opacity-0",
+                "transition-opacity duration-300 group-data-[state=closed]:opacity-0",
                 !isStacked && "opacity-0 animation-play-state-pause",
               )}
             />
