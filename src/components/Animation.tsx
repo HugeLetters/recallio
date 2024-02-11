@@ -30,15 +30,10 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
         element.classList.add(...classList);
         element.setAttribute(dataTransitionName, "in");
 
-        const cleanup = function () {
+        onSelfAnimationEnd(element, () => {
           element.classList.remove(...classList);
           element.removeAttribute(dataTransitionName);
-
-          element.removeEventListener("animationcancel", cleanup);
-          element.removeEventListener("animationend", cleanup);
-        };
-        element.addEventListener("animationend", cleanup, { once: true });
-        element.addEventListener("animationcancel", cleanup, { once: true });
+        });
       }}
       onExit={(element, index, remove, decisionData) => {
         onExit?.(element, index, remove, decisionData);
@@ -46,7 +41,7 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
 
         element.classList.add(...classList, "animate-reverse");
         element.setAttribute(dataTransitionName, "out");
-        element.addEventListener("animationend", remove, { once: true });
+        onSelfAnimationEnd(element, remove);
         element.style.pointerEvents = "none";
       }}
       {...props}
@@ -85,10 +80,9 @@ export function Transition({
         if (!isExternalElement(node)) continue;
 
         node.classList.add(...inClassList);
-        const cleanup = function () {
+        onSelfAnimationEnd(node, () => {
           node.classList.remove(...inClassList);
-        };
-        node.addEventListener("animationend", cleanup, { once: true });
+        });
       }
     }
 
@@ -102,9 +96,7 @@ export function Transition({
         node.setAttribute(markerAttributeName, id);
 
         target.insertBefore(node, nextSibling);
-        node.addEventListener("animationend", () => {
-          node.remove();
-        });
+        onSelfAnimationEnd(node, () => node.remove());
       }
     }
 
@@ -135,4 +127,16 @@ export function Transition({
 
 function getClassList(classNames?: string) {
   return classNames?.split(" ").filter(Boolean);
+}
+
+function onSelfAnimationEnd(element: Element, listener: (event: Event) => void) {
+  function cleanup(event: Event) {
+    if (event.target !== element) return;
+    listener(event);
+    element.removeEventListener("animationend", cleanup);
+    element.removeEventListener("animationcancel", cleanup);
+  }
+
+  element.addEventListener("animationend", cleanup);
+  element.addEventListener("animationcancel", cleanup);
 }
