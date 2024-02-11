@@ -7,31 +7,47 @@ import {
 } from "react";
 import { Flipped as NativeFlipped } from "react-flip-toolkit";
 
+const dataTransitionName = "data-transition";
 export type FlippedProps = ComponentPropsWithoutRef<typeof NativeFlipped> & {
-  /** Put your animation class here */
+  /** These classes will be applied on in and out transitions. Out transition will also apply `animate-reverse` class */
   className?: string;
 };
 // todo - maybe add option to just define in/out classes
+/**
+ * You may detect if element is currently transitioning in or out with `data-transition` attribute with values `in | out`
+ */
 export function Flipped({ children, className, onAppear, onExit, ...props }: FlippedProps) {
   const classList = getClassList(className);
   return (
     <NativeFlipped
       onAppear={(element, index, decisionData) => {
-        if (classList) {
-          element.style.opacity = "";
-          // we have to trigger a reflow here due to how flip library works with opacity
-          element.offsetHeight;
-          element.classList.add(...classList);
-        }
         onAppear?.(element, index, decisionData);
+        if (!classList) return;
+
+        element.style.opacity = "";
+        // we have to trigger a reflow here due to how flip library works with opacity
+        element.offsetHeight;
+        element.classList.add(...classList);
+        element.setAttribute(dataTransitionName, "in");
+
+        const cleanup = function () {
+          element.classList.remove(...classList);
+          element.removeAttribute(dataTransitionName);
+
+          element.removeEventListener("animationcancel", cleanup);
+          element.removeEventListener("animationend", cleanup);
+        };
+        element.addEventListener("animationend", cleanup, { once: true });
+        element.addEventListener("animationcancel", cleanup, { once: true });
       }}
       onExit={(element, index, remove, decisionData) => {
-        if (classList) {
-          element.classList.add(...classList, "animate-reverse");
-          element.addEventListener("animationend", remove, { once: true });
-          element.style.pointerEvents = "none";
-        }
         onExit?.(element, index, remove, decisionData);
+        if (!classList) return remove();
+
+        element.classList.add(...classList, "animate-reverse");
+        element.setAttribute(dataTransitionName, "out");
+        element.addEventListener("animationend", remove, { once: true });
+        element.style.pointerEvents = "none";
       }}
       {...props}
     >
@@ -67,12 +83,12 @@ export function Transition({
 
       for (const node of addedNodes) {
         if (!isExternalElement(node)) continue;
-        const classList = inClassList.filter((className) => !node.classList.contains(className));
 
-        node.classList.add(...classList);
-        node.addEventListener("animationend", () => {
-          node.classList.remove(...classList);
-        });
+        node.classList.add(...inClassList);
+        const cleanup = function () {
+          node.classList.remove(...inClassList);
+        };
+        node.addEventListener("animationend", cleanup, { once: true });
       }
     }
 
