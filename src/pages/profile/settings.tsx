@@ -203,33 +203,34 @@ function LinkedAccounts() {
   return (
     <div>
       <p className="p-2 text-sm">Linked accounts</p>
-      <div className="flex flex-col overflow-hidden rounded-lg bg-neutral-100">
+      <div className="flex flex-col divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100">
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
-            <LabeledSwitch
-              key={provider}
-              className="w-full rounded-none capitalize not-[:first-child]:border-t-2 not-[:first-child]:border-t-neutral-400/10"
-              label={
-                <div className="flex items-center gap-2">
-                  <Icon className="h-full w-7" />
-                  <span>{provider}</span>
-                </div>
-              }
-              aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
-              checked={isLinked}
-              onCheckedChange={(value) => {
-                if (value) {
-                  // optimistic update
-                  trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
-                    return [...(providers ?? []), provider];
-                  });
-                  void signIn(provider);
-                } else {
-                  deleteAccount({ provider });
+            <div key={provider}>
+              <LabeledSwitch
+                className="capitalize"
+                label={
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-full w-7" />
+                    <span>{provider}</span>
+                  </div>
                 }
-              }}
-            />
+                aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+                checked={isLinked}
+                onCheckedChange={(value) => {
+                  if (value) {
+                    // optimistic update
+                    trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                      return [...(providers ?? []), provider];
+                    });
+                    void signIn(provider);
+                  } else {
+                    deleteAccount({ provider });
+                  }
+                }}
+              />
+            </div>
           );
         })}
       </div>
