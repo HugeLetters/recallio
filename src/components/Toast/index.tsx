@@ -100,10 +100,13 @@ function ToastSlot({
     });
   }
   const divRef = useRef<HTMLLIElement>(null);
-  useEffect(() => {
-    if (!divRef.current) return;
-    divRef.current.inert = isStacked && !isLast;
-  }, [isStacked, isLast]);
+  useEffect(
+    function setIsInert() {
+      if (!divRef.current) return;
+      divRef.current.inert = isStacked && !isLast;
+    },
+    [isStacked, isLast],
+  );
 
   return (
     <Flipped
