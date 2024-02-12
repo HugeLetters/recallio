@@ -42,6 +42,10 @@ export default {
       addVariant("selected", "&:is(:focus-within,:hover)");
       addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
       addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
+      addVariant("focus-visible-within", [
+        "&:has(:focus-visible)",
+        "@supports not selector(:has(*)) {&:focus-within}",
+      ]);
       matchVariant("not", (value) => `&:not(${value})`);
       matchVariant("nth", (value) => `&:nth-child(${value})`);
       matchVariant("nth-last", (value) => `&:nth-last-child(${value})`);
