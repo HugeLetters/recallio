@@ -2,6 +2,7 @@ import { hasFocusWithin, useHasMouse } from "@/hooks";
 import { tw } from "@/utils";
 import * as Toast from "@radix-ui/react-toast";
 import {
+  forwardRef,
   useMemo,
   useState,
   useSyncExternalStore,
@@ -11,7 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { Flipper } from "react-flip-toolkit";
-import { Flipped } from "../Animation";
+import { Flipped, onSelfTransitionEnd } from "../Animation";
 
 const swipeThreshold = 70;
 export function ToastProvider({ children }: PropsWithChildren) {
@@ -92,13 +93,9 @@ function ToastSlot({
     currentTarget.style.setProperty("--opacity", null);
 
     currentTarget.classList.add("data-[swipe=cancel]:transition");
-    currentTarget.addEventListener(
-      "transitionend",
-      () => {
-        currentTarget.classList.remove("data-[swipe=cancel]:transition");
-      },
-      { once: true },
-    );
+    onSelfTransitionEnd(currentTarget, () => {
+      currentTarget.classList.remove("data-[swipe=cancel]:transition");
+    });
   }
 
   return (
@@ -112,6 +109,7 @@ function ToastSlot({
       {/* todo - when stacked only last toast should be focusable */}
       {/* todo - maybe I could retain elapsed duration when a new toast is added? */}
       <Toast.Root
+        tabIndex={undefined}
         duration={!isStacked || isLast ? duration : Infinity}
         onOpenChange={(isToastOpen) => {
           if (isToastOpen) return;
@@ -122,12 +120,13 @@ function ToastSlot({
         style={{ "--offset": toastOffset } as CSSProperties}
         className={tw(
           className,
-          "group h-fit w-full overflow-hidden transition-opacity duration-300 shadow-around sa-o-15 sa-r-1",
+          "group h-fit w-full rounded-xl shadow-around sa-o-15 sa-r-1",
           "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
           "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
           isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
           isStacked && !isLast && "pointer-events-none absolute h-full",
           isStacked && !isLastThree && "opacity-0",
+          !isLastThree && "transition-opacity duration-300",
         )}
       >
         <div
@@ -158,6 +157,23 @@ function ToastSlot({
     </Flipped>
   );
 }
+
+type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
+const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
+  { children, className, ...props },
+  ref,
+) {
+  return (
+    <Toast.Close
+      ref={ref}
+      aria-label="Close notification"
+      className={tw(className, "w-full break-words p-4 outline-none")}
+      {...props}
+    >
+      {children}
+    </Toast.Close>
+  );
+});
 
 type ToastOptions = { className?: string; duration?: number };
 type ToastData = { id: string; content: ReactNode } & ToastOptions;
@@ -207,24 +223,18 @@ function useToastStack() {
 export const toast = {
   info(message: ReactNode) {
     return toastStackStore.addToast(
-      <Toast.Close
-        aria-label="Close notification"
-        className="w-full p-4"
-      >
+      <ToastClose>
         <Toast.Description>{message}</Toast.Description>
-      </Toast.Close>,
-      { className: "bg-white rounded-xl" },
+      </ToastClose>,
+      { className: "bg-white focus-visible-within:ring-2 ring-app-green" },
     );
   },
   error(error: ReactNode) {
     return toastStackStore.addToast(
-      <Toast.Close
-        aria-label="Close notification"
-        className="w-full break-words p-4 text-app-red-550"
-      >
+      <ToastClose className="text-app-red-550">
         <Toast.Description>{error}</Toast.Description>
-      </Toast.Close>,
-      { className: "bg-app-red-100 rounded-xl" },
+      </ToastClose>,
+      { className: "bg-app-red-100 focus-visible-within:ring-2 ring-app-red-500" },
     );
   },
   remove(id: ToastData["id"]) {
