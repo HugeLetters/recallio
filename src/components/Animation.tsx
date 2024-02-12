@@ -12,7 +12,6 @@ export type FlippedProps = ComponentPropsWithoutRef<typeof NativeFlipped> & {
   /** These classes will be applied on in and out transitions. Out transition will also apply `animate-reverse` class */
   className?: string;
 };
-// todo - maybe add option to just define in/out classes
 /**
  * You may detect if element is currently transitioning in or out with `data-transition` attribute with values `in | out`
  */
