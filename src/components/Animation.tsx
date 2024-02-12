@@ -129,7 +129,7 @@ function getClassList(classNames?: string) {
   return classNames?.split(" ").filter(Boolean);
 }
 
-function onSelfAnimationEnd(element: Element, listener: (event: Event) => void) {
+export function onSelfAnimationEnd(element: Element, listener: (event: Event) => void) {
   function cleanup(event: Event) {
     if (event.target !== element) return;
     listener(event);
@@ -139,4 +139,16 @@ function onSelfAnimationEnd(element: Element, listener: (event: Event) => void) 
 
   element.addEventListener("animationend", cleanup);
   element.addEventListener("animationcancel", cleanup);
+}
+
+export function onSelfTransitionEnd(element: HTMLElement, listener: (event: Event) => void) {
+  function cleanup(event: Event) {
+    if (event.target !== element) return;
+    listener(event);
+    element.removeEventListener("transitionend", cleanup);
+    element.removeEventListener("transitioncancel", cleanup);
+  }
+
+  element.addEventListener("transitionend", cleanup);
+  element.addEventListener("transitioncancel", cleanup);
 }
