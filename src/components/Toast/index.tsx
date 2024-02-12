@@ -10,6 +10,8 @@ import {
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
   type ReactNode,
+  useRef,
+  useEffect,
 } from "react";
 import { Flipper } from "react-flip-toolkit";
 import { Flipped, onSelfTransitionEnd } from "../Animation";
@@ -97,6 +99,11 @@ function ToastSlot({
       currentTarget.classList.remove("data-[swipe=cancel]:transition");
     });
   }
+  const divRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (!divRef.current) return;
+    divRef.current.inert = isStacked && !isLast;
+  }, [isStacked, isLast]);
 
   return (
     <Flipped
@@ -106,9 +113,9 @@ function ToastSlot({
       scale
       translate
     >
-      {/* todo - when stacked only last toast should be focusable */}
       {/* todo - maybe I could retain elapsed duration when a new toast is added? */}
       <Toast.Root
+        ref={divRef}
         tabIndex={undefined}
         duration={!isStacked || isLast ? duration : Infinity}
         onOpenChange={(isToastOpen) => {
