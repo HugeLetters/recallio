@@ -5,7 +5,14 @@ import type { ModelProps } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+  type ReactNode,
+  type FormEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import { Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
@@ -50,7 +57,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             document.body,
           )}
           {searchIcon}
-          <HeaderSearchControls
+          <DebouncedSearch
             value={search}
             setValue={setSearch}
             debounceRef={debouncedQuery}
@@ -75,24 +82,31 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   );
 }
 
-type HeaderSearchControlsProps = ModelProps<string> & {
+type DebouncedSearchProps = ModelProps<string> & {
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   onReset?: () => void;
   debounceRef: MutableRefObject<number | undefined>;
 };
-export function HeaderSearchControls({
+export function DebouncedSearch({
   value,
   setValue,
   onReset,
+  onSubmit = function (event) {
+    event.preventDefault();
+  },
   debounceRef,
-}: HeaderSearchControlsProps) {
+}: DebouncedSearchProps) {
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <>
+    <form
+      className="contents"
+      onSubmit={onSubmit}
+    >
       <input
-        // key helps refocus input when clear button is pressed
-        key={`${!!value}`}
         autoFocus
+        ref={inputRef}
         className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
         placeholder="Search"
         value={value}
@@ -105,21 +119,25 @@ export function HeaderSearchControls({
             setQueryParam({ router, key: SEARCH_QUERY_KEY, value: newValue });
           }, 300);
         }}
+        onSubmit={() => {
+          console.log("submit");
+        }}
       />
       <button
+        type="reset"
         aria-label="Reset search filter"
         className="ml-1"
         onClick={() => {
           onReset?.();
           setValue("");
-
           window.clearTimeout(debounceRef.current);
           setQueryParam({ router, key: SEARCH_QUERY_KEY, value: null });
+          inputRef.current?.focus();
         }}
       >
         <ResetIcon className="size-7" />
       </button>
-    </>
+    </form>
   );
 }
 
