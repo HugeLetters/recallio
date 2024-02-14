@@ -231,7 +231,6 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       onOpenChange={(open) => {
         clearTimeout(timeoutRef.current);
         if (!open) {
-          // todo - causes flicker when closing modal
           setEnabled(false);
           return;
         }
@@ -269,15 +268,22 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                   }}
                   style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
                   className={tw(
-                    "relative overflow-hidden bg-app-red-500 font-semibold text-white after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)]",
-                    enabled ? "after:content-none" : "disabled",
+                    "relative overflow-hidden bg-app-red-500 font-semibold text-white",
+                    // fill-mode forwards helps avoid flicker when closing the modal - since it resets back to disabled state
+                    "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)] after:animation-fill-mode-forward",
+                    !enabled && "disabled",
                   )}
                 >
                   Delete
                 </Button>
               </Dialog.Close>
               <Dialog.Close asChild>
-                <Button className="ghost font-semibold ">Cancel</Button>
+                <Button
+                  autoFocus
+                  className="ghost font-semibold"
+                >
+                  Cancel
+                </Button>
               </Dialog.Close>
             </Dialog.Content>
           </div>
