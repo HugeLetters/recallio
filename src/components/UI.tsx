@@ -56,11 +56,11 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
     <label className={tw("cursor-pointer", className)}>
       {children}
       <input
-        {...inputAttributes}
-        className="sr-only"
-        accept="image/*"
-        type="file"
         ref={ref}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        {...inputAttributes}
       />
     </label>
   );

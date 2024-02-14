@@ -115,8 +115,7 @@ function UserImage({ user }: UserImageProps) {
         )}
       </div>
       <ImageInput
-        // todo - if upload fails - cant select the same image again
-        isImageSet={true}
+        isImageSet={!!optimistic.value && optimistic.isActive}
         className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green"
         onChange={(e) => {
           const file = e.target.files?.item(0);
