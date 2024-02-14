@@ -1,7 +1,7 @@
 import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner, useLoadingIndicator } from "@/components/Loading";
-import { HeaderSearchControls, SEARCH_QUERY_KEY } from "@/components/Search";
+import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
 import { toast } from "@/components/Toast";
 import {
   AutoresizableInput,
@@ -560,14 +560,19 @@ function CategorySearch({
   const isSearchCategoryPresent =
     includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
 
-  // todo - allow to add categories from input on enter!
   return (
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="size-7 shrink-0" />
-        <HeaderSearchControls
+        <DebouncedSearch
           value={search}
           setValue={setSearch}
+          onSubmit={(e) => {
+            e.preventDefault();
+            // since this component is portalled submit event will propagate to the main form on this page
+            e.stopPropagation();
+            append(search);
+          }}
           debounceRef={debounceRef}
         />
       </div>
