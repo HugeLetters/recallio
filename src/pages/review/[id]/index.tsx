@@ -243,7 +243,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       <Dialog.Portal>
         <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
-            <Dialog.Content className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse motion-safe:animate-scale-in">
+            <Dialog.Content className="group flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse motion-safe:animate-scale-in">
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
@@ -269,9 +269,8 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                   style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
                   className={tw(
                     "relative overflow-hidden bg-app-red-500 font-semibold text-white",
-                    // fill-mode forwards helps avoid flicker when closing the modal - since it resets back to disabled state
-                    "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)] after:animation-fill-mode-forward",
-                    !enabled && "disabled",
+                    "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)] group-data-[state=closed]:after:content-none",
+                    enabled ? "after:content-none" : "disabled",
                   )}
                 >
                   Delete
