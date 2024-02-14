@@ -117,7 +117,6 @@ function ToastSlot({
       scale
       translate
     >
-      {/* todo - maybe I could retain elapsed duration when a new toast is added? */}
       <Toast.Root
         ref={divRef}
         tabIndex={undefined}
@@ -131,7 +130,7 @@ function ToastSlot({
         style={{ "--offset": toastOffset } as CSSProperties}
         className={tw(
           className,
-          "group h-fit w-full rounded-xl shadow-around sa-o-15 sa-r-1",
+          "group h-fit w-full overflow-hidden rounded-xl shadow-around sa-o-15 sa-r-1",
           "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
           "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
           isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
@@ -252,5 +251,3 @@ export const toast = {
     toastStackStore.removeToast(id);
   },
 };
-
-}

@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { useLoadingIndicator } from "@/components/Loading";
-import { toast, toastthree } from "@/components/Toast";
+import { toast } from "@/components/Toast";
 import {
   Button,
   DialogOverlay,
@@ -84,7 +84,7 @@ function UserImage({ user }: UserImageProps) {
           onUpdateEnd();
         });
     }, 1000);
-  }
+  } 
 
   const { startUpload, isUploading } = useUploadThing("userImageUploader", {
     onClientUploadComplete: syncUserImage,

@@ -51,7 +51,8 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
     >
       {isOpen ? (
         <>
-          {/* todo - maybe this can be animated out */}
+          {/* todo - maybe this can be animated out. 
+          This should probable be postponed until https://github.com/HugeLetters/recallio/issues/104 */}
           {createPortal(
             <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
             document.body,
