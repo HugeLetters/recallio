@@ -18,7 +18,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState } from "react";
 import RightIcon from "~icons/formkit/right";
 
 const Page: NextPageWithLayout = function () {
@@ -266,7 +266,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                     }
                     mutate({ barcode });
                   }}
-                  style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
+                  style={{ "--duration": `${deleteTimeout}ms` }}
                   className={tw(
                     "relative overflow-hidden bg-app-red-500 font-semibold text-white",
                     "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)] group-data-[state=closed]:after:content-none",

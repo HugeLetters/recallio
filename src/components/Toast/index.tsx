@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type CSSProperties,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
   type ReactNode,
@@ -127,7 +126,7 @@ function ToastSlot({
         }}
         onSwipeMove={setSwipeOpacity}
         onSwipeCancel={resetSwipeOpacity}
-        style={{ "--offset": toastOffset } as CSSProperties}
+        style={{ "--offset": toastOffset }}
         className={tw(
           className,
           "group h-fit w-full overflow-hidden rounded-xl shadow-around sa-o-15 sa-r-1",
@@ -153,7 +152,7 @@ function ToastSlot({
           </Flipped>
           {isLast && duration && duration !== Infinity && (
             <div
-              style={{ "--duration": `${duration}ms` } as CSSProperties}
+              style={{ "--duration": `${duration}ms` }}
               className={tw(
                 "absolute bottom-0 h-1 w-full origin-left bg-black/10",
                 "animate-expand-x-reverse animate-duration-[var(--duration)] animate-function-linear animation-fill-mode-forward",

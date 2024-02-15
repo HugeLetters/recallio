@@ -50,3 +50,9 @@ function Providers({ children, session }: { children: ReactNode; session: Sessio
     </SessionProvider>
   );
 }
+
+declare module "react" {
+  // Allow CSS vars in style declarations
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface CSSProperties extends Record<`--${string}`, string | undefined | number> {}
+}
