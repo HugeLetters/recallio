@@ -120,9 +120,6 @@ export function DebouncedSearch({
             setQueryParam({ router, key: SEARCH_QUERY_KEY, value: newValue });
           }, 300);
         }}
-        onSubmit={() => {
-          console.log("submit");
-        }}
       />
       <button
         type="reset"

@@ -148,7 +148,7 @@ function ToastSlot({
             inverseFlipId={id}
             scale
           >
-            {content}
+            <>{content}</>
           </Flipped>
           {isLast && duration && duration !== Infinity && (
             <div
