@@ -63,14 +63,14 @@ function UserImage({ user }: UserImageProps) {
       return;
     }
 
-    compressImage(image, 511 * 1024)
-      .then((compressedImage) => {
-        const resultImage = compressedImage ?? image;
-        queueUpdate(URL.createObjectURL(resultImage), () => {
+    queueUpdate(URL.createObjectURL(image), () => {
+      compressImage(image, 511 * 1024)
+        .then((compressedImage) => {
+          const resultImage = compressedImage ?? image;
           startUpload([resultImage]).catch(console.error);
-        });
-      })
-      .catch(console.error);
+        })
+        .catch(console.error);
+    });
   }
 
   function syncUserImage() {
@@ -84,7 +84,7 @@ function UserImage({ user }: UserImageProps) {
           onUpdateEnd();
         });
     }, 1000);
-  } 
+  }
 
   const { startUpload, isUploading } = useUploadThing("userImageUploader", {
     onClientUploadComplete: syncUserImage,
@@ -95,7 +95,7 @@ function UserImage({ user }: UserImageProps) {
     onError: (error) => toast.error(error.message),
     onSettled: syncUserImage,
   });
-  useLoadingIndicator(isUploading || isLoading, 300);
+  useLoadingIndicator(optimistic.isActive || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
