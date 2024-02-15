@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { Flipper } from "react-flip-toolkit";
-import { Flipped, onSelfTransitionEnd } from "../Animation";
+import { Flipped, onSelfTransitionEnd } from "./Animation";
 
 const swipeThreshold = 70;
 export function ToastProvider({ children }: PropsWithChildren) {
