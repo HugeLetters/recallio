@@ -15,15 +15,15 @@ const Page: NextPageWithLayout = function () {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selection, dispatchSelection] = useAtom(selectionAtom);
-  useEffect(() => {
-    if (selection !== "upload") return;
-    fileInputRef.current?.click();
-  }, [selection]);
-  useEffect(() => {
-    return function () {
-      dispatchSelection("scan");
-    };
-  }, [dispatchSelection]);
+
+  useEffect(
+    function resetToScanOnPageLeave() {
+      return function () {
+        dispatchSelection("scan");
+      };
+    },
+    [dispatchSelection],
+  );
 
   const { id, ready, start, stop, scanFile } = useBarcodeScanner((val) => goToReview(val));
   useEffect(() => {
@@ -63,12 +63,18 @@ const Page: NextPageWithLayout = function () {
     ({ movement: [x], down }) => {
       setOffset(down ? x : 0);
       if (down) return;
-      if (Math.abs(x) < 30) return;
-      const isNext = x < 0 ? true : false;
-      dispatchSelection(isNext ? "next" : "prev");
 
-      if (Math.abs(x) < 90) return;
-      dispatchSelection(isNext ? "next" : "prev");
+      if (Math.abs(x) < 30) return;
+
+      const delta = Math.abs(x) < 90 ? 1 : 2;
+      const move = (x < 0 ? 1 : -1) * delta;
+      dispatchSelection({
+        move,
+        onUpdate(value) {
+          if (value !== "upload" || selection === "upload") return;
+          fileInputRef.current?.click();
+        },
+      });
     },
     { axis: "x", filterTaps: true },
   );

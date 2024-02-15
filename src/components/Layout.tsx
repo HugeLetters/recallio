@@ -171,22 +171,22 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
 
 const selection = ["upload", "scan", "input"] as const;
 type Selection = (typeof selection)[number];
-type SelectionEvent = Selection | "next" | "prev";
-export const selectionAtom = atomWithReducer<Selection, SelectionEvent>("scan", (value, action) => {
-  switch (action) {
-    case "upload":
-    case "scan":
-    case "input":
-      return action;
-    case "next":
-      return selection[(indexOf(selection, value) ?? selection.length) + 1] ?? selection[2];
-    case "prev":
-      return selection[(indexOf(selection, value) ?? 0) - 1] ?? selection[0];
-    default: {
-      return value;
-    }
-  }
-});
+type SelectionAction = Selection | { move: number; onUpdate?: (value: Selection) => void };
+function getStateAfterMove(state: Selection, move: number): Selection {
+  const currentIndex = indexOf(selection, state);
+  const fallbackIndex = move > 0 ? 2 : 0;
+  return selection[(currentIndex ?? fallbackIndex) + move] ?? selection[fallbackIndex];
+}
+export const selectionAtom = atomWithReducer<Selection, SelectionAction>(
+  "scan",
+  (prevState, action) => {
+    if (!action) return prevState;
+    if (typeof action === "string") return action;
+    const nextState = getStateAfterMove(prevState, action.move);
+    action.onUpdate?.(nextState);
+    return nextState;
+  },
+);
 
 function getFooterIcon(selection: Selection) {
   switch (selection) {
