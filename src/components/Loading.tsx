@@ -23,7 +23,7 @@ export function Spinner({ className }: SpinnerProps) {
           cy="2"
           r="0"
           transform={`rotate(${360 * (i / DOT_COUNT)})`}
-          className={tw("origin-center", i % 2 ? "fill-app-green" : "fill-app-green/30")}
+          className={tw("origin-center", i % 2 ? "fill-app-green-500" : "fill-app-green-500/30")}
         >
           <animate
             attributeName="r"

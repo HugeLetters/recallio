@@ -15,7 +15,6 @@ const Page: NextPageWithLayout = function () {
   }
 
   const [pin, setPin] = useState("");
-
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center p-4 text-center text-lime-950">
       <EmailIcon className="size-10" />
@@ -46,11 +45,11 @@ const Page: NextPageWithLayout = function () {
             {SLOTS.map((_, i) => (
               <div
                 key={i}
-                className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-400/50 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green"
+                className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-400/50 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green-500"
               >
                 {pin[i]}
                 {i === pin.length && (
-                  <span className="invisible animate-ping text-app-green group-focus-within/input:visible">
+                  <span className="invisible animate-ping text-app-green-500 group-focus-within/input:visible">
                     |
                   </span>
                 )}

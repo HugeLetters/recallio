@@ -90,7 +90,7 @@ const Page: NextPageWithLayout = function () {
       />
       {selection === "input" && (
         <form
-          className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green focus-within:outline-4"
+          className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green-500 focus-within:outline-4"
           onSubmit={(e) => {
             e.preventDefault();
             const barcode = String(new FormData(e.currentTarget).get("barcode"));
@@ -108,7 +108,7 @@ const Page: NextPageWithLayout = function () {
           />
           <button
             aria-label="Open review page of the specified barcode"
-            className="text-app-green"
+            className="text-app-green-500"
           >
             <SearchIcon className="size-7" />
           </button>
@@ -122,7 +122,7 @@ const Page: NextPageWithLayout = function () {
           ref={fileInputRef}
           className={tw(
             "mx-1 cursor-pointer rounded-xl p-2 transition-colors duration-300 focus-within:outline",
-            selection === "upload" ? "bg-app-green" : "bg-black/50",
+            selection === "upload" ? "bg-app-green-500" : "bg-black/50",
           )}
           aria-label="Scan from file"
           isImageSet={true}
@@ -138,7 +138,7 @@ const Page: NextPageWithLayout = function () {
         <button
           className={tw(
             "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
-            selection === "scan" ? "bg-app-green" : "bg-black/50",
+            selection === "scan" ? "bg-app-green-500" : "bg-black/50",
           )}
           onClick={() => dispatchSelection("scan")}
           type="button"
@@ -148,7 +148,7 @@ const Page: NextPageWithLayout = function () {
         <button
           className={tw(
             "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
-            selection === "input" ? "bg-app-green" : "bg-black/50",
+            selection === "input" ? "bg-app-green-500" : "bg-black/50",
           )}
           onClick={() => dispatchSelection("input")}
           type="button"
