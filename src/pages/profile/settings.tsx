@@ -116,7 +116,7 @@ function UserImage({ user }: UserImageProps) {
       </div>
       <ImageInput
         isImageSet={!!optimistic.value && optimistic.isActive}
-        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green"
+        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
@@ -245,7 +245,7 @@ function AppSettings() {
       <p className="p-2 text-sm">App settings</p>
       <LabeledSwitch
         label="Reviews are private by default"
-        className="bg-app-green/20"
+        className="bg-app-green-100"
         checked={reviewPrivateDefault}
         onCheckedChange={setReviewPrivateDefault}
       />

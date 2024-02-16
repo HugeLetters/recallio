@@ -1,3 +1,4 @@
+import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
 import type { DiscriminatedUnion, Icon } from "@/utils/type";
 import { useAtomValue } from "jotai/react";
@@ -20,7 +21,6 @@ import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 import { Flipped } from "./Animation";
-import { tw } from "@/utils";
 
 type LayoutProps = {
   header?: ComponentProps<typeof Header>;
@@ -108,7 +108,7 @@ function Footer() {
       flipId="active-icon-bg"
       className="animate-scale-in"
     >
-      <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green/35 blur-xl lg:inset-x-2" />
+      <div className="bg-app-green-150 absolute -inset-y-6 inset-x-4 -z-10 blur-xl lg:inset-x-2" />
     </Flipped>
   );
 
@@ -130,7 +130,7 @@ function Footer() {
             href="/scan"
             className={tw(
               "flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300",
-              pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100",
+              pathname.startsWith("/scan") ? "bg-app-green-500 text-white" : "bg-neutral-100",
             )}
           >
             <ScannerIcon className="size-full" />
@@ -159,7 +159,7 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
       href={href}
       className={tw(
         "relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors",
-        activeBackground && "text-app-green",
+        activeBackground && "text-app-green-500",
       )}
     >
       <Icon className="size-6 lg:size-7" />

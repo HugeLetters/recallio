@@ -108,7 +108,7 @@ export function DebouncedSearch({
       <input
         autoFocus
         ref={inputRef}
-        className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
+        className="h-full min-w-0 grow p-1 caret-app-green-500 outline-none placeholder:p-1"
         placeholder="Search"
         value={value}
         onChange={(e) => {
@@ -188,12 +188,12 @@ export function SortDialog({ optionList }: SortDialogProps) {
                     key={option}
                     className="group flex items-center gap-2 rounded-lg px-1 py-2 outline-none transition-colors duration-300 focus-visible:bg-neutral-400/20"
                   >
-                    <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
+                    <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green-500">
                       <Flipped
                         flipId={`${option === sortBy}`}
                         key={`${option === sortBy}`}
                       >
-                        <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green" />
+                        <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green-500" />
                       </Flipped>
                     </div>
                     <span className="capitalize">{option}</span>

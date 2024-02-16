@@ -8,6 +8,8 @@ const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
 
 const appRedColor = defineColor(0, 39);
+const appGreenColor = defineColor(122, 39);
+const appGoldColor = defineColor(47, 87);
 
 const slideUp = defineReversibleAnimation("slide-up", {
   from: { translate: "0 70%", opacity: "0" },
@@ -28,8 +30,8 @@ export default {
       fontFamily: { lato: ["var(--font-lato, Lato)", ...defaultTheme.fontFamily.sans] },
       colors: {
         app: {
-          gold: "hsla(47, 87%, 56%)",
-          green: "hsla(122, 39%, 49%)",
+          gold: appGoldColor,
+          green: appGreenColor,
           red: appRedColor,
         },
       },
@@ -71,10 +73,8 @@ export default {
           },
         },
         ".primary": {
-          "--tw-bg-opacity": "1",
-          backgroundColor: "hsla(122, 39%, 49%, var(--tw-bg-opacity))",
-          "--tw-text-opacity": "1",
-          color: "rgb(255 255 255 / var(--tw-text-opacity))",
+          backgroundColor: appGreenColor[500],
+          color: "white",
         },
         ".ghost": {
           "--tw-bg-opacity": "1",
@@ -214,7 +214,7 @@ function defineColor(hue: number, saturation: number) {
   return Object.fromEntries(
     Array.from({ length: 19 }, (_, i) => [
       (i + 1) * 50,
-      `hsl(${hue}, ${saturation}%, ${((100 / 20) * (19 - i)).toFixed(2)}%)`,
+      `hsl(${hue} ${saturation}% ${((100 / 20) * (19 - i)).toFixed(0)}%)`,
     ]),
   ) as Color;
 }

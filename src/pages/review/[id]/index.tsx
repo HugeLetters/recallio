@@ -82,7 +82,7 @@ function Review({ barcode }: ReviewProps) {
       <div
         className={tw(
           "rounded-lg px-4 py-4",
-          review.isPrivate ? "bg-app-green/20" : "bg-neutral-200",
+          review.isPrivate ? "bg-app-green-100" : "bg-neutral-200",
         )}
       >
         {review.isPrivate ? "Private" : "Public"} review
@@ -108,7 +108,7 @@ function AttachedImage({ image }: AttachedImageProps) {
       {image ? (
         <UrlDialogRoot dialogQueryKey="attached-image-dialog">
           <Dialog.Trigger
-            className="size-full rounded-full outline-app-green"
+            className="size-full rounded-full outline-app-green-500"
             aria-label="Open full image view"
           >
             <ImagePreview src={image} />

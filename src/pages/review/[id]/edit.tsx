@@ -274,7 +274,7 @@ function Name({ barcode, register }: NameProps) {
   return (
     <label className="flex flex-col">
       <span className="p-2 text-sm">Name</span>
-      <div className="flex rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2">
+      <div className="flex rounded-lg p-3 outline outline-1 outline-app-green-500 focus-within:outline-2">
         <input
           {...register}
           required
@@ -376,7 +376,10 @@ function Private({ value, setValue }: ModelProps<boolean>) {
   return (
     <LabeledSwitch
       label="Private review"
-      className={tw("transition-colors duration-300", value ? "bg-app-green/20" : "bg-neutral-200")}
+      className={tw(
+        "transition-colors duration-300",
+        value ? "bg-app-green-100" : "bg-neutral-200",
+      )}
       checked={value}
       onCheckedChange={setValue}
     />
@@ -413,7 +416,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         onChange={(e) => {
           setValue(e.target.files?.item(0));
         }}
-        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green"
+        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
       >
         {src ? "Change image" : "Upload image"}
       </ImageInput>
@@ -578,7 +581,7 @@ function CategorySearch({
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pb-20 pt-5">
         {canAddCategories && isSearchCategoryValid && !isSearchCategoryPresent && (
-          <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green">
+          <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green-500">
             <span className="shrink-0">
               Add <span className="capitalize">{`"${search}"`}</span>...
             </span>
@@ -590,7 +593,7 @@ function CategorySearch({
               }}
               aria-label={`Add ${search} category`}
             >
-              <CircledPlusIcon className="size-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green" />
+              <CircledPlusIcon className="size-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green-500" />
             </button>
           </label>
         )}
@@ -606,7 +609,7 @@ function CategorySearch({
               <label className="flex w-full cursor-pointer justify-between capitalize">
                 <span>{category}</span>
                 <Checkbox.Root
-                  className="group flex size-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green data-[state=checked]:border-app-green data-[state=checked]:bg-app-green data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
+                  className="group flex size-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green-500 data-[state=checked]:border-app-green-500 data-[state=checked]:bg-app-green-500 data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
                   aria-disabled={!canAddCategories}
                   checked={includes(category)}
                   onCheckedChange={(checked) => {

@@ -103,7 +103,7 @@ export function Switch(props: SwitchProps) {
   return (
     <BaseSwitch.Root
       {...props}
-      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors focus-visible:outline-app-green data-[state=checked]:bg-app-green data-[state=checked]:focus-visible:outline-lime-950"
+      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors focus-visible:outline-app-green-500 data-[state=checked]:bg-app-green-500 data-[state=checked]:focus-visible:outline-lime-950"
     >
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
@@ -143,7 +143,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <input
       ref={ref}
       className={tw(
-        "rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2",
+        "rounded-lg p-3 outline outline-1 outline-app-green-500 focus-within:outline-2",
         className,
       )}
       {...inputProps}

@@ -167,23 +167,6 @@ function ToastSlot({
   );
 }
 
-type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
-const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
-  { children, className, ...props },
-  ref,
-) {
-  return (
-    <Toast.Close
-      ref={ref}
-      aria-label="Close notification"
-      className={tw(className, "w-full break-words p-4 outline-none")}
-      {...props}
-    >
-      {children}
-    </Toast.Close>
-  );
-});
-
 type ToastOptions = { className?: string; duration?: number };
 type ToastData = { id: string; content: ReactNode } & ToastOptions;
 type Subscription = () => void;
@@ -229,13 +212,30 @@ function useToastStack() {
   );
 }
 
+type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
+const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
+  { children, className, ...props },
+  ref,
+) {
+  return (
+    <Toast.Close
+      ref={ref}
+      aria-label="Close notification"
+      className={tw(className, "w-full break-words p-4 outline-none")}
+      {...props}
+    >
+      {children}
+    </Toast.Close>
+  );
+});
+
 export const toast = {
   info(message: ReactNode) {
     return toastStackStore.addToast(
       <ToastClose>
         <Toast.Description>{message}</Toast.Description>
       </ToastClose>,
-      { className: "bg-white focus-visible-within:ring-2 ring-app-green" },
+      { className: "bg-white focus-visible-within:ring-2 ring-app-green-500" },
     );
   },
   error(error: ReactNode) {
