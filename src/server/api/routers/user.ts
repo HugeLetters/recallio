@@ -3,13 +3,35 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
-import { providerSchema } from "@/utils/providers";
+import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
 import { coercedStringSchema, createMaxLengthMessage, createMinLengthMessage } from "../utils/zod";
+
+const providerSchema = z.enum(providers, {
+  errorMap(_, ctx) {
+    return { message: ctx.defaultError.replace("Invalid enum value", "Invalid provider") };
+  },
+});
+const deleteAccountProcedure = protectedProcedure
+  .input(z.object({ provider: providerSchema }))
+  .mutation(({ ctx: { session }, input: { provider } }) =>
+    db
+      .delete(account)
+      .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
+      .catch((e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`))
+      .then((query) => {
+        if (!query.rowsAffected) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `We couldn't find a ${provider} account linked to your profile`,
+          });
+        }
+      }),
+  );
 
 export const userRouter = createTRPCRouter({
   setName: protectedProcedure
@@ -63,22 +85,7 @@ export const userRouter = createTRPCRouter({
       .where(eq(account.userId, session.user.id))
       .then((accounts) => accounts.map((account) => account.provider));
   }),
-  deleteAccount: protectedProcedure
-    .input(z.object({ provider: providerSchema }))
-    .mutation(({ ctx: { session }, input: { provider } }) =>
-      db
-        .delete(account)
-        .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
-        .catch((e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`))
-        .then((query) => {
-          if (!query.rowsAffected) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: `We couldn't find a ${provider} account linked to your profile`,
-            });
-          }
-        }),
-    ),
+  deleteAccount: deleteAccountProcedure,
   deleteUser: protectedProcedure.mutation(({ ctx: { session: userSession } }) => {
     return db
       .transaction(async (tx) => {
