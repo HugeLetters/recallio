@@ -49,7 +49,7 @@ function ToastContainer() {
     >
       <Toast.Viewport
         className={tw(
-          "fixed right-2 top-2 z-10 w-72 outline-none before:absolute before:-inset-2",
+          "fixed right-2 top-2 z-50 w-72 outline-none before:absolute before:-inset-2",
           !isStacked && "flex flex-col-reverse items-end gap-2",
         )}
         {...toastViewportHandlers}
@@ -157,6 +157,7 @@ function ToastSlot({
                 "absolute bottom-0 h-1 w-full origin-left bg-black/10",
                 "animate-expand-x-reverse animate-duration-[var(--duration)] animate-function-linear animation-fill-mode-forward",
                 "transition-opacity duration-300 group-data-[state=closed]:opacity-0",
+                // todo - it plays when window isnt focused
                 !isStacked && "opacity-0 animation-play-state-pause",
               )}
             />
@@ -221,7 +222,7 @@ const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function Toast
     <Toast.Close
       ref={ref}
       aria-label="Close notification"
-      className={tw(className, "w-full break-words p-4 outline-none")}
+      className={tw(className, "w-full whitespace-pre-wrap break-words p-4 outline-none")}
       {...props}
     >
       {children}
@@ -250,3 +251,10 @@ export const toast = {
     toastStackStore.removeToast(id);
   },
 };
+
+export function logToastError(message: ReactNode) {
+  return function (error: unknown) {
+    console.error(error);
+    toast.error(message);
+  };
+}

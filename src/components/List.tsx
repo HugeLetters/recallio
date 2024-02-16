@@ -12,6 +12,7 @@ import {
 import EggBasketIcon from "~icons/custom/egg-basket";
 import MilkIcon from "~icons/custom/milk";
 
+// todo - maybe this should just take an InfiniteQuery prop
 type InfiniteScrollProps<P, V> = {
   pages: P[];
   /** Retrieve values from a single page */

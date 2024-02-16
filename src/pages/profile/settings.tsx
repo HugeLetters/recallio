@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { useLoadingIndicator } from "@/components/Loading";
-import { toast } from "@/components/Toast";
+import { logToastError, toast } from "@/components/Toast";
 import {
   Button,
   DialogOverlay,
@@ -34,7 +34,9 @@ const Page: NextPageWithLayout = function () {
       <Button
         className="ghost mt-2"
         onClick={() => {
-          void signOut({ redirect: false });
+          signOut({ redirect: false }).catch(
+            logToastError("Error while trying to sign out.\nPlease try again."),
+          );
         }}
       >
         Sign Out
@@ -65,18 +67,17 @@ function UserImage({ user }: UserImageProps) {
 
     queueUpdate(URL.createObjectURL(image), () => {
       compressImage(image, 511 * 1024)
-        .then((compressedImage) => {
-          const resultImage = compressedImage ?? image;
-          startUpload([resultImage]).catch(console.error);
-        })
-        .catch(console.error);
+        .then((compressedImage) => startUpload([compressedImage ?? image]))
+        .catch(logToastError("Couldn't upload the image.\nPlease try again."));
     });
   }
 
   function syncUserImage() {
     setTimeout(() => {
       update()
-        .catch(console.error)
+        .catch(
+          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+        )
         .finally(() => {
           if (optimistic.value) {
             URL.revokeObjectURL(optimistic.value);
@@ -88,11 +89,14 @@ function UserImage({ user }: UserImageProps) {
 
   const { startUpload, isUploading } = useUploadThing("userImageUploader", {
     onClientUploadComplete: syncUserImage,
-    onUploadError: syncUserImage,
+    onUploadError(e) {
+      toast.error(`Couldn't upload the image: ${e.message}`);
+      syncUserImage();
+    },
   });
 
   const { mutate: remove, isLoading } = api.user.deleteImage.useMutation({
-    onError: (error) => toast.error(error.message),
+    onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
   useLoadingIndicator(optimistic.isActive || isUploading || isLoading, 300);
@@ -141,7 +145,12 @@ function UserName({ username }: UserNameProps) {
           if (!session) return;
           setValue(session.user.name);
         })
-        .catch(console.error);
+        .catch(
+          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+        );
+    },
+    onError(e) {
+      toast.error(`Couldn't update username: ${e.message}`);
     },
   });
   useLoadingIndicator(isLoading, 300);
@@ -190,7 +199,8 @@ function LinkedAccounts() {
 
       return prevProviders;
     },
-    onError(_, __, prevProviders) {
+    onError(e, __, prevProviders) {
+      toast.error(`Couldn't unlink account: ${e.message}`);
       trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
     },
     onSettled() {
@@ -223,7 +233,9 @@ function LinkedAccounts() {
                     trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
                       return [...(providers ?? []), provider];
                     });
-                    void signIn(provider);
+                    signIn(provider).catch(
+                      logToastError("Couldn't link account.\nPlease try again."),
+                    );
                   } else {
                     deleteAccount({ provider });
                   }
@@ -262,6 +274,9 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       setIsOpen(false);
       setValue(true);
       void signOut({ redirect: false });
+    },
+    onError(e) {
+      toast.error(`Couldn't delete your profile: ${e.message}`);
     },
   });
   useLoadingIndicator(isLoading);

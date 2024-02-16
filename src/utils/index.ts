@@ -1,6 +1,6 @@
 import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
 import { filterMap } from "./array";
-import type { Option, Some } from "./type";
+import type { Option, Prettify, Some } from "./type";
 
 export const browser = typeof window !== "undefined";
 
@@ -52,4 +52,11 @@ export function tw(...classGroup: ClassGroup[]): string {
     (x): x is Exclude<ClassGroup, Falsy> => !!x,
     (classGroup) => (Array.isArray(classGroup) ? tw(...classGroup) : classGroup),
   ).join(" ");
+}
+
+export function mergeInto<T extends Record<never, unknown>, O>(
+  target: T,
+  object: O,
+): Prettify<Omit<T, keyof O> & O> {
+  return Object.assign(target, object);
 }

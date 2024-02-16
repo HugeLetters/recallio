@@ -10,6 +10,7 @@ const SLOTS = Array.from({ length: PIN_LENGTH });
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
+
   if (status === "authenticated") {
     void router.replace("/profile");
   }

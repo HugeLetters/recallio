@@ -108,7 +108,7 @@ function Footer() {
       flipId="active-icon-bg"
       className="animate-scale-in"
     >
-      <div className="bg-app-green-150 absolute -inset-y-6 inset-x-4 -z-10 blur-xl lg:inset-x-2" />
+      <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
     </Flipped>
   );
 

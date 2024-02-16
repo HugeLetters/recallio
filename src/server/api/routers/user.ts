@@ -18,8 +18,8 @@ const providerSchema = z.enum(providers, {
 });
 const deleteAccountProcedure = protectedProcedure
   .input(z.object({ provider: providerSchema }))
-  .mutation(({ ctx: { session }, input: { provider } }) =>
-    db
+  .mutation(({ ctx: { session }, input: { provider } }) => {
+    return db
       .delete(account)
       .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
       .catch((e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`))
@@ -30,8 +30,8 @@ const deleteAccountProcedure = protectedProcedure
             message: `We couldn't find a ${provider} account linked to your profile`,
           });
         }
-      }),
-  );
+      });
+  });
 
 export const userRouter = createTRPCRouter({
   setName: protectedProcedure

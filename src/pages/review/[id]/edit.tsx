@@ -2,7 +2,7 @@ import { Layout } from "@/components/Layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
-import { toast } from "@/components/Toast";
+import { logToastError, toast } from "@/components/Toast";
 import {
   AutoresizableInput,
   Button,
@@ -22,7 +22,7 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { fetchNextPage, isSetEqual, minutesToMs, tw } from "@/utils";
+import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
@@ -68,9 +68,7 @@ type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
-  const { categories, ...rest } = data;
-
-  return Object.assign(rest, { categories: categories.map((x) => ({ name: x })) });
+  return mergeInto(data, { categories: data.categories.map((x) => ({ name: x })) });
 }
 
 type ReviewWrapperProps = { barcode: string };
@@ -134,7 +132,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       saveReview(updatedReview, {
         onSuccess: () => onReviewSave(optimisticReview),
       });
-    })(e).catch(console.error);
+    })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
   }
 
   function onReviewSave(review: StrictOmit<ReviewData, "image">) {
@@ -147,28 +145,23 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     setOptimisticReview(review, URL.createObjectURL(image));
 
     compressImage(image, 511 * 1024)
-      .then((compressedImage) => {
-        startUpload([compressedImage ?? image], { barcode }).catch(console.error);
-      })
-      .catch(console.error);
+      .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
+      .catch(logToastError("Couldn't upload the image.\nPlease try again."));
   }
 
   const apiUtils = api.useUtils();
   function invalidateReviewData() {
     const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
-    apiUtils.review.getUserReview
-      .invalidate({ barcode }, { refetchType: "all" })
-      .then(() => {
+    Promise.all([
+      apiUtils.review.getUserReview.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
         if (!optimisticImage) return;
         URL.revokeObjectURL(optimisticImage);
-      })
-      .catch(console.error);
-    apiUtils.review.getUserReviewSummaryList
-      .invalidate(undefined, { refetchType: "all" })
-      .catch(console.error);
-    apiUtils.review.getReviewCount
-      .invalidate(undefined, { refetchType: "all" })
-      .catch(console.error);
+      }),
+      apiUtils.review.getUserReviewSummaryList.invalidate(undefined, { refetchType: "all" }),
+      apiUtils.review.getReviewCount.invalidate(undefined, { refetchType: "all" }),
+    ]).catch(
+      logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+    );
   }
 
   const router = useRouter();
@@ -189,14 +182,23 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
     onSettled: invalidateReviewData,
+    onError(e) {
+      toast.error(`Couldn't delete image from review: ${e.message}`);
+    },
   });
   const { startUpload } = useUploadThing("reviewImageUploader", {
     // hope 1.5s is enough for the update to catch up...
     onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
-    onUploadError: invalidateReviewData,
+    onUploadError(e) {
+      toast.error(`Couldn't upload the image: ${e.message}`);
+      invalidateReviewData();
+    },
   });
   const { mutate: saveReview, isLoading } = api.review.upsertReview.useMutation({
-    onError: invalidateReviewData,
+    onError(e) {
+      toast.error(`Error while trying to save the review: ${e.message}`);
+      invalidateReviewData();
+    },
   });
   useLoadingIndicator(isLoading);
 
@@ -313,7 +315,8 @@ function Rating({ value, setValue }: ModelProps<number>) {
           key={x}
           value={x.toString()}
           onClick={() => {
-            if (x === value) setValue(0);
+            if (x !== value) return;
+            setValue(0);
           }}
           className="outline-none transition sa-o-30 sa-r-0.5 focus-within:shadow-around"
         >
@@ -437,9 +440,10 @@ function CategoryList({ control }: CategoryListProps) {
     replace(categories.filter((category) => category.name !== value));
   }
   function add(value: string) {
-    replace(
-      [...categories, { name: value.toLowerCase() }].sort((a, b) => (a.name > b.name ? 1 : -1)),
-    );
+    if (categorySet.has(value)) return;
+
+    const newCategories = [...categories, { name: value.toLowerCase() }];
+    replace(newCategories.sort((a, b) => (a.name > b.name ? 1 : -1)));
   }
 
   const { isOpen, setIsOpen } = useUrlDialog("category-modal");
@@ -463,7 +467,7 @@ function CategoryList({ control }: CategoryListProps) {
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
           if (isAtCategoryLimit) {
-            toast.error(`You can't add more than ${categoriesLimit} categories`);
+            toast.error(`You can't add more than ${categoriesLimit} categories.`);
             return;
           }
           open();
@@ -487,7 +491,7 @@ function CategoryList({ control }: CategoryListProps) {
               asChild
             >
               <CategoryButton
-                aria-label={`Delete label ${name}`}
+                aria-label={`Delete category ${name}`}
                 onClick={(e) => {
                   remove(name);
 
@@ -547,6 +551,7 @@ function CategorySearch({
   const router = useRouter();
   const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
   const [search, setSearch] = useState(searchParam);
+  const lowercaseSearch = search.toLowerCase();
   const categoriesQuery = api.product.getCategories.useInfiniteQuery(
     { filter: searchParam, limit: 30 },
     {
@@ -558,10 +563,26 @@ function CategorySearch({
     },
   );
 
-  const isSearchCategoryValid = search.length >= 4 && search.length <= 25;
+  const minLength = 4;
+  const maxLength = 25;
+  const isSearchValid = search.length >= minLength && search.length <= maxLength;
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
-  const isSearchCategoryPresent =
-    includes(search) || categoriesQuery.data?.pages[0]?.includes(search.toLowerCase());
+  const isSearchAdded = includes(lowercaseSearch);
+  const canAddSearch = canAddCategories && isSearchValid && !isSearchAdded;
+
+  function addCustomCategory() {
+    if (!isSearchValid) {
+      return toast.error(`Category must be between ${minLength} and ${maxLength} characters long.`);
+    }
+    if (isSearchAdded) {
+      return toast.error("This category has already been added.");
+    }
+    if (!canAddCategories) {
+      return toast.error("You can't add more categories to review.");
+    }
+
+    append(lowercaseSearch);
+  }
 
   return (
     <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
@@ -574,29 +595,32 @@ function CategorySearch({
             e.preventDefault();
             // since this component is portalled submit event will propagate to the main form on this page
             e.stopPropagation();
-            append(search);
+            addCustomCategory();
           }}
           debounceRef={debounceRef}
         />
       </div>
       <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pb-20 pt-5">
-        {canAddCategories && isSearchCategoryValid && !isSearchCategoryPresent && (
-          <label className="group flex cursor-pointer items-center justify-between py-1 text-left italic transition-colors active:text-app-green-500">
+        {!!search && (
+          <label
+            className={tw(
+              "group flex cursor-pointer items-center justify-between py-1 text-left italic transition-opacity",
+              !canAddSearch && "opacity-30",
+            )}
+          >
             <span className="shrink-0">
-              Add <span className="capitalize">{`"${search}"`}</span>...
+              Add <span className="capitalize">{`"${lowercaseSearch}"`}</span>...
             </span>
             <button
-              onClick={() => {
-                setTimeout(() => {
-                  append(search);
-                }, 200);
-              }}
-              aria-label={`Add ${search} category`}
+              onClick={addCustomCategory}
+              aria-label={`Add ${lowercaseSearch} category`}
+              aria-disabled={!canAddSearch}
             >
               <CircledPlusIcon className="size-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green-500" />
             </button>
           </label>
         )}
+
         {categoriesQuery.isSuccess ? (
           <InfiniteScroll
             pages={categoriesQuery.data.pages}
@@ -605,25 +629,37 @@ function CategorySearch({
             getNextPage={fetchNextPage(categoriesQuery)}
             spinner={categoriesQuery.isFetching ? <Spinner className="h-16" /> : null}
           >
-            {(category) => (
-              <label className="flex w-full cursor-pointer justify-between capitalize">
-                <span>{category}</span>
-                <Checkbox.Root
-                  className="group flex size-6 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white transition-colors aria-[disabled=false]:focus-within:border-app-green-500 data-[state=checked]:border-app-green-500 data-[state=checked]:bg-app-green-500 data-[state=unchecked]:outline-none data-[state=unchecked]:aria-disabled:opacity-50"
-                  aria-disabled={!canAddCategories}
-                  checked={includes(category)}
-                  onCheckedChange={(checked) => {
-                    if (checked !== true) return remove(category);
-                    if (!canAddCategories) return;
-                    append(category);
-                  }}
-                >
-                  <Checkbox.Indicator className="size-full p-1 text-white">
-                    <Checkmark className="checkmark size-full" />
-                  </Checkbox.Indicator>
-                </Checkbox.Root>
-              </label>
-            )}
+            {(category) => {
+              if (category === lowercaseSearch) return;
+              return (
+                <label className="flex w-full cursor-pointer justify-between capitalize">
+                  <span className="overflow-hidden text-ellipsis">{category}</span>
+                  <Checkbox.Root
+                    className={tw(
+                      "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
+                      "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-200 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-lime-950",
+                      "transition-colors data-[state=checked]:bg-app-green-500",
+                    )}
+                    aria-disabled={!canAddCategories}
+                    checked={includes(category)}
+                    onCheckedChange={(checked) => {
+                      if (checked !== true) return remove(category);
+                      if (!canAddCategories) {
+                        return toast.error("You can't add more categories to review.");
+                      }
+                      append(category);
+                    }}
+                  >
+                    <Checkbox.Indicator
+                      forceMount
+                      className="p-1 text-white group-data-[state=unchecked]:scale-0 group-data-[state=checked]:transition-transform"
+                    >
+                      <Checkmark className="size-full" />
+                    </Checkbox.Indicator>
+                  </Checkbox.Root>
+                </label>
+              );
+            }}
           </InfiniteScroll>
         ) : (
           "Loading..."
