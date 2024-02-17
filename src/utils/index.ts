@@ -1,3 +1,4 @@
+import { logToastError } from "@/components/Toast";
 import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
 import { filterMap } from "./array";
 import type { Option, Prettify, Some } from "./type";
@@ -16,14 +17,13 @@ export function isNonEmptyString(value: unknown): value is string {
   return !!value && typeof value === "string";
 }
 
-export function fetchNextPage<Q extends UseTRPCInfiniteQueryResult<unknown, unknown>>({
-  isFetching,
-  hasNextPage,
-  fetchNextPage,
-}: Q) {
+export function fetchNextPage<Q extends UseTRPCInfiniteQueryResult<unknown, unknown>>(
+  { isFetching, hasNextPage, fetchNextPage }: Q,
+  onError = logToastError("Failed to load more content."),
+) {
   return function () {
     if (isFetching || !hasNextPage) return;
-    fetchNextPage().catch(console.error);
+    fetchNextPage().catch(onError);
   };
 }
 
@@ -59,4 +59,9 @@ export function mergeInto<T extends Record<never, unknown>, O>(
   object: O,
 ): Prettify<Omit<T, keyof O> & O> {
   return Object.assign(target, object);
+}
+
+// todo - utilize it more
+export function ignore() {
+  return;
 }

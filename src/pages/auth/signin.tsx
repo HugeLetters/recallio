@@ -11,6 +11,7 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
   if (status === "authenticated") {
+    // todo - replace those with catch
     void router.replace("/profile");
   }
   const callbackUrl = getQueryParam(router.query.callbackUrl);

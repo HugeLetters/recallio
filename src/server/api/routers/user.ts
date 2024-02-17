@@ -3,6 +3,7 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
+import { ignore } from "@/utils";
 import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
@@ -73,7 +74,7 @@ export const userRouter = createTRPCRouter({
           }
 
           if (!URL.canParse(image)) {
-            utapi.deleteFiles([image]).catch(console.error);
+            return utapi.deleteFiles([image]).then(ignore);
           }
         });
     });

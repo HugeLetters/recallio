@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { useSetLoadingIndicator } from "@/components/Loading";
+import { toast } from "@/components/Toast";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import {
   BarcodeTitle,
@@ -212,6 +213,9 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
     onMutate() {
       setLoading(true);
       router.push("/profile").catch(console.error);
+    },
+    onError(e) {
+      toast.error(`Couldn't delete the review: ${e.message}`);
     },
     onSuccess() {
       void apiUtils.review.getUserReviewSummaryList.invalidate();

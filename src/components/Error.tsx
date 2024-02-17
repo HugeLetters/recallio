@@ -2,8 +2,8 @@ import BrokenEggshellIcon from "~icons/custom/broken-eggshell";
 import { Button } from "./UI";
 import { useRouter } from "next/router";
 
-type ErrorProps = { errorMessage?: string };
-export function Error({ errorMessage: error }: ErrorProps) {
+type ErrorProps = { message?: string };
+export function Error({ message: error }: ErrorProps) {
   const router = useRouter();
   const splitError = error ? splitSentence(error) : null;
 

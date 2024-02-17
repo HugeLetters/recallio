@@ -242,7 +242,6 @@ export const reviewRouter = createTRPCRouter({
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findReviewImageKey(ctx.session.user.id, barcode);
-
       return db
         .transaction(async (tx) => {
           await tx

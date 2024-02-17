@@ -7,7 +7,7 @@ const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const error = getErrorMessage(getQueryParam(query.error));
 
-  return <Error errorMessage={error ?? "Authentication error"} />;
+  return <Error message={error ?? "Authentication error"} />;
 };
 
 type ErrorCode = "Configuration" | "AccessDenied" | "Verification" | "Default";
