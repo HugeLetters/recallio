@@ -15,7 +15,7 @@ function Email({ token, url }: EmailProps) {
           <Row>{token}</Row>
           <Button
             href={url}
-            className="rounded-lg bg-app-green p-3 text-white"
+            className="rounded-lg bg-app-green-500 p-3 text-white"
           >
             Or click me to sign in
           </Button>

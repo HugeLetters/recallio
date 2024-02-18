@@ -1,4 +1,6 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
+import { tw } from "@/utils";
+import { lato } from "@/utils/font";
 import { getQueryParam, setQueryParam } from "@/utils/query";
 import type { StrictOmit } from "@/utils/type";
 import { Overlay, Root } from "@radix-ui/react-dialog";
@@ -22,7 +24,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableP
       <button
         ref={ref}
         type={type ?? "button"}
-        className={`btn ${className ?? ""}`}
+        className={tw("btn", className)}
         {...restProps}
       >
         {children}
@@ -34,7 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableP
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
   return (
-    <StarIcon className={`size-full ${highlight ? "text-amber-400" : "text-neutral-400/20"}`} />
+    <StarIcon className={tw("size-full", highlight ? "text-amber-400" : "text-neutral-400/20")} />
   );
 }
 
@@ -51,14 +53,14 @@ export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function
   }, [isImageSet, ref]);
 
   return (
-    <label className={`cursor-pointer ${className ?? ""}`}>
+    <label className={tw("cursor-pointer", className)}>
       {children}
       <input
-        {...inputAttributes}
-        className="sr-only"
-        accept="image/*"
-        type="file"
         ref={ref}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        {...inputAttributes}
       />
     </label>
   );
@@ -71,7 +73,7 @@ function getInitials(name: string) {
 type UserPicProps = { user: Pick<Session["user"], "image" | "name">; className?: string };
 export function UserPic({ user, className }: UserPicProps) {
   return (
-    <div className={`aspect-square size-full select-none ${className ?? ""}`}>
+    <div className={tw("aspect-square size-full select-none", className)}>
       {user.image ? (
         <Image
           src={user.image}
@@ -101,7 +103,7 @@ export function Switch(props: SwitchProps) {
   return (
     <BaseSwitch.Root
       {...props}
-      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors focus-visible:outline-app-green data-[state=checked]:bg-app-green data-[state=checked]:focus-visible:outline-lime-950"
+      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors focus-visible:outline-app-green-500 data-[state=checked]:bg-app-green-500 data-[state=checked]:focus-visible:outline-lime-950"
     >
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
@@ -113,10 +115,8 @@ type LabeledSwitchProps = { label: ReactNode; className?: string } & SwitchProps
 export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitchProps) {
   return (
     <label
-      // Inside of forms switch appends a hidden sr-only checkbox input which can screw up the layout - this mititgates the damage somewhat
-      className={`relative flex items-center justify-between rounded-lg px-4 py-2 ${
-        className ?? ""
-      }`}
+      // Inside of forms switch appends a hidden sr-only checkbox input which can screw up the layout - 'relative' mititgates the damage somewhat
+      className={tw("relative flex items-center justify-between rounded-lg px-4 py-2", className)}
     >
       {typeof label === "string" ? <span>{label}</span> : label}
       <Switch {...switchProps} />
@@ -127,7 +127,7 @@ export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitc
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {
   return (
-    <label className={`flex flex-col ${className ?? ""}`}>
+    <label className={tw("flex flex-col", className)}>
       <p className="p-2 text-sm">{label}</p>
       {children}
     </label>
@@ -142,9 +142,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <input
       ref={ref}
-      className={`rounded-lg p-3 outline outline-1 outline-app-green focus-within:outline-2 ${
-        className ?? ""
-      }`}
+      className={tw(
+        "rounded-lg p-3 outline outline-1 outline-app-green-500 focus-within:outline-2",
+        className,
+      )}
       {...inputProps}
     />
   );
@@ -160,16 +161,17 @@ export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableI
     ref,
   ) {
     return (
-      <div className={`overflow-hidden ${rootClassName ?? ""}`}>
+      <div className={tw("overflow-hidden", rootClassName)}>
         <div
           className="relative flex after:invisible after:h-full after:w-full after:whitespace-pre-wrap after:break-words after:content-[attr(data-input)]"
           data-input={initialContent + "\n"}
         >
           <textarea
             ref={ref}
-            className={`absolute inset-0 size-full resize-none break-words outline-none ${
-              className ?? ""
-            }`}
+            className={tw(
+              "absolute inset-0 size-full resize-none break-words outline-none",
+              className,
+            )}
             {...props}
             onChange={(e) => {
               onChange?.(e);
@@ -194,7 +196,11 @@ export const DialogOverlay = forwardRef<
     <Overlay
       ref={ref}
       {...props}
-      className={`fixed inset-0 z-10 animate-fade-in bg-black/40 data-[state=closed]:animate-fade-out ${className}`}
+      className={tw(
+        "fixed inset-0 z-10 animate-fade-in bg-black/40 font-lato data-[state=closed]:animate-fade-in-reverse",
+        className,
+        lato.variable,
+      )}
     >
       {children}
     </Overlay>
@@ -209,7 +215,7 @@ export function useUrlDialog(queryKey: string) {
   useEffect(() => {
     function handler() {
       if (!isOpen) return;
-      setQueryParam(router, queryKey, null);
+      setQueryParam({ router, key: queryKey, value: null });
     }
 
     window.addEventListener("popstate", handler);
@@ -221,7 +227,7 @@ export function useUrlDialog(queryKey: string) {
   return {
     isOpen: !!isOpen,
     setIsOpen(this: void, open: boolean) {
-      setQueryParam(router, queryKey, open ? "true" : null, { push: true });
+      setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
     },
   };
 }

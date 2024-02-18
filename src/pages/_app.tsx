@@ -1,57 +1,35 @@
 import { LoadingIndicatorProvider } from "@/components/Loading";
-import { env } from "@/env.mjs";
+import { ToastProvider } from "@/components/Toast";
 import "@/styles/globals.css";
-import { browser } from "@/utils";
+import { tw } from "@/utils";
 import { api } from "@/utils/api";
+import { lato } from "@/utils/font";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Provider as JotaiProvider } from "jotai";
 import { type Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { AppProps } from "next/app";
-import { Lato } from "next/font/google";
 import Head from "next/head";
-import { useEffect, type ReactNode } from "react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
-
-const lato = Lato({
-  subsets: ["latin"],
-  variable: "--font-lato",
-  weight: ["100", "300", "400", "700", "900"],
-});
+import { type ReactNode } from "react";
 
 type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
-  useEffect(() => {
-    if (env.NEXT_PUBLIC_NODE_ENV == "production" || !browser) return;
-
-    const worker = import("@/utils/interceptor")
-      .then((module) => module.default)
-      .then((setupInterceptor) => setupInterceptor())
-      .catch(console.error);
-
-    return () => {
-      worker.then((w) => w?.stop()).catch(console.error);
-    };
-  }, []);
-
   const getLayout = Component.getLayout ?? ((x) => x);
   const page = getLayout(<Component {...pageProps} />);
 
   return (
-    <Providers session={session}>
-      <ToastContainer />
-      <Head>
-        <title>recallio</title>
-        <link
-          rel="icon"
-          href="/favicon.ico"
-        />
-      </Head>
-      <div className={`contents font-lato ${lato.variable}`}>
+    <div className={tw("contents font-lato", lato.variable)}>
+      <Providers session={session}>
+        <Head>
+          <title>recallio</title>
+          <link
+            rel="icon"
+            href="/favicon.ico"
+          />
+        </Head>
         {!Component.noAuth ? <AuthProtection>{page}</AuthProtection> : page}
-      </div>
-    </Providers>
+      </Providers>
+    </div>
   );
 };
 export default api.withTRPC(MyApp);
@@ -65,8 +43,16 @@ function Providers({ children, session }: { children: ReactNode; session: Sessio
   return (
     <SessionProvider session={session}>
       <JotaiProvider>
-        <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+        <ToastProvider>
+          <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+        </ToastProvider>
       </JotaiProvider>
     </SessionProvider>
   );
+}
+
+declare module "react" {
+  // Allow CSS vars in style declarations
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface CSSProperties extends Record<`--${string}`, string | undefined | number> {}
 }

@@ -4,7 +4,9 @@
  *
  * We also create a few inference helpers for input and output types.
  */
+import { toast } from "@/components/Toast";
 import { type AppRouter } from "@/server/api";
+import { QueryCache } from "@tanstack/react-query";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
@@ -39,8 +41,16 @@ export const api = createTRPCNext<AppRouter>({
         defaultOptions: {
           queries: {
             refetchOnMount: false,
+            retry: 1,
           },
         },
+        queryCache: new QueryCache({
+          onError(error) {
+            toast.error(
+              `Error while trying to retrieve data: ${error instanceof Error ? error.message : String(error)}`,
+            );
+          },
+        }),
       },
     };
   },

@@ -3,13 +3,36 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { review, reviewsToCategories } from "@/database/schema/product";
 import { utapi } from "@/server/uploadthing";
-import { providerSchema } from "@/utils/providers";
+import { ignore } from "@/utils";
+import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
 import { coercedStringSchema, createMaxLengthMessage, createMinLengthMessage } from "../utils/zod";
+
+const providerSchema = z.enum(providers, {
+  errorMap(_, ctx) {
+    return { message: ctx.defaultError.replace("Invalid enum value", "Invalid provider") };
+  },
+});
+const deleteAccountProcedure = protectedProcedure
+  .input(z.object({ provider: providerSchema }))
+  .mutation(({ ctx: { session }, input: { provider } }) => {
+    return db
+      .delete(account)
+      .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
+      .catch((e) => throwDefaultError(e, `Failed to unlink ${provider} account.`))
+      .then((query) => {
+        if (!query.rowsAffected) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `We couldn't find a ${provider} account linked to your profile`,
+          });
+        }
+      });
+  });
 
 export const userRouter = createTRPCRouter({
   setName: protectedProcedure
@@ -23,7 +46,7 @@ export const userRouter = createTRPCRouter({
         .update(user)
         .set({ name: input })
         .where(eq(user.id, session.user.id))
-        .catch((e) => throwDefaultError(e, "Error while trying to update username"))
+        .catch((e) => throwDefaultError(e, "Failed to update your username."))
         .then((query) => {
           if (!query.rowsAffected) {
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
@@ -44,14 +67,14 @@ export const userRouter = createTRPCRouter({
         .update(user)
         .set({ image: null })
         .where(eq(user.id, session.user.id))
-        .catch((e) => throwDefaultError(e, "Error while trying to update your avatar"))
+        .catch((e) => throwDefaultError(e, "Failed to update your avatar."))
         .then((query) => {
           if (!query.rowsAffected) {
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
           }
 
           if (!URL.canParse(image)) {
-            utapi.deleteFiles([image]).catch(console.error);
+            return utapi.deleteFiles([image]).then(ignore);
           }
         });
     });
@@ -63,22 +86,7 @@ export const userRouter = createTRPCRouter({
       .where(eq(account.userId, session.user.id))
       .then((accounts) => accounts.map((account) => account.provider));
   }),
-  deleteAccount: protectedProcedure
-    .input(z.object({ provider: providerSchema }))
-    .mutation(({ ctx: { session }, input: { provider } }) =>
-      db
-        .delete(account)
-        .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
-        .catch((e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`))
-        .then((query) => {
-          if (!query.rowsAffected) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: `We couldn't find a ${provider} account linked to your profile`,
-            });
-          }
-        }),
-    ),
+  deleteAccount: deleteAccountProcedure,
   deleteUser: protectedProcedure.mutation(({ ctx: { session: userSession } }) => {
     return db
       .transaction(async (tx) => {
@@ -114,6 +122,6 @@ export const userRouter = createTRPCRouter({
         }
         await utapi.deleteFiles(userImages);
       })
-      .catch((e) => throwDefaultError(e, "Error while trying to delete your account"));
+      .catch((e) => throwDefaultError(e, "Failed to delete your account"));
   }),
 });

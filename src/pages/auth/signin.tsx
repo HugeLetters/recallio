@@ -11,7 +11,7 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
   if (status === "authenticated") {
-    void router.replace("/profile");
+    router.replace("/profile").catch(console.error);
   }
   const callbackUrl = getQueryParam(router.query.callbackUrl);
   const error = getErrorMessage(getQueryParam(router.query.error));
@@ -53,9 +53,11 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
         if (typeof email !== "string") return;
 
         e.preventDefault();
-        void signIn("email", { email, callbackUrl, redirect: false });
+        signIn("email", { email, callbackUrl, redirect: false }).catch(console.error);
 
-        void router.push({ pathname: "/auth/email", query: { callbackUrl, email } });
+        router
+          .push({ pathname: "/auth/email", query: { callbackUrl, email } })
+          .catch(console.error);
       }}
     >
       <WithLabel label="E-mail">
@@ -85,7 +87,7 @@ function ProviderSignIn({ callbackUrl }: ProviderSignInProps) {
           key={provider}
           aria-label={`sign in with ${provider}`}
           onClick={() => {
-            void signIn(provider, { callbackUrl });
+            signIn(provider, { callbackUrl }).catch(console.error);
           }}
         >
           <Icon className="mx-auto size-7" />

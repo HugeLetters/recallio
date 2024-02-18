@@ -7,28 +7,41 @@ import {
 } from "react";
 import { Flipped as NativeFlipped } from "react-flip-toolkit";
 
+const dataTransitionName = "data-transition";
 export type FlippedProps = ComponentPropsWithoutRef<typeof NativeFlipped> & {
-  /** Put your animation class here */
+  /** These classes will be applied on in and out transitions. Out transition will also apply `animate-reverse` class */
   className?: string;
 };
+/**
+ * You may detect if element is currently transitioning in or out with `data-transition` attribute with values `in | out`
+ */
 export function Flipped({ children, className, onAppear, onExit, ...props }: FlippedProps) {
   const classList = getClassList(className);
   return (
     <NativeFlipped
       onAppear={(element, index, decisionData) => {
-        if (classList) {
-          element.classList.add(...classList);
-          element.style.opacity = "1";
-        }
         onAppear?.(element, index, decisionData);
+        if (!classList) return;
+
+        element.style.opacity = "";
+        // we have to trigger a reflow here due to how flip library works with opacity
+        element.offsetHeight;
+        element.classList.add(...classList);
+        element.setAttribute(dataTransitionName, "in");
+
+        onSelfAnimationEnd(element, () => {
+          element.classList.remove(...classList);
+          element.removeAttribute(dataTransitionName);
+        });
       }}
       onExit={(element, index, remove, decisionData) => {
-        if (classList) {
-          element.classList.add(...classList, "animate-reverse");
-          element.addEventListener("animationend", remove, { once: true });
-          element.style.pointerEvents = "none";
-        }
         onExit?.(element, index, remove, decisionData);
+        if (!classList) return remove();
+
+        element.classList.add(...classList, "animate-reverse");
+        element.setAttribute(dataTransitionName, "out");
+        onSelfAnimationEnd(element, remove);
+        element.style.pointerEvents = "none";
       }}
       {...props}
     >
@@ -64,11 +77,10 @@ export function Transition({
 
       for (const node of addedNodes) {
         if (!isExternalElement(node)) continue;
-        const classList = inClassList.filter((className) => !node.classList.contains(className));
 
-        node.classList.add(...classList);
-        node.addEventListener("animationend", () => {
-          node.classList.remove(...classList);
+        node.classList.add(...inClassList);
+        onSelfAnimationEnd(node, () => {
+          node.classList.remove(...inClassList);
         });
       }
     }
@@ -83,9 +95,7 @@ export function Transition({
         node.setAttribute(markerAttributeName, id);
 
         target.insertBefore(node, nextSibling);
-        node.addEventListener("animationend", () => {
-          node.remove();
-        });
+        onSelfAnimationEnd(node, () => node.remove());
       }
     }
 
@@ -116,4 +126,28 @@ export function Transition({
 
 function getClassList(classNames?: string) {
   return classNames?.split(" ").filter(Boolean);
+}
+
+export function onSelfAnimationEnd(element: Element, listener: (event: Event) => void) {
+  function cleanup(event: Event) {
+    if (event.target !== element) return;
+    listener(event);
+    element.removeEventListener("animationend", cleanup);
+    element.removeEventListener("animationcancel", cleanup);
+  }
+
+  element.addEventListener("animationend", cleanup);
+  element.addEventListener("animationcancel", cleanup);
+}
+
+export function onSelfTransitionEnd(element: HTMLElement, listener: (event: Event) => void) {
+  function cleanup(event: Event) {
+    if (event.target !== element) return;
+    listener(event);
+    element.removeEventListener("transitionend", cleanup);
+    element.removeEventListener("transitioncancel", cleanup);
+  }
+
+  element.addEventListener("transitionend", cleanup);
+  element.addEventListener("transitioncancel", cleanup);
 }

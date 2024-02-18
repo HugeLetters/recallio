@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { useLoadingIndicator } from "@/components/Loading";
+import { logToastError, toast } from "@/components/Toast";
 import {
   Button,
   DialogOverlay,
@@ -33,7 +34,9 @@ const Page: NextPageWithLayout = function () {
       <Button
         className="ghost mt-2"
         onClick={() => {
-          void signOut({ redirect: false });
+          signOut({ redirect: false }).catch(
+            logToastError("Error while trying to sign out.\nPlease try again."),
+          );
         }}
       >
         Sign Out
@@ -62,20 +65,19 @@ function UserImage({ user }: UserImageProps) {
       return;
     }
 
-    compressImage(image, 511 * 1024)
-      .then((compressedImage) => {
-        const resultImage = compressedImage ?? image;
-        queueUpdate(URL.createObjectURL(resultImage), () => {
-          startUpload([resultImage]).catch(console.error);
-        });
-      })
-      .catch(console.error);
+    queueUpdate(URL.createObjectURL(image), () => {
+      compressImage(image, 511 * 1024)
+        .then((compressedImage) => startUpload([compressedImage ?? image]))
+        .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+    });
   }
 
   function syncUserImage() {
     setTimeout(() => {
       update()
-        .catch(console.error)
+        .catch(
+          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+        )
         .finally(() => {
           if (optimistic.value) {
             URL.revokeObjectURL(optimistic.value);
@@ -87,13 +89,17 @@ function UserImage({ user }: UserImageProps) {
 
   const { startUpload, isUploading } = useUploadThing("userImageUploader", {
     onClientUploadComplete: syncUserImage,
-    onUploadError: syncUserImage,
+    onUploadError(e) {
+      toast.error(`Couldn't upload the image: ${e.message}`);
+      syncUserImage();
+    },
   });
 
   const { mutate: remove, isLoading } = api.user.deleteImage.useMutation({
+    onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
-  useLoadingIndicator(isUploading || isLoading, 300);
+  useLoadingIndicator(optimistic.isActive || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -113,8 +119,8 @@ function UserImage({ user }: UserImageProps) {
         )}
       </div>
       <ImageInput
-        isImageSet={true}
-        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green"
+        isImageSet={!!optimistic.value && optimistic.isActive}
+        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
@@ -139,7 +145,12 @@ function UserName({ username }: UserNameProps) {
           if (!session) return;
           setValue(session.user.name);
         })
-        .catch(console.error);
+        .catch(
+          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+        );
+    },
+    onError(e) {
+      toast.error(`Couldn't update username: ${e.message}`);
     },
   });
   useLoadingIndicator(isLoading, 300);
@@ -167,7 +178,7 @@ function UserName({ username }: UserNameProps) {
             setValue(e.target.value);
           }}
           onBlur={() => saveName(value)}
-          className="invalid:outline-app-red"
+          className="invalid:outline-app-red-500"
         />
       </WithLabel>
     </form>
@@ -188,11 +199,12 @@ function LinkedAccounts() {
 
       return prevProviders;
     },
-    onError(_, __, prevProviders) {
+    onError(e, __, prevProviders) {
+      toast.error(`Couldn't unlink account: ${e.message}`);
       trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
     },
     onSettled() {
-      void trpcUtils.user.getAccountProviders.invalidate();
+      trpcUtils.user.getAccountProviders.invalidate().catch(console.error);
     },
   });
   useLoadingIndicator(isLoading, 300);
@@ -200,33 +212,36 @@ function LinkedAccounts() {
   return (
     <div>
       <p className="p-2 text-sm">Linked accounts</p>
-      <div className="flex flex-col overflow-hidden rounded-lg bg-neutral-100">
+      <div className="flex flex-col divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100">
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
-            <LabeledSwitch
-              key={provider}
-              className="w-full rounded-none capitalize not-[:first-child]:border-t-2 not-[:first-child]:border-t-neutral-400/10"
-              label={
-                <div className="flex items-center gap-2">
-                  <Icon className="h-full w-7" />
-                  <span>{provider}</span>
-                </div>
-              }
-              aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
-              checked={isLinked}
-              onCheckedChange={(value) => {
-                if (value) {
-                  // optimistic update
-                  trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
-                    return [...(providers ?? []), provider];
-                  });
-                  void signIn(provider);
-                } else {
-                  deleteAccount({ provider });
+            <div key={provider}>
+              <LabeledSwitch
+                className="capitalize"
+                label={
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-full w-7" />
+                    <span>{provider}</span>
+                  </div>
                 }
-              }}
-            />
+                aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+                checked={isLinked}
+                onCheckedChange={(value) => {
+                  if (value) {
+                    // optimistic update
+                    trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                      return [...(providers ?? []), provider];
+                    });
+                    signIn(provider).catch(
+                      logToastError("Couldn't link account.\nPlease try again."),
+                    );
+                  } else {
+                    deleteAccount({ provider });
+                  }
+                }}
+              />
+            </div>
           );
         })}
       </div>
@@ -242,7 +257,7 @@ function AppSettings() {
       <p className="p-2 text-sm">App settings</p>
       <LabeledSwitch
         label="Reviews are private by default"
-        className="bg-app-green/20"
+        className="bg-app-green-100"
         checked={reviewPrivateDefault}
         onCheckedChange={setReviewPrivateDefault}
       />
@@ -258,7 +273,10 @@ function DeleteProfile({ username }: DeleteProfileProps) {
     onSuccess() {
       setIsOpen(false);
       setValue(true);
-      void signOut({ redirect: false });
+      signOut({ redirect: false }).catch(console.error);
+    },
+    onError(e) {
+      toast.error(`Couldn't delete your profile: ${e.message}`);
     },
   });
   useLoadingIndicator(isLoading);
@@ -277,7 +295,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
         <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
             <Dialog.Content
-              className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in"
+              className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse motion-safe:animate-scale-in"
               asChild
             >
               <form
@@ -306,7 +324,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
                 <Button
                   aria-disabled={isLoading}
                   type="submit"
-                  className="bg-app-red font-semibold text-white group-invalid:disabled group-invalid:bg-opacity-70"
+                  className="bg-app-red-500 font-semibold text-white group-invalid:disabled group-invalid:bg-app-red-350"
                 >
                   Delete profile
                 </Button>

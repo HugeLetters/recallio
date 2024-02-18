@@ -4,6 +4,7 @@ import { atomWithReducer } from "jotai/utils";
 import { useEffect, useId, useRef, type PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import { Transition } from "./Animation";
+import { tw } from "@/utils";
 
 const DURATION = 1000;
 const DOT_COUNT = 12;
@@ -22,7 +23,7 @@ export function Spinner({ className }: SpinnerProps) {
           cy="2"
           r="0"
           transform={`rotate(${360 * (i / DOT_COUNT)})`}
-          className={`origin-center ${i % 2 ? "fill-app-green" : "fill-app-green/30"}`}
+          className={tw("origin-center", i % 2 ? "fill-app-green-500" : "fill-app-green-500/30")}
         >
           <animate
             attributeName="r"
@@ -61,7 +62,7 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
       {children}
       {mounted
         ? createPortal(
-            <Transition outClassName="animate-fade-out">
+            <Transition outClassName="animate-fade-in-reverse">
               {!!stack.length || show ? (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
               ) : null}

@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { useSetLoadingIndicator } from "@/components/Loading";
+import { toast } from "@/components/Toast";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import {
   BarcodeTitle,
@@ -10,6 +11,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/page/Review";
+import { tw } from "@/utils";
 import { api, type RouterOutputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import { type NextPageWithLayout } from "@/utils/type";
@@ -17,7 +19,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState } from "react";
 import RightIcon from "~icons/formkit/right";
 
 const Page: NextPageWithLayout = function () {
@@ -38,7 +40,9 @@ function Review({ barcode }: ReviewProps) {
     {
       select(data) {
         if (!data) {
-          void router.replace({ pathname: "/review/[id]/edit", query: { id: barcode } });
+          router
+            .replace({ pathname: "/review/[id]/edit", query: { id: barcode } })
+            .catch(console.error);
           throw Error("No review found");
         }
 
@@ -79,9 +83,10 @@ function Review({ barcode }: ReviewProps) {
       <Rating value={review.rating} />
       <ProsConsComment review={review} />
       <div
-        className={`rounded-lg px-4 py-4 ${
-          review.isPrivate ? "bg-app-green/20" : "bg-neutral-200"
-        }`}
+        className={tw(
+          "rounded-lg px-4 py-4",
+          review.isPrivate ? "bg-app-green-100" : "bg-neutral-200",
+        )}
       >
         {review.isPrivate ? "Private" : "Public"} review
       </div>
@@ -106,14 +111,14 @@ function AttachedImage({ image }: AttachedImageProps) {
       {image ? (
         <UrlDialogRoot dialogQueryKey="attached-image-dialog">
           <Dialog.Trigger
-            className="size-full rounded-full outline-app-green"
+            className="size-full rounded-full outline-app-green-500"
             aria-label="Open full image view"
           >
             <ImagePreview src={image} />
           </Dialog.Trigger>
           <Dialog.Portal>
             <DialogOverlay className="flex items-center justify-center">
-              <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-out">
+              <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-in-reverse">
                 <Dialog.Close
                   className="flex"
                   aria-label="Close full image view"
@@ -211,10 +216,13 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       setLoading(true);
       router.push("/profile").catch(console.error);
     },
+    onError(e) {
+      toast.error(`Couldn't delete the review: ${e.message}`);
+    },
     onSuccess() {
-      void apiUtils.review.getUserReviewSummaryList.invalidate();
-      void apiUtils.review.getReviewCount.invalidate();
-      void apiUtils.product.getProductSummaryList.invalidate();
+      apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
+      apiUtils.review.getReviewCount.invalidate().catch(console.error);
+      apiUtils.product.getProductSummaryList.invalidate().catch(console.error);
     },
     onSettled() {
       setLoading(false);
@@ -241,7 +249,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       <Dialog.Portal>
         <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-app p-4">
-            <Dialog.Content className="flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-out motion-safe:animate-scale-in">
+            <Dialog.Content className="group flex flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse motion-safe:animate-scale-in">
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
@@ -264,14 +272,23 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                     }
                     mutate({ barcode });
                   }}
-                  style={{ "--duration": `${deleteTimeout}ms` } as CSSProperties}
-                  className={`relative overflow-hidden bg-app-red font-semibold text-white after:absolute after:inset-0 after:animate-slide-left after:bg-white/50 after:animate-reverse after:animate-duration-[var(--duration)] ${enabled ? "after:content-none" : "disabled"}`}
+                  style={{ "--duration": `${deleteTimeout}ms` }}
+                  className={tw(
+                    "relative overflow-hidden bg-app-red-500 font-semibold text-white",
+                    "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)] group-data-[state=closed]:after:content-none",
+                    enabled ? "after:content-none" : "disabled",
+                  )}
                 >
                   Delete
                 </Button>
               </Dialog.Close>
               <Dialog.Close asChild>
-                <Button className="ghost font-semibold ">Cancel</Button>
+                <Button
+                  autoFocus
+                  className="ghost font-semibold"
+                >
+                  Cancel
+                </Button>
               </Dialog.Close>
             </Dialog.Content>
           </div>

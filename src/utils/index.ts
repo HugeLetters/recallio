@@ -1,5 +1,7 @@
+import { logToastError } from "@/components/Toast";
 import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
-import type { Option, Some } from "./type";
+import { filterMap } from "./array";
+import type { Option, Prettify, Some } from "./type";
 
 export const browser = typeof window !== "undefined";
 
@@ -15,14 +17,13 @@ export function isNonEmptyString(value: unknown): value is string {
   return !!value && typeof value === "string";
 }
 
-export function fetchNextPage<Q extends UseTRPCInfiniteQueryResult<unknown, unknown>>({
-  isFetching,
-  hasNextPage,
-  fetchNextPage,
-}: Q) {
+export function fetchNextPage<Q extends UseTRPCInfiniteQueryResult<unknown, unknown>>(
+  { isFetching, hasNextPage, fetchNextPage }: Q,
+  onError = logToastError("Failed to load more content."),
+) {
   return function () {
     if (isFetching || !hasNextPage) return;
-    fetchNextPage().catch(console.error);
+    fetchNextPage().catch(onError);
   };
 }
 
@@ -41,4 +42,25 @@ export function isSetEqual<T>(a: Set<T>, b: Set<T>) {
 
 export function isSome<O extends Option<unknown>>(option: O): option is Extract<O, Some<unknown>> {
   return option.ok;
+}
+
+type Falsy = undefined | null | false;
+type ClassGroup = Falsy | string | Array<ClassGroup>;
+export function tw(...classGroup: ClassGroup[]): string {
+  return filterMap(
+    classGroup,
+    (x): x is Exclude<ClassGroup, Falsy> => !!x,
+    (classGroup) => (Array.isArray(classGroup) ? tw(...classGroup) : classGroup),
+  ).join(" ");
+}
+
+export function mergeInto<T extends Record<never, unknown>, O>(
+  target: T,
+  object: O,
+): Prettify<Omit<T, keyof O> & O> {
+  return { ...target, ...object };
+}
+
+export function ignore() {
+  return;
 }

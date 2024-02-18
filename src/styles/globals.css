@@ -4,7 +4,9 @@
 
 @layer base {
   html {
+    --font-lato: Lato;
     font-family: theme("fontFamily.lato");
+    color: theme("colors.lime.950");
   }
 
   button,
@@ -25,7 +27,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: theme("colors.app.green");
+    background-color: theme("colors.app.green.500");
     border-radius: theme("borderRadius.full");
   }
 }

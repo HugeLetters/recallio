@@ -39,7 +39,7 @@ function ProductPage({ barcode }: ProductPageProps) {
     {
       select(data) {
         if (!data) {
-          void router.replace({ pathname: "/review/[id]", query: { id: barcode } });
+          router.replace({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
           throw Error(`No public reviews for product with barcode ${barcode} exist.`);
         }
         return data;

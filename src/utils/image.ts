@@ -2,66 +2,58 @@ import { useEffect, useMemo, useRef } from "react";
 import { browser } from ".";
 
 export async function compressImage(file: File, targetBytes: number): Promise<File | null> {
-  if (!browser) throw Error("This function is browser only");
+  if (!browser) throw Error("This function is browser-only");
 
   const bitmap = await createImageBitmap(file);
   const canvas = document.createElement("canvas");
-  canvas.width = bitmap.width;
-  canvas.height = bitmap.height;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
+  if (!ctx) throw Error("Couldn't get canvas 2D context");
 
-  if (file.size < targetBytes) {
-    return drawImage(bitmap, 1, ctx, canvas).then((blob) =>
-      blob ? blobToFile(blob, file.name) : null,
-    );
+  const drawImage = function (scale: number) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = bitmap.width * scale;
+    canvas.height = bitmap.height * scale;
+
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), "image/webp");
+    });
+  };
+
+  const webpImage = await drawImage(1);
+  if (!webpImage) return null;
+  if (webpImage.size <= targetBytes) {
+    return blobToFile(webpImage, file.name);
   }
 
-  const checkedSizeSet = new Set<number>();
-  let bestImage: Blob | null = null;
+  let bestFit: Blob | null = null;
+  for (let i = 2, scale = 0.5; i <= 11; i++) {
+    const image = await drawImage(scale);
+    if (!image) break;
 
-  for (let image: Blob | null = file, i = 0; image && i < 15; i++) {
-    image = await drawImage(bitmap, getScale(image.size, targetBytes), ctx, canvas);
-    if (!image || checkedSizeSet.has(image.size)) break;
-    checkedSizeSet.add(image.size);
+    if (image.size <= targetBytes) {
+      const isBetterFit = !bestFit || image.size > bestFit.size;
+      if (isBetterFit) {
+        bestFit = image;
 
-    if (image.size < targetBytes && (!bestImage || image.size > bestImage.size)) {
-      bestImage = image;
-    }
+        const isAcceptable = bestFit.size <= targetBytes && bestFit.size >= targetBytes * 0.95;
+        if (isAcceptable) break;
+      }
 
-    if (bestImage && bestImage.size > targetBytes * 0.95 && bestImage.size < targetBytes) {
-      break;
+      scale += 1 / 2 ** i;
+    } else {
+      scale -= 1 / 2 ** i;
     }
   }
 
-  return bestImage ? blobToFile(bestImage, file.name) : bestImage;
-}
-
-function getScale(value: number, target: number) {
-  return Math.sqrt(value / target);
+  if (!bestFit) return null;
+  return blobToFile(bestFit, file.name);
 }
 
 function blobToFile(blob: Blob, name: string) {
-  const fileExt = blob.type.split("/").at(-1) ?? "webp";
-  return new File([blob], name.split(".").slice(0, -1).concat(fileExt).join("."), {
-    type: "image/",
-  });
-}
-
-function drawImage(
-  bitmap: ImageBitmap,
-  scale: number,
-  ctx: CanvasRenderingContext2D,
-  canvas: HTMLCanvasElement,
-) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  canvas.width /= scale;
-  canvas.height /= scale;
-
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise<Blob | null>((resolve) => {
-    canvas.toBlob((blob) => resolve(blob), "image/webp");
-  });
+  const fileExt = blob.type.match(/.+\/(.+$)/)?.at(1) ?? "webp";
+  const newFileName = name.replace(/(.+\.).+$/, `$1${fileExt}`);
+  return new File([blob], newFileName, { type: "image/" });
 }
 
 export function useBlobUrl<B extends Blob | null | undefined>(blob: B) {

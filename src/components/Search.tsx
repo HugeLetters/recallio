@@ -5,7 +5,14 @@ import type { ModelProps } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+  type ReactNode,
+  type FormEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import { Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
@@ -49,7 +56,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
             document.body,
           )}
           {searchIcon}
-          <HeaderSearchControls
+          <DebouncedSearch
             value={search}
             setValue={setSearch}
             debounceRef={debouncedQuery}
@@ -74,25 +81,32 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   );
 }
 
-type HeaderSearchControlsProps = ModelProps<string> & {
+type DebouncedSearchProps = ModelProps<string> & {
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   onReset?: () => void;
   debounceRef: MutableRefObject<number | undefined>;
 };
-export function HeaderSearchControls({
+export function DebouncedSearch({
   value,
   setValue,
   onReset,
+  onSubmit = function (event) {
+    event.preventDefault();
+  },
   debounceRef,
-}: HeaderSearchControlsProps) {
+}: DebouncedSearchProps) {
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <>
+    <form
+      className="contents"
+      onSubmit={onSubmit}
+    >
       <input
-        // key helps refocus input when clear button is pressed
-        key={`${!!value}`}
         autoFocus
-        className="h-full min-w-0 grow p-1 caret-app-green outline-none placeholder:p-1"
+        ref={inputRef}
+        className="h-full min-w-0 grow p-1 caret-app-green-500 outline-none placeholder:p-1"
         placeholder="Search"
         value={value}
         onChange={(e) => {
@@ -101,24 +115,25 @@ export function HeaderSearchControls({
 
           window.clearTimeout(debounceRef.current);
           debounceRef.current = window.setTimeout(() => {
-            setQueryParam(router, SEARCH_QUERY_KEY, newValue);
+            setQueryParam({ router, key: SEARCH_QUERY_KEY, value: newValue });
           }, 300);
         }}
       />
       <button
+        type="reset"
         aria-label="Reset search filter"
         className="ml-1"
         onClick={() => {
           onReset?.();
           setValue("");
-
           window.clearTimeout(debounceRef.current);
-          setQueryParam(router, SEARCH_QUERY_KEY, null);
+          setQueryParam({ router, key: SEARCH_QUERY_KEY, value: null });
+          inputRef.current?.focus();
         }}
       >
         <ResetIcon className="size-7" />
       </button>
-    </>
+    </form>
   );
 }
 
@@ -130,7 +145,7 @@ export function useParseSort<const T extends OptionList>(optionList: T): T[numbe
 
   if (query && includes(optionList, query)) return query;
 
-  if (query !== undefined) setQueryParam(router, SORT_QUERY_KEY, null);
+  if (query !== undefined) setQueryParam({ router, key: SORT_QUERY_KEY, value: null });
   return optionList[0];
 }
 type SortDialogProps = { optionList: OptionList };
@@ -152,8 +167,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
-          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-down">
-            <Dialog.Title className="mb-6 text-xl font-medium">Sort By</Dialog.Title>
+          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse">
+            <Dialog.Title className="mb-6 text-xl font-semibold">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
               spring={{ stiffness: 700, overshootClamping: true }}
@@ -161,7 +176,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
               <RadioGroup.Root
                 value={sortBy}
                 onValueChange={(value) => {
-                  setQueryParam(router, SORT_QUERY_KEY, value);
+                  setQueryParam({ router, key: SORT_QUERY_KEY, value });
                 }}
                 className="flex flex-col gap-2"
               >
@@ -171,12 +186,12 @@ export function SortDialog({ optionList }: SortDialogProps) {
                     key={option}
                     className="group flex items-center gap-2 rounded-lg px-1 py-2 outline-none transition-colors duration-300 focus-visible:bg-neutral-400/20"
                   >
-                    <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green">
+                    <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green-500">
                       <Flipped
                         flipId={`${option === sortBy}`}
                         key={`${option === sortBy}`}
                       >
-                        <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green" />
+                        <RadioGroup.Indicator className="block aspect-square w-4 rounded-full bg-app-green-500" />
                       </Flipped>
                     </div>
                     <span className="capitalize">{option}</span>

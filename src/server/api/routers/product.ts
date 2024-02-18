@@ -173,10 +173,11 @@ const productReviewsQuery = protectedProcedure
 export const productRouter = createTRPCRouter({
   getProductNames: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema(undefined) }))
-    .query(async ({ input: { barcode } }): Promise<string[]> => {
+    .query(({ input: { barcode } }): Promise<string[]> => {
       return getProductNames(barcode)
         .then((cached) => {
           if (cached) return cached;
+
           return getScrapedProducts(barcode).then((products) => {
             cacheProductNames(barcode, products).catch(console.error);
             return products;

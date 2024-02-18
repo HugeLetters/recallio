@@ -13,6 +13,7 @@ import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 import { Button } from "../UI";
+import { tw } from "@/utils";
 
 type ProsConsCommentWrapperProps = { children: ReactNode[] };
 export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps) {
@@ -21,7 +22,7 @@ export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps
   const lastIndex = filtered.length - 1;
 
   return (
-    <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green focus-within:outline-2">
+    <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green-500 focus-within:outline-2">
       {filtered.map((element, i) => (
         <Fragment key={i}>
           {element}
@@ -33,11 +34,11 @@ export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps
 }
 
 export function ProsIcon() {
-  return <PlusIcon className="h-fit w-full text-app-green" />;
+  return <PlusIcon className="h-fit w-full text-app-green-500" />;
 }
 
 export function ConsIcon() {
-  return <MinusIcon className="h-fit w-full text-app-red" />;
+  return <MinusIcon className="h-fit w-full text-app-red-500" />;
 }
 
 type ImagePreviewProps = { src: string };
@@ -68,9 +69,10 @@ export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>
     return (
       <Button
         ref={ref}
-        className={`flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-400 outline-neutral-300 ${
-          className ?? ""
-        }`}
+        className={tw(
+          "flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-400 outline-neutral-300",
+          className,
+        )}
         {...props}
       >
         {children}

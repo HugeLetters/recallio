@@ -68,3 +68,7 @@ export function useMounted() {
   }, []);
   return mounted;
 }
+
+export function useHasMouse() {
+  return useRef(browser ? matchMedia("(pointer:fine)").matches : false).current;
+}

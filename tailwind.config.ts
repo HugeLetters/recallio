@@ -1,3 +1,5 @@
+import type { DistributedRecord } from "@/utils/type";
+import type { CSSProperties } from "react";
 import { type Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from "tailwindcss/plugin";
@@ -5,17 +7,20 @@ import plugin from "tailwindcss/plugin";
 const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
 
-const animationDuration = "--tw-animate-duration";
-const slideUp = "slide-up";
-const slideDown = "slide-down";
-const slideLeft = "slide-left";
-const fadeIn = "fade-in";
-const fadeOut = "fade-out";
-const scaleIn = "scale-in";
-const scaleOut = "scale-out";
-function defineAnimation(animationName: string) {
-  return { [animationName]: `${animationName} var(${animationDuration}, 200ms) ease-in-out` };
-}
+const appRedColor = defineColor(0, 39);
+const appGreenColor = defineColor(122, 39);
+const appGoldColor = defineColor(47, 87);
+
+const slideUp = defineReversibleAnimation("slide-up", {
+  from: { translate: "0 70%", opacity: "0" },
+});
+const slideLeft = defineReversibleAnimation("slide-left", {
+  from: { translate: "30% 0", opacity: "0" },
+});
+const fadeIn = defineReversibleAnimation("fade-in", { from: { opacity: "0" } });
+const scaleIn = defineReversibleAnimation("scale-in", { from: { scale: "0.7", opacity: "0" } });
+const expandX = defineReversibleAnimation("expand-x", { from: { scale: "0 1" } });
+const animations = groupAnimations(slideUp, slideLeft, fadeIn, scaleIn, expandX);
 
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
@@ -25,50 +30,13 @@ export default {
       fontFamily: { lato: ["var(--font-lato, Lato)", ...defaultTheme.fontFamily.sans] },
       colors: {
         app: {
-          gold: "hsla(47, 87%, 56%)",
-          green: "hsla(122, 39%, 49%)",
-          red: "hsla(0, 39%, 49%)",
+          gold: appGoldColor,
+          green: appGreenColor,
+          red: appRedColor,
         },
       },
-      animation: {
-        ...defineAnimation(slideUp),
-        ...defineAnimation(slideDown),
-        ...defineAnimation(fadeIn),
-        ...defineAnimation(fadeOut),
-        ...defineAnimation(scaleIn),
-        ...defineAnimation(scaleOut),
-        ...defineAnimation(slideLeft),
-      },
-      keyframes: {
-        [slideUp]: {
-          "0%": { translate: "0 100%" },
-          "100%": { translate: "0 0" },
-        },
-        [slideDown]: {
-          "0%": { translate: "0 0" },
-          "100%": { translate: "0 100%" },
-        },
-        [slideLeft]: {
-          "0%": { translate: "100% 0" },
-          "100%": { translate: "0 0" },
-        },
-        [fadeIn]: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        [fadeOut]: {
-          "0%": { opacity: "1" },
-          "100%": { opacity: "0" },
-        },
-        [scaleIn]: {
-          "0%": { scale: "0.7", opacity: "0" },
-          "100%": { scale: "1", opacity: "1" },
-        },
-        [scaleOut]: {
-          "0%": { scale: "1", opacity: "1" },
-          "100%": { scale: "0.7", opacity: "0" },
-        },
-      },
+      animation: { ...animations.animation },
+      keyframes: { ...animations.keyframes },
     },
   },
   plugins: [
@@ -76,7 +44,13 @@ export default {
       addVariant("selected", "&:is(:focus-within,:hover)");
       addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
       addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
+      addVariant("focus-visible-within", [
+        "&:has(:focus-visible)",
+        "@supports not selector(:has(*)) {&:focus-within}",
+      ]);
       matchVariant("not", (value) => `&:not(${value})`);
+      matchVariant("nth", (value) => `&:nth-child(${value})`);
+      matchVariant("nth-last", (value) => `&:nth-last-child(${value})`);
 
       addComponents({
         ".scrollbar-gutter": {
@@ -99,10 +73,8 @@ export default {
           },
         },
         ".primary": {
-          "--tw-bg-opacity": "1",
-          backgroundColor: "hsla(122, 39%, 49%, var(--tw-bg-opacity))",
-          "--tw-text-opacity": "1",
-          color: "rgb(255 255 255 / var(--tw-text-opacity))",
+          backgroundColor: appGreenColor[500],
+          color: "white",
         },
         ".ghost": {
           "--tw-bg-opacity": "1",
@@ -115,11 +87,11 @@ export default {
           },
         },
         ".destructive": {
-          backgroundColor: "rgb(153 27 27 / 0.1)",
-          color: "rgb(153 27 27 / 0.8)",
+          backgroundColor: appRedColor[100],
+          color: appRedColor[550],
           outline: "2px solid transparent",
           "&:focus-within": {
-            outlineColor: "rgb(153 27 27 / 0.4)",
+            outlineColor: appRedColor[250],
           },
         },
       });
@@ -135,10 +107,34 @@ export default {
       matchUtilities(
         {
           "animate-duration"(value) {
-            return { [animationDuration]: String(value) };
+            return { animationDuration: String(value) };
           },
         },
         { values: theme("transitionDuration") },
+      );
+      matchUtilities(
+        {
+          "animate-function"(value) {
+            return { animationTimingFunction: String(value) };
+          },
+        },
+        { values: { "ease-out": "cubic-bezier(.32,.52,.36,.99)", linear: "linear" } },
+      );
+      matchUtilities(
+        {
+          "animation-play-state"(value) {
+            return { animationPlayState: String(value) };
+          },
+        },
+        { values: { play: "running", pause: "paused" } },
+      );
+      matchUtilities(
+        {
+          "animation-fill-mode"(value) {
+            return { animationFillMode: String(value) };
+          },
+        },
+        { values: { none: "none", forward: "forwards", backward: "backwards", both: "both" } },
       );
       matchUtilities(
         {
@@ -159,3 +155,66 @@ export default {
     }),
   ],
 } satisfies Config;
+
+type Keyframes = DistributedRecord<
+  "from" | "to" | `${number}%`,
+  CSSProperties & Record<string, string>
+>;
+type Animation = {
+  animation: Record<string, string>;
+  keyframes: Record<string, Keyframes>;
+};
+function defineAnimation(animationName: string, keyframes: Keyframes): Animation {
+  return {
+    animation: { [animationName]: `${animationName} 200ms ease-in-out` },
+    keyframes: { [animationName]: keyframes },
+  };
+}
+
+function defineReversibleAnimation(animationName: string, keyframes: Keyframes): Animation {
+  function reverseStep(step: string) {
+    if (step === "to") return "from";
+    if (step === "from") return "to";
+
+    const match = step.match(/\d+(?=%$)/);
+    if (!match) return step;
+
+    const [percentage] = match;
+    return `${100 - +percentage}%`;
+  }
+
+  const animation = defineAnimation(animationName, keyframes);
+  const reverseAnimation = defineAnimation(
+    `${animationName}-reverse`,
+    Object.fromEntries(
+      Object.entries(keyframes).map(([step, transform]) => [reverseStep(step), transform]),
+    ),
+  );
+  return {
+    animation: { ...animation.animation, ...reverseAnimation.animation },
+    keyframes: { ...animation.keyframes, ...reverseAnimation.keyframes },
+  };
+}
+
+function groupAnimations(...animations: Animation[]): Animation {
+  return {
+    animation: Object.fromEntries(
+      animations.flatMap((animation) => Object.entries(animation.animation)),
+    ),
+    keyframes: Object.fromEntries(
+      animations.flatMap((animation) => Object.entries(animation.keyframes)),
+    ),
+  };
+}
+
+type ColorStep = "1" | "2" | "3" | "5" | "6" | "7" | "8" | "9";
+type ColorVariant = `${ColorStep}00` | `${ColorStep}50` | "50";
+type Color = Record<ColorVariant, string>;
+function defineColor(hue: number, saturation: number) {
+  return Object.fromEntries(
+    Array.from({ length: 19 }, (_, i) => [
+      (i + 1) * 50,
+      `hsl(${hue} ${saturation}% ${((100 / 20) * (19 - i)).toFixed(0)}%)`,
+    ]),
+  ) as Color;
+}

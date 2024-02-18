@@ -1,3 +1,4 @@
+import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
 import type { DiscriminatedUnion, Icon } from "@/utils/type";
 import { useAtomValue } from "jotai/react";
@@ -26,7 +27,7 @@ type LayoutProps = {
 };
 export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   return (
-    <div className="grid h-dvh w-full grid-rows-[auto_1fr_auto] bg-white font-lato text-lime-950">
+    <div className="grid h-dvh w-full grid-rows-[auto_1fr_auto] bg-white">
       <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="scrollbar-gutter flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
         {children}
@@ -76,7 +77,7 @@ export function HeaderButton({ Icon, type, className, ...butonAttributes }: Head
   return (
     <button
       type={type ?? "button"}
-      className={`flex items-center ${className ?? ""}`}
+      className={tw("flex items-center", className)}
       {...butonAttributes}
     >
       <Icon className="size-8" />
@@ -88,7 +89,7 @@ type HeaderLinkProps = { Icon: Icon } & ComponentPropsWithoutRef<typeof Link>;
 export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
   return (
     <Link
-      className={`flex items-center ${className ?? ""}`}
+      className={tw("flex items-center", className)}
       {...linkAttributes}
     >
       <Icon className="size-8" />
@@ -107,12 +108,12 @@ function Footer() {
       flipId="active-icon-bg"
       className="animate-scale-in"
     >
-      <div className="absolute -inset-y-6 inset-x-2 -z-10 bg-app-green/35 blur-xl" />
+      <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
     </Flipped>
   );
 
   return (
-    <footer className="flex h-20 justify-center bg-white text-neutral-400 shadow-around sa-o-15 sa-r-2">
+    <footer className="flex h-16 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
         <Flipper
           flipKey={pathname}
@@ -127,9 +128,10 @@ function Footer() {
           />
           <Link
             href="/scan"
-            className={`flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300 ${
-              pathname.startsWith("/scan") ? "bg-app-green text-white" : "bg-neutral-100"
-            }`}
+            className={tw(
+              "flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300",
+              pathname.startsWith("/scan") ? "bg-app-green-500 text-white" : "bg-neutral-100",
+            )}
           >
             <ScannerIcon className="size-full" />
           </Link>
@@ -155,11 +157,12 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
   return (
     <Link
       href={href}
-      className={`relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors ${
-        activeBackground ? "text-app-green" : ""
-      }`}
+      className={tw(
+        "relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors",
+        activeBackground && "text-app-green-500",
+      )}
     >
-      <Icon className="size-7" />
+      <Icon className="size-6 lg:size-7" />
       <span>{label}</span>
       {activeBackground}
     </Link>
@@ -168,22 +171,22 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
 
 const selection = ["upload", "scan", "input"] as const;
 type Selection = (typeof selection)[number];
-type SelectionEvent = Selection | "next" | "prev";
-export const selectionAtom = atomWithReducer<Selection, SelectionEvent>("scan", (value, action) => {
-  switch (action) {
-    case "upload":
-    case "scan":
-    case "input":
-      return action;
-    case "next":
-      return selection[(indexOf(selection, value) ?? selection.length) + 1] ?? selection[2];
-    case "prev":
-      return selection[(indexOf(selection, value) ?? 0) - 1] ?? selection[0];
-    default: {
-      return value;
-    }
-  }
-});
+type SelectionAction = Selection | { move: number; onUpdate?: (value: Selection) => void };
+function getStateAfterMove(state: Selection, move: number): Selection {
+  const currentIndex = indexOf(selection, state);
+  const fallbackIndex = move > 0 ? 2 : 0;
+  return selection[(currentIndex ?? fallbackIndex) + move] ?? selection[fallbackIndex];
+}
+export const selectionAtom = atomWithReducer<Selection, SelectionAction>(
+  "scan",
+  (prevState, action) => {
+    if (!action) return prevState;
+    if (typeof action === "string") return action;
+    const nextState = getStateAfterMove(prevState, action.move);
+    action.onUpdate?.(nextState);
+    return nextState;
+  },
+);
 
 function getFooterIcon(selection: Selection) {
   switch (selection) {
