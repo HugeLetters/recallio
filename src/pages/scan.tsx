@@ -8,7 +8,6 @@ import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from
 import { useAtom } from "jotai";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
-
 import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {

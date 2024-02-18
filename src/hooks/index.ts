@@ -72,3 +72,7 @@ export function useMounted() {
 export function useHasMouse() {
   return useRef(browser ? matchMedia("(pointer:fine)").matches : false).current;
 }
+
+export function useDrag() {
+  return;
+}
