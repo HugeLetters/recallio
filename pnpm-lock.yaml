@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@radix-ui/react-toast@1.1.5':
-    hash: qd4mqbqr322dvcjaernxzmlphi
+    hash: rrjhq7r4ytyxncsojfetjzmou4
     path: patches/@radix-ui__react-toast@1.1.5.patch
   next-auth@4.23.1:
     hash: yvsgxii7fhox2eua2fqmbhdpzu
@@ -36,7 +36,7 @@ dependencies:
     version: 1.0.3(@types/react-dom@18.2.18)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
   '@radix-ui/react-toast':
     specifier: ^1.1.5
-    version: 1.1.5(patch_hash=qd4mqbqr322dvcjaernxzmlphi)(@types/react-dom@18.2.18)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
+    version: 1.1.5(patch_hash=rrjhq7r4ytyxncsojfetjzmou4)(@types/react-dom@18.2.18)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
   '@radix-ui/react-toolbar':
     specifier: ^1.0.4
     version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0)
@@ -1730,7 +1730,7 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /@radix-ui/react-toast@1.1.5(patch_hash=qd4mqbqr322dvcjaernxzmlphi)(@types/react-dom@18.2.18)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
+  /@radix-ui/react-toast@1.1.5(patch_hash=rrjhq7r4ytyxncsojfetjzmou4)(@types/react-dom@18.2.18)(@types/react@18.2.55)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-fRLn227WHIBRSzuRzGJ8W+5YALxofH23y0MlPLddaIpLpCDqdE0NZlS2NRQDRiptfxDeeCjgFIpexB1/zkxDlw==}
     peerDependencies:
       '@types/react': '*'

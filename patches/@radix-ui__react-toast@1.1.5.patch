@@ -1,21 +1,8 @@
 diff --git a/dist/index.mjs b/dist/index.mjs
-index 1366d141dd80a8491c9635239950080c1633f8e2..c8fd5d87b685af7dd878bd2a638782c6115827b4 100644
+index 1366d141dd80a8491c9635239950080c1633f8e2..e33de0222c0a0da33e720e49bd75a221cf496a46 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
-@@ -54,8 +54,10 @@ const $054eb8030ebde76e$export$f5d03d415824e0e = (props)=>{
-         toastCount: toastCount,
-         viewport: viewport,
-         onViewportChange: setViewport,
--        onToastAdd: $eyrYI$useCallback(()=>setToastCount((prevCount)=>prevCount + 1
--            )
-+        onToastAdd: $eyrYI$useCallback(()=>{
-+            isClosePausedRef.current = false;
-+            setToastCount((prevCount)=>prevCount + 1)
-+        }
-         , []),
-         onToastRemove: $eyrYI$useCallback(()=>setToastCount((prevCount)=>prevCount - 1
-             )
-@@ -351,8 +353,8 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+@@ -351,8 +351,8 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
          onClose();
      });
      const startTimer = $eyrYI$useCallback((duration)=>{
@@ -25,7 +12,27 @@ index 1366d141dd80a8491c9635239950080c1633f8e2..c8fd5d87b685af7dd878bd2a638782c6
          closeTimerStartTimeRef.current = new Date().getTime();
          closeTimerRef.current = window.setTimeout(handleClose, duration);
      }, [
-@@ -388,6 +390,7 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+@@ -362,10 +362,12 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+         const viewport = context.viewport;
+         if (viewport) {
+             const handleResume = ()=>{
++                if (node1) node1.setAttribute("data-timer", "play")
+                 startTimer(closeTimerRemainingTimeRef.current);
+                 onResume === null || onResume === void 0 || onResume();
+             };
+             const handlePause = ()=>{
++                if (node1) node1.setAttribute("data-timer", "pause")
+                 const elapsedTime = new Date().getTime() - closeTimerStartTimeRef.current;
+                 closeTimerRemainingTimeRef.current = closeTimerRemainingTimeRef.current - elapsedTime;
+                 window.clearTimeout(closeTimerRef.current);
+@@ -383,11 +385,13 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+         duration1,
+         onPause,
+         onResume,
+-        startTimer
++        startTimer,
++        node1
+     ]); // start timer when toast opens or duration changes.
      // we include `open` in deps because closed !== unmounted when animating
      // so it could reopen before being completely unmounted
      $eyrYI$useEffect(()=>{
@@ -33,3 +40,15 @@ index 1366d141dd80a8491c9635239950080c1633f8e2..c8fd5d87b685af7dd878bd2a638782c6
          if (open && !context.isClosePausedRef.current) startTimer(duration1);
      }, [
          open,
+@@ -395,6 +399,11 @@ const $054eb8030ebde76e$var$ToastImpl = /*#__PURE__*/ $eyrYI$forwardRef((props,
+         context.isClosePausedRef,
+         startTimer
+     ]);
++    // reset toast play state on duration change
++    $eyrYI$useEffect(()=>{
++        if (!node1) return;
++        node1.setAttribute("data-timer", context.isClosePausedRef.current ? "pause" : "play" ) 
++    }, [ node1, duration1, context.isClosePausedRef ]);
+     $eyrYI$useEffect(()=>{
+         onToastAdd();
+         return ()=>onToastRemove()

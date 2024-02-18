@@ -157,8 +157,8 @@ function ToastSlot({
                 "absolute bottom-0 h-1 w-full origin-left bg-black/10",
                 "animate-expand-x-reverse animate-duration-[var(--duration)] animate-function-linear animation-fill-mode-forward",
                 "transition-opacity duration-300 group-data-[state=closed]:opacity-0",
-                // todo - it plays when window isnt focused
-                !isStacked && "opacity-0 animation-play-state-pause",
+                !isStacked && "opacity-0",
+                "animation-play-state-pause group-data-[timer=play]:animation-play-state-play",
               )}
             />
           )}

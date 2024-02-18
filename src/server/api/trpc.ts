@@ -63,7 +63,6 @@ export const createTRPCContext = async ({ req, res }: CreateNextContextOptions) 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {
     const cause = error.cause;
-    // todo - explicit error handling here. It shouldn't send unhandled error messages to the client - only the ones sent explicitly
     return {
       message: cause instanceof ZodError ? `${cause.errors[0]?.message}` : error.message,
       data:

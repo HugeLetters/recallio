@@ -58,10 +58,9 @@ export function mergeInto<T extends Record<never, unknown>, O>(
   target: T,
   object: O,
 ): Prettify<Omit<T, keyof O> & O> {
-  return Object.assign(target, object);
+  return { ...target, ...object };
 }
 
-// todo - utilize it more
 export function ignore() {
   return;
 }
