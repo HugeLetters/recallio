@@ -41,6 +41,7 @@ export const api = createTRPCNext<AppRouter>({
             refetchOnMount: false,
           },
         },
+        // todo - custom query cache with erorr messages?
       },
     };
   },

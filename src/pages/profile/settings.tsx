@@ -204,7 +204,7 @@ function LinkedAccounts() {
       trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
     },
     onSettled() {
-      void trpcUtils.user.getAccountProviders.invalidate();
+      trpcUtils.user.getAccountProviders.invalidate().catch(console.error);
     },
   });
   useLoadingIndicator(isLoading, 300);
@@ -273,7 +273,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
     onSuccess() {
       setIsOpen(false);
       setValue(true);
-      void signOut({ redirect: false });
+      signOut({ redirect: false }).catch(console.error);
     },
     onError(e) {
       toast.error(`Couldn't delete your profile: ${e.message}`);

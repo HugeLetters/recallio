@@ -36,7 +36,7 @@ const Page: NextPageWithLayout = function () {
 
   const router = useRouter();
   function goToReview(id: string) {
-    void router.push({ pathname: "/review/[id]", query: { id } });
+    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
   }
   function scanImage(image: File) {
     if (!ready) return;

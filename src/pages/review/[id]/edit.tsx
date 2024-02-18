@@ -176,7 +176,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       return { ...cache, ...review, image };
     });
 
-    void router.push({ pathname: "/review/[id]", query: { id: barcode } });
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
   }
 
   const [image, setImage] = useState<File | null>();

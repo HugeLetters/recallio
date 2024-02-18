@@ -12,7 +12,7 @@ const Page: NextPageWithLayout = function () {
   const { status } = useSession();
 
   if (status === "authenticated") {
-    void router.replace("/profile");
+    router.replace("/profile").catch(console.error);
   }
 
   const [pin, setPin] = useState("");
@@ -29,15 +29,17 @@ const Page: NextPageWithLayout = function () {
           e.preventDefault();
 
           const { callbackUrl, email } = router.query;
-          void router.push({
-            pathname: "/api/auth/[...nextauth]",
-            query: {
-              callbackUrl,
-              email,
-              token: pin.toUpperCase(),
-              nextauth: ["callback", "email"],
-            },
-          });
+          router
+            .push({
+              pathname: "/api/auth/[...nextauth]",
+              query: {
+                callbackUrl,
+                email,
+                token: pin.toUpperCase(),
+                nextauth: ["callback", "email"],
+              },
+            })
+            .catch(console.error);
         }}
         className="group flex w-full max-w-[360px] flex-col items-center gap-3"
       >

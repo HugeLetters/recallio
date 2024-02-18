@@ -7,7 +7,6 @@ import { createTRPCContext } from "@/server/api/trpc";
 export default createNextApiHandler({
   router: appRouter,
   createContext: createTRPCContext,
-  // todo - should I toast smth here?
   onError:
     env.NEXT_PUBLIC_NODE_ENV === "development"
       ? ({ path, error }) => {

@@ -40,7 +40,9 @@ function Review({ barcode }: ReviewProps) {
     {
       select(data) {
         if (!data) {
-          void router.replace({ pathname: "/review/[id]/edit", query: { id: barcode } });
+          router
+            .replace({ pathname: "/review/[id]/edit", query: { id: barcode } })
+            .catch(console.error);
           throw Error("No review found");
         }
 
@@ -218,9 +220,9 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       toast.error(`Couldn't delete the review: ${e.message}`);
     },
     onSuccess() {
-      void apiUtils.review.getUserReviewSummaryList.invalidate();
-      void apiUtils.review.getReviewCount.invalidate();
-      void apiUtils.product.getProductSummaryList.invalidate();
+      apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
+      apiUtils.review.getReviewCount.invalidate().catch(console.error);
+      apiUtils.product.getProductSummaryList.invalidate().catch(console.error);
     },
     onSettled() {
       setLoading(false);
