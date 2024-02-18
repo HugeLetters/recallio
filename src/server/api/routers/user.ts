@@ -23,7 +23,7 @@ const deleteAccountProcedure = protectedProcedure
     return db
       .delete(account)
       .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
-      .catch((e) => throwDefaultError(e, `Error while trying to unlink your ${provider} account`))
+      .catch((e) => throwDefaultError(e, `Failed to unlink ${provider} account.`))
       .then((query) => {
         if (!query.rowsAffected) {
           throw new TRPCError({
@@ -46,7 +46,7 @@ export const userRouter = createTRPCRouter({
         .update(user)
         .set({ name: input })
         .where(eq(user.id, session.user.id))
-        .catch((e) => throwDefaultError(e, "Error while trying to update username"))
+        .catch((e) => throwDefaultError(e, "Failed to update your username."))
         .then((query) => {
           if (!query.rowsAffected) {
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
@@ -67,7 +67,7 @@ export const userRouter = createTRPCRouter({
         .update(user)
         .set({ image: null })
         .where(eq(user.id, session.user.id))
-        .catch((e) => throwDefaultError(e, "Error while trying to update your avatar"))
+        .catch((e) => throwDefaultError(e, "Failed to update your avatar."))
         .then((query) => {
           if (!query.rowsAffected) {
             throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
@@ -122,6 +122,6 @@ export const userRouter = createTRPCRouter({
         }
         await utapi.deleteFiles(userImages);
       })
-      .catch((e) => throwDefaultError(e, "Error while trying to delete your account"));
+      .catch((e) => throwDefaultError(e, "Failed to delete your account"));
   }),
 });

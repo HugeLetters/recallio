@@ -202,7 +202,7 @@ export const reviewRouter = createTRPCRouter({
               },
             });
         })
-        .catch((e) => throwDefaultError(e, "Couldn't post the review"));
+        .catch((e) => throwDefaultError(e, "Failed to post the review"));
     }),
   getUserReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to get review data") }))
@@ -262,7 +262,7 @@ export const reviewRouter = createTRPCRouter({
 
           utapi.deleteFiles(imageKey).catch(console.error);
         })
-        .catch((e) => throwDefaultError(e, `Couldn't delete your review for barcode ${barcode}.`));
+        .catch((e) => throwDefaultError(e, `Failed to delete your review for barcode ${barcode}.`));
     }),
   deleteReviewImage: protectedProcedure
     .input(
@@ -282,7 +282,7 @@ export const reviewRouter = createTRPCRouter({
 
           utapi.deleteFiles(imageKey).catch(console.error);
         })
-        .catch((e) => throwDefaultError(e, "Couldn't delete image"));
+        .catch((e) => throwDefaultError(e, "Failed to delete image"));
     }),
 });
 
