@@ -2,7 +2,7 @@ import type { AppFileRouter } from "@/server/uploadthing";
 import { browser } from "@/utils";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import type React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 
@@ -73,6 +73,76 @@ export function useHasMouse() {
   return useRef(browser ? matchMedia("(pointer:fine)").matches : false).current;
 }
 
-export function useDrag() {
-  return;
+export function useSyncedRef<V>(value: V) {
+  const synced = useRef(value);
+  synced.current = value;
+  return useMemo(
+    () =>
+      Object.freeze({
+        get current() {
+          return synced.current;
+        },
+      }),
+    [],
+  );
+}
+
+// todo - test on mobile
+// todo - try to ignore taps
+// todo - ignore multiple fingers! if you want to...
+type Movement = { dx: number; dy: number };
+type UseDragOptions = {
+  onDragStart?: () => void;
+  onDragEnd?: (movement: Movement) => void;
+  onDrag?: (movement: Movement) => void;
+};
+export function useDrag(
+  { current: target }: RefObject<HTMLElement>,
+  { onDrag, onDragStart, onDragEnd }: UseDragOptions = {},
+) {
+  const onDragStartSynced = useSyncedRef(onDragStart);
+  const onDragEndSynced = useSyncedRef(onDragEnd);
+  const onDragSynced = useSyncedRef(onDrag);
+
+  useEffect(() => {
+    if (!target) return;
+
+    const origin: Movement = { dx: 0, dy: 0 };
+    function onPointerDown(e: PointerEvent) {
+      cleanup();
+      origin.dx = e.clientX;
+      origin.dy = e.clientY;
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp, { once: true });
+      window.addEventListener("pointercancel", onPointerCancel, { once: true });
+      onDragStartSynced.current?.();
+    }
+    target.addEventListener("pointerdown", onPointerDown);
+
+    function onPointerMove(e: PointerEvent) {
+      e.preventDefault();
+      const dx = e.clientX - origin.dx;
+      const dy = e.clientY - origin.dy;
+      onDragSynced.current?.({ dx, dy });
+    }
+
+    function onPointerUp(e: PointerEvent) {
+      cleanup();
+      const dx = e.clientX - origin.dx;
+      const dy = e.clientY - origin.dy;
+      onDragEndSynced.current?.({ dx, dy });
+    }
+    const onPointerCancel = onPointerUp;
+
+    function cleanup() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
+    }
+
+    return () => {
+      cleanup();
+      target.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [target, onDragStartSynced, onDragEndSynced, onDragSynced]);
 }

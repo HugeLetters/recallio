@@ -1,9 +1,9 @@
 import { Layout, selectionAtom } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
+import { useDrag } from "@/hooks";
 import { tw } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
-import { useDrag } from "@use-gesture/react";
 import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
 import { useAtom } from "jotai";
 import { useRouter } from "next/router";
@@ -48,19 +48,15 @@ const Page: NextPageWithLayout = function () {
       });
   }
 
-  const [offset, setOffset] = useState(0);
-  const transform = `translateX(calc(${offset}px ${selection !== "upload" ? "-" : "+"} ${
-    selection === "scan" ? 0 : 100 / 3
-  }%))`;
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const drag = useDrag(
-    ({ movement: [x], down }) => {
-      setOffset(down ? x : 0);
-      if (down) return;
-      if (Math.abs(x) < 30) return;
-
-      const delta = Math.abs(x) < 90 ? 1 : 2;
-      const move = (x < 0 ? 1 : -1) * delta;
+  const draggedDivRef = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+  useDrag(draggedDivRef, {
+    onDragEnd({ dx }) {
+      setOffset(0);
+      if (Math.abs(dx) < 30) return;
+      const delta = Math.abs(dx) < 90 ? 1 : 2;
+      const move = (dx < 0 ? 1 : -1) * delta;
       dispatchSelection({
         move,
         onUpdate(value) {
@@ -69,23 +65,30 @@ const Page: NextPageWithLayout = function () {
         },
       });
     },
-    { axis: "x", filterTaps: true },
-  );
+    onDrag({ dx }) {
+      setOffset(dx);
+    },
+  });
+  const baseOffset = selection === "scan" ? 0 : (selection !== "upload" ? -1 : 1) * (100 / 3);
+  const finalOffset = `calc(${offset}px + ${baseOffset}%)`;
+  const transform = `translateX(clamp(-100%, ${finalOffset}, 100%))`;
 
   return (
     <div
+      ref={draggedDivRef}
       className="relative isolate flex size-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
-      {...drag()}
     >
       <div
         id={id}
         className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
       />
       {selection === "input" && <BarcodeInput goToReview={goToReview} />}
+      {/* todo - transform performance. Test if it performs better with  regular cam view instead of a scanner */}
       <div
         className={tw("grid grid-cols-3 pb-8 text-white", !offset && "transition-transform")}
         style={{ transform }}
       >
+        {/* todo - moving green blob */}
         <ImageInput
           ref={fileInputRef}
           className={tw(
