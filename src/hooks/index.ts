@@ -90,18 +90,18 @@ export function useSyncedRef<V>(value: V) {
 // todo - test on mobile
 // todo - try to ignore taps
 type Movement = { dx: number; dy: number };
-type UseDragOptions = {
-  onDragStart?: () => void;
-  onDragEnd?: (movement: Movement) => void;
-  onDrag?: (movement: Movement) => void;
+type UseSwipeOptions = {
+  onSwipeStart?: () => void;
+  onSwipeEnd?: (movement: Movement) => void;
+  onSwipe?: (movement: Movement) => void;
 };
 export function useSwipe(
   { current: target }: RefObject<HTMLElement>,
-  { onDrag, onDragStart, onDragEnd }: UseDragOptions = {},
+  { onSwipe: onSwipe, onSwipeStart, onSwipeEnd }: UseSwipeOptions = {},
 ) {
-  const onDragStartSynced = useSyncedRef(onDragStart);
-  const onDragEndSynced = useSyncedRef(onDragEnd);
-  const onDragSynced = useSyncedRef(onDrag);
+  const onSwipeStartSynced = useSyncedRef(onSwipeStart);
+  const onSwipeEndSynced = useSyncedRef(onSwipeEnd);
+  const onSwipeSynced = useSyncedRef(onSwipe);
 
   useEffect(() => {
     if (!target) return;
@@ -115,7 +115,7 @@ export function useSwipe(
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", onPointerUp, { once: true });
       window.addEventListener("pointercancel", onPointerCancel, { once: true });
-      onDragStartSynced.current?.();
+      onSwipeStartSynced.current?.();
     }
     target.addEventListener("pointerdown", onPointerDown);
 
@@ -124,14 +124,14 @@ export function useSwipe(
       if (!e.isPrimary) return;
       const dx = e.clientX - origin.dx;
       const dy = e.clientY - origin.dy;
-      onDragSynced.current?.({ dx, dy });
+      onSwipeSynced.current?.({ dx, dy });
     }
 
     function onPointerUp(e: PointerEvent) {
       cleanup();
       const dx = e.clientX - origin.dx;
       const dy = e.clientY - origin.dy;
-      onDragEndSynced.current?.({ dx, dy });
+      onSwipeEndSynced.current?.({ dx, dy });
     }
     const onPointerCancel = onPointerUp;
 
@@ -145,5 +145,5 @@ export function useSwipe(
       cleanup();
       target.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [target, onDragStartSynced, onDragEndSynced, onDragSynced]);
+  }, [target, onSwipeStartSynced, onSwipeEndSynced, onSwipeSynced]);
 }
