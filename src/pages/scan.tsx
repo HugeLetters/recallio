@@ -1,7 +1,7 @@
 import { Layout, scanTypeAtom } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
-import { useDrag } from "@/hooks";
+import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
@@ -51,7 +51,7 @@ const Page: NextPageWithLayout = function () {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draggedDivRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
-  useDrag(draggedDivRef, {
+  useSwipe(draggedDivRef, {
     onDragEnd({ dx }) {
       setOffset(0);
       if (Math.abs(dx) < 30) return;

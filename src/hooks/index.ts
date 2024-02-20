@@ -95,7 +95,7 @@ type UseDragOptions = {
   onDragEnd?: (movement: Movement) => void;
   onDrag?: (movement: Movement) => void;
 };
-export function useDrag(
+export function useSwipe(
   { current: target }: RefObject<HTMLElement>,
   { onDrag, onDragStart, onDragEnd }: UseDragOptions = {},
 ) {
