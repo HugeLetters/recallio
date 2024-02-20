@@ -1,4 +1,4 @@
-import { Layout, selectionAtom } from "@/components/Layout";
+import { Layout, scanTypeAtom } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
 import { useDrag } from "@/hooks";
@@ -11,11 +11,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {
-  const [selection, dispatchSelection] = useAtom(selectionAtom);
-  // reset selection when leaving page
+  const [scanType, dispatchScanType] = useAtom(scanTypeAtom);
+  // reset scan type when leaving page
   useEffect(() => {
-    return () => dispatchSelection("scan");
-  }, [dispatchSelection]);
+    return () => dispatchScanType("scan");
+  }, [dispatchScanType]);
 
   const { id, ready, start, scanFile } = useBarcodeScanner(goToReview);
   function startScanner() {
@@ -57,11 +57,11 @@ const Page: NextPageWithLayout = function () {
       if (Math.abs(dx) < 30) return;
       const delta = Math.abs(dx) < 90 ? 1 : 2;
       const move = (dx < 0 ? 1 : -1) * delta;
-      dispatchSelection({
+      dispatchScanType({
         move,
         onUpdate(value) {
-          if (value !== "upload" || selection === "upload") return;
           fileInputRef.current?.click();
+          if (value !== "upload" || scanType === "upload") return;
         },
       });
     },
@@ -69,9 +69,8 @@ const Page: NextPageWithLayout = function () {
       setOffset(dx);
     },
   });
-  const baseOffset = selection === "scan" ? 0 : (selection !== "upload" ? -1 : 1) * (100 / 3);
-  const finalOffset = `calc(${offset}px + ${baseOffset}%)`;
-  const transform = `translateX(clamp(-100%, ${finalOffset}, 100%))`;
+  const baseOffset = scanType === "scan" ? 0 : (scanType !== "upload" ? -1 : 1) * (100 / 3);
+  const translate = `clamp(-100%, calc(${offset}px + ${baseOffset}%), 100%)`;
 
   return (
     <div
@@ -82,7 +81,7 @@ const Page: NextPageWithLayout = function () {
         id={id}
         className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
       />
-      {selection === "input" && <BarcodeInput goToReview={goToReview} />}
+      {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       {/* todo - transform performance. Test if it performs better with  regular cam view instead of a scanner */}
       <div
         className={tw("grid grid-cols-3 pb-8 text-white", !offset && "transition-transform")}

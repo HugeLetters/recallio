@@ -99,8 +99,8 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
-  const selection = useAtomValue(selectionAtom);
-  const ScannerIcon = getFooterIcon(selection);
+  const scanType = useAtomValue(scanTypeAtom);
+  const ScannerIcon = getFooterIcon(scanType);
 
   // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
   const activeBackground = (
@@ -133,6 +133,7 @@ function Footer() {
               pathname.startsWith("/scan") ? "bg-app-green-500 text-white" : "bg-neutral-100",
             )}
           >
+            {/* todo - sliding effect would be awesome here */}
             <ScannerIcon className="size-full" />
           </Link>
           <FooterItem
@@ -169,16 +170,16 @@ function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
   );
 }
 
-const selection = ["upload", "scan", "input"] as const;
-type Selection = (typeof selection)[number];
-type SelectionAction = Selection | { move: number; onUpdate?: (value: Selection) => void };
-function getStateAfterMove(state: Selection, move: number): Selection {
-  const currentIndex = indexOf(selection, state);
+const scanTypeList = ["upload", "scan", "input"] as const;
+type ScanType = (typeof scanTypeList)[number];
+type ScanTypeAction = ScanType | { move: number; onUpdate?: (value: ScanType) => void };
+function getStateAfterMove(state: ScanType, move: number): ScanType {
+  const currentIndex = indexOf(scanTypeList, state);
   const fallbackIndex = move > 0 ? 2 : 0;
-  return selection[(currentIndex ?? fallbackIndex) + move] ?? selection[fallbackIndex];
+  return scanTypeList[(currentIndex ?? fallbackIndex) + move] ?? scanTypeList[fallbackIndex];
 }
 // todo - switch jotai to valtio? check what's better for bundle size
-export const selectionAtom = atomWithReducer<Selection, SelectionAction>(
+export const scanTypeAtom = atomWithReducer<ScanType, ScanTypeAction>(
   "scan",
   (prevState, action) => {
     if (!action) return prevState;
@@ -189,8 +190,8 @@ export const selectionAtom = atomWithReducer<Selection, SelectionAction>(
   },
 );
 
-function getFooterIcon(selection: Selection) {
-  switch (selection) {
+function getFooterIcon(scanType: ScanType) {
+  switch (scanType) {
     case "upload":
       return UploadIcon;
     case "input":
@@ -198,7 +199,7 @@ function getFooterIcon(selection: Selection) {
     case "scan":
       return ScanIcon;
     default:
-      const x: never = selection;
+      const x: never = scanType;
       return x;
   }
 }
