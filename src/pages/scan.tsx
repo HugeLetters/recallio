@@ -52,6 +52,9 @@ const Page: NextPageWithLayout = function () {
   const draggedDivRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   useSwipe(draggedDivRef, {
+    onSwipe({ dx }) {
+      setOffset(dx);
+    },
     onSwipeEnd({ dx }) {
       setOffset(0);
       if (Math.abs(dx) < 30) return;
@@ -61,12 +64,9 @@ const Page: NextPageWithLayout = function () {
         move,
         onUpdate(value) {
           if (value !== "upload" || scanType === "upload") return;
-          // fileInputRef.current?.click();
+          fileInputRef.current?.click();
         },
       });
-    },
-    onSwipe({ dx }) {
-      setOffset(dx);
     },
   });
   const baseOffset = scanType === "scan" ? 0 : (scanType !== "upload" ? -1 : 1) * (100 / 3);
