@@ -47,3 +47,5 @@ export function filterMap<A, B extends A, C>(
     return acc;
   }, []);
 }
+
+// todo - better filter function with inference!

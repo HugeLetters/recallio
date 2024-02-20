@@ -177,6 +177,7 @@ function getStateAfterMove(state: Selection, move: number): Selection {
   const fallbackIndex = move > 0 ? 2 : 0;
   return selection[(currentIndex ?? fallbackIndex) + move] ?? selection[fallbackIndex];
 }
+// todo - switch jotai to valtio? check what's better for bundle size
 export const selectionAtom = atomWithReducer<Selection, SelectionAction>(
   "scan",
   (prevState, action) => {

@@ -131,6 +131,8 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
+// todo - polymorhic component attempt 3
+
 Page.getLayout = function useLayout(page) {
   return <Layout header={{ title: "Scanner" }}>{page}</Layout>;
 };

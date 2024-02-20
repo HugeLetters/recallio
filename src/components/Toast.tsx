@@ -182,6 +182,7 @@ class ToastStackStore {
     }
   }
 
+  // todo - replace toasts with same message or id maybe?
   addToast(toast: ReactNode, { duration = 5000, ...options }: ToastOptions = {}) {
     const id = `${Math.random()}`;
     this.toastStack = [...this.toastStack, { content: toast, duration, ...options, id }];

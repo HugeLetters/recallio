@@ -45,7 +45,7 @@ export default {
       addVariant("group-selected", ":merge(.group):is(:focus-within,:hover) &");
       addVariant("peer-selected", ":merge(.peer):is(:focus-within,:hover) ~ &");
       addVariant("focus-visible-within", [
-        "&:has(:focus-visible)",
+        "&:is(:has(:focus-visible),:focus-visible)",
         "@supports not selector(:has(*)) {&:focus-within}",
       ]);
       matchVariant("not", (value) => `&:not(${value})`);
