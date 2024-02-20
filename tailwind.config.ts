@@ -6,6 +6,8 @@ import plugin from "tailwindcss/plugin";
 
 const shadowAroundOpacity = "--tw-drop-shadow-around-opacity";
 const shadowAroundRadius = "--tw-drop-shadow-around-radius";
+const animationDurationVar = "--tw-animation-duration";
+const animationFunctionVar = "--tw-animation-function";
 
 const appRedColor = defineColor(0, 39);
 const appGreenColor = defineColor(122, 39);
@@ -107,7 +109,7 @@ export default {
       matchUtilities(
         {
           "animate-duration"(value) {
-            return { animationDuration: String(value) };
+            return { [animationDurationVar]: String(value) };
           },
         },
         { values: theme("transitionDuration") },
@@ -115,10 +117,15 @@ export default {
       matchUtilities(
         {
           "animate-function"(value) {
-            return { animationTimingFunction: String(value) };
+            return { [animationFunctionVar]: String(value) };
           },
         },
-        { values: { "ease-out": "cubic-bezier(.32,.52,.36,.99)", linear: "linear" } },
+        {
+          values: {
+            "ease-out": "cubic-bezier(.32,.52,.36,.99)",
+            linear: "linear",
+          },
+        },
       );
       matchUtilities(
         {
@@ -166,7 +173,9 @@ type Animation = {
 };
 function defineAnimation(animationName: string, keyframes: Keyframes): Animation {
   return {
-    animation: { [animationName]: `${animationName} 200ms ease-in-out` },
+    animation: {
+      [animationName]: `${animationName} var(${animationDurationVar}, 200ms) var(${animationFunctionVar}, ease-in-out)`,
+    },
     keyframes: { [animationName]: keyframes },
   };
 }
