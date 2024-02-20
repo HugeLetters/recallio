@@ -45,9 +45,7 @@ const Page: NextPageWithLayout = function () {
                   aria-label={`Go to product ${value.barcode} page`}
                   image={value.image}
                   label={match}
-                  subtext={value.names.filter(
-                    (x): x is NonNullable<typeof x> => !!x && x !== match,
-                  )}
+                  subtext={value.names.filter((x) => !!x && x !== match)}
                 >
                   <div className="flex h-5 items-center gap-0.5">
                     <Star highlight />

@@ -168,7 +168,7 @@ function createTestImages(count: number) {
   return utapi.uploadFilesFromUrl(imageUrls).then((responses) =>
     filterMap(
       responses,
-      (response): response is Exclude<typeof response, { data: null }> => !!response.data,
+      (response, bad) => (!!response.data ? response : bad),
       (x) => x.data.key,
     ),
   );

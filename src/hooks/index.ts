@@ -87,8 +87,6 @@ export function useSyncedRef<V>(value: V) {
   );
 }
 
-// todo - test on mobile
-// todo - try to ignore taps
 type Movement = { dx: number; dy: number };
 type UseSwipeOptions = {
   onSwipeStart?: () => void;

@@ -49,7 +49,7 @@ type ClassGroup = Falsy | string | Array<ClassGroup>;
 export function tw(...classGroup: ClassGroup[]): string {
   return filterMap(
     classGroup,
-    (x): x is Exclude<ClassGroup, Falsy> => !!x,
+    (x, bad) => (!!x ? x : bad),
     (classGroup) => (Array.isArray(classGroup) ? tw(...classGroup) : classGroup),
   ).join(" ");
 }
@@ -63,4 +63,11 @@ export function mergeInto<T extends Record<never, unknown>, O>(
 
 export function ignore() {
   return;
+}
+
+export function hasNonNullishProperty<O, K extends keyof O>(
+  object: O,
+  key: K,
+): object is O & Record<K, NonNullable<O[K]>> {
+  return !!object[key];
 }
