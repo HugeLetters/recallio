@@ -89,7 +89,6 @@ export function useSyncedRef<V>(value: V) {
 
 // todo - test on mobile
 // todo - try to ignore taps
-// todo - ignore multiple fingers! if you want to...
 type Movement = { dx: number; dy: number };
 type UseDragOptions = {
   onDragStart?: () => void;
@@ -109,6 +108,7 @@ export function useDrag(
 
     const origin: Movement = { dx: 0, dy: 0 };
     function onPointerDown(e: PointerEvent) {
+      if (!e.isPrimary) return;
       cleanup();
       origin.dx = e.clientX;
       origin.dy = e.clientY;
@@ -121,6 +121,7 @@ export function useDrag(
 
     function onPointerMove(e: PointerEvent) {
       e.preventDefault();
+      if (!e.isPrimary) return;
       const dx = e.clientX - origin.dx;
       const dy = e.clientY - origin.dy;
       onDragSynced.current?.({ dx, dy });
