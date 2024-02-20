@@ -84,47 +84,61 @@ const Page: NextPageWithLayout = function () {
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       {/* todo - transform performance. Test if it performs better with  regular cam view instead of a scanner */}
       <div
-        className={tw("grid grid-cols-3 pb-8 text-white", !offset && "transition-transform")}
-        style={{ transform }}
+        style={{ "--translate": translate }}
+        className={tw(
+          "relative mb-8 translate-x-[var(--translate)] text-white",
+          !offset && "transition-transform",
+        )}
       >
-        {/* todo - moving green blob */}
-        <ImageInput
-          ref={fileInputRef}
+        <div
           className={tw(
-            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline",
-            selection === "upload" ? "bg-app-green-500" : "bg-black/50",
+            "absolute inset-0 z-10 grid -translate-x-[var(--translate)] grid-cols-3 *:mx-1",
+            !offset && "transition-transform",
           )}
-          aria-label="Scan from file"
-          isImageSet={true}
-          onChange={(e) => {
-            const image = e.target.files?.item(0);
-            if (!image) return;
-            scanImage(image);
-          }}
-          onClick={() => dispatchSelection("upload")}
         >
-          Upload
-        </ImageInput>
-        <button
-          className={tw(
-            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
-            selection === "scan" ? "bg-app-green-500" : "bg-black/50",
-          )}
-          onClick={() => dispatchSelection("scan")}
-          type="button"
-        >
-          Scan
-        </button>
-        <button
-          className={tw(
-            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
-            selection === "input" ? "bg-app-green-500" : "bg-black/50",
-          )}
-          onClick={() => dispatchSelection("input")}
-          type="button"
-        >
-          Input
-        </button>
+          <div className="col-start-2 rounded-xl bg-app-green-500" />
+        </div>
+        <div className="relative z-20 grid grid-cols-3 *:mx-1">
+          <ImageInput
+            ref={fileInputRef}
+            className={tw(
+              "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+            )}
+            aria-label="Scan from file"
+            isImageSet={true}
+            onChange={(e) => {
+              const image = e.target.files?.item(0);
+              if (!image) return;
+              scanImage(image);
+            }}
+            onClick={() => dispatchScanType("upload")}
+          >
+            Upload
+          </ImageInput>
+          <button
+            className={tw(
+              "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+            )}
+            onClick={() => dispatchScanType("scan")}
+            type="button"
+          >
+            Scan
+          </button>
+          <button
+            className={tw(
+              "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+            )}
+            onClick={() => dispatchScanType("input")}
+            type="button"
+          >
+            Input
+          </button>
+        </div>
+        <div className="absolute inset-0 grid grid-cols-3 items-stretch *:mx-1">
+          <div className="rounded-xl bg-black/50" />
+          <div className="rounded-xl bg-black/50" />
+          <div className="rounded-xl bg-black/50" />
+        </div>
       </div>
     </div>
   );
