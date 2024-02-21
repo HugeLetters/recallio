@@ -91,7 +91,6 @@ const Page: NextPageWithLayout = function () {
         className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
       />
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
-      {/* todo - transform performance. Test if it performs better with  regular cam view instead of a scanner */}
       <div
         style={{ "--translate": `clamp(-100%, calc(var(--offset, 0px) - ${baseOffset}%), 100%)` }}
         className={tw(
@@ -170,6 +169,7 @@ function BarcodeInput({ goToReview }: BarcodeInputProps) {
         goToReview(barcode);
       }}
     >
+      {/* todo - suggest numbers */}
       <input
         className="grow outline-none"
         placeholder="barcode"
@@ -233,7 +233,7 @@ function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     const scanner = getScanner();
     await stop();
     return scanner
-      .start({ facingMode: "environment" }, { fps: 15 }, onScan, undefined)
+      .start({ facingMode: "environment" }, { fps: 2 }, onScan, undefined)
       .then(() => setState("scanning"))
       .catch((e) => {
         setState("stopped");
