@@ -11,7 +11,6 @@ import {
   type ComponentProps,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
-  type ReactElement,
   type ReactNode,
 } from "react";
 import { Flipper } from "react-flip-toolkit";
@@ -102,16 +101,6 @@ function Footer() {
   const { pathname } = useRouter();
   const translate = useAtomValue(scanTypeOffsetPercentageAtom);
 
-  // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
-  const activeBackground = (
-    <Flipped
-      flipId="active-icon-bg"
-      className="animate-scale-in"
-    >
-      <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
-    </Flipped>
-  );
-
   return (
     <footer className="flex h-16 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
       <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
@@ -120,11 +109,11 @@ function Footer() {
           spring={{ stiffness: 350, damping: 25 }}
           className="contents"
         >
-          <FooterItem
+          <FooterLink
             href="/search"
             label="Search"
-            activeBackground={pathname.startsWith("/search") ? activeBackground : null}
             Icon={SearchIcon}
+            active={pathname.startsWith("/search")}
           />
           <Link
             href="/scan"
@@ -133,7 +122,6 @@ function Footer() {
               pathname.startsWith("/scan") ? "bg-app-green-500 text-white" : "bg-neutral-100",
             )}
           >
-            {/* todo - sliding effect would be awesome here */}
             <div
               className="absolute grid h-full w-[300%] -translate-x-[var(--translate)] grid-cols-3 transition-transform duration-300"
               style={{ "--translate": `${translate}%` }}
@@ -149,11 +137,11 @@ function Footer() {
               })}
             </div>
           </Link>
-          <FooterItem
+          <FooterLink
             href="/profile"
             label="Profile"
-            activeBackground={pathname.startsWith("/profile") ? activeBackground : null}
             Icon={ProfileIcon}
+            active={pathname.startsWith("/profile")}
           />
         </Flipper>
       </nav>
@@ -164,21 +152,29 @@ function Footer() {
 type FooterItemProps = {
   href: LinkProps["href"];
   label: string;
-  activeBackground: ReactElement | null;
   Icon: Icon;
+  active: boolean;
 };
-function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
+function FooterLink({ active, Icon, label, href }: FooterItemProps) {
   return (
     <Link
       href={href}
       className={tw(
         "relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors",
-        activeBackground && "text-app-green-500",
+        active && "text-app-green-500",
       )}
     >
       <Icon className="size-6 lg:size-7" />
       <span>{label}</span>
-      {activeBackground}
+      {/* Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this */}
+      {active && (
+        <Flipped
+          flipId="active-icon-bg"
+          className="animate-scale-in"
+        >
+          <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
+        </Flipped>
+      )}
     </Link>
   );
 }
@@ -191,7 +187,7 @@ function getStateAfterMove(state: ScanType, move: number): ScanType {
   const fallbackIndex = move > 0 ? 2 : 0;
   return scanTypeList[(currentIndex ?? fallbackIndex) + move] ?? scanTypeList[fallbackIndex];
 }
-// todo - switch jotai to valtio? check what's better for bundle size
+// todo - switch jotai to valtio? check what's better for bundle size. or useSES
 export const scanTypeAtom = atomWithReducer<ScanType, ScanTypeAction>(
   "scan",
   (prevState, action) => {

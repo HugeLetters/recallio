@@ -50,6 +50,7 @@ const Page: NextPageWithLayout = function () {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draggedDivRef = useRef<HTMLDivElement>(null);
+  // todo - remove useState, mutate DOM node
   const [offset, setOffset] = useState(0);
   useSwipe(draggedDivRef, {
     onSwipe({ dx }) {
@@ -72,6 +73,7 @@ const Page: NextPageWithLayout = function () {
 
   const baseOffset = useAtomValue(scanTypeOffsetPercentageAtom);
   const translate = `clamp(-100%, calc(${offset}px - ${baseOffset}%), 100%)`;
+
   return (
     <div
       ref={draggedDivRef}
