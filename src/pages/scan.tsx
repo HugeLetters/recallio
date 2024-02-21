@@ -1,11 +1,11 @@
-import { Layout, scanTypeAtom } from "@/components/Layout";
+import { Layout, scanTypeAtom, scanTypeOffsetPercentageAtom } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
 import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
@@ -63,15 +63,15 @@ const Page: NextPageWithLayout = function () {
       dispatchScanType({
         move,
         onUpdate(value) {
-          if (value !== "upload" || scanType === "upload") return;
           fileInputRef.current?.click();
+          if (value !== "upload") return;
         },
       });
     },
   });
-  const baseOffset = scanType === "scan" ? 0 : (scanType !== "upload" ? -1 : 1) * (100 / 3);
-  const translate = `clamp(-100%, calc(${offset}px + ${baseOffset}%), 100%)`;
 
+  const baseOffset = useAtomValue(scanTypeOffsetPercentageAtom);
+  const translate = `clamp(-100%, calc(${offset}px - ${baseOffset}%), 100%)`;
   return (
     <div
       ref={draggedDivRef}

@@ -1,6 +1,7 @@
 import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
 import type { DiscriminatedUnion, Icon } from "@/utils/type";
+import { atom } from "jotai";
 import { useAtomValue } from "jotai/react";
 import { atomWithReducer } from "jotai/utils";
 import type { LinkProps } from "next/link";
@@ -99,8 +100,7 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
-  const scanType = useAtomValue(scanTypeAtom);
-  const ScannerIcon = getFooterIcon(scanType);
+  const translate = useAtomValue(scanTypeOffsetPercentageAtom);
 
   // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
   const activeBackground = (
@@ -129,12 +129,25 @@ function Footer() {
           <Link
             href="/scan"
             className={tw(
-              "flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300",
+              "relative flex size-16 -translate-y-1/4 items-center justify-center overflow-hidden rounded-full p-4 transition-colors duration-300",
               pathname.startsWith("/scan") ? "bg-app-green-500 text-white" : "bg-neutral-100",
             )}
           >
             {/* todo - sliding effect would be awesome here */}
-            <ScannerIcon className="size-full" />
+            <div
+              className="absolute grid h-full w-[300%] -translate-x-[var(--translate)] grid-cols-3 transition-transform duration-300"
+              style={{ "--translate": `${translate}%` }}
+            >
+              {scanTypeList.map((scanType) => {
+                const Icon = getScannerIcon(scanType);
+                return (
+                  <Icon
+                    key={scanType}
+                    className="size-full p-4"
+                  />
+                );
+              })}
+            </div>
           </Link>
           <FooterItem
             href="/profile"
@@ -185,12 +198,17 @@ export const scanTypeAtom = atomWithReducer<ScanType, ScanTypeAction>(
     if (!action) return prevState;
     if (typeof action === "string") return action;
     const nextState = getStateAfterMove(prevState, action.move);
-    action.onUpdate?.(nextState);
+    if (prevState !== nextState) {
+      action.onUpdate?.(nextState);
+    }
     return nextState;
   },
 );
+export const scanTypeOffsetPercentageAtom = atom(
+  (get) => (100 * ((indexOf(scanTypeList, get(scanTypeAtom)) ?? 2) - 1)) / scanTypeList.length,
+);
 
-function getFooterIcon(scanType: ScanType) {
+function getScannerIcon(scanType: ScanType) {
   switch (scanType) {
     case "upload":
       return UploadIcon;
