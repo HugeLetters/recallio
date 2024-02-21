@@ -50,14 +50,23 @@ const Page: NextPageWithLayout = function () {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draggedDivRef = useRef<HTMLDivElement>(null);
-  // todo - remove useState, mutate DOM node
-  const [offset, setOffset] = useState(0);
+  const [isSwiped, setIsSwiped] = useState(false);
   useSwipe(draggedDivRef, {
     onSwipe({ dx }) {
-      setOffset(dx);
+      const root = draggedDivRef.current;
+      if (!root) return;
+      root.style.setProperty("--offset", `${dx}px`);
+    },
+    onSwipeStart() {
+      setIsSwiped(true);
     },
     onSwipeEnd({ dx }) {
-      setOffset(0);
+      setIsSwiped(false);
+      const root = draggedDivRef.current;
+      if (root) {
+        draggedDivRef.current.style.removeProperty("--offset");
+      }
+
       if (Math.abs(dx) < 30) return;
       const delta = Math.abs(dx) < 90 ? 1 : 2;
       const move = (dx < 0 ? 1 : -1) * delta;
@@ -72,8 +81,6 @@ const Page: NextPageWithLayout = function () {
   });
 
   const baseOffset = useAtomValue(scanTypeOffsetPercentageAtom);
-  const translate = `clamp(-100%, calc(${offset}px - ${baseOffset}%), 100%)`;
-
   return (
     <div
       ref={draggedDivRef}
@@ -86,16 +93,16 @@ const Page: NextPageWithLayout = function () {
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       {/* todo - transform performance. Test if it performs better with  regular cam view instead of a scanner */}
       <div
-        style={{ "--translate": translate }}
+        style={{ "--translate": `clamp(-100%, calc(var(--offset, 0px) - ${baseOffset}%), 100%)` }}
         className={tw(
           "relative mb-8 translate-x-[var(--translate)] text-white",
-          !offset && "transition-transform",
+          !isSwiped && "transition-transform",
         )}
       >
         <div
           className={tw(
             "absolute inset-0 z-10 grid -translate-x-[var(--translate)] grid-cols-3 *:mx-1",
-            !offset && "transition-transform",
+            !isSwiped && "transition-transform",
           )}
         >
           <div className="col-start-2 rounded-xl bg-app-green-500" />
@@ -145,8 +152,6 @@ const Page: NextPageWithLayout = function () {
     </div>
   );
 };
-
-// todo - polymorhic component attempt 3
 
 Page.getLayout = function useLayout(page) {
   return <Layout header={{ title: "Scanner" }}>{page}</Layout>;
