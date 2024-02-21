@@ -94,7 +94,7 @@ type UseSwipeOptions = {
   onSwipe?: (movement: Movement) => void;
 };
 export function useSwipe(
-  { current: target }: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement>,
   { onSwipe: onSwipe, onSwipeStart, onSwipeEnd }: UseSwipeOptions = {},
 ) {
   const onSwipeStartSynced = useSyncedRef(onSwipeStart);
@@ -102,6 +102,7 @@ export function useSwipe(
   const onSwipeSynced = useSyncedRef(onSwipe);
 
   useEffect(() => {
+    const target = ref.current;
     if (!target) return;
 
     const origin: Movement = { dx: 0, dy: 0 };
@@ -143,5 +144,5 @@ export function useSwipe(
       cleanup();
       target.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [target, onSwipeStartSynced, onSwipeEndSynced, onSwipeSynced]);
+  }, [ref, onSwipeStartSynced, onSwipeEndSynced, onSwipeSynced]);
 }
