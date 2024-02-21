@@ -28,7 +28,7 @@ const Page: NextPageWithLayout = function () {
         onSubmit={(e) => {
           e.preventDefault();
 
-          const { callbackUrl, email } = router.query;
+          const { callbackUrl = "/profile", email } = router.query;
           router
             .push({
               pathname: "/api/auth/[...nextauth]",
