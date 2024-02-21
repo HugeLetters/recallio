@@ -1,10 +1,10 @@
-import { useMounted } from "@/hooks";
+import { tw } from "@/utils";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithReducer } from "jotai/utils";
 import { useEffect, useId, useRef, type PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import { Transition } from "./Animation";
-import { tw } from "@/utils";
+import { ClientOnly } from "./UI";
 
 const DURATION = 1000;
 const DOT_COUNT = 12;
@@ -55,13 +55,13 @@ const loadingAtom = atom(false);
 export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   const stack = useAtomValue(loadingStackAtom);
   const show = useAtomValue(loadingAtom);
-  const mounted = useMounted();
 
   return (
     <>
       {children}
-      {mounted
-        ? createPortal(
+      <ClientOnly>
+        {() =>
+          createPortal(
             <Transition outClassName="animate-fade-in-reverse">
               {!!stack.length || show ? (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
@@ -69,7 +69,8 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
             </Transition>,
             document.body,
           )
-        : null}
+        }
+      </ClientOnly>
     </>
   );
 }

@@ -1,8 +1,16 @@
 import type { AppFileRouter } from "@/server/uploadthing";
-import { browser } from "@/utils";
+import { browser, ignore } from "@/utils";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type RefObject,
+} from "react";
 
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 
@@ -61,12 +69,15 @@ export function useOptimistic<T>() {
   };
 }
 
-export function useMounted() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  return mounted;
+function dummySubscription() {
+  return ignore;
+}
+export function useIsClient() {
+  return useSyncExternalStore(
+    dummySubscription,
+    () => true,
+    () => false,
+  );
 }
 
 export function useHasMouse() {
