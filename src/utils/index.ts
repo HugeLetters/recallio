@@ -1,5 +1,7 @@
 import { logToastError } from "@/components/Toast";
 import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
+import { signOut as signOutBase } from "next-auth/react";
+import router from "next/router";
 import { filterMap } from "./array";
 import type { Option, Prettify, Some } from "./type";
 
@@ -70,4 +72,17 @@ export function hasNonNullishProperty<O, K extends keyof O>(
   key: K,
 ): object is O & Record<K, NonNullable<O[K]>> {
   return !!object[key];
+}
+
+export function hasProperty<O, K extends PropertyKey>(
+  value: O,
+  key: K,
+): value is O & Record<K, unknown> {
+  return value && typeof value === "object" && key in value;
+}
+
+export function signOut() {
+  return signOutBase({ redirect: false }).then(({ url }) =>
+    router.push(`/auth/signin?callbackUrl=${url}`),
+  );
 }

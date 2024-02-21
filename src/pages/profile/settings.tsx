@@ -12,13 +12,14 @@ import {
   useUrlDialog,
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { signOut } from "@/utils";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
 import { providerIcons } from "@/utils/providers";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { Session } from "next-auth";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
@@ -34,9 +35,7 @@ const Page: NextPageWithLayout = function () {
       <Button
         className="ghost mt-2"
         onClick={() => {
-          signOut({ redirect: false }).catch(
-            logToastError("Error while trying to sign out.\nPlease try again."),
-          );
+          signOut().catch(logToastError("Error while trying to sign out.\nPlease try again."));
         }}
       >
         Sign Out
@@ -273,7 +272,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
     onSuccess() {
       setIsOpen(false);
       setValue(true);
-      signOut({ redirect: false }).catch(console.error);
+      signOut().catch(console.error);
     },
     onError(e) {
       toast.error(`Couldn't delete your profile: ${e.message}`);

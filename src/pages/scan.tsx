@@ -169,7 +169,6 @@ function BarcodeInput({ goToReview }: BarcodeInputProps) {
         goToReview(barcode);
       }}
     >
-      {/* todo - suggest numbers */}
       <input
         className="grow outline-none"
         placeholder="barcode"
