@@ -210,10 +210,10 @@ const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
   const apiUtils = api.useUtils();
-  const setLoading = useSetLoadingIndicator();
+  const loading = useSetLoadingIndicator();
   const { mutate } = api.review.deleteReview.useMutation({
     onMutate() {
-      setLoading(true);
+      loading.enable();
       router.push("/profile").catch(console.error);
     },
     onError(e) {
@@ -225,7 +225,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       apiUtils.product.getProductSummaryList.invalidate().catch(console.error);
     },
     onSettled() {
-      setLoading(false);
+      loading.disable();
     },
   });
   const [enabled, setEnabled] = useState(false);

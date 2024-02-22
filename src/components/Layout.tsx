@@ -1,9 +1,7 @@
 import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
+import { DerivedStore, Store, useStore } from "@/utils/store";
 import type { DiscriminatedUnion, Icon } from "@/utils/type";
-import { atom } from "jotai";
-import { useAtomValue } from "jotai/react";
-import { atomWithReducer } from "jotai/utils";
 import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
@@ -99,7 +97,7 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
-  const translate = useAtomValue(scanTypeOffsetPercentageAtom);
+  const translate = useStore(scanTypeOffsetStore);
 
   return (
     <footer className="flex h-16 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
@@ -181,27 +179,27 @@ function FooterLink({ active, Icon, label, href }: FooterItemProps) {
 
 const scanTypeList = ["upload", "scan", "input"] as const;
 type ScanType = (typeof scanTypeList)[number];
-type ScanTypeAction = ScanType | { move: number; onUpdate?: (value: ScanType) => void };
-function getStateAfterMove(state: ScanType, move: number): ScanType {
-  const currentIndex = indexOf(scanTypeList, state);
-  const fallbackIndex = move > 0 ? 2 : 0;
-  return scanTypeList[(currentIndex ?? fallbackIndex) + move] ?? scanTypeList[fallbackIndex];
+class ScanTypeStore extends Store<ScanType> {
+  select(scanType: ScanType) {
+    this.state = scanType;
+    this.emitUpdate();
+  }
+  move(by: number) {
+    const currentIndex = indexOf(scanTypeList, this.state);
+    const fallbackIndex = by > 0 ? 2 : 0;
+    this.state = scanTypeList[(currentIndex ?? fallbackIndex) + by] ?? scanTypeList[fallbackIndex];
+    this.emitUpdate();
+  }
+  reset() {
+    this.state = "scan";
+    this.emitUpdate();
+  }
 }
-// todo - switch jotai to valtio? check what's better for bundle size. or useSES
-export const scanTypeAtom = atomWithReducer<ScanType, ScanTypeAction>(
-  "scan",
-  (prevState, action) => {
-    if (!action) return prevState;
-    if (typeof action === "string") return action;
-    const nextState = getStateAfterMove(prevState, action.move);
-    if (prevState !== nextState) {
-      action.onUpdate?.(nextState);
-    }
-    return nextState;
-  },
-);
-export const scanTypeOffsetPercentageAtom = atom(
-  (get) => (100 * ((indexOf(scanTypeList, get(scanTypeAtom)) ?? 2) - 1)) / scanTypeList.length,
+
+export const scanTypeStore = new ScanTypeStore("scan");
+export const scanTypeOffsetStore = new DerivedStore(
+  scanTypeStore,
+  (state) => (100 * ((indexOf(scanTypeList, state) ?? 2) - 1)) / scanTypeList.length,
 );
 
 function getScannerIcon(scanType: ScanType) {

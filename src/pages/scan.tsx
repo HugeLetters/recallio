@@ -1,21 +1,21 @@
-import { Layout, scanTypeAtom, scanTypeOffsetPercentageAtom } from "@/components/Layout";
+import { Layout, scanTypeOffsetStore, scanTypeStore } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
 import { ImageInput } from "@/components/UI";
 import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
+import { useStore } from "@/utils/store";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
-import { useAtom, useAtomValue } from "jotai";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {
-  const [scanType, dispatchScanType] = useAtom(scanTypeAtom);
+  const scanType = useStore(scanTypeStore);
   // reset scan type when leaving page
   useEffect(() => {
-    return () => dispatchScanType("scan");
-  }, [dispatchScanType]);
+    return () => scanTypeStore.reset();
+  }, []);
 
   const { id, ready, start, scanFile } = useBarcodeScanner(goToReview);
   function startScanner() {
@@ -70,17 +70,15 @@ const Page: NextPageWithLayout = function () {
       if (Math.abs(dx) < 30) return;
       const delta = Math.abs(dx) < 90 ? 1 : 2;
       const move = (dx < 0 ? 1 : -1) * delta;
-      dispatchScanType({
-        move,
-        onUpdate(value) {
-          fileInputRef.current?.click();
-          if (value !== "upload") return;
-        },
-      });
+      scanTypeStore.move(move);
+      const oldScanType = scanType;
+      const newScanType = scanTypeStore.getSnapshot();
+      if (newScanType !== "upload" || oldScanType === "upload") return;
+      fileInputRef.current?.click();
     },
   });
 
-  const baseOffset = useAtomValue(scanTypeOffsetPercentageAtom);
+  const baseOffset = useStore(scanTypeOffsetStore);
   return (
     <div
       ref={draggedDivRef}
@@ -119,7 +117,7 @@ const Page: NextPageWithLayout = function () {
               if (!image) return;
               scanImage(image);
             }}
-            onClick={() => dispatchScanType("upload")}
+            onClick={() => scanTypeStore.select("upload")}
           >
             Upload
           </ImageInput>
@@ -127,7 +125,7 @@ const Page: NextPageWithLayout = function () {
             className={tw(
               "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
             )}
-            onClick={() => dispatchScanType("scan")}
+            onClick={() => scanTypeStore.select("scan")}
             type="button"
           >
             Scan
@@ -136,7 +134,7 @@ const Page: NextPageWithLayout = function () {
             className={tw(
               "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
             )}
-            onClick={() => dispatchScanType("input")}
+            onClick={() => scanTypeStore.select("input")}
             type="button"
           >
             Input
