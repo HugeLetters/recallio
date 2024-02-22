@@ -158,6 +158,8 @@ Page.getLayout = function useLayout(page) {
 
 export default Page;
 
+// todo - polymorphic component attempt 4
+
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
 function BarcodeInput({ goToReview }: BarcodeInputProps) {
   return (

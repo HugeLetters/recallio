@@ -47,9 +47,8 @@ export const api = createTRPCNext<AppRouter>({
         queryCache: new QueryCache({
           onError(error) {
             console.log(error);
-            toast.error(
-              `Error while trying to retrieve data: ${error instanceof Error ? error.message : String(error)}`,
-            );
+            const message = error instanceof Error ? error.message : String(error);
+            toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
             if (error instanceof TRPCClientError) {
               const data: unknown = error.data;
               if (hasProperty(data, "code") && data.code === "UNAUTHORIZED") {

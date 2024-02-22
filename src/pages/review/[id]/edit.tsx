@@ -427,6 +427,12 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   );
 }
 
+const categoryLimit = 25;
+function categoryLimitErrorToast() {
+  return toast.error(`You can't add more than ${categoryLimit} categories.`, {
+    id: "review-edit-category-limit",
+  });
+}
 type CategoryListProps = {
   control: Control<ReviewForm>;
 };
@@ -457,8 +463,7 @@ function CategoryList({ control }: CategoryListProps) {
   }
   const router = useRouter();
   const debouncedQuery = useRef<number>();
-  const categoriesLimit = 25;
-  const isAtCategoryLimit = categories.length >= categoriesLimit;
+  const isAtCategoryLimit = categories.length >= categoryLimit;
 
   return (
     <div>
@@ -467,7 +472,7 @@ function CategoryList({ control }: CategoryListProps) {
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
           if (isAtCategoryLimit) {
-            toast.error(`You can't add more than ${categoriesLimit} categories.`);
+            categoryLimitErrorToast();
             return;
           }
           open();
@@ -572,13 +577,18 @@ function CategorySearch({
 
   function addCustomCategory() {
     if (!isSearchValid) {
-      return toast.error(`Category must be between ${minLength} and ${maxLength} characters long.`);
+      return toast.error(
+        `Category must be between ${minLength} and ${maxLength} characters long.`,
+        { id: "review-edit-category-length" },
+      );
     }
     if (isSearchAdded) {
-      return toast.error("This category has already been added.");
+      return toast.error("This category has already been added.", {
+        id: "review-edit-category-duplicate",
+      });
     }
     if (!canAddCategories) {
-      return toast.error("You can't add more categories to review.");
+      return categoryLimitErrorToast();
     }
 
     append(lowercaseSearch);
@@ -645,7 +655,7 @@ function CategorySearch({
                     onCheckedChange={(checked) => {
                       if (checked !== true) return remove(category);
                       if (!canAddCategories) {
-                        return toast.error("You can't add more categories to review.");
+                        return categoryLimitErrorToast();
                       }
                       append(category);
                     }}

@@ -1,5 +1,6 @@
 import { hasFocusWithin, useHasMouse } from "@/hooks";
 import { tw } from "@/utils";
+import type { StrictOmit } from "@/utils/type";
 import * as Toast from "@radix-ui/react-toast";
 import {
   forwardRef,
@@ -12,6 +13,7 @@ import {
   type PropsWithChildren,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 import { Flipper } from "react-flip-toolkit";
 import { Flipped, onSelfTransitionEnd } from "./Animation";
 
@@ -112,9 +114,12 @@ function ToastSlot({
     <Flipped
       flipId={id}
       key={id}
-      className="animate-slide-left animate-function-ease-out"
       scale
       translate
+      className={tw(
+        "animate-slide-left animate-function-ease-out",
+        !isLast && "data-[transition=out]:animate-duration-0",
+      )}
     >
       <Toast.Root
         ref={divRef}
@@ -168,7 +173,7 @@ function ToastSlot({
   );
 }
 
-type ToastOptions = { className?: string; duration?: number };
+type ToastOptions = { id?: string; className?: string; duration?: number };
 type ToastData = { id: string; content: ReactNode } & ToastOptions;
 type Subscription = () => void;
 type Unsubscribe = () => void;
@@ -181,12 +186,44 @@ class ToastStackStore {
       subscription();
     }
   }
-
-  // todo - replace toasts with same message or id maybe?
-  addToast(toast: ReactNode, { duration = 5000, ...options }: ToastOptions = {}) {
-    const id = `${Math.random()}`;
-    this.toastStack = [...this.toastStack, { content: toast, duration, ...options, id }];
+  private addNewToast(toast: ToastData) {
+    this.toastStack = [...this.toastStack, toast];
     this.notify();
+  }
+  private updateActiveToast(toast: ToastData) {
+    if (toast.id === this.toastStack.at(-1)?.id) {
+      this.resetToast(toast);
+    } else {
+      this.moveToEnd(toast);
+    }
+  }
+  private resetToast(toast: ToastData) {
+    const duration = toast.duration;
+    flushSync(() => {
+      toast.duration = Infinity;
+      this.toastStack = [...this.toastStack];
+      this.notify();
+    });
+    toast.duration = duration;
+    this.toastStack = [...this.toastStack];
+    this.notify();
+  }
+  private moveToEnd(toast: ToastData) {
+    flushSync(() => this.removeToast(toast.id));
+    this.addNewToast(toast);
+  }
+
+  addToast(
+    toast: ReactNode,
+    { duration = 5000, id = `${Math.random()}`, ...options }: ToastOptions,
+  ) {
+    id = id.replaceAll(/\s+/g, "");
+    const activeToast = this.toastStack.find((toast) => toast.id === id);
+    if (activeToast) {
+      this.updateActiveToast(activeToast);
+    } else {
+      this.addNewToast({ content: toast, duration, ...options, id });
+    }
 
     return id;
   }
@@ -231,21 +268,22 @@ const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function Toast
   );
 });
 
+type PublicToastOptions = StrictOmit<ToastOptions, "className">;
 export const toast = {
-  info(message: ReactNode) {
+  info(message: ReactNode, options?: PublicToastOptions) {
     return toastStackStore.addToast(
       <ToastClose>
         <Toast.Description>{message}</Toast.Description>
       </ToastClose>,
-      { className: "bg-white focus-visible-within:ring-2 ring-app-green-500" },
+      { className: "bg-white focus-visible-within:ring-2 ring-app-green-500", ...options },
     );
   },
-  error(error: ReactNode) {
+  error(error: ReactNode, options?: PublicToastOptions) {
     return toastStackStore.addToast(
       <ToastClose className="text-app-red-550">
         <Toast.Description>{error}</Toast.Description>
       </ToastClose>,
-      { className: "bg-app-red-100 focus-visible-within:ring-2 ring-app-red-500" },
+      { className: "bg-app-red-100 focus-visible-within:ring-2 ring-app-red-500", ...options },
     );
   },
   remove(id: ToastData["id"]) {
@@ -259,3 +297,5 @@ export function logToastError(message: ReactNode) {
     toast.error(message);
   };
 }
+
+// todo - global useState through useSES util?

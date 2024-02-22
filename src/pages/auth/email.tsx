@@ -43,7 +43,6 @@ const Page: NextPageWithLayout = function () {
         }}
         className="group flex w-full max-w-[360px] flex-col items-center gap-3"
       >
-        {/* todo - improve pin input for text navigation maybe */}
         <label className="group/input my-6 w-full cursor-text">
           <div className="grid w-full grid-cols-6 justify-center gap-2.5 uppercase">
             {SLOTS.map((_, i) => (
