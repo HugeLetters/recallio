@@ -1,5 +1,6 @@
 import { hasFocusWithin, useHasMouse } from "@/hooks";
 import { tw } from "@/utils";
+import { Store, useStore } from "@/utils/store";
 import type { StrictOmit } from "@/utils/type";
 import * as Toast from "@radix-ui/react-toast";
 import {
@@ -8,7 +9,6 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ComponentPropsWithoutRef,
   type PropsWithChildren,
   type ReactNode,
@@ -28,7 +28,7 @@ export function ToastProvider({ children }: PropsWithChildren) {
 }
 
 function ToastContainer() {
-  const toasts = useToastStack();
+  const toasts = useStore(toastStackStore);
   const [isStacked, setIsStacked] = useState(true);
   const hasMouse = useHasMouse();
   const toastViewportHandlers: ComponentPropsWithoutRef<"ol"> = hasMouse
@@ -153,7 +153,9 @@ function ToastSlot({
             inverseFlipId={id}
             scale
           >
-            <>{content}</>
+            {/* this is to prevent "infetterence", I don’t even think that’s a word */}
+            {/* Actually this is so that inverse scaling works correctly */}
+            <div>{content}</div>
           </Flipped>
           {isLast && duration && duration !== Infinity && (
             <div
@@ -175,23 +177,13 @@ function ToastSlot({
 
 type ToastOptions = { id?: string; className?: string; duration?: number };
 type ToastData = { id: string; content: ReactNode } & ToastOptions;
-type Subscription = () => void;
-type Unsubscribe = () => void;
-type Subscribe = (subscription: Subscription) => Unsubscribe;
-class ToastStackStore {
-  private toastStack: ToastData[] = [];
-  private subscriptions = new Set<Subscription>();
-  private notify() {
-    for (const subscription of this.subscriptions) {
-      subscription();
-    }
-  }
+class ToastStackStore extends Store<ToastData[]> {
   private addNewToast(toast: ToastData) {
-    this.toastStack = [...this.toastStack, toast];
-    this.notify();
+    this.state = [...this.state, toast];
+    this.emitUpdate();
   }
   private updateActiveToast(toast: ToastData) {
-    if (toast.id === this.toastStack.at(-1)?.id) {
+    if (toast.id === this.state.at(-1)?.id) {
       this.resetToast(toast);
     } else {
       this.moveToEnd(toast);
@@ -201,12 +193,12 @@ class ToastStackStore {
     const duration = toast.duration;
     flushSync(() => {
       toast.duration = Infinity;
-      this.toastStack = [...this.toastStack];
-      this.notify();
+      this.state = [...this.state];
+      this.emitUpdate();
     });
     toast.duration = duration;
-    this.toastStack = [...this.toastStack];
-    this.notify();
+    this.state = [...this.state];
+    this.emitUpdate();
   }
   private moveToEnd(toast: ToastData) {
     flushSync(() => this.removeToast(toast.id));
@@ -218,7 +210,7 @@ class ToastStackStore {
     { duration = 5000, id = `${Math.random()}`, ...options }: ToastOptions,
   ) {
     id = id.replaceAll(/\s+/g, "");
-    const activeToast = this.toastStack.find((toast) => toast.id === id);
+    const activeToast = this.state.find((toast) => toast.id === id);
     if (activeToast) {
       this.updateActiveToast(activeToast);
     } else {
@@ -228,28 +220,11 @@ class ToastStackStore {
     return id;
   }
   removeToast(id: ToastData["id"]) {
-    this.toastStack = this.toastStack.filter((toast) => toast.id !== id);
-    this.notify();
+    this.state = this.state.filter((toast) => toast.id !== id);
+    this.emitUpdate();
   }
-
-  subscribe: Subscribe = (onStoreChange) => {
-    this.subscriptions.add(onStoreChange);
-    return () => {
-      this.subscriptions.delete(onStoreChange);
-    };
-  };
-  getSnapshot = () => {
-    return this.toastStack;
-  };
 }
-const toastStackStore = new ToastStackStore();
-function useToastStack() {
-  return useSyncExternalStore(
-    toastStackStore.subscribe,
-    toastStackStore.getSnapshot,
-    toastStackStore.getSnapshot,
-  );
-}
+const toastStackStore = new ToastStackStore([]);
 
 type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
 const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
@@ -297,5 +272,3 @@ export function logToastError(message: ReactNode) {
     toast.error(message);
   };
 }
-
-// todo - global useState through useSES util?
