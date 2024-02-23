@@ -1,12 +1,12 @@
 import { Layout, scanTypeOffsetStore, scanTypeStore } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
-import { ImageInput } from "@/components/UI";
+import { ImageInput, createPolymorphicComponent } from "@/components/UI";
 import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
 import { useStore } from "@/utils/store";
 import type { NextPageWithLayout } from "@/utils/type";
-import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import type { QrcodeSuccessCallback } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
@@ -97,20 +97,21 @@ const Page: NextPageWithLayout = function () {
           !isSwiped && "transition-transform",
         )}
       >
-        <div
+        <ScanGrid
+          render="div"
           className={tw(
-            "absolute inset-0 z-10 grid -translate-x-[var(--translate)] grid-cols-3 *:mx-1",
+            "absolute inset-0 z-10 -translate-x-[var(--translate)]",
             !isSwiped && "transition-transform",
           )}
         >
           <div className="col-start-2 rounded-xl bg-app-green-500" />
-        </div>
-        <div className="relative z-20 grid grid-cols-3 *:mx-1">
-          <ImageInput
-            ref={fileInputRef}
-            className={tw(
-              "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
-            )}
+        </ScanGrid>
+        <ScanGrid
+          render="div"
+          className="relative z-20"
+        >
+          <ScanButton
+            render={ImageInput}
             aria-label="Scan from file"
             isImageSet={true}
             onChange={(e) => {
@@ -121,31 +122,30 @@ const Page: NextPageWithLayout = function () {
             onClick={() => scanTypeStore.select("upload")}
           >
             Upload
-          </ImageInput>
-          <button
-            className={tw(
-              "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
-            )}
+          </ScanButton>
+          <ScanButton
+            render="button"
             onClick={() => scanTypeStore.select("scan")}
             type="button"
           >
             Scan
-          </button>
-          <button
-            className={tw(
-              "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
-            )}
+          </ScanButton>
+          <ScanButton
+            render="button"
             onClick={() => scanTypeStore.select("input")}
             type="button"
           >
             Input
-          </button>
-        </div>
-        <div className="absolute inset-0 grid grid-cols-3 items-stretch *:mx-1">
+          </ScanButton>
+        </ScanGrid>
+        <ScanGrid
+          render="div"
+          className="absolute inset-0 items-stretch"
+        >
           <div className="rounded-xl bg-black/50" />
           <div className="rounded-xl bg-black/50" />
           <div className="rounded-xl bg-black/50" />
-        </div>
+        </ScanGrid>
       </div>
     </div>
   );
@@ -156,6 +156,27 @@ Page.getLayout = function useLayout(page) {
 };
 
 export default Page;
+
+const ScanGrid = createPolymorphicComponent<{ className: string }>(
+  (Component, { className, ...props }) => (
+    <Component
+      {...props}
+      className={tw("grid grid-cols-3 *:mx-1", className)}
+    />
+  ),
+);
+
+const ScanButton = createPolymorphicComponent<{ className: string }>(
+  (Component, { className, ...props }) => (
+    <Component
+      {...props}
+      className={tw(
+        "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+        className,
+      )}
+    />
+  ),
+);
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
 function BarcodeInput({ goToReview }: BarcodeInputProps) {
