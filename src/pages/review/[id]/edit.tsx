@@ -104,22 +104,16 @@ type ReviewProps = {
   barcode: string;
 };
 function Review({ barcode, review, hasReview }: ReviewProps) {
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { isDirty: isFormDirty },
-  } = useForm({ defaultValues: review });
+  const { register, control, handleSubmit, formState } = useForm({ defaultValues: review });
 
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
-      // todo - save it to localstorage temporarily in case save fails!
       const { categories: categoriesField, image: _, ...restData } = data;
       const newCategories = categoriesField.map(({ name }) => name);
 
       const optimisticReview = { ...restData, barcode, categories: newCategories };
-      if (!isFormDirty && hasReview) {
+      if (!formState.isDirty && hasReview) {
         return onReviewSave(optimisticReview);
       }
 

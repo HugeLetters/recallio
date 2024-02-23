@@ -176,18 +176,17 @@ const scanTypeList = ["upload", "scan", "input"] as const;
 type ScanType = (typeof scanTypeList)[number];
 class ScanTypeStore extends Store<ScanType> {
   select(scanType: ScanType) {
-    this.state = scanType;
-    this.emitUpdate();
+    this.setState(scanType);
   }
   move(by: number) {
-    const currentIndex = indexOf(scanTypeList, this.state);
-    const fallbackIndex = by > 0 ? 2 : 0;
-    this.state = scanTypeList[(currentIndex ?? fallbackIndex) + by] ?? scanTypeList[fallbackIndex];
-    this.emitUpdate();
+    this.updateState((state) => {
+      const currentIndex = indexOf(scanTypeList, state);
+      const fallbackIndex = by > 0 ? 2 : 0;
+      return scanTypeList[(currentIndex ?? fallbackIndex) + by] ?? scanTypeList[fallbackIndex];
+    });
   }
   reset() {
-    this.state = "scan";
-    this.emitUpdate();
+    this.setState("scan");
   }
 }
 

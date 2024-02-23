@@ -171,11 +171,11 @@ type ToastOptions = { id?: string; className?: string; duration?: number };
 type ToastData = { id: string; content: ReactNode } & ToastOptions;
 class ToastStackStore extends Store<ToastData[]> {
   private addNewToast(toast: ToastData) {
-    this.state = [...this.state, toast];
-    this.emitUpdate();
+    this.updateState((state) => [...state, toast]);
   }
   private updateActiveToast(toast: ToastData) {
-    if (toast.id === this.state.at(-1)?.id) {
+    const state = this.getSnapshot();
+    if (toast.id === state.at(-1)?.id) {
       this.resetToast(toast);
     } else {
       this.moveToEnd(toast);
@@ -185,12 +185,10 @@ class ToastStackStore extends Store<ToastData[]> {
     const duration = toast.duration;
     flushSync(() => {
       toast.duration = Infinity;
-      this.state = [...this.state];
-      this.emitUpdate();
+      this.updateState((state) => [...state]);
     });
     toast.duration = duration;
-    this.state = [...this.state];
-    this.emitUpdate();
+    this.updateState((state) => [...state]);
   }
   private moveToEnd(toast: ToastData) {
     flushSync(() => this.removeToast(toast.id));
@@ -202,7 +200,8 @@ class ToastStackStore extends Store<ToastData[]> {
     { duration = 5000, id = `${Math.random()}`, ...options }: ToastOptions,
   ) {
     id = id.replaceAll(/\s+/g, "");
-    const activeToast = this.state.find((toast) => toast.id === id);
+    const state = this.getSnapshot();
+    const activeToast = state.find((toast) => toast.id === id);
     if (activeToast) {
       this.updateActiveToast(activeToast);
     } else {
@@ -212,8 +211,7 @@ class ToastStackStore extends Store<ToastData[]> {
     return id;
   }
   removeToast(id: ToastData["id"]) {
-    this.state = this.state.filter((toast) => toast.id !== id);
-    this.emitUpdate();
+    this.updateState((state) => state.filter((toast) => toast.id !== id));
   }
 }
 const toastStackStore = new ToastStackStore([]);

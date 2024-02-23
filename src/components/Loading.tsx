@@ -43,8 +43,7 @@ export function Spinner({ className }: SpinnerProps) {
 class LoadingStore extends Store<boolean> {
   private stack: string[] = [];
   private computeState() {
-    this.state = !!this.stack.length;
-    this.emitUpdate();
+    this.setState(!!this.stack.length);
   }
   add(value: string) {
     this.stack.push(value);
