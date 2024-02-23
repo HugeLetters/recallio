@@ -1,10 +1,5 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  type ComponentPropsWithoutRef,
-  type PropsWithChildren,
-} from "react";
+import { useEffect, useId, useRef } from "react";
+import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { Flipped as NativeFlipped } from "react-flip-toolkit";
 
 const dataTransitionName = "data-transition";
@@ -100,7 +95,7 @@ export function Transition({
     }
 
     const observer = new MutationObserver((events) => {
-      // we do it in reverse cause... uhm... cause if several elements are removed at the same time in normal order your reference to the nextSibling will be out of date actually cause it also got removed. So we do it in reverse
+      // we do it in reverse cause... uhm... cause if several elements are removed at the same time in normal order your reference to the nextSibling will be out of date actually cause it also got removed.
       for (const { addedNodes, removedNodes, target, nextSibling } of events.reverse()) {
         handleAdded(addedNodes);
         handleRemoved(removedNodes, target, nextSibling);

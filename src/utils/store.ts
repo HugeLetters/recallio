@@ -34,3 +34,5 @@ export class DerivedStore<R, V> extends Store<V> {
     });
   }
 }
+
+// todo - createStore maybe?

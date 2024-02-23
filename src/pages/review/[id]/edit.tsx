@@ -23,15 +23,16 @@ import {
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
-import { api, type RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
+import type { RouterOutputs } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
-import {
-  type ModelProps,
-  type NextPageWithLayout,
-  type Nullish,
-  type StrictOmit,
-  type TransformType,
+import type {
+  ModelProps,
+  NextPageWithLayout,
+  Nullish,
+  StrictOmit,
+  TransformType,
 } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -39,14 +40,10 @@ import * as Radio from "@radix-ui/react-radio-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMemo, useRef, useState, type FormEvent, type MutableRefObject } from "react";
-import {
-  Controller,
-  useFieldArray,
-  useForm,
-  type Control,
-  type UseFormRegisterReturn,
-} from "react-hook-form";
+import { useMemo, useRef, useState } from "react";
+import type { FormEvent, MutableRefObject } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import type { Control, UseFormRegisterReturn } from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
@@ -117,6 +114,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
+      // todo - save it to localstorage temporarily in case save fails!
       const { categories: categoriesField, image: _, ...restData } = data;
       const newCategories = categoriesField.map(({ name }) => name);
 

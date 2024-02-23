@@ -2,15 +2,8 @@ import type { AppFileRouter } from "@/server/uploadthing";
 import { browser, ignore } from "@/utils";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import type React from "react";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type RefObject,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import type { RefObject } from "react";
 
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 

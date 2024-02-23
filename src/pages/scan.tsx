@@ -5,7 +5,8 @@ import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
 import { useStore } from "@/utils/store";
 import type { NextPageWithLayout } from "@/utils/type";
-import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
+import type { QrcodeSuccessCallback } from "html5-qrcode";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
@@ -155,8 +156,6 @@ Page.getLayout = function useLayout(page) {
 };
 
 export default Page;
-
-// todo - polymorphic component attempt 4
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
 function BarcodeInput({ goToReview }: BarcodeInputProps) {

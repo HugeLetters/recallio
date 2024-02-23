@@ -1,6 +1,7 @@
 import { tw } from "@/utils";
 import { Store, useStore } from "@/utils/store";
-import { useEffect, useId, useRef, type PropsWithChildren } from "react";
+import { useEffect, useId, useRef } from "react";
+import type { PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import { Transition } from "./Animation";
 import { ClientOnly } from "./UI";

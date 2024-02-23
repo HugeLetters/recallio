@@ -5,11 +5,11 @@
  * We also create a few inference helpers for input and output types.
  */
 import { toast } from "@/components/Toast";
-import { type AppRouter } from "@/server/api";
+import type { AppRouter } from "@/server/api";
 import { QueryCache } from "@tanstack/react-query";
 import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
-import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { browser, hasProperty, signOut } from ".";
 
 const getBaseUrl = () => {

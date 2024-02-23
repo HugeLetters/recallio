@@ -5,11 +5,11 @@ import { tw } from "@/utils";
 import { api } from "@/utils/api";
 import { lato } from "@/utils/font";
 import type { NextPageWithLayout } from "@/utils/type";
-import { type Session } from "next-auth";
+import type { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {

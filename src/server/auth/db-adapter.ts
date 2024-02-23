@@ -3,7 +3,8 @@ import { findFirst } from "@/database/query/utils";
 import { account, session, user, verificationToken } from "@/database/schema/auth";
 import { and, eq, lt, or } from "drizzle-orm";
 import type { Adapter } from "next-auth/adapters";
-import { adjectives, animals, uniqueNamesGenerator, type Config } from "unique-names-generator";
+import { adjectives, animals, uniqueNamesGenerator } from "unique-names-generator";
+import type { Config } from "unique-names-generator";
 import { getFileUrl } from "../uploadthing";
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
 

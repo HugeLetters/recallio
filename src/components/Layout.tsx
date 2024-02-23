@@ -5,12 +5,7 @@ import type { DiscriminatedUnion, Icon } from "@/utils/type";
 import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
-import {
-  type ComponentProps,
-  type ComponentPropsWithoutRef,
-  type PropsWithChildren,
-  type ReactNode,
-} from "react";
+import type { ComponentProps, ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen";
 import UploadIcon from "~icons/custom/photo-upload";

@@ -46,6 +46,7 @@ export function isSome<O extends Option<unknown>>(option: O): option is Extract<
   return option.ok;
 }
 
+// todo - build time transform!
 type Falsy = undefined | null | false;
 type ClassGroup = Falsy | string | Array<ClassGroup>;
 export function tw(...classGroup: ClassGroup[]): string {

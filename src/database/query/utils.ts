@@ -1,4 +1,5 @@
-import { sql, type SQL } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import type { MySqlColumn, MySqlTable } from "drizzle-orm/mysql-core";
 import { db } from "..";
 

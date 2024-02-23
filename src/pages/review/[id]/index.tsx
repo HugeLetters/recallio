@@ -12,9 +12,10 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { tw } from "@/utils";
-import { api, type RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
+import type { RouterOutputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
-import { type NextPageWithLayout } from "@/utils/type";
+import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";

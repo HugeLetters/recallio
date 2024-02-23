@@ -9,8 +9,8 @@
 import { env } from "@/env.mjs";
 import { getServerAuthSession } from "@/server/auth";
 import { TRPCError, initTRPC } from "@trpc/server";
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { type Session } from "next-auth";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import type { Session } from "next-auth";
 import { ZodError } from "zod";
 
 /**

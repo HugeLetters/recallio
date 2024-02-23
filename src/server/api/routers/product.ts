@@ -7,10 +7,12 @@ import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
 import { mostCommonItems } from "@/utils/array";
-import { and, asc, desc, eq, exists, gt, like, lt, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, like, lt, or, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
-import { createPagination, type Paginated } from "../utils/pagination";
+import { createPagination } from "../utils/pagination";
+import type { Paginated } from "../utils/pagination";
 import { createBarcodeSchema } from "../utils/zod";
 
 const productSummaryListPagination = createPagination(
