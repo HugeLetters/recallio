@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type IconFC from "~icons/";
 
 export type Icon = typeof IconFC;

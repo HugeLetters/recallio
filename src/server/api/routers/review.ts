@@ -6,12 +6,8 @@ import {
   nullableMap,
   removeNullishArray,
 } from "@/database/query/utils";
-import {
-  category,
-  review,
-  reviewsToCategories,
-  type ReviewInsert,
-} from "@/database/schema/product";
+import { category, review, reviewsToCategories } from "@/database/schema/product";
+import type { ReviewInsert } from "@/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
 import { nonEmptyArray } from "@/utils/array";
 import { TRPCError } from "@trpc/server";
@@ -19,7 +15,8 @@ import { and, asc, desc, eq, gt, inArray, like, lt, or, sql } from "drizzle-orm"
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
-import { createPagination, type Paginated } from "../utils/pagination";
+import { createPagination } from "../utils/pagination";
+import type { Paginated } from "../utils/pagination";
 import {
   coercedStringSchema,
   createBarcodeSchema,

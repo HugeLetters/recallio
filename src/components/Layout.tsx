@@ -1,18 +1,11 @@
 import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
+import { DerivedStore, Store, useStore } from "@/utils/store";
 import type { DiscriminatedUnion, Icon } from "@/utils/type";
-import { useAtomValue } from "jotai/react";
-import { atomWithReducer } from "jotai/utils";
 import type { LinkProps } from "next/link";
 import Link from "next/link";
 import router, { useRouter } from "next/router";
-import {
-  type ComponentProps,
-  type ComponentPropsWithoutRef,
-  type PropsWithChildren,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import type { ComponentProps, ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen";
 import UploadIcon from "~icons/custom/photo-upload";
@@ -99,18 +92,7 @@ export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkPro
 
 function Footer() {
   const { pathname } = useRouter();
-  const selection = useAtomValue(selectionAtom);
-  const ScannerIcon = getFooterIcon(selection);
-
-  // Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this
-  const activeBackground = (
-    <Flipped
-      flipId="active-icon-bg"
-      className="animate-scale-in"
-    >
-      <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
-    </Flipped>
-  );
+  const translate = useStore(scanTypeOffsetStore);
 
   return (
     <footer className="flex h-16 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
@@ -120,26 +102,39 @@ function Footer() {
           spring={{ stiffness: 350, damping: 25 }}
           className="contents"
         >
-          <FooterItem
+          <FooterLink
             href="/search"
             label="Search"
-            activeBackground={pathname.startsWith("/search") ? activeBackground : null}
             Icon={SearchIcon}
+            active={pathname.startsWith("/search")}
           />
           <Link
             href="/scan"
             className={tw(
-              "flex size-16 -translate-y-1/4 items-center justify-center rounded-full p-4 transition-colors duration-300",
+              "relative flex size-16 -translate-y-1/4 items-center justify-center overflow-hidden rounded-full p-4 transition-colors duration-300",
               pathname.startsWith("/scan") ? "bg-app-green-500 text-white" : "bg-neutral-100",
             )}
           >
-            <ScannerIcon className="size-full" />
+            <div
+              className="absolute grid h-full w-[300%] -translate-x-[var(--translate)] grid-cols-3 transition-transform duration-300"
+              style={{ "--translate": `${translate}%` }}
+            >
+              {scanTypeList.map((scanType) => {
+                const Icon = getScannerIcon(scanType);
+                return (
+                  <Icon
+                    key={scanType}
+                    className="size-full p-4"
+                  />
+                );
+              })}
+            </div>
           </Link>
-          <FooterItem
+          <FooterLink
             href="/profile"
             label="Profile"
-            activeBackground={pathname.startsWith("/profile") ? activeBackground : null}
             Icon={ProfileIcon}
+            active={pathname.startsWith("/profile")}
           />
         </Flipper>
       </nav>
@@ -150,46 +145,59 @@ function Footer() {
 type FooterItemProps = {
   href: LinkProps["href"];
   label: string;
-  activeBackground: ReactElement | null;
   Icon: Icon;
+  active: boolean;
 };
-function FooterItem({ activeBackground, Icon, label, href }: FooterItemProps) {
+function FooterLink({ active, Icon, label, href }: FooterItemProps) {
   return (
     <Link
       href={href}
       className={tw(
         "relative flex flex-col items-center justify-center overflow-y-clip px-6 transition-colors",
-        activeBackground && "text-app-green-500",
+        active && "text-app-green-500",
       )}
     >
       <Icon className="size-6 lg:size-7" />
       <span>{label}</span>
-      {activeBackground}
+      {/* Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this */}
+      {active && (
+        <Flipped
+          flipId="active-icon-bg"
+          className="animate-scale-in"
+        >
+          <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
+        </Flipped>
+      )}
     </Link>
   );
 }
 
-const selection = ["upload", "scan", "input"] as const;
-type Selection = (typeof selection)[number];
-type SelectionAction = Selection | { move: number; onUpdate?: (value: Selection) => void };
-function getStateAfterMove(state: Selection, move: number): Selection {
-  const currentIndex = indexOf(selection, state);
-  const fallbackIndex = move > 0 ? 2 : 0;
-  return selection[(currentIndex ?? fallbackIndex) + move] ?? selection[fallbackIndex];
+const scanTypeList = ["upload", "scan", "input"] as const;
+type ScanType = (typeof scanTypeList)[number];
+class ScanTypeStore extends Store<ScanType> {
+  select(scanType: ScanType) {
+    this.setState(scanType);
+  }
+  move(by: number) {
+    this.updateState((state) => {
+      const currentIndex = indexOf(scanTypeList, state);
+      const fallbackIndex = by > 0 ? 2 : 0;
+      return scanTypeList[(currentIndex ?? fallbackIndex) + by] ?? scanTypeList[fallbackIndex];
+    });
+  }
+  reset() {
+    this.setState("scan");
+  }
 }
-export const selectionAtom = atomWithReducer<Selection, SelectionAction>(
-  "scan",
-  (prevState, action) => {
-    if (!action) return prevState;
-    if (typeof action === "string") return action;
-    const nextState = getStateAfterMove(prevState, action.move);
-    action.onUpdate?.(nextState);
-    return nextState;
-  },
+
+export const scanTypeStore = new ScanTypeStore("scan");
+export const scanTypeOffsetStore = new DerivedStore(
+  scanTypeStore,
+  (state) => (100 * ((indexOf(scanTypeList, state) ?? 2) - 1)) / scanTypeList.length,
 );
 
-function getFooterIcon(selection: Selection) {
-  switch (selection) {
+function getScannerIcon(scanType: ScanType) {
+  switch (scanType) {
     case "upload":
       return UploadIcon;
     case "input":
@@ -197,7 +205,7 @@ function getFooterIcon(selection: Selection) {
     case "scan":
       return ScanIcon;
     default:
-      const x: never = selection;
+      const x: never = scanType;
       return x;
   }
 }

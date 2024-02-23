@@ -1,10 +1,10 @@
-import { useMounted } from "@/hooks";
-import { atom, useAtomValue, useSetAtom } from "jotai";
-import { atomWithReducer } from "jotai/utils";
-import { useEffect, useId, useRef, type PropsWithChildren } from "react";
+import { tw } from "@/utils";
+import { Store, useStore } from "@/utils/store";
+import { useEffect, useId, useRef } from "react";
+import type { PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
 import { Transition } from "./Animation";
-import { tw } from "@/utils";
+import { ClientOnly } from "./UI";
 
 const DURATION = 1000;
 const DOT_COUNT = 12;
@@ -40,59 +40,63 @@ export function Spinner({ className }: SpinnerProps) {
   );
 }
 
-function stackReducer<T>(draft: T[], action: { type: "ADD" | "REMOVE"; value: T }) {
-  if (!action) return draft;
-  switch (action.type) {
-    case "ADD":
-      return [...draft, action.value];
-    case "REMOVE":
-      return draft.filter((frame) => frame !== action.value);
+class LoadingStore extends Store<boolean> {
+  private stack: string[] = [];
+  private computeState() {
+    this.setState(!!this.stack.length);
+  }
+  add(value: string) {
+    this.stack.push(value);
+    this.computeState();
+  }
+  remove(value: string) {
+    this.stack = this.stack.filter((frame) => frame !== value);
+    this.computeState();
   }
 }
 
-const loadingStackAtom = atomWithReducer([], stackReducer<string>);
-const loadingAtom = atom(false);
+const loadingStore = new LoadingStore(false);
 export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
-  const stack = useAtomValue(loadingStackAtom);
-  const show = useAtomValue(loadingAtom);
-  const mounted = useMounted();
+  const show = useStore(loadingStore);
 
   return (
     <>
       {children}
-      {mounted
-        ? createPortal(
+      <ClientOnly>
+        {() =>
+          createPortal(
             <Transition outClassName="animate-fade-in-reverse">
-              {!!stack.length || show ? (
+              {show && (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
-              ) : null}
+              )}
             </Transition>,
             document.body,
           )
-        : null}
+        }
+      </ClientOnly>
     </>
   );
 }
 
 export function useSetLoadingIndicator() {
-  return useSetAtom(loadingAtom);
+  const id = useId();
+  return { enable: () => loadingStore.add(id), disable: () => loadingStore.remove(id) };
 }
 
 export function useLoadingIndicator(show: boolean, delay = 0) {
-  const setStack = useSetAtom(loadingStackAtom);
   const timeout = useRef<number>();
   const id = useId();
 
   useEffect(() => {
     if (!show) {
-      setStack({ type: "REMOVE", value: id });
+      loadingStore.remove(id);
       return;
     }
 
-    timeout.current = window.setTimeout(() => setStack({ type: "ADD", value: id }), delay);
+    timeout.current = window.setTimeout(() => loadingStore.add(id), delay);
     return () => {
       clearTimeout(timeout.current);
-      setStack({ type: "REMOVE", value: id });
+      loadingStore.remove(id);
     };
-  }, [id, setStack, show, delay]);
+  }, [id, show, delay]);
 }

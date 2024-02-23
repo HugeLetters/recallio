@@ -1,14 +1,8 @@
 import type { StrictOmit } from "@/utils/type";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  useEffect,
-  useRef,
-  type ComponentPropsWithoutRef,
-  type Key,
-  type PropsWithChildren,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef } from "react";
+import type { ComponentPropsWithoutRef, Key, PropsWithChildren, ReactNode } from "react";
 import EggBasketIcon from "~icons/custom/egg-basket";
 import MilkIcon from "~icons/custom/milk";
 

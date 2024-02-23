@@ -35,14 +35,26 @@ export function mostCommonItems(count: number) {
   };
 }
 
+const filterSymbol: unique symbol = Symbol("filter");
+type Filtered = typeof filterSymbol;
+type Filter<T, V extends T> = (value: T, removed: Filtered) => V | Filtered;
+function isNotFiltered<V>(value: V | Filtered): value is V {
+  return value !== filterSymbol;
+}
+
+export function filterOut<T, V extends T>(array: T[], predicate: Filter<T, V>): V[] {
+  return array.filter((value): value is V => isNotFiltered(predicate(value, filterSymbol)));
+}
+
 export function filterMap<A, B extends A, C>(
   array: A[],
-  filter: (value: A) => value is B,
-  map: (value: B) => C,
+  filter: Filter<A, B>,
+  transform: (value: B) => C,
 ): C[] {
   return array.reduce<C[]>((acc, el) => {
-    if (filter(el)) {
-      acc.push(map(el));
+    const result = filter(el, filterSymbol);
+    if (isNotFiltered(result)) {
+      acc.push(transform(result));
     }
     return acc;
   }, []);

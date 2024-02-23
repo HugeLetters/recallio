@@ -12,7 +12,8 @@ import {
   ProsIcon,
 } from "@/components/page/Review";
 import { fetchNextPage } from "@/utils";
-import { api, type RouterInputs, type RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
+import type { RouterInputs, RouterOutputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";

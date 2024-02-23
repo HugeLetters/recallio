@@ -5,12 +5,12 @@
  * We also create a few inference helpers for input and output types.
  */
 import { toast } from "@/components/Toast";
-import { type AppRouter } from "@/server/api";
+import type { AppRouter } from "@/server/api";
 import { QueryCache } from "@tanstack/react-query";
-import { httpBatchLink, loggerLink } from "@trpc/client";
+import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
-import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
-import { browser } from ".";
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import { browser, hasProperty, signOut } from ".";
 
 const getBaseUrl = () => {
   if (browser) return ""; // browser should use relative url
@@ -46,9 +46,15 @@ export const api = createTRPCNext<AppRouter>({
         },
         queryCache: new QueryCache({
           onError(error) {
-            toast.error(
-              `Error while trying to retrieve data: ${error instanceof Error ? error.message : String(error)}`,
-            );
+            console.log(error);
+            const message = error instanceof Error ? error.message : String(error);
+            toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
+            if (error instanceof TRPCClientError) {
+              const data: unknown = error.data;
+              if (hasProperty(data, "code") && data.code === "UNAUTHORIZED") {
+                signOut().catch(console.error);
+              }
+            }
           },
         }),
       },

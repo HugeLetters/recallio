@@ -1,22 +1,22 @@
-import { Layout, selectionAtom } from "@/components/Layout";
+import { Layout, scanTypeOffsetStore, scanTypeStore } from "@/components/Layout";
 import { logToastError, toast } from "@/components/Toast";
-import { ImageInput } from "@/components/UI";
+import { ImageInput, createPolymorphicComponent } from "@/components/UI";
+import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
+import { useStore } from "@/utils/store";
 import type { NextPageWithLayout } from "@/utils/type";
-import { useDrag } from "@use-gesture/react";
-import { Html5Qrcode, Html5QrcodeScannerState, type QrcodeSuccessCallback } from "html5-qrcode";
-import { useAtom } from "jotai";
+import type { QrcodeSuccessCallback } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useRouter } from "next/router";
 import { useEffect, useId, useRef, useState } from "react";
-
 import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {
-  const [selection, dispatchSelection] = useAtom(selectionAtom);
-  // reset selection when leaving page
+  const scanType = useStore(scanTypeStore);
+  // reset scan type when leaving page
   useEffect(() => {
-    return () => dispatchSelection("scan");
-  }, [dispatchSelection]);
+    return () => scanTypeStore.reset();
+  }, []);
 
   const { id, ready, start, scanFile } = useBarcodeScanner(goToReview);
   function startScanner() {
@@ -49,81 +49,103 @@ const Page: NextPageWithLayout = function () {
       });
   }
 
-  const [offset, setOffset] = useState(0);
-  const transform = `translateX(calc(${offset}px ${selection !== "upload" ? "-" : "+"} ${
-    selection === "scan" ? 0 : 100 / 3
-  }%))`;
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const drag = useDrag(
-    ({ movement: [x], down }) => {
-      setOffset(down ? x : 0);
-      if (down) return;
-      if (Math.abs(x) < 30) return;
-
-      const delta = Math.abs(x) < 90 ? 1 : 2;
-      const move = (x < 0 ? 1 : -1) * delta;
-      dispatchSelection({
-        move,
-        onUpdate(value) {
-          if (value !== "upload" || selection === "upload") return;
-          fileInputRef.current?.click();
-        },
-      });
+  const draggedDivRef = useRef<HTMLDivElement>(null);
+  const [isSwiped, setIsSwiped] = useState(false);
+  useSwipe(draggedDivRef, {
+    onSwipe({ dx }) {
+      const root = draggedDivRef.current;
+      if (!root) return;
+      root.style.setProperty("--offset", `${dx}px`);
     },
-    { axis: "x", filterTaps: true },
-  );
+    onSwipeStart() {
+      setIsSwiped(true);
+    },
+    onSwipeEnd({ dx }) {
+      setIsSwiped(false);
+      const root = draggedDivRef.current;
+      if (root) {
+        draggedDivRef.current.style.removeProperty("--offset");
+      }
 
+      if (Math.abs(dx) < 30) return;
+      const delta = Math.abs(dx) < 90 ? 1 : 2;
+      const move = (dx < 0 ? 1 : -1) * delta;
+      const oldScanType = scanType;
+      scanTypeStore.move(move);
+      const newScanType = scanTypeStore.getSnapshot();
+      if (newScanType !== "upload" || oldScanType === "upload") return;
+      fileInputRef.current?.click();
+    },
+  });
+
+  const baseOffset = useStore(scanTypeOffsetStore);
   return (
     <div
+      ref={draggedDivRef}
       className="relative isolate flex size-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
-      {...drag()}
     >
       <div
         id={id}
         className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
       />
-      {selection === "input" && <BarcodeInput goToReview={goToReview} />}
+      {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       <div
-        className={tw("grid grid-cols-3 pb-8 text-white", !offset && "transition-transform")}
-        style={{ transform }}
+        style={{ "--translate": `clamp(-100%, calc(var(--offset, 0px) - ${baseOffset}%), 100%)` }}
+        className={tw(
+          "relative mb-8 translate-x-[var(--translate)] text-white",
+          !isSwiped && "transition-transform",
+        )}
       >
-        <ImageInput
-          ref={fileInputRef}
+        <ScanGrid
+          render="div"
           className={tw(
-            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline",
-            selection === "upload" ? "bg-app-green-500" : "bg-black/50",
+            "absolute inset-0 z-10 -translate-x-[var(--translate)]",
+            !isSwiped && "transition-transform",
           )}
-          aria-label="Scan from file"
-          isImageSet={true}
-          onChange={(e) => {
-            const image = e.target.files?.item(0);
-            if (!image) return;
-            scanImage(image);
-          }}
-          onClick={() => dispatchSelection("upload")}
         >
-          Upload
-        </ImageInput>
-        <button
-          className={tw(
-            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
-            selection === "scan" ? "bg-app-green-500" : "bg-black/50",
-          )}
-          onClick={() => dispatchSelection("scan")}
-          type="button"
+          <div className="col-start-2 rounded-xl bg-app-green-500" />
+        </ScanGrid>
+        <ScanGrid
+          render="div"
+          className="relative z-20"
         >
-          Scan
-        </button>
-        <button
-          className={tw(
-            "mx-1 rounded-xl p-2 transition-colors duration-300 focus-within:outline-white",
-            selection === "input" ? "bg-app-green-500" : "bg-black/50",
-          )}
-          onClick={() => dispatchSelection("input")}
-          type="button"
+          <ScanButton
+            render={ImageInput}
+            aria-label="Scan from file"
+            isImageSet={true}
+            onChange={(e) => {
+              const image = e.target.files?.item(0);
+              if (!image) return;
+              scanImage(image);
+            }}
+            onClick={() => scanTypeStore.select("upload")}
+          >
+            Upload
+          </ScanButton>
+          <ScanButton
+            render="button"
+            onClick={() => scanTypeStore.select("scan")}
+            type="button"
+          >
+            Scan
+          </ScanButton>
+          <ScanButton
+            render="button"
+            onClick={() => scanTypeStore.select("input")}
+            type="button"
+          >
+            Input
+          </ScanButton>
+        </ScanGrid>
+        <ScanGrid
+          render="div"
+          className="absolute inset-0 items-stretch"
         >
-          Input
-        </button>
+          <div className="rounded-xl bg-black/50" />
+          <div className="rounded-xl bg-black/50" />
+          <div className="rounded-xl bg-black/50" />
+        </ScanGrid>
       </div>
     </div>
   );
@@ -134,6 +156,27 @@ Page.getLayout = function useLayout(page) {
 };
 
 export default Page;
+
+const ScanGrid = createPolymorphicComponent<{ className: string }>(
+  (Component, { className, ...props }) => (
+    <Component
+      {...props}
+      className={tw("grid grid-cols-3 *:mx-1", className)}
+    />
+  ),
+);
+
+const ScanButton = createPolymorphicComponent<{ className: string }>(
+  (Component, { className, ...props }) => (
+    <Component
+      {...props}
+      className={tw(
+        "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+        className,
+      )}
+    />
+  ),
+);
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
 function BarcodeInput({ goToReview }: BarcodeInputProps) {
@@ -209,7 +252,7 @@ function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
     const scanner = getScanner();
     await stop();
     return scanner
-      .start({ facingMode: "environment" }, { fps: 15 }, onScan, undefined)
+      .start({ facingMode: "environment" }, { fps: 2 }, onScan, undefined)
       .then(() => setState("scanning"))
       .catch((e) => {
         setState("stopped");

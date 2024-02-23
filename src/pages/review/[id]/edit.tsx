@@ -23,15 +23,16 @@ import {
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
-import { api, type RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
+import type { RouterOutputs } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
-import {
-  type ModelProps,
-  type NextPageWithLayout,
-  type Nullish,
-  type StrictOmit,
-  type TransformType,
+import type {
+  ModelProps,
+  NextPageWithLayout,
+  Nullish,
+  StrictOmit,
+  TransformType,
 } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -39,14 +40,10 @@ import * as Radio from "@radix-ui/react-radio-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMemo, useRef, useState, type FormEvent, type MutableRefObject } from "react";
-import {
-  Controller,
-  useFieldArray,
-  useForm,
-  type Control,
-  type UseFormRegisterReturn,
-} from "react-hook-form";
+import { useMemo, useRef, useState } from "react";
+import type { FormEvent, MutableRefObject } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import type { Control, UseFormRegisterReturn } from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
@@ -107,12 +104,7 @@ type ReviewProps = {
   barcode: string;
 };
 function Review({ barcode, review, hasReview }: ReviewProps) {
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { isDirty: isFormDirty },
-  } = useForm({ defaultValues: review });
+  const { register, control, handleSubmit, formState } = useForm({ defaultValues: review });
 
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -121,7 +113,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       const newCategories = categoriesField.map(({ name }) => name);
 
       const optimisticReview = { ...restData, barcode, categories: newCategories };
-      if (!isFormDirty && hasReview) {
+      if (!formState.isDirty && hasReview) {
         return onReviewSave(optimisticReview);
       }
 
@@ -427,6 +419,12 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   );
 }
 
+const categoryLimit = 25;
+function categoryLimitErrorToast() {
+  return toast.error(`You can't add more than ${categoryLimit} categories.`, {
+    id: "review-edit-category-limit",
+  });
+}
 type CategoryListProps = {
   control: Control<ReviewForm>;
 };
@@ -457,8 +455,7 @@ function CategoryList({ control }: CategoryListProps) {
   }
   const router = useRouter();
   const debouncedQuery = useRef<number>();
-  const categoriesLimit = 25;
-  const isAtCategoryLimit = categories.length >= categoriesLimit;
+  const isAtCategoryLimit = categories.length >= categoryLimit;
 
   return (
     <div>
@@ -467,7 +464,7 @@ function CategoryList({ control }: CategoryListProps) {
         onOpenChange={(isOpen) => {
           if (!isOpen) return close();
           if (isAtCategoryLimit) {
-            toast.error(`You can't add more than ${categoriesLimit} categories.`);
+            categoryLimitErrorToast();
             return;
           }
           open();
@@ -572,13 +569,18 @@ function CategorySearch({
 
   function addCustomCategory() {
     if (!isSearchValid) {
-      return toast.error(`Category must be between ${minLength} and ${maxLength} characters long.`);
+      return toast.error(
+        `Category must be between ${minLength} and ${maxLength} characters long.`,
+        { id: "review-edit-category-length" },
+      );
     }
     if (isSearchAdded) {
-      return toast.error("This category has already been added.");
+      return toast.error("This category has already been added.", {
+        id: "review-edit-category-duplicate",
+      });
     }
     if (!canAddCategories) {
-      return toast.error("You can't add more categories to review.");
+      return categoryLimitErrorToast();
     }
 
     append(lowercaseSearch);
@@ -645,7 +647,7 @@ function CategorySearch({
                     onCheckedChange={(checked) => {
                       if (checked !== true) return remove(category);
                       if (!canAddCategories) {
-                        return toast.error("You can't add more categories to review.");
+                        return categoryLimitErrorToast();
                       }
                       append(category);
                     }}

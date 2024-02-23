@@ -1,17 +1,11 @@
 import { hasFocusWithin, useHasMouse } from "@/hooks";
 import { tw } from "@/utils";
+import { Store, useStore } from "@/utils/store";
+import type { StrictOmit } from "@/utils/type";
 import * as Toast from "@radix-ui/react-toast";
-import {
-  forwardRef,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ComponentPropsWithoutRef,
-  type PropsWithChildren,
-  type ReactNode,
-} from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { Flipper } from "react-flip-toolkit";
 import { Flipped, onSelfTransitionEnd } from "./Animation";
 
@@ -26,7 +20,7 @@ export function ToastProvider({ children }: PropsWithChildren) {
 }
 
 function ToastContainer() {
-  const toasts = useToastStack();
+  const toasts = useStore(toastStackStore);
   const [isStacked, setIsStacked] = useState(true);
   const hasMouse = useHasMouse();
   const toastViewportHandlers: ComponentPropsWithoutRef<"ol"> = hasMouse
@@ -112,9 +106,12 @@ function ToastSlot({
     <Flipped
       flipId={id}
       key={id}
-      className="animate-slide-left animate-function-ease-out"
       scale
       translate
+      className={tw(
+        "animate-slide-left animate-function-ease-out",
+        !isLast && "data-[transition=out]:animate-duration-0",
+      )}
     >
       <Toast.Root
         ref={divRef}
@@ -148,7 +145,9 @@ function ToastSlot({
             inverseFlipId={id}
             scale
           >
-            <>{content}</>
+            {/* this is to prevent "infetterence", I don’t even think that’s a word */}
+            {/* Actually this is so that inverse scaling works correctly */}
+            <div>{content}</div>
           </Flipped>
           {isLast && duration && duration !== Infinity && (
             <div
@@ -168,50 +167,54 @@ function ToastSlot({
   );
 }
 
-type ToastOptions = { className?: string; duration?: number };
+type ToastOptions = { id?: string; className?: string; duration?: number };
 type ToastData = { id: string; content: ReactNode } & ToastOptions;
-type Subscription = () => void;
-type Unsubscribe = () => void;
-type Subscribe = (subscription: Subscription) => Unsubscribe;
-class ToastStackStore {
-  private toastStack: ToastData[] = [];
-  private subscriptions = new Set<Subscription>();
-  private notify() {
-    for (const subscription of this.subscriptions) {
-      subscription();
+class ToastStackStore extends Store<ToastData[]> {
+  private addNewToast(toast: ToastData) {
+    this.updateState((state) => [...state, toast]);
+  }
+  private updateActiveToast(toast: ToastData) {
+    const state = this.getSnapshot();
+    if (toast.id === state.at(-1)?.id) {
+      this.resetToast(toast);
+    } else {
+      this.moveToEnd(toast);
     }
   }
+  private resetToast(toast: ToastData) {
+    const duration = toast.duration;
+    flushSync(() => {
+      toast.duration = Infinity;
+      this.updateState((state) => [...state]);
+    });
+    toast.duration = duration;
+    this.updateState((state) => [...state]);
+  }
+  private moveToEnd(toast: ToastData) {
+    flushSync(() => this.removeToast(toast.id));
+    this.addNewToast(toast);
+  }
 
-  addToast(toast: ReactNode, { duration = 5000, ...options }: ToastOptions = {}) {
-    const id = `${Math.random()}`;
-    this.toastStack = [...this.toastStack, { content: toast, duration, ...options, id }];
-    this.notify();
+  addToast(
+    toast: ReactNode,
+    { duration = 5000, id = `${Math.random()}`, ...options }: ToastOptions,
+  ) {
+    id = id.replaceAll(/\s+/g, "");
+    const state = this.getSnapshot();
+    const activeToast = state.find((toast) => toast.id === id);
+    if (activeToast) {
+      this.updateActiveToast(activeToast);
+    } else {
+      this.addNewToast({ content: toast, duration, ...options, id });
+    }
 
     return id;
   }
   removeToast(id: ToastData["id"]) {
-    this.toastStack = this.toastStack.filter((toast) => toast.id !== id);
-    this.notify();
+    this.updateState((state) => state.filter((toast) => toast.id !== id));
   }
-
-  subscribe: Subscribe = (onStoreChange) => {
-    this.subscriptions.add(onStoreChange);
-    return () => {
-      this.subscriptions.delete(onStoreChange);
-    };
-  };
-  getSnapshot = () => {
-    return this.toastStack;
-  };
 }
-const toastStackStore = new ToastStackStore();
-function useToastStack() {
-  return useSyncExternalStore(
-    toastStackStore.subscribe,
-    toastStackStore.getSnapshot,
-    toastStackStore.getSnapshot,
-  );
-}
+const toastStackStore = new ToastStackStore([]);
 
 type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
 const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
@@ -230,21 +233,22 @@ const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function Toast
   );
 });
 
+type PublicToastOptions = StrictOmit<ToastOptions, "className">;
 export const toast = {
-  info(message: ReactNode) {
+  info(message: ReactNode, options?: PublicToastOptions) {
     return toastStackStore.addToast(
       <ToastClose>
         <Toast.Description>{message}</Toast.Description>
       </ToastClose>,
-      { className: "bg-white focus-visible-within:ring-2 ring-app-green-500" },
+      { className: "bg-white focus-visible-within:ring-2 ring-app-green-500", ...options },
     );
   },
-  error(error: ReactNode) {
+  error(error: ReactNode, options?: PublicToastOptions) {
     return toastStackStore.addToast(
       <ToastClose className="text-app-red-550">
         <Toast.Description>{error}</Toast.Description>
       </ToastClose>,
-      { className: "bg-app-red-100 focus-visible-within:ring-2 ring-app-red-500" },
+      { className: "bg-app-red-100 focus-visible-within:ring-2 ring-app-red-500", ...options },
     );
   },
   remove(id: ToastData["id"]) {

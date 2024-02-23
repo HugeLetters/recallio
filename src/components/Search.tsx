@@ -5,14 +5,8 @@ import type { ModelProps } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type MutableRefObject,
-  type ReactNode,
-  type FormEvent,
-} from "react";
+import { useEffect, useRef, useState } from "react";
+import type { MutableRefObject, ReactNode, FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";

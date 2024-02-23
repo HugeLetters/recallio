@@ -1,3 +1,4 @@
+import { hasNonNullishProperty } from "@/utils";
 import { filterMap } from "@/utils/array";
 import type { Nullish } from "@/utils/type";
 import { parse } from "node-html-parser";
@@ -44,10 +45,8 @@ export default function getScrapedProducts(code: string): Promise<string[]> {
   return Promise.allSettled(scrapers.map((query) => query(code))).then((results) => {
     return filterMap(
       results,
-      (
-        result,
-      ): result is Extract<typeof result, PromiseFulfilledResult<unknown>> & { value: string } =>
-        result.status === "fulfilled" && !!result.value,
+      (result, bad) =>
+        result.status === "fulfilled" && hasNonNullishProperty(result, "value") ? result : bad,
       (result) => result.value,
     );
   });

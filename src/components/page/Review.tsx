@@ -1,19 +1,14 @@
+import { tw } from "@/utils";
 import { getQueryParam } from "@/utils/query";
 import * as Separator from "@radix-ui/react-separator";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  Fragment,
-  forwardRef,
-  type ComponentPropsWithoutRef,
-  type PropsWithChildren,
-  type ReactNode,
-} from "react";
+import { Fragment, forwardRef } from "react";
+import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 import { Button } from "../UI";
-import { tw } from "@/utils";
 
 type ProsConsCommentWrapperProps = { children: ReactNode[] };
 export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps) {

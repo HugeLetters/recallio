@@ -4,7 +4,8 @@ import { Spinner } from "@/components/Loading";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
 import { fetchNextPage } from "@/utils";
-import { api, type RouterInputs } from "@/utils/api";
+import { api } from "@/utils/api";
+import type { RouterInputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { useRouter } from "next/router";
@@ -45,9 +46,7 @@ const Page: NextPageWithLayout = function () {
                   aria-label={`Go to product ${value.barcode} page`}
                   image={value.image}
                   label={match}
-                  subtext={value.names.filter(
-                    (x): x is NonNullable<typeof x> => !!x && x !== match,
-                  )}
+                  subtext={value.names.filter((x) => !!x && x !== match)}
                 >
                   <div className="flex h-5 items-center gap-0.5">
                     <Star highlight />
