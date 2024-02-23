@@ -71,8 +71,8 @@ const Page: NextPageWithLayout = function () {
       if (Math.abs(dx) < 30) return;
       const delta = Math.abs(dx) < 90 ? 1 : 2;
       const move = (dx < 0 ? 1 : -1) * delta;
-      scanTypeStore.move(move);
       const oldScanType = scanType;
+      scanTypeStore.move(move);
       const newScanType = scanTypeStore.getSnapshot();
       if (newScanType !== "upload" || oldScanType === "upload") return;
       fileInputRef.current?.click();
