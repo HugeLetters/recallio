@@ -1,10 +1,9 @@
-import { tw } from "@/utils";
+import { browser, tw } from "@/utils";
 import { Store, useStore } from "@/utils/store";
-import { useEffect, useId, useRef } from "react";
 import type { PropsWithChildren } from "react";
+import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Transition } from "./Animation";
-import { ClientOnly } from "./UI";
 
 const DURATION = 1000;
 const DOT_COUNT = 12;
@@ -62,9 +61,8 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   return (
     <>
       {children}
-      <ClientOnly>
-        {() =>
-          createPortal(
+      {browser
+        ? createPortal(
             <Transition outClassName="animate-fade-in-reverse">
               {show && (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
@@ -72,8 +70,7 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
             </Transition>,
             document.body,
           )
-        }
-      </ClientOnly>
+        : null}
     </>
   );
 }

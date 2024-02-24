@@ -1,9 +1,9 @@
 import type { AppFileRouter } from "@/server/uploadthing";
-import { browser, ignore } from "@/utils";
+import { browser } from "@/utils";
 import { generateReactHelpers } from "@uploadthing/react/hooks";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 
@@ -60,17 +60,6 @@ export function useOptimistic<T>() {
       queuedAction.current = undefined;
     },
   };
-}
-
-function dummySubscription() {
-  return ignore;
-}
-export function useIsClient() {
-  return useSyncExternalStore(
-    dummySubscription,
-    () => true,
-    () => false,
-  );
 }
 
 export function useHasMouse() {

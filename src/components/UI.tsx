@@ -1,5 +1,4 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import { useIsClient } from "@/hooks";
 import { tw } from "@/utils";
 import { lato } from "@/utils/font";
 import { getQueryParam, setQueryParam } from "@/utils/query";
@@ -252,13 +251,6 @@ export function UrlDialogRoot({
       {children}
     </Root>
   );
-}
-
-type ClientOnlyProps = { children: () => ReactNode };
-export function ClientOnly({ children }: ClientOnlyProps) {
-  const isClient = useIsClient();
-  if (!isClient) return null;
-  return children();
 }
 
 // keeping this here just in case for now
