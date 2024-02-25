@@ -217,7 +217,7 @@ class ToastStackStore extends Store<ToastData[]> {
 const toastStackStore = new ToastStackStore([]);
 
 type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
-const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function ToastClose(
+const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function _(
   { children, className, ...props },
   ref,
 ) {

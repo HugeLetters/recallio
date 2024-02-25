@@ -8,6 +8,7 @@ import type { NextPageWithLayout } from "@/utils/type";
 import type { QrcodeSuccessCallback } from "html5-qrcode";
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { useRouter } from "next/router";
+import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
 
@@ -98,7 +99,6 @@ const Page: NextPageWithLayout = function () {
         )}
       >
         <ScanGrid
-          render="div"
           className={tw(
             "absolute inset-0 z-10 -translate-x-[var(--translate)]",
             !isSwiped && "transition-transform",
@@ -106,10 +106,7 @@ const Page: NextPageWithLayout = function () {
         >
           <div className="col-start-2 rounded-xl bg-app-green-500" />
         </ScanGrid>
-        <ScanGrid
-          render="div"
-          className="relative z-20"
-        >
+        <ScanGrid className="relative z-20">
           <ScanButton
             render={ImageInput}
             aria-label="Scan from file"
@@ -138,10 +135,7 @@ const Page: NextPageWithLayout = function () {
             Input
           </ScanButton>
         </ScanGrid>
-        <ScanGrid
-          render="div"
-          className="absolute inset-0 items-stretch"
-        >
+        <ScanGrid className="absolute inset-0 items-stretch">
           <div className="rounded-xl bg-black/50" />
           <div className="rounded-xl bg-black/50" />
           <div className="rounded-xl bg-black/50" />
@@ -157,14 +151,10 @@ Page.getLayout = function useLayout(page) {
 
 export default Page;
 
-const ScanGrid = createPolymorphicComponent<{ className: string }>(
-  (Component, { className, ...props }) => (
-    <Component
-      {...props}
-      className={tw("grid grid-cols-3 *:mx-1", className)}
-    />
-  ),
-);
+type ScanGrid2Props = { className?: string };
+function ScanGrid({ children, className }: PropsWithChildren<ScanGrid2Props>) {
+  return <div className={tw("grid grid-cols-3 *:mx-1", className)}>{children}</div>;
+}
 
 const ScanButton = createPolymorphicComponent<{ className: string }>(
   (Component, { className, ...props }) => (

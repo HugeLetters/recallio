@@ -59,22 +59,23 @@ export function NoImagePreview() {
 }
 
 type CategoryButtonProps = PropsWithChildren<ComponentPropsWithoutRef<"button">>;
-export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>(
-  function CategoryButton({ children, className, ...props }, ref) {
-    return (
-      <Button
-        ref={ref}
-        className={tw(
-          "flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-400 outline-neutral-300",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </Button>
-    );
-  },
-);
+export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>(function _(
+  { children, className, ...props },
+  ref,
+) {
+  return (
+    <Button
+      ref={ref}
+      className={tw(
+        "flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-400 outline-neutral-300",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+});
 
 export function BarcodeTitle() {
   const { query } = useRouter();

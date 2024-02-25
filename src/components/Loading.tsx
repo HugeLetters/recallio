@@ -1,4 +1,5 @@
-import { browser, tw } from "@/utils";
+import { useClient } from "@/hooks/client";
+import { tw } from "@/utils";
 import { Store, useStore } from "@/utils/store";
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef } from "react";
@@ -57,12 +58,14 @@ class LoadingStore extends Store<boolean> {
 const loadingStore = new LoadingStore(false);
 export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
   const show = useStore(loadingStore);
+  const isClient = useClient();
 
   return (
     <>
       {children}
-      {browser
-        ? createPortal(
+      {isClient
+        ? // todo - https://www.radix-ui.com/primitives/docs/utilities/portal
+          createPortal(
             <Transition outClassName="animate-fade-in-reverse">
               {show && (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />

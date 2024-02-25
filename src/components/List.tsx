@@ -1,7 +1,7 @@
 import type { StrictOmit } from "@/utils/type";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import type { ComponentPropsWithoutRef, Key, PropsWithChildren, ReactNode } from "react";
 import EggBasketIcon from "~icons/custom/egg-basket";
 import MilkIcon from "~icons/custom/milk";
@@ -52,6 +52,7 @@ export function InfiniteScroll<P, V>({
   }, [pages]);
 
   const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
+  // todo - tab navigation
   return (
     <>
       {lastNonEmptyPageIndex !== -1 ? (
@@ -63,12 +64,14 @@ export function InfiniteScroll<P, V>({
 
             return values.map((value, i) => {
               const isTrigger = isLastPage && i === triggerIndex;
+              const key = getKey(value);
+              if (!isTrigger) return <Fragment key={key}>{children(value)}</Fragment>;
 
               return (
                 <div
                   className="contents"
-                  key={getKey(value)}
-                  ref={isTrigger ? triggerRef : null}
+                  key={key}
+                  ref={triggerRef}
                 >
                   {children(value)}
                 </div>

@@ -19,20 +19,21 @@ import { forwardRef, useEffect, useRef } from "react";
 import StarIcon from "~icons/typcn/star-full-outline";
 
 type ClickableProps = ComponentPropsWithoutRef<"button">;
-export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableProps>>(
-  function Button({ className, type, children, ...restProps }, ref) {
-    return (
-      <button
-        ref={ref}
-        type={type ?? "button"}
-        className={tw("btn", className)}
-        {...restProps}
-      >
-        {children}
-      </button>
-    );
-  },
-);
+export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableProps>>(function _(
+  { className, type, children, ...restProps },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type={type ?? "button"}
+      className={tw("btn", className)}
+      {...restProps}
+    >
+      {children}
+    </button>
+  );
+});
 
 type StarProps = { highlight?: boolean };
 export function Star({ highlight }: StarProps) {
@@ -42,7 +43,7 @@ export function Star({ highlight }: StarProps) {
 }
 
 type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
-export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function ImageInput(
+export const ImageInput = forwardRef<HTMLInputElement, ImageInputProps>(function _(
   { children, className, isImageSet, ...inputAttributes },
   outerRef,
 ) {
@@ -136,7 +137,7 @@ export function WithLabel({ children, label, className }: PropsWithChildren<With
 }
 
 type InputProps = ComponentPropsWithoutRef<"input">;
-export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+export const Input = forwardRef<HTMLInputElement, InputProps>(function _(
   { className, ...inputProps },
   ref,
 ) {
@@ -157,10 +158,7 @@ type AutoresizableInputProps = {
   rootClassName?: string;
 } & ComponentPropsWithoutRef<"textarea">;
 export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableInputProps>(
-  function AutoresizableInput(
-    { initialContent, rootClassName, className, onChange, ...props },
-    ref,
-  ) {
+  function _({ initialContent, rootClassName, className, onChange, ...props }, ref) {
     return (
       <div className={tw("overflow-hidden", rootClassName)}>
         <div
@@ -192,7 +190,7 @@ export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableI
 export const DialogOverlay = forwardRef<
   HTMLDivElement,
   PropsWithChildren & ComponentPropsWithRef<typeof Overlay>
->(function DialogOverlay({ children, className, ...props }, ref) {
+>(function _({ children, className, ...props }, ref) {
   return (
     <Overlay
       ref={ref}
