@@ -1,1 +1,0 @@
-ALTER TABLE `review` ADD `updated-at` datetime DEFAULT (now()) NOT NULL;

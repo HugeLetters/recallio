@@ -1,1 +1,0 @@
-CREATE INDEX `is-private-index` ON `review` (`is-private`);

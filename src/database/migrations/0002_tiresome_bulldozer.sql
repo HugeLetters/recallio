@@ -1,1 +1,0 @@
-ALTER TABLE `account` MODIFY COLUMN `access_token` varchar(511);

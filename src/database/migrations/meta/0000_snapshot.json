@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "e3fe3334-fba7-4670-9ada-4db21a44b9c6",
+  "id": "f1bc5c7a-f173-4fd0-bc52-a7992c8d87d6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -44,7 +44,7 @@
         },
         "access_token": {
           "name": "access_token",
-          "type": "varchar(255)",
+          "type": "varchar(511)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -72,7 +72,7 @@
         },
         "id_token": {
           "name": "id_token",
-          "type": "varchar(255)",
+          "type": "varchar(2047)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -83,9 +83,24 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "refresh_token_expires_in": {
+          "name": "refresh_token_expires_in",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "user-id-index": {
+          "name": "user-id-index",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "account_provider_providerAccountId": {
@@ -123,7 +138,22 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "user-id-index": {
+          "name": "user-id-index",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "expires-index": {
+          "name": "expires-index",
+          "columns": [
+            "expires"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "session_sessionToken": {
@@ -149,7 +179,7 @@
           "name": "name",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "email": {
@@ -185,7 +215,14 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "columns": [
+            "email"
+          ]
+        }
+      }
     },
     "verificationToken": {
       "name": "verificationToken",
@@ -212,7 +249,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "expires-index": {
+          "name": "expires-index",
+          "columns": [
+            "expires"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {
         "verificationToken_identifier_token": {
@@ -220,6 +265,208 @@
           "columns": [
             "identifier",
             "token"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "category": {
+      "name": "category",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "varchar(31)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "category_name": {
+          "name": "category_name",
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "review": {
+      "name": "review",
+      "columns": {
+        "user-id": {
+          "name": "user-id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "barcode": {
+          "name": "barcode",
+          "type": "varchar(55)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rating": {
+          "name": "rating",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pros": {
+          "name": "pros",
+          "type": "varchar(4095)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cons": {
+          "name": "cons",
+          "type": "varchar(4095)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comment": {
+          "name": "comment",
+          "type": "varchar(2047)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "image-key": {
+          "name": "image-key",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated-at": {
+          "name": "updated-at",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "NOW()"
+        },
+        "is-private": {
+          "name": "is-private",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "barcode-index": {
+          "name": "barcode-index",
+          "columns": [
+            "barcode"
+          ],
+          "isUnique": false
+        },
+        "name-index": {
+          "name": "name-index",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "rating-index": {
+          "name": "rating-index",
+          "columns": [
+            "rating"
+          ],
+          "isUnique": false
+        },
+        "updated-at-index": {
+          "name": "updated-at-index",
+          "columns": [
+            "updated-at"
+          ],
+          "isUnique": false
+        },
+        "is-private-index": {
+          "name": "is-private-index",
+          "columns": [
+            "is-private"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "review_barcode_user-id": {
+          "name": "review_barcode_user-id",
+          "columns": [
+            "barcode",
+            "user-id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "reviews-to-categories": {
+      "name": "reviews-to-categories",
+      "columns": {
+        "user-id": {
+          "name": "user-id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "barcode": {
+          "name": "barcode",
+          "type": "varchar(55)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(31)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "barcode-index": {
+          "name": "barcode-index",
+          "columns": [
+            "barcode"
+          ],
+          "isUnique": false
+        },
+        "category-index": {
+          "name": "category-index",
+          "columns": [
+            "category"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "reviews-to-categories_barcode_category_user-id": {
+          "name": "reviews-to-categories_barcode_category_user-id",
+          "columns": [
+            "barcode",
+            "category",
+            "user-id"
           ]
         }
       },

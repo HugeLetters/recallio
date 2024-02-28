@@ -1,1 +1,0 @@
-ALTER TABLE `review` ADD `is-private` boolean DEFAULT true;

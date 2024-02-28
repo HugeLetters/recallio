@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { env } from "@/env.mjs";
-import { type Config } from "drizzle-kit";
+import type { Config } from "drizzle-kit";
 
 export default {
   out: "./src/database/migrations",
