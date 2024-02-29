@@ -1,14 +1,14 @@
 import { hasFocusWithin, useHasMouse } from "@/hooks";
 import { tw } from "@/utils";
-import { Store, useStore } from "@/utils/store";
-import type { StrictOmit } from "@/utils/type";
+import { useStore } from "@/utils/store";
 import * as Toast from "@radix-ui/react-toast";
-import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
-import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Flipper } from "react-flip-toolkit";
-import { Flipped } from "./animation/flip";
-import { onSelfTransitionEnd } from "./animation/utils";
+import { Flipped } from "../animation/flip";
+import { onSelfTransitionEnd } from "../animation/utils";
+import type { ToastData } from "./_store";
+import { toastStackStore } from "./_store";
 
 const swipeThreshold = 70;
 export function ToastProvider({ children }: PropsWithChildren) {
@@ -166,100 +166,4 @@ function ToastSlot({
       </Toast.Root>
     </Flipped>
   );
-}
-
-type ToastOptions = { id?: string; className?: string; duration?: number };
-type ToastData = { id: string; content: ReactNode } & ToastOptions;
-class ToastStackStore extends Store<ToastData[]> {
-  private addNewToast(toast: ToastData) {
-    this.updateState((state) => [...state, toast]);
-  }
-  private updateActiveToast(toast: ToastData) {
-    const state = this.getSnapshot();
-    if (toast.id === state.at(-1)?.id) {
-      this.resetToast(toast);
-    } else {
-      this.moveToEnd(toast);
-    }
-  }
-  private resetToast(toast: ToastData) {
-    const duration = toast.duration;
-    flushSync(() => {
-      toast.duration = Infinity;
-      this.updateState((state) => [...state]);
-    });
-    toast.duration = duration;
-    this.updateState((state) => [...state]);
-  }
-  private moveToEnd(toast: ToastData) {
-    flushSync(() => this.removeToast(toast.id));
-    this.addNewToast(toast);
-  }
-
-  addToast(
-    toast: ReactNode,
-    { duration = 5000, id = `${Math.random()}`, ...options }: ToastOptions,
-  ) {
-    id = id.replaceAll(/\s+/g, "");
-    const state = this.getSnapshot();
-    const activeToast = state.find((toast) => toast.id === id);
-    if (activeToast) {
-      this.updateActiveToast(activeToast);
-    } else {
-      this.addNewToast({ content: toast, duration, ...options, id });
-    }
-
-    return id;
-  }
-  removeToast(id: ToastData["id"]) {
-    this.updateState((state) => state.filter((toast) => toast.id !== id));
-  }
-}
-const toastStackStore = new ToastStackStore([]);
-
-type ToastCloseProps = ComponentPropsWithoutRef<typeof Toast.Close>;
-const ToastClose = forwardRef<HTMLButtonElement, ToastCloseProps>(function _(
-  { children, className, ...props },
-  ref,
-) {
-  return (
-    <Toast.Close
-      ref={ref}
-      aria-label="Close notification"
-      className={tw(className, "w-full whitespace-pre-wrap break-words p-4 outline-none")}
-      {...props}
-    >
-      {children}
-    </Toast.Close>
-  );
-});
-
-type PublicToastOptions = StrictOmit<ToastOptions, "className">;
-export const toast = {
-  info(message: ReactNode, options?: PublicToastOptions) {
-    return toastStackStore.addToast(
-      <ToastClose>
-        <Toast.Description>{message}</Toast.Description>
-      </ToastClose>,
-      { className: "bg-white focus-visible-within:ring-2 ring-app-green-500", ...options },
-    );
-  },
-  error(error: ReactNode, options?: PublicToastOptions) {
-    return toastStackStore.addToast(
-      <ToastClose className="text-app-red-550">
-        <Toast.Description>{error}</Toast.Description>
-      </ToastClose>,
-      { className: "bg-app-red-100 focus-visible-within:ring-2 ring-app-red-500", ...options },
-    );
-  },
-  remove(id: ToastData["id"]) {
-    toastStackStore.removeToast(id);
-  },
-};
-
-export function logToastError(message: ReactNode) {
-  return function (error: unknown) {
-    console.error(error);
-    toast.error(message);
-  };
 }

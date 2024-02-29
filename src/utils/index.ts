@@ -1,4 +1,4 @@
-import { logToastError } from "@/components/Toast";
+import { logToastError } from "@/components/toast";
 import type { UseTRPCInfiniteQueryResult } from "@trpc/react-query/shared";
 import { signOut as signOutBase } from "next-auth/react";
 import router from "next/router";

@@ -4,7 +4,7 @@
  *
  * We also create a few inference helpers for input and output types.
  */
-import { toast } from "@/components/Toast";
+import { toast } from "@/components/toast";
 import type { AppRouter } from "@/server/api";
 import { QueryCache } from "@tanstack/react-query";
 import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";

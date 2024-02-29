@@ -1,5 +1,5 @@
 import { LoadingIndicatorProvider } from "@/components/loading/indicator";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider } from "@/components/toast/provider";
 import "@/styles/globals.css";
 import { tw } from "@/utils";
 import { api } from "@/utils/api";

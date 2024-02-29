@@ -1,4 +1,3 @@
-import { toast } from "@/components/Toast";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
 import { Layout } from "@/components/layout";
 import { useSetLoadingIndicator } from "@/components/loading/indicator";
@@ -11,6 +10,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/review";
+import { toast } from "@/components/toast";
 import { tw } from "@/utils";
 import type { RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";
