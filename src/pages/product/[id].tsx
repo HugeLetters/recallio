@@ -1,4 +1,3 @@
-import { SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
 import { Layout } from "@/components/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
@@ -11,6 +10,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/review";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { fetchNextPage } from "@/utils";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";
@@ -170,7 +170,7 @@ type ReviewsProps = {
   reviewCount: number | undefined;
 };
 function Reviews({ barcode, reviewCount }: ReviewsProps) {
-  const sortParam = useParseSort(sortByOptions);
+  const sortParam = useSortQuery(sortByOptions);
   const reviewsQuery = api.product.getProductReviews.useInfiniteQuery(
     {
       barcode,

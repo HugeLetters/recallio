@@ -3,12 +3,12 @@ import { HeaderLink } from "@/components/layout/header";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
-import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
+import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star, UserPic } from "@/components/UI";
 import { fetchNextPage, minutesToMs } from "@/utils";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
@@ -109,12 +109,13 @@ function parseSortParam(param: SortOption): SortQuery {
 
 function ReviewCards() {
   const router = useRouter();
-  const sortParam = useParseSort(sortOptionList);
+  const sortParam = useSortQuery(sortOptionList);
+  const filter = useSearchQuery();
 
   const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
     {
       limit: 20,
-      filter: getQueryParam(router.query[SEARCH_QUERY_KEY]),
+      filter,
       sort: parseSortParam(sortParam),
     },
     {

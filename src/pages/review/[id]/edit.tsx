@@ -1,4 +1,3 @@
-import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
 import { logToastError, toast } from "@/components/Toast";
 import {
   AutoresizableInput,
@@ -22,12 +21,13 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/components/review";
+import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
 import type { RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
-import { getQueryParam, setQueryParam } from "@/utils/query";
+import { getQueryParam } from "@/utils/query";
 import type {
   ModelProps,
   NextPageWithLayout,
@@ -458,12 +458,12 @@ function CategoryList({ control }: CategoryListProps) {
   function open() {
     setIsOpen(true);
   }
+  const setSearchQuery = useSetSearchQuery();
   function close() {
     setIsOpen(false);
     window.clearTimeout(debouncedQuery.current);
-    setQueryParam({ router, key: SEARCH_QUERY_KEY, value: null });
+    setSearchQuery(null);
   }
-  const router = useRouter();
   const debouncedQuery = useRef<number>();
   const isAtCategoryLimit = categories.length >= categoryLimit;
 
@@ -555,8 +555,7 @@ function CategorySearch({
   close,
   debounceRef,
 }: CategorySearchProps) {
-  const router = useRouter();
-  const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
+  const searchParam: string = useSearchQuery() ?? "";
   const [search, setSearch] = useState(searchParam);
   const lowercaseSearch = search.toLowerCase();
   const categoriesQuery = api.product.getCategories.useInfiniteQuery(

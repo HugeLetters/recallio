@@ -2,21 +2,21 @@ import { Layout } from "@/components/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
-import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
+import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/UI";
 import { fetchNextPage } from "@/utils";
 import type { RouterInputs } from "@/utils/api";
 import { api } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
 
 const Page: NextPageWithLayout = function () {
-  const { query, isReady } = useRouter();
-  const sortParam = useParseSort(sortOptionList);
+  const { isReady } = useRouter();
+  const sortParam = useSortQuery(sortOptionList);
   const sort = parseSortParam(sortParam);
-  const filter = getQueryParam(query[SEARCH_QUERY_KEY]);
+  const filter = useSearchQuery();
 
   const productListQuery = api.product.getProductSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
