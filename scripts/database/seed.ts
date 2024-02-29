@@ -1,11 +1,11 @@
-import { db } from "@/database";
-import { user } from "@/database/schema/auth";
+import { db } from "@/server/database";
+import { user } from "@/server/database/schema/auth";
 import {
   category,
   review,
   reviewsToCategories,
   type ReviewInsert,
-} from "@/database/schema/product";
+} from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array";

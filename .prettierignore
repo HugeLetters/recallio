@@ -1,4 +1,4 @@
 .next
 pnpm-lock.yaml
-src/database/migrations
+src/server/database/migrations
 public/mockServiceWorker.js

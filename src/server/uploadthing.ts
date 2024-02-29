@@ -1,7 +1,7 @@
-import { db } from "@/database";
-import { findFirst } from "@/database/query/utils";
-import { user } from "@/database/schema/auth";
-import { review } from "@/database/schema/product";
+import { db } from "@/server/database";
+import { findFirst } from "@/server/database/query/utils";
+import { user } from "@/server/database/schema/auth";
+import { review } from "@/server/database/schema/product";
 import { env } from "@/env";
 import { and, eq } from "drizzle-orm";
 import type { FileRouter } from "uploadthing/next-legacy";

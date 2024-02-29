@@ -1,13 +1,13 @@
-import { db } from "@/database";
+import { db } from "@/server/database";
 import {
   aggregateArrayColumn,
   count,
   findFirst,
   nullableMap,
   removeNullishArray,
-} from "@/database/query/utils";
-import { category, review, reviewsToCategories } from "@/database/schema/product";
-import type { ReviewInsert } from "@/database/schema/product";
+} from "@/server/database/query/utils";
+import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import type { ReviewInsert } from "@/server/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
 import { nonEmptyArray } from "@/utils/array";
 import { TRPCError } from "@trpc/server";

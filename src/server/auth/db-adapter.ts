@@ -1,6 +1,6 @@
-import { db } from "@/database";
-import { findFirst } from "@/database/query/utils";
-import { account, session, user, verificationToken } from "@/database/schema/auth";
+import { db } from "@/server/database";
+import { findFirst } from "@/server/database/query/utils";
+import { account, session, user, verificationToken } from "@/server/database/schema/auth";
 import { and, eq, lt, or } from "drizzle-orm";
 import type { Adapter } from "next-auth/adapters";
 import { adjectives, animals, uniqueNamesGenerator } from "unique-names-generator";

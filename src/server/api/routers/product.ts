@@ -1,7 +1,7 @@
-import { db } from "@/database";
-import { aggregateArrayColumn, countCol, nullableMap } from "@/database/query/utils";
-import { user } from "@/database/schema/auth";
-import { category, review, reviewsToCategories } from "@/database/schema/product";
+import { db } from "@/server/database";
+import { aggregateArrayColumn, countCol, nullableMap } from "@/server/database/query/utils";
+import { user } from "@/server/database/schema/auth";
+import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";

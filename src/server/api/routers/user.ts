@@ -1,7 +1,7 @@
-import { db } from "@/database";
-import { findFirst } from "@/database/query/utils";
-import { account, session, user, verificationToken } from "@/database/schema/auth";
-import { review, reviewsToCategories } from "@/database/schema/product";
+import { db } from "@/server/database";
+import { findFirst } from "@/server/database/query/utils";
+import { account, session, user, verificationToken } from "@/server/database/schema/auth";
+import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { ignore } from "@/utils";
 import { providers } from "@/utils/providers";
