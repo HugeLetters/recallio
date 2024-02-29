@@ -293,7 +293,6 @@ function Name({ barcode, register }: NameProps) {
 
 const ratingList = [1, 2, 3, 4, 5] as const;
 function Rating({ value, setValue }: ModelProps<number>) {
-  // todo - can't see that it's focused when rating is 0
   return (
     <Radio.Root
       value={value.toString()}
