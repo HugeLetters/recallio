@@ -23,8 +23,8 @@ import {
 } from "@/components/page/Review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
-import { api } from "@/utils/api";
 import type { RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
 import { compressImage, useBlobUrl } from "@/utils/image";
 import { getQueryParam, setQueryParam } from "@/utils/query";
 import type {
@@ -40,10 +40,10 @@ import * as Radio from "@radix-ui/react-radio-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMemo, useRef, useState } from "react";
 import type { FormEvent, MutableRefObject } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useMemo, useRef, useState } from "react";
 import type { Control, UseFormRegisterReturn } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
@@ -300,7 +300,7 @@ function Rating({ value, setValue }: ModelProps<number>) {
       onValueChange={(val) => {
         setValue(+val);
       }}
-      className="flex justify-between gap-4 text-6xl"
+      className="group flex justify-between gap-4 text-6xl"
     >
       <Radio.Item
         value="0"
@@ -316,9 +316,12 @@ function Rating({ value, setValue }: ModelProps<number>) {
             if (x !== value) return;
             setValue(0);
           }}
-          className="outline-none transition sa-o-30 sa-r-0.5 focus-within:shadow-around"
+          className="outline-none"
         >
-          <Star highlight={x <= value} />
+          <Star
+            highlight={x <= value}
+            className="stroke-transparent stroke-[0.5px] transition-colors group-focus-visible-within:stroke-app-gold-400"
+          />
         </Radio.Item>
       ))}
     </Radio.Root>
@@ -376,14 +379,15 @@ function ProsConsComment({
 function Private({ value, setValue }: ModelProps<boolean>) {
   return (
     <LabeledSwitch
-      label="Private review"
       className={tw(
         "transition-colors duration-300",
         value ? "bg-app-green-100" : "bg-neutral-200",
       )}
       checked={value}
       onCheckedChange={setValue}
-    />
+    >
+      Private review
+    </LabeledSwitch>
   );
 }
 

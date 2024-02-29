@@ -8,12 +8,7 @@ import * as BaseSwitch from "@radix-ui/react-switch";
 import type { Session } from "next-auth";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import type {
-  ComponentPropsWithRef,
-  ComponentPropsWithoutRef,
-  PropsWithChildren,
-  ReactNode,
-} from "react";
+import type { ComponentPropsWithRef, ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef, useEffect, useRef } from "react";
 import StarIcon from "~icons/typcn/star-full-outline";
 
@@ -34,10 +29,16 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ClickableP
   );
 });
 
-type StarProps = { highlight?: boolean };
-export function Star({ highlight }: StarProps) {
+type StarProps = { highlight?: boolean; className?: string };
+export function Star({ highlight, className }: StarProps) {
   return (
-    <StarIcon className={tw("size-full", highlight ? "text-amber-400" : "text-neutral-400/20")} />
+    <StarIcon
+      className={tw(
+        "size-full",
+        highlight ? "text-app-gold-400" : "text-neutral-400/20",
+        className,
+      )}
+    />
   );
 }
 
@@ -103,30 +104,36 @@ export function UserPic({ user, className, ...props }: UserPicProps) {
 }
 
 type SwitchProps = StrictOmit<BaseSwitch.SwitchProps, "className">;
-export function Switch(props: SwitchProps) {
+export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function _(props, ref) {
   return (
     <BaseSwitch.Root
       {...props}
+      ref={ref}
       className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition-colors focus-visible:outline-app-green-500 data-[state=checked]:bg-app-green-500 data-[state=checked]:focus-visible:outline-lime-950"
     >
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
     </BaseSwitch.Root>
   );
-}
+});
 
-type LabeledSwitchProps = { label: ReactNode; className?: string } & SwitchProps;
-export function LabeledSwitch({ label, className, ...switchProps }: LabeledSwitchProps) {
-  return (
-    <label
-      // Inside of forms switch appends a hidden sr-only checkbox input which can screw up the layout - 'relative' mititgates the damage somewhat
-      className={tw("relative flex items-center justify-between rounded-lg px-4 py-2", className)}
-    >
-      {typeof label === "string" ? <span>{label}</span> : label}
-      <Switch {...switchProps} />
-    </label>
-  );
-}
+type LabeledSwitchProps = { className?: string } & SwitchProps;
+export const LabeledSwitch = forwardRef<HTMLButtonElement, PropsWithChildren<LabeledSwitchProps>>(
+  function _({ children, className, ...switchProps }, ref) {
+    return (
+      <label
+        // Inside of forms switch appends a hidden sr-only checkbox input which can screw up the layout - 'relative' mititgates the damage somewhat
+        className={tw("relative flex items-center justify-between rounded-lg px-4 py-2", className)}
+      >
+        {children}
+        <Switch
+          {...switchProps}
+          ref={ref}
+        />
+      </label>
+    );
+  },
+);
 
 type WithLabelProps = { label: string; className?: string };
 export function WithLabel({ children, label, className }: PropsWithChildren<WithLabelProps>) {

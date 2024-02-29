@@ -50,6 +50,10 @@ export default {
         "&:is(:has(:focus-visible),:focus-visible)",
         "@supports not selector(:has(*)) {&:focus-within}",
       ]);
+      addVariant("group-focus-visible-within", [
+        ":merge(.group):is(:has(:focus-visible),:focus-visible) &",
+        "@supports not selector(:has(*)) {:merge(.group):focus-within &}",
+      ]);
       matchVariant("not", (value) => `&:not(${value})`);
       matchVariant("nth", (value) => `&:nth-child(${value})`);
       matchVariant("nth-last", (value) => `&:nth-last-child(${value})`);

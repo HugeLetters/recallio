@@ -18,6 +18,7 @@ import { compressImage } from "@/utils/image";
 import { providerIcons } from "@/utils/providers";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
+import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
 import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
@@ -211,39 +212,43 @@ function LinkedAccounts() {
   return (
     <div>
       <p className="p-2 text-sm">Linked accounts</p>
-      <div className="flex flex-col divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100">
+      <Toolbar
+        orientation="vertical"
+        className="flex flex-col divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
+      >
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
             <div key={provider}>
-              <LabeledSwitch
-                className="capitalize"
-                label={
+              <ToolbarButton asChild>
+                <LabeledSwitch
+                  className="capitalize"
+                  aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+                  checked={isLinked}
+                  onCheckedChange={(value) => {
+                    if (value) {
+                      // optimistic update
+                      trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                        return [...(providers ?? []), provider];
+                      });
+                      signIn(provider).catch(
+                        logToastError("Couldn't link account.\nPlease try again."),
+                      );
+                    } else {
+                      deleteAccount({ provider });
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-2">
                     <Icon className="h-full w-7" />
                     <span>{provider}</span>
                   </div>
-                }
-                aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
-                checked={isLinked}
-                onCheckedChange={(value) => {
-                  if (value) {
-                    // optimistic update
-                    trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
-                      return [...(providers ?? []), provider];
-                    });
-                    signIn(provider).catch(
-                      logToastError("Couldn't link account.\nPlease try again."),
-                    );
-                  } else {
-                    deleteAccount({ provider });
-                  }
-                }}
-              />
+                </LabeledSwitch>
+              </ToolbarButton>
             </div>
           );
         })}
-      </div>
+      </Toolbar>
     </div>
   );
 }
@@ -255,11 +260,12 @@ function AppSettings() {
     <div>
       <p className="p-2 text-sm">App settings</p>
       <LabeledSwitch
-        label="Reviews are private by default"
         className="bg-app-green-100"
         checked={reviewPrivateDefault}
         onCheckedChange={setReviewPrivateDefault}
-      />
+      >
+        Reviews are private by default
+      </LabeledSwitch>
     </div>
   );
 }
