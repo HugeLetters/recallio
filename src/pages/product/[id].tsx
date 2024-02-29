@@ -1,8 +1,8 @@
-import { Layout } from "@/components/layout";
-import { InfiniteScroll } from "@/components/List";
 import { Spinner } from "@/components/Loading";
 import { SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
+import { Layout } from "@/components/layout";
+import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import {
   CategoryButton,
   ConsIcon,

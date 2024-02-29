@@ -1,5 +1,3 @@
-import { Layout } from "@/components/layout";
-import { InfiniteScroll } from "@/components/List";
 import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
 import { logToastError, toast } from "@/components/Toast";
@@ -12,6 +10,8 @@ import {
   Star,
   useUrlDialog,
 } from "@/components/UI";
+import { Layout } from "@/components/layout";
+import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import {
   BarcodeTitle,
   CategoryButton,
