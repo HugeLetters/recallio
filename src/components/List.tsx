@@ -53,7 +53,6 @@ export function InfiniteScroll<P, V>({
   }, [pages]);
 
   const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
-  // todo - tab navigation, check other spots too
   return (
     <>
       {lastNonEmptyPageIndex !== -1 ? (

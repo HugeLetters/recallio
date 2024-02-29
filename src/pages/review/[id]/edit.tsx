@@ -104,7 +104,12 @@ type ReviewProps = {
   barcode: string;
 };
 function Review({ barcode, review, hasReview }: ReviewProps) {
-  const { register, control, handleSubmit, formState } = useForm({ defaultValues: review });
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { isDirty: isFormDirty },
+  } = useForm({ defaultValues: review });
 
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -113,7 +118,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       const newCategories = categoriesField.map(({ name }) => name);
 
       const optimisticReview = { ...restData, barcode, categories: newCategories };
-      if (!formState.isDirty && hasReview) {
+      if (!isFormDirty && hasReview) {
         return onReviewSave(optimisticReview);
       }
 
@@ -288,6 +293,7 @@ function Name({ barcode, register }: NameProps) {
 
 const ratingList = [1, 2, 3, 4, 5] as const;
 function Rating({ value, setValue }: ModelProps<number>) {
+  // todo - can't see that it's focused when rating is 0
   return (
     <Radio.Root
       value={value.toString()}
