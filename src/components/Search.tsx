@@ -176,9 +176,10 @@ export function SortDialog({ optionList }: SortDialogProps) {
               >
                 {optionList.map((option) => (
                   <RadioGroup.Item
+                    autoFocus={option === sortBy}
                     value={option}
                     key={option}
-                    className="group flex items-center gap-2 rounded-lg px-1 py-2 outline-none transition-colors duration-300 focus-visible:bg-neutral-400/20"
+                    className="group flex items-center gap-2 rounded-lg px-1 py-2 outline-none"
                   >
                     <div className="flex aspect-square w-6 items-center justify-center rounded-full border-2 border-neutral-400 bg-white group-data-[state=checked]:border-app-green-500">
                       <Flipped

@@ -15,7 +15,7 @@ import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
 import { Flipped } from "./Animation";
-import { ToolBarLink } from "./Toolbar";
+import { ToolbarLink } from "./Toolbar";
 
 type LayoutProps = {
   header?: ComponentProps<typeof Header>;
@@ -111,7 +111,7 @@ function Footer() {
               Icon={SearchIcon}
               active={pathname.startsWith("/search")}
             />
-            <ToolBarLink
+            <ToolbarLink
               href="/scan"
               className={tw(
                 "relative flex size-16 -translate-y-1/4 items-center justify-center overflow-hidden rounded-full p-4 transition duration-300",
@@ -135,7 +135,7 @@ function Footer() {
                   );
                 })}
               </div>
-            </ToolBarLink>
+            </ToolbarLink>
             <FooterLink
               href="/profile"
               label="Profile"
@@ -157,7 +157,7 @@ type FooterItemProps = {
 };
 function FooterLink({ active, Icon, label, href }: FooterItemProps) {
   return (
-    <ToolBarLink
+    <ToolbarLink
       href={href}
       className={tw(
         "group relative flex flex-col items-center justify-center overflow-y-clip px-6 outline-none transition-colors",
@@ -178,7 +178,7 @@ function FooterLink({ active, Icon, label, href }: FooterItemProps) {
           <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
         </Flipped>
       )}
-    </ToolBarLink>
+    </ToolbarLink>
   );
 }
 

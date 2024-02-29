@@ -71,8 +71,10 @@ function getInitials(name: string) {
   const [first, second] = name.split(/[\s_+.-]/);
   return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
 }
-type UserPicProps = { user: Pick<Session["user"], "image" | "name">; className?: string };
-export function UserPic({ user, className }: UserPicProps) {
+type UserPicProps = {
+  user: Pick<Session["user"], "image" | "name">;
+} & StrictOmit<ComponentPropsWithoutRef<typeof Image>, "src" | "alt" | "width" | "height">;
+export function UserPic({ user, className, ...props }: UserPicProps) {
   return (
     <div className={tw("aspect-square size-full select-none", className)}>
       {user.image ? (
@@ -82,6 +84,7 @@ export function UserPic({ user, className }: UserPicProps) {
           width={100}
           height={100}
           className="size-full rounded-full object-cover shadow-around sa-o-10 sa-r-2"
+          {...props}
         />
       ) : (
         <div

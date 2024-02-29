@@ -57,6 +57,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
         <UserPic
           className="text-2xl"
           user={user}
+          priority
         />
       </div>
       <span className="text-2xl font-bold">{user.name}</span>

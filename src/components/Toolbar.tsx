@@ -2,8 +2,8 @@ import { Link as RadixLink } from "@radix-ui/react-toolbar";
 import NextLink from "next/link";
 import type { ComponentPropsWithoutRef } from "react";
 
-type ToolBarLinkProps = ComponentPropsWithoutRef<typeof NextLink>;
-export function ToolBarLink({ href, children, ...props }: ToolBarLinkProps) {
+type ToolbarLinkProps = ComponentPropsWithoutRef<typeof NextLink>;
+export function ToolbarLink({ href, children, ...props }: ToolbarLinkProps) {
   return (
     <NextLink
       passHref
