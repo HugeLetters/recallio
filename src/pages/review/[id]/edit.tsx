@@ -1,4 +1,3 @@
-import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
 import { logToastError, toast } from "@/components/Toast";
 import {
@@ -12,6 +11,8 @@ import {
 } from "@/components/UI";
 import { Layout } from "@/components/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
+import { useLoadingIndicator } from "@/components/loading/indicator";
+import { Spinner } from "@/components/loading/spinner";
 import {
   BarcodeTitle,
   CategoryButton,

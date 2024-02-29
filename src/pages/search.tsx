@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
-import { Spinner } from "@/components/Loading";
+import { Spinner } from "@/components/loading/spinner";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star } from "@/components/UI";
 import { fetchNextPage } from "@/utils";

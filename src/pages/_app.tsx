@@ -1,4 +1,4 @@
-import { LoadingIndicatorProvider } from "@/components/Loading";
+import { LoadingIndicatorProvider } from "@/components/loading/indicator";
 import { ToastProvider } from "@/components/Toast";
 import "@/styles/globals.css";
 import { tw } from "@/utils";

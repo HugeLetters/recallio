@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { useLoadingIndicator } from "@/components/Loading";
+import { useLoadingIndicator } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/Toast";
 import {
   Button,
@@ -8,8 +8,8 @@ import {
   Input,
   LabeledSwitch,
   UserPic,
-  WithLabel,
   useUrlDialog,
+  WithLabel,
 } from "@/components/UI";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { signOut } from "@/utils";
