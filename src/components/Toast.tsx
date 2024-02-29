@@ -7,7 +7,8 @@ import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "rea
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Flipper } from "react-flip-toolkit";
-import { Flipped, onSelfTransitionEnd } from "./Animation";
+import { Flipped } from "./animation/flip";
+import { onSelfTransitionEnd } from "./animation/utils";
 
 const swipeThreshold = 70;
 export function ToastProvider({ children }: PropsWithChildren) {

@@ -14,7 +14,7 @@ import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import LeftArrowIcon from "~icons/uil/arrow-left";
-import { Flipped } from "./Animation";
+import { Flipped } from "./animation/flip";
 import { ToolbarLink } from "./Toolbar";
 
 type LayoutProps = {

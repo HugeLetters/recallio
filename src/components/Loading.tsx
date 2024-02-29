@@ -4,7 +4,7 @@ import { Store, useStore } from "@/utils/store";
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Transition } from "./Animation";
+import { Transition } from "./animation/transition";
 
 const DURATION = 1000;
 const DOT_COUNT = 12;

@@ -12,7 +12,7 @@ import { Flipper } from "react-flip-toolkit";
 import SearchIcon from "~icons/iconamoon/search-light";
 import SwapIcon from "~icons/iconamoon/swap-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
-import { Flipped } from "./Animation";
+import { Flipped } from "./animation/flip";
 import { DialogOverlay, UrlDialogRoot } from "./UI";
 
 export const SEARCH_QUERY_KEY = "search";
