@@ -8,6 +8,7 @@ import { api } from "@/utils/api";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
+import { Toolbar } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -122,7 +123,11 @@ function ReviewCards() {
   );
 
   return (
-    <div className="flex grow flex-col gap-2">
+    <Toolbar
+      loop={false}
+      orientation="vertical"
+      className="flex grow flex-col gap-2"
+    >
       {reviewCardsQuery.isSuccess ? (
         <InfiniteScroll
           pages={reviewCardsQuery.data.pages}
@@ -137,7 +142,7 @@ function ReviewCards() {
       ) : (
         "Loading..."
       )}
-    </div>
+    </Toolbar>
   );
 }
 

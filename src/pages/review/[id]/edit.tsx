@@ -587,7 +587,7 @@ function CategorySearch({
   }
 
   return (
-    <div className="relative flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
+    <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
       <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="size-7 shrink-0" />
         <DebouncedSearch
@@ -602,7 +602,11 @@ function CategorySearch({
           debounceRef={debounceRef}
         />
       </div>
-      <div className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pb-20 pt-5">
+      <Toolbar.Root
+        loop={false}
+        orientation="vertical"
+        className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pt-5"
+      >
         {!!search && (
           <label
             className={tw(
@@ -613,13 +617,13 @@ function CategorySearch({
             <span className="shrink-0">
               Add <span className="capitalize">{`"${lowercaseSearch}"`}</span>...
             </span>
-            <button
+            <Toolbar.Button
               onClick={addCustomCategory}
               aria-label={`Add ${lowercaseSearch} category`}
               aria-disabled={!canAddSearch}
             >
               <CircledPlusIcon className="size-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green-500" />
-            </button>
+            </Toolbar.Button>
           </label>
         )}
 
@@ -636,29 +640,31 @@ function CategorySearch({
               return (
                 <label className="flex w-full cursor-pointer justify-between capitalize">
                   <span className="overflow-hidden text-ellipsis">{category}</span>
-                  <Checkbox.Root
-                    className={tw(
-                      "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
-                      "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-200 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-lime-950",
-                      "transition-colors data-[state=checked]:bg-app-green-500",
-                    )}
-                    aria-disabled={!canAddCategories}
-                    checked={includes(category)}
-                    onCheckedChange={(checked) => {
-                      if (checked !== true) return remove(category);
-                      if (!canAddCategories) {
-                        return categoryLimitErrorToast();
-                      }
-                      append(category);
-                    }}
-                  >
-                    <Checkbox.Indicator
-                      forceMount
-                      className="p-1 text-white group-data-[state=unchecked]:scale-0 group-data-[state=checked]:transition-transform"
+                  <Toolbar.Button asChild>
+                    <Checkbox.Root
+                      className={tw(
+                        "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
+                        "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-300 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-lime-950",
+                        "transition-colors data-[state=checked]:bg-app-green-500",
+                      )}
+                      aria-disabled={!canAddCategories}
+                      checked={includes(category)}
+                      onCheckedChange={(checked) => {
+                        if (checked !== true) return remove(category);
+                        if (!canAddCategories) {
+                          return categoryLimitErrorToast();
+                        }
+                        append(category);
+                      }}
                     >
-                      <Checkmark className="size-full" />
-                    </Checkbox.Indicator>
-                  </Checkbox.Root>
+                      <Checkbox.Indicator
+                        forceMount
+                        className="p-1 text-white group-data-[state=unchecked]:scale-0 group-data-[state=checked]:transition-transform"
+                      >
+                        <Checkmark className="size-full" />
+                      </Checkbox.Indicator>
+                    </Checkbox.Root>
+                  </Toolbar.Button>
                 </label>
               );
             }}
@@ -666,9 +672,9 @@ function CategorySearch({
         ) : (
           "Loading..."
         )}
-      </div>
+      </Toolbar.Root>
       <Button
-        className="primary absolute inset-x-5 bottom-5"
+        className="primary mx-5 mb-5 shadow-around sa-o-30 sa-r-2"
         onClick={close}
       >
         OK

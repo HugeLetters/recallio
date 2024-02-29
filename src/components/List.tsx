@@ -1,10 +1,11 @@
 import type { StrictOmit } from "@/utils/type";
 import Image from "next/image";
-import Link from "next/link";
+import type { LinkProps } from "next/link";
+import type { Key, PropsWithChildren, ReactNode } from "react";
 import { Fragment, useEffect, useRef } from "react";
-import type { ComponentPropsWithoutRef, Key, PropsWithChildren, ReactNode } from "react";
 import EggBasketIcon from "~icons/custom/egg-basket";
 import MilkIcon from "~icons/custom/milk";
+import { ToolbarLink } from "./Toolbar";
 
 type InfiniteScrollProps<P, V> = {
   pages: P[];
@@ -91,7 +92,10 @@ type CardProps = {
   image?: string | null;
   label: string;
   subtext: string[];
-} & StrictOmit<ComponentPropsWithoutRef<typeof Link>, "className">;
+} & StrictOmit<LinkProps, "className">;
+/**
+ * Has to be wrapped in `Toolbar.Root` since it uses `Toolbar.Link`
+ */
 export function Card({
   image,
   label,
@@ -100,7 +104,7 @@ export function Card({
   ...linkProps
 }: PropsWithChildren<CardProps>) {
   return (
-    <Link
+    <ToolbarLink
       {...linkProps}
       className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
     >
@@ -129,7 +133,7 @@ export function Card({
         )}
       </div>
       <div className="ml-auto flex shrink-0 text-lg">{children}</div>
-    </Link>
+    </ToolbarLink>
   );
 }
 

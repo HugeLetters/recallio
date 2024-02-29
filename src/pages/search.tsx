@@ -8,6 +8,7 @@ import { api } from "@/utils/api";
 import type { RouterInputs } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
+import { Toolbar } from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
 
 const Page: NextPageWithLayout = function () {
@@ -27,7 +28,11 @@ const Page: NextPageWithLayout = function () {
         <span className="text-lg">Goods</span>
         <SortDialog optionList={sortOptionList} />
       </div>
-      <div className="flex grow flex-col gap-2 pb-4">
+      <Toolbar
+        loop={false}
+        orientation="vertical"
+        className="flex grow flex-col gap-2 pb-4"
+      >
         {productListQuery.isSuccess ? (
           <InfiniteScroll
             pages={productListQuery.data.pages}
@@ -62,7 +67,7 @@ const Page: NextPageWithLayout = function () {
         ) : (
           "Loading..."
         )}
-      </div>
+      </Toolbar>
     </div>
   );
 };
