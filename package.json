@@ -13,9 +13,10 @@
     "typecheck": "tsc --noEmit",
     "check-format": "prettier . -c",
     "format": "pnpm check-format -w",
-    "db-studio": "drizzle-kit studio",
     "copypaste-audit": "jscpd -i \"**/node_modules/**/*,**/database/migrations/**/*,**/.next/**/*\" -p \"**/src/**/*\"",
     "rscript": "tsx ./scripts/run.ts",
+    "db-studio": "drizzle-kit studio",
+    "db-seed": "pnpm rscript database/seed",
     "db-migrate": "drizzle-kit generate:mysql && pnpm rscript database/migration"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-radio-group": "^1.1.3",
     "@radix-ui/react-separator": "^1.0.3",
+    "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-toolbar": "^1.0.4",

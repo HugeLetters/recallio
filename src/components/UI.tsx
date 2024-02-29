@@ -11,7 +11,6 @@ import { useRouter } from "next/router";
 import type {
   ComponentPropsWithRef,
   ComponentPropsWithoutRef,
-  ElementType,
   PropsWithChildren,
   ReactNode,
 } from "react";
@@ -249,27 +248,4 @@ export function UrlDialogRoot({
       {children}
     </Root>
   );
-}
-
-// keeping this here just in case for now
-type AssertKeySubtype<Target, Base> = [Base, keyof Base] extends [
-  Pick<Target, keyof Base & keyof Target>,
-  keyof Target,
-]
-  ? Target
-  : never;
-export function createPolymorphicComponent<
-  IProps extends Record<never, unknown> = "Please provide a generic!",
->(
-  merger: <E extends ElementType>(
-    Component: ElementType<IProps>,
-    suppliedProps: ComponentPropsWithoutRef<E> & IProps,
-  ) => ReactNode,
-) {
-  return function PolymorphicComponent<E extends ElementType>(
-    data: AssertKeySubtype<ComponentPropsWithoutRef<E>, IProps> & { render: E },
-  ) {
-    // I assume TS doesn't understand that native HTML tags(which are just strings) are also valid here
-    return merger(data.render as never, data);
-  };
 }

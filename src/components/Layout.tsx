@@ -167,7 +167,7 @@ function FooterLink({ active, Icon, label, href }: FooterItemProps) {
       <Icon className="size-6 lg:size-7" />
       <span className="relative">
         {label}
-        <div className="absolute -inset-x-1 bottom-0 h-0.5 origin-left scale-x-0 rounded-full bg-current transition-transform group-focus:scale-x-100" />
+        <div className="absolute -inset-x-1 bottom-0 h-0.5 origin-left scale-x-0 rounded-full bg-current transition-transform group-focus-visible:scale-x-100" />
       </span>
       {/* Thanks for this tweet https://twitter.com/AetherAurelia/status/1734091704938995748?t=PuyJt96aEhEPRYgLVJ_6iQ for inspiring me for this */}
       {active && (

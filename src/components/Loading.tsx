@@ -64,8 +64,7 @@ export function LoadingIndicatorProvider({ children }: PropsWithChildren) {
     <>
       {children}
       {isClient
-        ? // todo - https://www.radix-ui.com/primitives/docs/utilities/portal
-          createPortal(
+        ? createPortal(
             <Transition outClassName="animate-fade-in-reverse">
               {show && (
                 <Spinner className="pointer-events-none absolute bottom-2 right-2 z-20 h-10 animate-fade-in rounded-full bg-neutral-400/25 p-1 contrast-200" />
