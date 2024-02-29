@@ -3,7 +3,7 @@ import { Store, useStore } from "@/utils/store";
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Transition } from "../animation/transition";
+import { Transition } from "../../animation/transition";
 import { Spinner } from "./spinner";
 
 class LoadingStore extends Store<boolean> {

@@ -5,8 +5,8 @@ import * as Toast from "@radix-ui/react-toast";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Flipper } from "react-flip-toolkit";
-import { Flipped } from "../animation/flip";
-import { onSelfTransitionEnd } from "../animation/utils";
+import { Flipped } from "../../animation/flip";
+import { onSelfTransitionEnd } from "../../animation/utils";
 import type { ToastData } from "./_store";
 import { toastStackStore } from "./_store";
 

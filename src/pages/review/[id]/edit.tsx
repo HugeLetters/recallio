@@ -7,7 +7,7 @@ import {
   Star,
   useUrlDialog,
 } from "@/components/UI";
-import { Layout } from "@/components/layout";
+import { Layout } from "@/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";

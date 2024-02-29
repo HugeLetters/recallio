@@ -1,5 +1,5 @@
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
-import { Layout } from "@/components/layout";
+import { Layout } from "@/layout";
 import { useSetLoadingIndicator } from "@/components/loading/indicator";
 import {
   BarcodeTitle,

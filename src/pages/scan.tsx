@@ -1,5 +1,5 @@
-import { Layout } from "@/components/layout";
-import { scanTypeOffsetStore, scanTypeStore } from "@/components/layout/footer";
+import { Layout } from "@/layout";
+import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
 import { logToastError, toast } from "@/components/toast";
 import { ImageInput } from "@/components/UI";
 import { useSwipe } from "@/hooks";

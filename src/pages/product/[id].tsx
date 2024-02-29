@@ -1,5 +1,5 @@
 import { Star, UserPic } from "@/components/UI";
-import { Layout } from "@/components/layout";
+import { Layout } from "@/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import {

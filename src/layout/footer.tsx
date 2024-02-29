@@ -1,3 +1,5 @@
+import { Flipped } from "@/animation/flip";
+import { ToolbarLink } from "@/components/Toolbar";
 import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
 import { DerivedStore, Store, useStore } from "@/utils/store";
@@ -11,8 +13,6 @@ import UploadIcon from "~icons/custom/photo-upload";
 import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
-import { ToolbarLink } from "../Toolbar";
-import { Flipped } from "../animation/flip";
 
 export function Footer() {
   const { pathname } = useRouter();
