@@ -1,4 +1,4 @@
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner } from "@/components/Loading";
 import { SortDialog, useParseSort } from "@/components/Search";

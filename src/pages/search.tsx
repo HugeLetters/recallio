@@ -1,4 +1,4 @@
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { Spinner } from "@/components/Loading";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";

@@ -1,4 +1,4 @@
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout";
 import { useLoadingIndicator } from "@/components/Loading";
 import { logToastError, toast } from "@/components/Toast";
 import {

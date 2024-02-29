@@ -1,98 +1,20 @@
 import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
 import { DerivedStore, Store, useStore } from "@/utils/store";
-import type { DiscriminatedUnion, Icon } from "@/utils/type";
+import type { Icon } from "@/utils/type";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import type { LinkProps } from "next/link";
-import Link from "next/link";
-import router, { useRouter } from "next/router";
-import type { ComponentProps, ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
+import { useRouter } from "next/router";
 import { Flipper } from "react-flip-toolkit";
 import LucidePen from "~icons/custom/pen";
 import UploadIcon from "~icons/custom/photo-upload";
 import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
-import LeftArrowIcon from "~icons/uil/arrow-left";
-import { Flipped } from "./animation/flip";
-import { ToolbarLink } from "./Toolbar";
+import { ToolbarLink } from "../Toolbar";
+import { Flipped } from "../animation/flip";
 
-type LayoutProps = {
-  header?: ComponentProps<typeof Header>;
-};
-export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
-  return (
-    <div className="grid h-dvh w-full grid-rows-[auto_1fr_auto] bg-white">
-      <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
-      <main className="scrollbar-gutter flex w-full max-w-app justify-center justify-self-center overflow-y-auto">
-        {children}
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-type HeaderProps = DiscriminatedUnion<
-  { title: ReactNode; left?: ReactNode; right?: ReactNode },
-  { header: Exclude<ReactNode, undefined> }
->;
-export function Header({ header, left, right, title }: HeaderProps) {
-  return (
-    <header className="z-10 flex h-14 min-w-0 justify-center bg-white shadow-around sa-o-15 sa-r-2">
-      <div className="w-full max-w-app p-2">
-        {header !== undefined ? (
-          header
-        ) : (
-          <div className="grid size-full grid-cols-[1fr_auto_1fr] items-center">
-            <div className="justify-self-start">
-              {left !== undefined ? (
-                left
-              ) : (
-                <HeaderButton
-                  Icon={LeftArrowIcon}
-                  onClick={router.back}
-                  role="navigation"
-                  aria-label="go back"
-                />
-              )}
-            </div>
-            <div className="col-start-2 justify-self-center text-xl">
-              {typeof title === "string" ? <h1>{title}</h1> : title}
-            </div>
-            <div className="justify-self-end">{right}</div>
-          </div>
-        )}
-      </div>
-    </header>
-  );
-}
-
-type HeaderButtonProps = { Icon: Icon } & ComponentPropsWithoutRef<"button">;
-export function HeaderButton({ Icon, type, className, ...butonAttributes }: HeaderButtonProps) {
-  return (
-    <button
-      type={type ?? "button"}
-      className={tw("flex items-center", className)}
-      {...butonAttributes}
-    >
-      <Icon className="size-8" />
-    </button>
-  );
-}
-
-type HeaderLinkProps = { Icon: Icon } & ComponentPropsWithoutRef<typeof Link>;
-export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
-  return (
-    <Link
-      className={tw("flex items-center", className)}
-      {...linkAttributes}
-    >
-      <Icon className="size-8" />
-    </Link>
-  );
-}
-
-function Footer() {
+export function Footer() {
   const { pathname } = useRouter();
   const translate = useStore(scanTypeOffsetStore);
 

@@ -1,11 +1,12 @@
-import { HeaderLink, Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout";
+import { HeaderLink } from "@/components/layout/header";
 import { Card, InfiniteScroll, NoResults } from "@/components/List";
 import { Spinner } from "@/components/Loading";
 import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
 import { Star, UserPic } from "@/components/UI";
 import { fetchNextPage, minutesToMs } from "@/utils";
-import { api } from "@/utils/api";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";

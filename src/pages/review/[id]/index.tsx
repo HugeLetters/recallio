@@ -1,4 +1,4 @@
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout";
 import { useSetLoadingIndicator } from "@/components/Loading";
 import { toast } from "@/components/Toast";
 import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";

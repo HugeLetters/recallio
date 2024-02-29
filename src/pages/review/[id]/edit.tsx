@@ -1,4 +1,4 @@
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout";
 import { InfiniteScroll } from "@/components/List";
 import { Spinner, useLoadingIndicator } from "@/components/Loading";
 import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
