@@ -41,4 +41,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-@types/nextjs-routes.d.ts
+@types

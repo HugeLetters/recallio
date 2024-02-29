@@ -10,10 +10,10 @@ import {
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/page/Review";
+} from "@/components/review";
 import { tw } from "@/utils";
-import { api } from "@/utils/api";
 import type { RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";

@@ -20,7 +20,7 @@ import {
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/page/Review";
+} from "@/components/review";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
 import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
 import type { RouterOutputs } from "@/utils/api";

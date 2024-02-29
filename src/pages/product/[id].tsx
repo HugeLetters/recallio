@@ -10,10 +10,10 @@ import {
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/page/Review";
+} from "@/components/review";
 import { fetchNextPage } from "@/utils";
-import { api } from "@/utils/api";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
+import { api } from "@/utils/api";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";
