@@ -25,7 +25,7 @@ const Page: NextPageWithLayout = function () {
         </div>
       )}
       <div className="flex grow flex-col items-center justify-center">
-        <Logo className="shrink-0" />
+        <Logo className="h-24 w-52 shrink-0" />
         <p className="mb-6 text-xl">Unlock a world of informed shopping</p>
         <EmailSignIn callbackUrl={callbackUrl} />
         <div className="relative z-0 my-6 flex w-full justify-center">

@@ -1,7 +1,7 @@
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import type { GetServerSidePropsContext } from "next";
-import { getServerSession } from "next-auth";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import GithubProvider from "next-auth/providers/github";

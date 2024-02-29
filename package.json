@@ -2,6 +2,7 @@
   "name": "recallio",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@8.10.0",
   "scripts": {
     "dev": "pnpm cleanup&& next dev -p 1853",
