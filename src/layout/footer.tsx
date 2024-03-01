@@ -1,5 +1,5 @@
 import { Flipped } from "@/animation/flip";
-import { ToolbarLink } from "@/components/Toolbar";
+import { ToolbarLink } from "@/components/ui/toolbar";
 import { tw } from "@/utils";
 import { indexOf } from "@/utils/array";
 import { DerivedStore, Store, useStore } from "@/utils/store";

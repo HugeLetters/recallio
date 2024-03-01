@@ -1,17 +1,12 @@
-import { Layout } from "@/layout";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
-import {
-  Button,
-  DialogOverlay,
-  ImageInput,
-  Input,
-  LabeledSwitch,
-  UserPic,
-  useUrlDialog,
-  WithLabel,
-} from "@/components/UI";
+import { Button, Input, WithLabel } from "@/components/ui";
+import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
+import { ImagePicker } from "@/components/ui/image-picker";
+import { LabeledSwitch } from "@/components/ui/switch";
+import { UserPic } from "@/components/ui/user-pic";
 import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { Layout } from "@/layout";
 import { signOut } from "@/utils";
 import { api } from "@/utils/api";
 import { compressImage } from "@/utils/image";
@@ -118,7 +113,7 @@ function UserImage({ user }: UserImageProps) {
           </button>
         )}
       </div>
-      <ImageInput
+      <ImagePicker
         isImageSet={!!optimistic.value && optimistic.isActive}
         className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
         onChange={(e) => {
@@ -128,7 +123,7 @@ function UserImage({ user }: UserImageProps) {
         }}
       >
         {!!optimisticUser.image ? "Change avatar" : "Upload avatar"}
-      </ImageInput>
+      </ImagePicker>
     </div>
   );
 }

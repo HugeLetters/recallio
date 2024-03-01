@@ -1,8 +1,8 @@
+import { logToastError, toast } from "@/components/toast";
+import { ImagePicker } from "@/components/ui/image-picker";
+import { useSwipe } from "@/hooks";
 import { Layout } from "@/layout";
 import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
-import { logToastError, toast } from "@/components/toast";
-import { ImageInput } from "@/components/UI";
-import { useSwipe } from "@/hooks";
 import { tw } from "@/utils";
 import { useStore } from "@/utils/store";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -110,7 +110,7 @@ const Page: NextPageWithLayout = function () {
         </ScanGrid>
         <ScanGrid className="relative z-20">
           <ScanButton active={scanType === "upload"}>
-            <ImageInput
+            <ImagePicker
               aria-label="Scan from file"
               isImageSet={true}
               onChange={(e) => {
@@ -121,7 +121,7 @@ const Page: NextPageWithLayout = function () {
               onClick={() => scanTypeStore.select("upload")}
             >
               Upload
-            </ImageInput>
+            </ImagePicker>
           </ScanButton>
           <ScanButton active={scanType === "scan"}>
             <button

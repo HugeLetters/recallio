@@ -8,7 +8,7 @@ import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "rea
 import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
-import { Button } from "./UI";
+import { Button } from "./ui";
 
 type ProsConsCommentWrapperProps = { children: ReactNode[] };
 export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps) {

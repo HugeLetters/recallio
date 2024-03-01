@@ -1,11 +1,12 @@
-import { Layout } from "@/layout";
-import { HeaderLink } from "@/layout/header";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
-import { Star, UserPic } from "@/components/UI";
+import { Star } from "@/components/ui/star";
+import { UserPic } from "@/components/ui/user-pic";
+import { Layout } from "@/layout";
+import { HeaderLink } from "@/layout/header";
 import { fetchNextPage, minutesToMs } from "@/utils";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";

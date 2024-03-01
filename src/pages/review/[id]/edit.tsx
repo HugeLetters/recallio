@@ -1,13 +1,3 @@
-import {
-  AutoresizableInput,
-  Button,
-  DialogOverlay,
-  ImageInput,
-  LabeledSwitch,
-  Star,
-  useUrlDialog,
-} from "@/components/UI";
-import { Layout } from "@/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
@@ -22,7 +12,13 @@ import {
 } from "@/components/review";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
+import { AutoresizableInput, Button } from "@/components/ui";
+import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
+import { ImagePicker } from "@/components/ui/image-picker";
+import { Star } from "@/components/ui/star";
+import { LabeledSwitch } from "@/components/ui/switch";
 import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { Layout } from "@/layout";
 import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
 import type { RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";
@@ -416,7 +412,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
           </Button>
         )}
       </div>
-      <ImageInput
+      <ImagePicker
         isImageSet={!!value}
         onChange={(e) => {
           setValue(e.target.files?.item(0));
@@ -424,7 +420,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
       >
         {src ? "Change image" : "Upload image"}
-      </ImageInput>
+      </ImagePicker>
     </div>
   );
 }

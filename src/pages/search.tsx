@@ -1,10 +1,10 @@
-import { Layout } from "@/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
-import { Star } from "@/components/UI";
+import { Star } from "@/components/ui/star";
+import { Layout } from "@/layout";
 import { fetchNextPage } from "@/utils";
 import type { RouterInputs } from "@/utils/api";
 import { api } from "@/utils/api";

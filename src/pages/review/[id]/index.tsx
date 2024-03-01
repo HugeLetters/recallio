@@ -1,5 +1,3 @@
-import { Button, DialogOverlay, Star, UrlDialogRoot } from "@/components/UI";
-import { Layout } from "@/layout";
 import { useSetLoadingIndicator } from "@/components/loading/indicator";
 import {
   BarcodeTitle,
@@ -11,6 +9,10 @@ import {
   ProsIcon,
 } from "@/components/review";
 import { toast } from "@/components/toast";
+import { Button } from "@/components/ui";
+import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
+import { Star } from "@/components/ui/star";
+import { Layout } from "@/layout";
 import { tw } from "@/utils";
 import type { RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";

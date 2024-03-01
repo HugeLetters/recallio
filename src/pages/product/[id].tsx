@@ -1,5 +1,3 @@
-import { Star, UserPic } from "@/components/UI";
-import { Layout } from "@/layout";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import {
@@ -11,6 +9,9 @@ import {
   ProsIcon,
 } from "@/components/review";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
+import { Star } from "@/components/ui/star";
+import { UserPic } from "@/components/ui/user-pic";
+import { Layout } from "@/layout";
 import { fetchNextPage } from "@/utils";
 import type { RouterInputs, RouterOutputs } from "@/utils/api";
 import { api } from "@/utils/api";

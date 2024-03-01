@@ -5,8 +5,8 @@ import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
 import { Flipper } from "react-flip-toolkit";
 import SwapIcon from "~icons/iconamoon/swap-light";
-import { DialogOverlay, UrlDialogRoot } from "../UI";
 import { Flipped } from "../../animation/flip";
+import { DialogOverlay, UrlDialogRoot } from "../ui/dialog";
 
 type SortDialogProps = { optionList: OptionList };
 export function SortDialog({ optionList }: SortDialogProps) {

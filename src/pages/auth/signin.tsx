@@ -1,4 +1,4 @@
-import { Button, Input, WithLabel } from "@/components/UI";
+import { Button, Input, WithLabel } from "@/components/ui";
 import { providerIcons } from "@/utils/providers";
 import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";

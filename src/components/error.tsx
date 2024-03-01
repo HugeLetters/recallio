@@ -1,6 +1,6 @@
-import BrokenEggshellIcon from "~icons/custom/broken-eggshell";
-import { Button } from "./UI";
 import { useRouter } from "next/router";
+import BrokenEggshellIcon from "~icons/custom/broken-eggshell";
+import { Button } from "./ui";
 
 type ErrorProps = { message?: string };
 export function Error({ message: error }: ErrorProps) {
