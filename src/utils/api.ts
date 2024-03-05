@@ -12,6 +12,8 @@ import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { browser, hasProperty, signOut } from ".";
 
+// todo - https://responsively.app/
+
 const getBaseUrl = () => {
   if (browser) return ""; // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url

@@ -10,6 +10,7 @@ import { UTApi, UploadThingError } from "uploadthing/server";
 import { z } from "zod";
 import { getServerAuthSession } from "./auth";
 
+// todo - server ddd
 const uploadthing = createUploadthing();
 
 export const utapi = new UTApi({ apiKey: env.UPLOADTHING_SECRET });

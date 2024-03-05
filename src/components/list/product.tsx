@@ -6,6 +6,7 @@ import EggBasketIcon from "~icons/custom/egg-basket";
 import MilkIcon from "~icons/custom/milk";
 import { ToolbarLink } from "../ui/toolbar";
 
+// todo - https://twitter.com/kindlaar/status/1764373838236672435?t=ubxnn5-kppyKUS6yVLRTJQ&s=19
 type CardProps = {
   image?: string | null;
   label: string;
