@@ -31,14 +31,14 @@ export function Footer() {
               href="/search"
               label="Search"
               Icon={SearchIcon}
-              active={pathname.startsWith("/search")}
+              active={pathname === "/search"}
             />
             <ToolbarLink
               href="/scan"
               className={tw(
                 "relative flex size-16 -translate-y-1/4 items-center justify-center overflow-hidden rounded-full p-4 transition duration-300",
                 "outline-none ring-offset-2 focus-visible:ring-2",
-                pathname.startsWith("/scan")
+                pathname === "/scan"
                   ? "bg-app-green-500 text-white ring-app-green-500"
                   : "bg-neutral-100 ring-current",
               )}
@@ -62,7 +62,7 @@ export function Footer() {
               href="/profile"
               label="Profile"
               Icon={ProfileIcon}
-              active={pathname.startsWith("/profile")}
+              active={pathname === "/profile"}
             />
           </Flipper>
         </nav>
