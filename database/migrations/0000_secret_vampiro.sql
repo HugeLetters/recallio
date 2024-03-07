@@ -50,14 +50,14 @@ CREATE TABLE `review` (
 	`image_key` text(255),
 	`updated_at` integer DEFAULT current_timestamp NOT NULL,
 	`is_private` integer DEFAULT true NOT NULL,
-	PRIMARY KEY(`barcode`, `user_id`)
+	PRIMARY KEY(`user_id`, `barcode`)
 );
 --> statement-breakpoint
 CREATE TABLE `reviews_to_categories` (
 	`user_id` text(255) NOT NULL,
 	`barcode` text(55) NOT NULL,
 	`category` text(31) NOT NULL,
-	PRIMARY KEY(`barcode`, `category`, `user_id`)
+	PRIMARY KEY(`user_id`, `barcode`, `category`)
 );
 --> statement-breakpoint
 CREATE INDEX `account_user_id_index` ON `account` (`user_id`);--> statement-breakpoint
