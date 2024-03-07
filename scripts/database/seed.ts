@@ -1,39 +1,45 @@
 import { db } from "@/server/database";
 import { user } from "@/server/database/schema/auth";
-import {
-  category,
-  review,
-  reviewsToCategories,
-  type ReviewInsert,
-} from "@/server/database/schema/product";
+import type { ReviewInsert } from "@/server/database/schema/product";
+import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array";
 import { faker } from "@faker-js/faker";
-import { and, asc, like, lt, sql, type SQL } from "drizzle-orm";
-import type { MySqlTableWithColumns, TableConfig } from "drizzle-orm/mysql-core";
-import task, { type Task } from "tasuku";
+import type { SQL } from "drizzle-orm";
+import { and, asc, like, lt } from "drizzle-orm";
+import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-core";
+import type { Task } from "tasuku";
+import task from "tasuku";
 
+// todo - test that date is parsed correctly both when provided and not
 seed().catch(console.error);
 async function seed() {
-  await seedReviews(30000, 150, 10).catch(console.error);
+  await seedReviews({
+    reviewCount: 30000,
+    reviewsPerUser: 150,
+    uniqieReviewsPerUser: 10,
+  }).catch(console.error);
 }
 
 type BarcodeData = { barcode: string; rating: number; names: string[] };
 const TEST_USER_ID_PREFIX = "test-user-";
 
-async function seedReviews(
-  reviewCount: number,
-  reviewsPerUser: number,
-  uniqieReviewsPerUser: number,
-) {
+type SeedReviewOptiosn = {
+  reviewCount: number;
+  reviewsPerUser: number;
+  uniqieReviewsPerUser: number;
+};
+async function seedReviews({
+  reviewCount,
+  reviewsPerUser,
+  uniqieReviewsPerUser,
+}: SeedReviewOptiosn) {
   await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
-  await createTestUsers(reviewCount / reviewsPerUser);
 
-  const users = await db
-    .select()
-    .from(user)
-    .then((users) => users.map((user) => user.id));
+  const users = await createTestUsers(reviewCount / reviewsPerUser).then((users) =>
+    users.map((user) => user.id),
+  );
   const files = await createTestImages(100);
 
   const barcodePool: BarcodeData[] = faker.helpers
@@ -73,10 +79,7 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   );
   if (!categories.length) return;
 
-  await db
-    .insert(category)
-    .values(categories)
-    .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } });
+  await db.insert(category).values(categories).onConflictDoNothing();
 
   const reviewsCategories: Array<typeof reviewsToCategories.$inferInsert> = values.flatMap(
     ({ review, categories }) =>
@@ -105,7 +108,7 @@ function createReviewValue(
       cons: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       isPrivate: Math.random() > 0.5,
       imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)),
-      updatedAt: faker.date.past({ years: 3 }),
+      updatedAt: faker.helpers.maybe(() => faker.date.past({ years: 3 }), { probability: 0.9 }),
     },
     categories: faker.helpers.maybe(
       () =>
@@ -149,18 +152,21 @@ function createBarcodeData(barcode: string, namecount: number) {
 function createTestUsers(userCount: number) {
   const userIdSuffixList = faker.helpers.uniqueArray(() => faker.word.words(1), userCount);
 
-  return db.insert(user).values(
-    userIdSuffixList.map((idSuffix) => ({
-      id: `${TEST_USER_ID_PREFIX}${idSuffix}`,
-      name: faker.helpers.arrayElement([
-        () => faker.person.fullName(),
-        () => faker.internet.displayName(),
-        () => faker.internet.userName(),
-      ])(),
-      email: faker.internet.email({ provider: faker.lorem.word() }),
-      image: faker.helpers.maybe(randomImage),
-    })),
-  );
+  return db
+    .insert(user)
+    .values(
+      userIdSuffixList.map((idSuffix) => ({
+        id: `${TEST_USER_ID_PREFIX}${idSuffix}`,
+        name: faker.helpers.arrayElement([
+          () => faker.person.fullName(),
+          () => faker.internet.displayName(),
+          () => faker.internet.userName(),
+        ])(),
+        email: faker.internet.email({ provider: faker.lorem.word() }),
+        image: faker.helpers.maybe(randomImage),
+      })),
+    )
+    .returning();
 }
 
 function createTestImages(count: number) {
@@ -214,7 +220,7 @@ async function cleanDatabase(rowLimitPerOperation: number) {
 type CleanTableOptions<T extends TableConfig> = {
   task: Task;
   taskName: string;
-  table: MySqlTableWithColumns<T>;
+  table: SQLiteTableWithColumns<T>;
   primaryKey: keyof T["columns"];
   rowLimitPerOperation: number;
   where?: SQL;

@@ -1,45 +1,37 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  datetime,
-  index,
-  mysqlTable,
-  primaryKey,
-  tinyint,
-  varchar,
-} from "drizzle-orm/mysql-core";
+import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
 
-export const category = mysqlTable("category", {
-  name: varchar("name", { length: 31 }).primaryKey(),
+export const category = sqliteTable("category", {
+  name: text("name", { length: 31 }).primaryKey(),
 });
 export const categoryRelations = relations(category, ({ many }) => ({
   reviews: many(reviewsToCategories),
 }));
 
-export const review = mysqlTable(
+export const review = sqliteTable(
   "review",
   {
-    userId: varchar("user-id", { length: 255 }).notNull(),
-    barcode: varchar("barcode", { length: 55 }).notNull(),
-    name: varchar("name", { length: 255 }).notNull(),
-    rating: tinyint("rating").notNull(),
-    pros: varchar("pros", { length: 4095 }),
-    cons: varchar("cons", { length: 4095 }),
-    comment: varchar("comment", { length: 2047 }),
-    imageKey: varchar("image-key", { length: 255 }),
-    updatedAt: datetime("updated-at")
+    userId: text("user_id", { length: 255 }).notNull(),
+    barcode: text("barcode", { length: 55 }).notNull(),
+    name: text("name", { length: 255 }).notNull(),
+    rating: int("rating").notNull(),
+    pros: text("pros", { length: 4095 }),
+    cons: text("cons", { length: 4095 }),
+    comment: text("comment", { length: 2047 }),
+    imageKey: text("image_key", { length: 255 }),
+    updatedAt: int("updated_at", { mode: "timestamp" })
       .notNull()
-      .default(sql`NOW()`),
-    isPrivate: boolean("is-private").notNull().default(true),
+      .default(sql`current_timestamp`),
+    isPrivate: int("is_private", { mode: "boolean" }).notNull().default(true),
   },
   (table) => ({
     compoundKey: primaryKey(table.userId, table.barcode),
-    barcodeIndex: index("barcode-index").on(table.barcode),
-    nameIndex: index("name-index").on(table.name),
-    ratingIndex: index("rating-index").on(table.rating),
-    updatedAtIndex: index("updated-at-index").on(table.updatedAt),
-    isPrivateIndex: index("is-private-index").on(table.isPrivate),
+    barcodeIndex: index("review_barcode_index").on(table.barcode),
+    nameIndex: index("review_name_index").on(table.name),
+    ratingIndex: index("review_rating_index").on(table.rating),
+    updatedAtIndex: index("review_updated_at_index").on(table.updatedAt),
+    isPrivateIndex: index("review_is_private_index").on(table.isPrivate),
   }),
 );
 export const reviewRelations = relations(review, ({ many, one }) => ({
@@ -51,17 +43,17 @@ export const reviewRelations = relations(review, ({ many, one }) => ({
 }));
 export type ReviewInsert = typeof review.$inferInsert;
 
-export const reviewsToCategories = mysqlTable(
-  "reviews-to-categories",
+export const reviewsToCategories = sqliteTable(
+  "reviews_to_categories",
   {
-    userId: varchar("user-id", { length: 255 }).notNull(),
-    barcode: varchar("barcode", { length: 55 }).notNull(),
-    category: varchar("category", { length: 31 }).notNull(),
+    userId: text("user_id", { length: 255 }).notNull(),
+    barcode: text("barcode", { length: 55 }).notNull(),
+    category: text("category", { length: 31 }).notNull(),
   },
   (table) => ({
     compoundKey: primaryKey(table.userId, table.barcode, table.category),
-    barcodeIndex: index("barcode-index").on(table.barcode),
-    categoryIndex: index("category-index").on(table.category),
+    barcodeIndex: index("reviews_to_categories_barcode_index").on(table.barcode),
+    categoryIndex: index("reviews_to_categories_category_index").on(table.category),
   }),
 );
 export const reviewsToCategoriesRelations = relations(reviewsToCategories, ({ one }) => ({

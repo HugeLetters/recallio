@@ -1,21 +1,22 @@
-import { sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
-import type { MySqlColumn, MySqlTable } from "drizzle-orm/mysql-core";
+import { sql } from "drizzle-orm";
+import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 import { db } from "..";
 
-export function aggregateArrayColumn<T>(column: MySqlColumn) {
+export function aggregateArrayColumn<T>(column: SQLiteColumn) {
+  // todo - this might break after sqlite migration
   return sql<T[] | [null]>`JSON_ARRAYAGG(${column})`;
 }
 
-export function countCol<T extends MySqlColumn>(column?: T) {
+export function countCol<T extends SQLiteColumn>(column?: T) {
   return sql`count(${column ?? "*"})`.mapWith((x) => +x);
 }
 
-export function findFirst<T extends MySqlTable>(table: T, where: SQL | undefined) {
-  return db.select().from(table).where(where).limit(1);
+export function findFirst<T extends SQLiteTable>(table: T, where: SQL | undefined) {
+  return db.select().from(table).where(where).limit(1).get();
 }
 
-export function count<T extends MySqlTable>(table: T, where: SQL | undefined) {
+export function count<T extends SQLiteTable>(table: T, where: SQL | undefined) {
   return db.select({ count: countCol() }).from(table).where(where).limit(1);
 }
 

@@ -3,9 +3,9 @@ import { env } from "@/env";
 import type { Config } from "drizzle-kit";
 
 export default {
-  out: "./src/server/database/migrations",
+  out: "./database/migrations",
   schema: "./src/server/database/schema/*",
-  driver: "mysql2",
-  dbCredentials: { connectionString: env.DATABASE_URL },
+  driver: "turso",
+  dbCredentials: { url: env.DATABASE_URL, authToken: env.DATABASE_TOKEN },
   breakpoints: true,
 } satisfies Config;
