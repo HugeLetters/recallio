@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "@/env/index.mjs";
 import type { GetServerSidePropsContext } from "next";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";

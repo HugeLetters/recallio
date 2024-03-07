@@ -1,22 +1,16 @@
 import { db } from "@/server/database";
-import {
-  aggregateArrayColumn,
-  count,
-  findFirst,
-  nullableMap,
-  removeNullishArray,
-} from "@/server/database/query/utils";
-import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import { count, findFirst, query } from "@/server/database/query/utils";
 import type { ReviewInsert } from "@/server/database/schema/product";
+import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
 import { nonEmptyArray } from "@/utils/array";
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, gt, inArray, like, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, like, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
-import { createPagination } from "../utils/pagination";
 import type { Paginated } from "../utils/pagination";
+import { createPagination } from "../utils/pagination";
 import {
   coercedStringSchema,
   createBarcodeSchema,
@@ -84,12 +78,10 @@ const userReviewSummaryListQuery = protectedProcedure
       .select({
         barcode: review.barcode,
         name: review.name,
-        image: sql`${review.imageKey}`.mapWith(nullableMap(getFileUrl)),
+        image: query.map(review.imageKey, getFileUrl),
         rating: review.rating,
         updatedAt: review.updatedAt,
-        categories: aggregateArrayColumn<string>(reviewsToCategories.category).mapWith(
-          removeNullishArray<string>,
-        ),
+        categories: query.aggregate(reviewsToCategories.category),
       })
       .from(review)
       .where(and(eq(review.userId, session.user.id), filterClause, cursorClause))
@@ -163,7 +155,10 @@ export const reviewRouter = createTRPCRouter({
 
       return db
         .transaction(async (tx) => {
-          await tx.insert(review).values(reviewData).onDuplicateKeyUpdate({ set: reviewData });
+          await tx
+            .insert(review)
+            .values(reviewData)
+            .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData });
           if (!categories) return;
 
           await tx
@@ -177,10 +172,7 @@ export const reviewRouter = createTRPCRouter({
           const categoryValues = categories.filter(Boolean).map((category) => ({ name: category }));
           if (!nonEmptyArray(categoryValues)) return;
 
-          await tx
-            .insert(category)
-            .values(categoryValues)
-            .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } });
+          await tx.insert(category).values(categoryValues).onConflictDoNothing();
 
           await tx
             .insert(reviewsToCategories)
@@ -191,13 +183,7 @@ export const reviewRouter = createTRPCRouter({
                 category,
               })),
             )
-            .onDuplicateKeyUpdate({
-              set: {
-                barcode: sql`${reviewsToCategories.barcode}`,
-                category: sql`${reviewsToCategories.category}`,
-                userId: sql`${reviewsToCategories.userId}`,
-              },
-            });
+            .onConflictDoNothing();
         })
         .catch((e) => throwDefaultError(e, "Failed to post the review"));
     }),
@@ -212,10 +198,8 @@ export const reviewRouter = createTRPCRouter({
           pros: review.pros,
           cons: review.cons,
           isPrivate: review.isPrivate,
-          image: sql`${review.imageKey}`.mapWith(nullableMap(getFileUrl)),
-          categories: aggregateArrayColumn<string>(reviewsToCategories.category).mapWith(
-            removeNullishArray<string>,
-          ),
+          image: query.map(review.imageKey, getFileUrl),
+          categories: query.aggregate(reviewsToCategories.category),
         })
         .from(review)
         .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
@@ -232,8 +216,8 @@ export const reviewRouter = createTRPCRouter({
         .catch(throwDefaultError);
     }),
   getUserReviewSummaryList: userReviewSummaryListQuery,
-  getReviewCount: protectedProcedure.query(({ ctx }) => {
-    return count(review, eq(review.userId, ctx.session.user.id)).then(([data]) => data?.count);
+  getReviewCount: protectedProcedure.query(({ ctx: { session } }) => {
+    return count(review, eq(review.userId, session.user.id));
   }),
   deleteReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
@@ -274,7 +258,11 @@ export const reviewRouter = createTRPCRouter({
         .update(review)
         .set({ imageKey: null })
         .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
-        .then(() => {
+        .returning()
+        .get()
+        .then((review) => {
+          // todo - check if this can be one single query with returing
+          console.log(review.imageKey);
           if (!imageKey) return;
 
           utapi.deleteFiles(imageKey).catch(console.error);
@@ -286,7 +274,7 @@ export const reviewRouter = createTRPCRouter({
 function findReviewImageKey(userId: string, barcode: string) {
   return findFirst(review, and(eq(review.userId, userId), eq(review.barcode, barcode)))
     .catch(throwDefaultError)
-    .then(([reviewData]) => {
+    .then((reviewData) => {
       if (!reviewData) {
         throw new TRPCError({
           code: "NOT_FOUND",

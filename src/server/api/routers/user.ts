@@ -1,12 +1,12 @@
 import { db } from "@/server/database";
-import { findFirst } from "@/server/database/query/utils";
 import { account, session, user, verificationToken } from "@/server/database/schema/auth";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { ignore } from "@/utils";
+import { filterOut } from "@/utils/array";
 import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { throwDefaultError } from "../utils";
@@ -54,30 +54,37 @@ export const userRouter = createTRPCRouter({
         });
     }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
-    return findFirst(user, eq(user.id, session.user.id)).then(([data]) => {
-      if (!data) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-      const { image } = data;
-      if (!image)
-        throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "No image attached to the user",
-        });
+    return db
+      .select({ image: user.image })
+      .from(user)
+      .where(eq(user.id, session.user.id))
+      .limit(1)
+      .get()
+      .then((data) => {
+        if (!data) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
 
-      return db
-        .update(user)
-        .set({ image: null })
-        .where(eq(user.id, session.user.id))
-        .catch((e) => throwDefaultError(e, "Failed to update your avatar."))
-        .then((query) => {
-          if (!query.rowsAffected) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-          }
+        const { image } = data;
+        if (!image)
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "No image attached to the user",
+          });
 
-          if (!URL.canParse(image)) {
-            return utapi.deleteFiles([image]).then(ignore);
-          }
-        });
-    });
+        return db
+          .update(user)
+          .set({ image: null })
+          .where(eq(user.id, session.user.id))
+          .catch((e) => throwDefaultError(e, "Failed to update your avatar."))
+          .then((query) => {
+            if (!query.rowsAffected) {
+              throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+            }
+
+            if (!URL.canParse(image)) {
+              return utapi.deleteFiles([image]).then(ignore);
+            }
+          });
+      });
   }),
   getAccountProviders: protectedProcedure.query(({ ctx: { session } }) => {
     return db
@@ -92,7 +99,7 @@ export const userRouter = createTRPCRouter({
       .transaction(async (tx) => {
         const [userImages, userAvatar] = await Promise.all([
           tx
-            .select({ image: sql<string>`${review.imageKey}` })
+            .select({ image: review.imageKey })
             .from(review)
             .where(and(eq(review.userId, userSession.user.id), isNotNull(review.imageKey)))
             .then((values) => values.map(({ image }) => image)),
@@ -120,7 +127,7 @@ export const userRouter = createTRPCRouter({
         if (userAvatar && !URL.canParse(userAvatar)) {
           userImages.push(userAvatar);
         }
-        await utapi.deleteFiles(userImages);
+        await utapi.deleteFiles(filterOut(userImages, (img, bad) => (img ? img : bad)));
       })
       .catch((e) => throwDefaultError(e, "Failed to delete your account"));
   }),

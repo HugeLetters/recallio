@@ -48,7 +48,7 @@ export const api = createTRPCNext<AppRouter>({
         },
         queryCache: new QueryCache({
           onError(error) {
-            console.log(error);
+            console.error(error);
             const message = error instanceof Error ? error.message : String(error);
             toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
             if (error instanceof TRPCClientError) {

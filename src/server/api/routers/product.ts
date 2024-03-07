@@ -1,18 +1,18 @@
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database";
-import { aggregateArrayColumn, countCol, nullableMap } from "@/server/database/query/utils";
+import { query } from "@/server/database/query/utils";
 import { user } from "@/server/database/schema/auth";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
 import { mostCommonItems } from "@/utils/array";
-import { and, asc, desc, eq, exists, gt, like, lt, or, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, like, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { throwDefaultError } from "../utils";
-import { createPagination } from "../utils/pagination";
 import type { Paginated } from "../utils/pagination";
+import { createPagination } from "../utils/pagination";
 import { createBarcodeSchema } from "../utils/zod";
 
 const productSummaryListPagination = createPagination(
@@ -37,20 +37,18 @@ const productSummaryListQuery = protectedProcedure
       }
     }
 
-    const reviewCol = countCol().as("review-count");
-    const ratingCol = sql`avg(${review.rating})`.mapWith((x) => +x).as("average-rating");
+    const reviewCol = query.count().as("review-count");
+    const ratingCol = query.avg(review.rating).as("average-rating");
     const direction = sort.desc ? desc : asc;
 
     const sortBy = getSortByColumn();
     const sq = db
       .select({
         barcode: review.barcode,
-        names: aggregateArrayColumn(review.name)
-          .mapWith(mostCommonItems(4)<string>)
-          .as("names"),
+        names: query.aggregate(review.name, mostCommonItems(4)).as("names"),
         averageRating: ratingCol,
         reviewCount: reviewCol,
-        image: sql<string>`min(${review.imageKey})`.as("image"),
+        image: query.min(review.imageKey).as("image"),
       })
       .from(review)
       .where(eq(review.isPrivate, false))
@@ -67,11 +65,11 @@ const productSummaryListQuery = protectedProcedure
     return db
       .select({
         barcode: review.barcode,
-        matchedName: sql<string>`min(${review.name})`,
+        matchedName: query.min(review.name),
         names: sq.names,
         averageRating: sq.averageRating,
         reviewCount: sq.reviewCount,
-        image: sql`${sq.image}`.mapWith(nullableMap(getFileUrl)),
+        image: query.map(sq.image, getFileUrl),
       })
       .from(review)
       .where(
@@ -145,8 +143,7 @@ const productReviewsQuery = protectedProcedure
         comment: review.comment,
         updatedAt: review.updatedAt,
         authorId: review.userId,
-        authorAvatar: sql`${user.image}`.mapWith((imageKey: string | null) => {
-          if (!imageKey) return null;
+        authorAvatar: query.map(user.image, (imageKey) => {
           return URL.canParse(imageKey) ? imageKey : getFileUrl(imageKey);
         }),
         authorName: user.name,
@@ -217,7 +214,9 @@ export const productRouter = createTRPCRouter({
       const categorySq = db
         .select({
           barcode: reviewsToCategories.barcode,
-          categories: aggregateArrayColumn(reviewsToCategories.category).as("categories"),
+          categories: query
+            .aggregate(reviewsToCategories.barcode, mostCommonItems(3))
+            .as("categories"),
         })
         .from(reviewsToCategories)
         .where(
@@ -228,7 +227,11 @@ export const productRouter = createTRPCRouter({
                 .select()
                 .from(review)
                 .where(
-                  and(eq(review.barcode, reviewsToCategories.barcode), eq(review.isPrivate, false)),
+                  and(
+                    eq(review.barcode, reviewsToCategories.barcode),
+                    eq(review.userId, reviewsToCategories.userId),
+                    eq(review.isPrivate, false),
+                  ),
                 ),
             ),
           ),
@@ -238,15 +241,11 @@ export const productRouter = createTRPCRouter({
 
       return db
         .select({
-          name: aggregateArrayColumn(review.name).mapWith(
-            (arr: string[]) => mostCommonItems(1)(arr)[0]!,
-          ),
-          rating: sql`avg(${review.rating})`.mapWith((x) => +x),
-          reviewCount: countCol(),
-          image: sql`min(${review.imageKey})`.mapWith(nullableMap(getFileUrl)),
-          categories: sql`${categorySq.categories}`.mapWith(
-            nullableMap(mostCommonItems(3)<string>),
-          ),
+          name: query.aggregate(review.name, (x) => mostCommonItems(1)(x)[0]!),
+          rating: query.avg(review.rating),
+          reviewCount: query.count(),
+          image: query.map(query.min(review.imageKey), getFileUrl),
+          categories: categorySq.categories,
         })
         .from(review)
         .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))

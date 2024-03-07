@@ -37,9 +37,12 @@ async function seedReviews({
 }: SeedReviewOptiosn) {
   await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
 
-  const users = await createTestUsers(reviewCount / reviewsPerUser).then((users) =>
-    users.map((user) => user.id),
-  );
+  await createTestUsers(reviewCount / reviewsPerUser);
+  const users = await db
+    .select({ id: user.id })
+    .from(user)
+    .all()
+    .then((users) => users.map(({ id }) => id));
   const files = await createTestImages(100);
 
   const barcodePool: BarcodeData[] = faker.helpers
@@ -152,21 +155,18 @@ function createBarcodeData(barcode: string, namecount: number) {
 function createTestUsers(userCount: number) {
   const userIdSuffixList = faker.helpers.uniqueArray(() => faker.word.words(1), userCount);
 
-  return db
-    .insert(user)
-    .values(
-      userIdSuffixList.map((idSuffix) => ({
-        id: `${TEST_USER_ID_PREFIX}${idSuffix}`,
-        name: faker.helpers.arrayElement([
-          () => faker.person.fullName(),
-          () => faker.internet.displayName(),
-          () => faker.internet.userName(),
-        ])(),
-        email: faker.internet.email({ provider: faker.lorem.word() }),
-        image: faker.helpers.maybe(randomImage),
-      })),
-    )
-    .returning();
+  return db.insert(user).values(
+    userIdSuffixList.map((idSuffix) => ({
+      id: `${TEST_USER_ID_PREFIX}${idSuffix}`,
+      name: faker.helpers.arrayElement([
+        () => faker.person.fullName(),
+        () => faker.internet.displayName(),
+        () => faker.internet.userName(),
+      ])(),
+      email: faker.internet.email({ provider: faker.lorem.word() }),
+      image: faker.helpers.maybe(randomImage),
+    })),
+  );
 }
 
 function createTestImages(count: number) {

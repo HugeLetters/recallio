@@ -8,9 +8,6 @@
 # testing
 /coverage
 
-# database
-/database/db.sqlite
-
 # next.js
 /.next/
 /out/

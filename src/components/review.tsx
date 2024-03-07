@@ -63,6 +63,7 @@ export const CategoryButton = forwardRef<HTMLButtonElement, CategoryButtonProps>
   { children, className, ...props },
   ref,
 ) {
+  // todo - replace with slot
   return (
     <Button
       ref={ref}

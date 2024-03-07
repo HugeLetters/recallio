@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "@/env/index.mjs";
 import { Redis } from "@upstash/redis";
 
 const redis = new Redis({

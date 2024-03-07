@@ -1,8 +1,7 @@
+import { env } from "@/env/index.mjs";
 import { db } from "@/server/database";
-import { findFirst } from "@/server/database/query/utils";
 import { user } from "@/server/database/schema/auth";
 import { review } from "@/server/database/schema/product";
-import { env } from "@/env";
 import { and, eq } from "drizzle-orm";
 import type { FileRouter } from "uploadthing/next-legacy";
 import { createUploadthing } from "uploadthing/next-legacy";
@@ -28,17 +27,21 @@ export const appFileRouter = {
         throw new UploadThingError("Unauthorized");
       }
 
-      const [reviewData] = await findFirst(
-        review,
-        and(eq(review.userId, session.user.id), eq(review.barcode, barcode)),
-      );
+      const reviewData = await db
+        .select({ image: review.imageKey })
+        .from(review)
+        .where(and(eq(review.userId, session.user.id), eq(review.barcode, barcode)))
+        .limit(1)
+        .get();
+
       if (!reviewData) {
         throw new UploadThingError("Can't upload image without a corresponding review");
       }
-      return { userId: session.user.id, barcode, oldImageKey: reviewData.imageKey };
+
+      return { userId: session.user.id, barcode, oldImageKey: reviewData.image };
     })
     .onUploadError(({ error }) => {
-      console.log(error);
+      console.error(error);
     })
     .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
       db.update(review)
@@ -60,7 +63,13 @@ export const appFileRouter = {
       if (!session) {
         throw new UploadThingError("Unauthorized");
       }
-      const [userData] = await findFirst(user, eq(user.id, session.user.id));
+      const userData = await db
+        .select({ image: user.image })
+        .from(user)
+        .where(eq(user.id, session.user.id))
+        .limit(1)
+        .get();
+
       if (!userData) {
         throw new UploadThingError("User not found");
       }
@@ -71,7 +80,7 @@ export const appFileRouter = {
       };
     })
     .onUploadError(({ error }) => {
-      console.log(error);
+      console.error(error);
     })
     .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
       db.update(user)
@@ -79,6 +88,7 @@ export const appFileRouter = {
         .where(eq(user.id, userId))
         .then((query) => {
           if (!query.rowsAffected || !userImageKey) return;
+
           utapi.deleteFiles(userImageKey).catch(console.error);
         })
         .catch((err) => {
