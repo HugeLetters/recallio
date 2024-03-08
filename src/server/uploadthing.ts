@@ -45,17 +45,22 @@ export const appFileRouter = {
       console.error(error);
     })
     .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
-      db.update(review)
-        .set({ imageKey: file.key, updatedAt: new Date() })
-        .where(and(eq(review.userId, userId), eq(review.barcode, barcode)))
-        .then((query) => {
-          if (!query.rowsAffected || !oldImageKey) return;
+      // todo - signal if ok or not
+      return db
+        .transaction(async (tx) => {
+          await tx
+            .update(review)
+            .set({ imageKey: file.key, updatedAt: new Date() })
+            .where(and(eq(review.userId, userId), eq(review.barcode, barcode)));
+          if (!oldImageKey) return;
 
-          utapi.deleteFiles(oldImageKey).catch(console.error);
+          await utapi.deleteFiles(oldImageKey).catch(console.error);
         })
+        .then(() => true)
         .catch((err) => {
           console.error(err);
           utapi.deleteFiles(file.key).catch(console.error);
+          return false;
         });
     }),
   userImage: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
@@ -84,6 +89,7 @@ export const appFileRouter = {
       console.error(error);
     })
     .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
+      // todo - signal if ok or not
       return db
         .update(user)
         .set({ image: file.key })

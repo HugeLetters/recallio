@@ -182,8 +182,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     },
   });
   const { startUpload } = useUploadThing("reviewImage", {
-    // hope 1.5s is enough for the update to catch up...
-    onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
+    onClientUploadComplete: invalidateReviewData,
     onUploadError(e) {
       toast.error(`Couldn't upload the image: ${e.message}`);
       invalidateReviewData();
