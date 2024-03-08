@@ -54,38 +54,33 @@ export const userRouter = createTRPCRouter({
         });
     }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
-    // todo - use a transaction
-    return db
-      .select({ image: user.image })
-      .from(user)
-      .where(eq(user.id, session.user.id))
-      .limit(1)
-      .get()
-      .then((data) => {
-        if (!data) throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+    const userId = session.user.id;
+    const filter = eq(user.id, userId);
 
-        const { image } = data;
-        if (!image)
+    return db
+      .batch([
+        db.select({ image: user.image }).from(user).where(filter).limit(1),
+        db.update(user).set({ image: null }).where(filter),
+      ])
+      .then(([[user]]) => {
+        if (!user) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+        }
+
+        const { image } = user;
+        if (!image) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
             message: "No image attached to the user",
           });
+        }
 
-        return db
-          .update(user)
-          .set({ image: null })
-          .where(eq(user.id, session.user.id))
-          .catch((e) => throwDefaultError(e, "Failed to update your avatar."))
-          .then((query) => {
-            if (!query.rowsAffected) {
-              throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-            }
-
-            if (!URL.canParse(image)) {
-              return utapi.deleteFiles([image]).then(ignore);
-            }
-          });
-      });
+        if (!URL.canParse(image)) {
+          // todo - can I make this a part of transaction for rollback?
+          return utapi.deleteFiles([image]).then(ignore);
+        }
+      })
+      .catch((e) => throwDefaultError(e, "Failed to delete image"));
   }),
   getAccountProviders: protectedProcedure.query(({ ctx: { session } }) => {
     return db

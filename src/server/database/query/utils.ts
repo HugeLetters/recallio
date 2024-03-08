@@ -69,3 +69,12 @@ function filterNullArray<T>(arr: T[] | [null]): T[] {
 
   return arr as T[];
 }
+
+export function createTimer() {
+  let time = performance.now();
+  return function () {
+    const t = performance.now();
+    console.log(t - time);
+    time = t;
+  };
+}

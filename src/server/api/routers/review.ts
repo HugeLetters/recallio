@@ -1,5 +1,5 @@
 import { db } from "@/server/database";
-import { count, findFirst, query } from "@/server/database/query/utils";
+import { count, query } from "@/server/database/query/utils";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
@@ -153,29 +153,24 @@ export const reviewRouter = createTRPCRouter({
         updatedAt: new Date(),
       };
 
-      // todo - check libsql/turso batching
-      return db
-        .transaction(async (tx) => {
-          await tx
-            .insert(review)
-            .values(reviewData)
-            .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData });
-          if (!categories) return;
+      function getCategoriesBatch() {
+        if (!categories) return [];
 
-          await tx
-            .delete(reviewsToCategories)
-            .where(
-              and(
-                eq(reviewsToCategories.userId, reviewData.userId),
-                eq(reviewsToCategories.barcode, reviewData.barcode),
-              ),
-            );
-          const categoryValues = categories.filter(Boolean).map((category) => ({ name: category }));
-          if (!nonEmptyArray(categoryValues)) return;
+        const batch = db
+          .delete(reviewsToCategories)
+          .where(
+            and(
+              eq(reviewsToCategories.userId, reviewData.userId),
+              eq(reviewsToCategories.barcode, reviewData.barcode),
+            ),
+          );
+        const categoryValues = categories.filter(Boolean).map((category) => ({ name: category }));
+        if (!nonEmptyArray(categoryValues)) return [batch] satisfies [unknown];
 
-          await tx.insert(category).values(categoryValues).onConflictDoNothing();
-
-          await tx
+        return [
+          batch,
+          db.insert(category).values(categoryValues).onConflictDoNothing(),
+          db
             .insert(reviewsToCategories)
             .values(
               categories.map((category) => ({
@@ -184,8 +179,18 @@ export const reviewRouter = createTRPCRouter({
                 category,
               })),
             )
-            .onConflictDoNothing();
-        })
+            .onConflictDoNothing(),
+        ] satisfies [unknown, unknown, unknown];
+      }
+
+      return db
+        .batch([
+          db
+            .insert(review)
+            .values(reviewData)
+            .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData }),
+          ...getCategoriesBatch(),
+        ])
         .catch((e) => throwDefaultError(e, "Failed to post the review"));
     }),
   getUserReview: protectedProcedure
@@ -223,27 +228,25 @@ export const reviewRouter = createTRPCRouter({
   deleteReview: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
     .mutation(async ({ ctx, input: { barcode } }) => {
-      const { imageKey } = await findReviewImageKey(ctx.session.user.id, barcode);
-      // todo - check batching
+      const userId = ctx.session.user.id;
+      const filter = and(eq(review.userId, userId), eq(review.barcode, barcode));
+
       return db
-        .transaction(async (tx) => {
-          await tx
-            .delete(reviewsToCategories)
-            .where(
-              and(
-                eq(reviewsToCategories.userId, ctx.session.user.id),
-                eq(reviewsToCategories.barcode, barcode),
-              ),
-            );
+        .batch([
+          db.select({ imageKey: review.imageKey }).from(review).where(filter).limit(1),
+          db.delete(review).where(filter),
+        ])
+        .then(([[review]]) => {
+          if (!review) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-          await tx
-            .delete(review)
-            .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)));
-        })
-        .then(() => {
-          if (!imageKey) return;
-
-          utapi.deleteFiles(imageKey).catch(console.error);
+          if (!review.imageKey) return;
+          // todo - can I make this a part of transaction?
+          utapi.deleteFiles(review.imageKey).catch(console.error);
         })
         .catch((e) => throwDefaultError(e, `Failed to delete your review for barcode ${barcode}.`));
     }),
@@ -254,36 +257,32 @@ export const reviewRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input: { barcode } }) => {
-      const { imageKey } = await findReviewImageKey(ctx.session.user.id, barcode);
+      const userId = ctx.session.user.id;
+      const filter = and(eq(review.userId, userId), eq(review.barcode, barcode));
 
       return db
-        .update(review)
-        .set({ imageKey: null })
-        .where(and(eq(review.userId, ctx.session.user.id), eq(review.barcode, barcode)))
-        .returning()
-        .get()
-        .then((review) => {
-          // todo - check if this can be one single query with returing
-          console.log(review.imageKey);
-          if (!imageKey) return;
+        .batch([
+          db.select({ imageKey: review.imageKey }).from(review).where(filter).limit(1),
+          db.update(review).set({ imageKey: null }).where(filter),
+        ])
+        .then(([[review]]) => {
+          if (!review) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Couldn't find your review for barcode ${barcode}.`,
+            });
+          }
 
-          utapi.deleteFiles(imageKey).catch(console.error);
+          if (!review.imageKey) {
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: `No image attached to your review for barcode ${barcode}.`,
+            });
+          }
+
+          // todo - can I make this a part of transaction?
+          utapi.deleteFiles(review.imageKey).catch(console.error);
         })
         .catch((e) => throwDefaultError(e, "Failed to delete image"));
     }),
 });
-
-function findReviewImageKey(userId: string, barcode: string) {
-  return findFirst(review, and(eq(review.userId, userId), eq(review.barcode, barcode)))
-    .catch(throwDefaultError)
-    .then((reviewData) => {
-      if (!reviewData) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Couldn't find your review for barcode ${barcode}.`,
-        });
-      }
-
-      return reviewData;
-    });
-}
