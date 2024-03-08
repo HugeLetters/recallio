@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "b3039ec0-bf20-46ae-85d7-fbb52204858e",
+  "id": "55f68a50-b607-43e9-810d-8b91acc07a60",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -101,13 +101,28 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
+        }
+      },
       "compositePrimaryKeys": {
         "account_provider_provider_account_id_pk": {
           "columns": [
             "provider",
             "provider_account_id"
-          ]
+          ],
+          "name": "account_provider_provider_account_id_pk"
         }
       },
       "uniqueConstraints": {}
@@ -153,7 +168,21 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -187,7 +216,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "current_timestamp"
+          "default": "(unixepoch())"
         },
         "image": {
           "name": "image",
@@ -250,7 +279,8 @@
           "columns": [
             "identifier",
             "token"
-          ]
+          ],
+          "name": "verification_token_identifier_token_pk"
         }
       },
       "uniqueConstraints": {}
@@ -336,7 +366,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "current_timestamp"
+          "default": "(unixepoch())"
         },
         "is_private": {
           "name": "is_private",
@@ -384,13 +414,28 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "review_user_id_user_id_fk": {
+          "name": "review_user_id_user_id_fk",
+          "tableFrom": "review",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
+        }
+      },
       "compositePrimaryKeys": {
         "review_user_id_barcode_pk": {
           "columns": [
             "barcode",
             "user_id"
-          ]
+          ],
+          "name": "review_user_id_barcode_pk"
         }
       },
       "uniqueConstraints": {}
@@ -436,14 +481,44 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "reviews_to_categories_category_category_name_fk": {
+          "name": "reviews_to_categories_category_category_name_fk",
+          "tableFrom": "reviews_to_categories",
+          "tableTo": "category",
+          "columnsFrom": [
+            "category"
+          ],
+          "columnsTo": [
+            "name"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
+        },
+        "reviews_to_categories_barcode_user_id_review_barcode_user_id_fk": {
+          "name": "reviews_to_categories_barcode_user_id_review_barcode_user_id_fk",
+          "tableFrom": "reviews_to_categories",
+          "tableTo": "review",
+          "columnsFrom": [
+            "barcode",
+            "user_id"
+          ],
+          "columnsTo": [
+            "barcode",
+            "user_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
+        }
+      },
       "compositePrimaryKeys": {
         "reviews_to_categories_user_id_barcode_category_pk": {
           "columns": [
             "barcode",
             "category",
             "user_id"
-          ]
+          ],
+          "name": "reviews_to_categories_user_id_barcode_category_pk"
         }
       },
       "uniqueConstraints": {}

@@ -157,7 +157,7 @@ const productReviewsQuery = protectedProcedure
         if (!page.length) return { page };
         const lastProduct = page.at(-1);
         if (!lastProduct) return { page };
-
+        console.log(page.map((p) => [p.authorName, p.authorId, p.updatedAt]));
         return {
           page,
           cursor: productReviewsPagination.encode({

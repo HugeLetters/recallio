@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user } from "./auth";
 
 export const category = sqliteTable("category", {
@@ -12,7 +12,9 @@ export const categoryRelations = relations(category, ({ many }) => ({
 export const review = sqliteTable(
   "review",
   {
-    userId: text("user_id", { length: 255 }).notNull(),
+    userId: text("user_id", { length: 255 })
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),
     barcode: text("barcode", { length: 55 }).notNull(),
     name: text("name", { length: 255 }).notNull(),
     rating: int("rating").notNull(),
@@ -22,11 +24,11 @@ export const review = sqliteTable(
     imageKey: text("image_key", { length: 255 }),
     updatedAt: int("updated_at", { mode: "timestamp" })
       .notNull()
-      .default(sql`current_timestamp`),
+      .default(sql`(unixepoch())`),
     isPrivate: int("is_private", { mode: "boolean" }).notNull().default(true),
   },
   (table) => ({
-    compoundKey: primaryKey(table.userId, table.barcode),
+    compoundKey: primaryKey({ columns: [table.userId, table.barcode] }),
     barcodeIndex: index("review_barcode_index").on(table.barcode),
     nameIndex: index("review_name_index").on(table.name),
     ratingIndex: index("review_rating_index").on(table.rating),
@@ -48,10 +50,18 @@ export const reviewsToCategories = sqliteTable(
   {
     userId: text("user_id", { length: 255 }).notNull(),
     barcode: text("barcode", { length: 55 }).notNull(),
-    category: text("category", { length: 31 }).notNull(),
+    category: text("category", { length: 31 })
+      .notNull()
+      .references(() => category.name, { onDelete: "restrict", onUpdate: "restrict" }),
   },
   (table) => ({
-    compoundKey: primaryKey(table.userId, table.barcode, table.category),
+    compoundKey: primaryKey({ columns: [table.userId, table.barcode, table.category] }),
+    reviewReference: foreignKey({
+      columns: [table.barcode, table.userId],
+      foreignColumns: [review.barcode, review.userId],
+    })
+      .onDelete("cascade")
+      .onUpdate("restrict"),
     barcodeIndex: index("reviews_to_categories_barcode_index").on(table.barcode),
     categoryIndex: index("reviews_to_categories_category_index").on(table.category),
   }),

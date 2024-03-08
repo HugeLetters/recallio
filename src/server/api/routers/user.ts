@@ -54,6 +54,7 @@ export const userRouter = createTRPCRouter({
         });
     }),
   deleteImage: protectedProcedure.mutation(({ ctx: { session } }) => {
+    // todo - use a transaction
     return db
       .select({ image: user.image })
       .from(user)
@@ -95,6 +96,7 @@ export const userRouter = createTRPCRouter({
   }),
   deleteAccount: deleteAccountProcedure,
   deleteUser: protectedProcedure.mutation(({ ctx: { session: userSession } }) => {
+    // todo - batching
     return db
       .transaction(async (tx) => {
         const [userImages, userAvatar] = await Promise.all([

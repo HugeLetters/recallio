@@ -153,6 +153,7 @@ export const reviewRouter = createTRPCRouter({
         updatedAt: new Date(),
       };
 
+      // todo - check libsql/turso batching
       return db
         .transaction(async (tx) => {
           await tx
@@ -223,6 +224,7 @@ export const reviewRouter = createTRPCRouter({
     .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
     .mutation(async ({ ctx, input: { barcode } }) => {
       const { imageKey } = await findReviewImageKey(ctx.session.user.id, barcode);
+      // todo - check batching
       return db
         .transaction(async (tx) => {
           await tx

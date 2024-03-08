@@ -10,6 +10,7 @@ import { z } from "zod";
 import { getServerAuthSession } from "./auth";
 
 // todo - server ddd
+// todo - notify user on image upload
 const uploadthing = createUploadthing();
 
 export const utapi = new UTApi({ apiKey: env.UPLOADTHING_SECRET });
@@ -83,7 +84,8 @@ export const appFileRouter = {
       console.error(error);
     })
     .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
-      db.update(user)
+      return db
+        .update(user)
         .set({ image: file.key })
         .where(eq(user.id, userId))
         .then((query) => {

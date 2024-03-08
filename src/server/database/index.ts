@@ -2,7 +2,6 @@ import { env } from "@/env/index.mjs";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
-// todo - migrate to turso buddy
 const connection = createClient({ url: env.DATABASE_URL, authToken: env.DATABASE_TOKEN });
 
 export const db = drizzle(connection);

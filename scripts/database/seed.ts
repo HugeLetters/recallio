@@ -12,7 +12,6 @@ import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-cor
 import type { Task } from "tasuku";
 import task from "tasuku";
 
-// todo - test that date is parsed correctly both when provided and not
 seed().catch(console.error);
 async function seed() {
   await seedReviews({
@@ -110,7 +109,9 @@ function createReviewValue(
       pros: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       cons: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       isPrivate: Math.random() > 0.5,
-      imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)),
+      imageKey: files.length
+        ? faker.helpers.maybe(() => faker.helpers.arrayElement(files))
+        : undefined,
       updatedAt: faker.helpers.maybe(() => faker.date.past({ years: 3 }), { probability: 0.9 }),
     },
     categories: faker.helpers.maybe(
