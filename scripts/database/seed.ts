@@ -20,7 +20,7 @@ async function seed() {
   await seedReviews({
     reviewCount: 30000,
     reviewsPerUser: 150,
-    uniqieReviewsPerUser: 10,
+    uniqueReviewsPerUser: 10,
   }).catch(console.error);
 }
 
@@ -30,12 +30,12 @@ const TEST_USER_ID_PREFIX = "test-user-";
 type SeedReviewOptiosn = {
   reviewCount: number;
   reviewsPerUser: number;
-  uniqieReviewsPerUser: number;
+  uniqueReviewsPerUser: number;
 };
 async function seedReviews({
   reviewCount,
   reviewsPerUser,
-  uniqieReviewsPerUser,
+  uniqueReviewsPerUser,
 }: SeedReviewOptiosn) {
   const [files] = await Promise.all([seedUtImages(100), cleanDatabase(100000)]);
   await createTestUsers(reviewCount / reviewsPerUser);
@@ -45,7 +45,7 @@ async function seedReviews({
     .all()
     .then((users) => users.map(({ id }) => id));
 
-  const barcodePool: BarcodeData[] = faker.helpers
+  const commonBarcodes = faker.helpers
     .uniqueArray(randomBarcode, users.length)
     .map((barcode) => createBarcodeData(barcode, users.length / 10));
 
@@ -56,13 +56,14 @@ async function seedReviews({
       for (const user of users) {
         setTitle(`User ${user} processing`);
         const barcodes = faker.helpers.arrayElements(
-          barcodePool,
-          reviewsPerUser - uniqieReviewsPerUser,
+          commonBarcodes,
+          Math.max(reviewsPerUser - uniqueReviewsPerUser, 1),
         );
+
         await createReviews(user, barcodes, files).catch(console.error);
 
         const unqieBarcodes = faker.helpers
-          .uniqueArray(randomBarcode, uniqieReviewsPerUser)
+          .uniqueArray(randomBarcode, Math.max(reviewsPerUser - barcodes.length, 1))
           .map((barcode) => createBarcodeData(barcode, 1));
         await createReviews(user, unqieBarcodes, files).catch(console.error);
         setOuterStatus(`${((100 * ++usersProcessed) / users.length).toFixed(2)}%`);
@@ -146,11 +147,11 @@ function randomImage() {
   return faker.image.url();
 }
 
-function createBarcodeData(barcode: string, namecount: number) {
+function createBarcodeData(barcode: string, namecount: number): BarcodeData {
   return {
     barcode,
     rating: randomBaseRating(),
-    names: faker.helpers.uniqueArray(randomName, Math.max(3, namecount)),
+    names: faker.helpers.uniqueArray(randomName, Math.max(namecount, 3)),
   };
 }
 
