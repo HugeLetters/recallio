@@ -5,6 +5,7 @@ import { category, review, reviewsToCategories } from "@/server/database/schema/
 import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array";
+import { blobToFile } from "@/utils/image";
 import { faker } from "@faker-js/faker";
 import type { SQL } from "drizzle-orm";
 import { and, asc, like, lt } from "drizzle-orm";
@@ -14,6 +15,8 @@ import task from "tasuku";
 
 seed().catch(console.error);
 async function seed() {
+  // just awaiting for all root declaration to initialize
+  await Promise.resolve();
   await seedReviews({
     reviewCount: 30000,
     reviewsPerUser: 150,
@@ -34,15 +37,13 @@ async function seedReviews({
   reviewsPerUser,
   uniqieReviewsPerUser,
 }: SeedReviewOptiosn) {
-  await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
-
+  const [files] = await Promise.all([seedUtImages(100), cleanDatabase(100000)]);
   await createTestUsers(reviewCount / reviewsPerUser);
   const users = await db
     .select({ id: user.id })
     .from(user)
     .all()
     .then((users) => users.map(({ id }) => id));
-  const files = await createTestImages(100);
 
   const barcodePool: BarcodeData[] = faker.helpers
     .uniqueArray(randomBarcode, users.length)
@@ -170,17 +171,6 @@ function createTestUsers(userCount: number) {
   );
 }
 
-function createTestImages(count: number) {
-  const imageUrls = faker.helpers.uniqueArray(randomImage, count);
-  return utapi.uploadFilesFromUrl(imageUrls).then((responses) =>
-    filterMap(
-      responses,
-      (response, bad) => (!!response.data ? response : bad),
-      (x) => x.data.key,
-    ),
-  );
-}
-
 async function cleanDatabase(rowLimitPerOperation: number) {
   await task("Cleaning database", async ({ task }) => {
     await cleanTable({
@@ -256,9 +246,44 @@ async function cleanTable<T extends TableConfig>({
   });
 }
 
-async function cleanUTFiles() {
-  const files = await utapi.listFiles({}).then((files) => files.map((file) => file.key));
-  if (files.length) {
-    await utapi.deleteFiles(files);
+async function seedUtImages(count: number): Promise<string[]> {
+  const { removed, uploaded = [] } = await utapi
+    .listFiles({})
+    .then((files) =>
+      splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
+    );
+
+  if (removed?.length) {
+    await utapi.deleteFiles(removed.map((file) => file.key));
   }
+
+  const remaining = count - uploaded.length;
+  return Promise.all(
+    faker.helpers
+      .uniqueArray(randomImage, remaining)
+      .map((url) => fetch(url).then((r) => r.blob())),
+  ).then((blobs) =>
+    utapi
+      .uploadFiles(
+        blobs.map((blob) =>
+          blobToFile(blob, `${faker.location.country()}-${faker.location.city()}`),
+        ),
+      )
+      .then((responses) =>
+        filterMap(
+          responses,
+          (response, bad) => (!!response.data ? response : bad),
+          (x) => x.data.key,
+        ).concat(uploaded.map((file) => file.key)),
+      ),
+  );
+}
+
+function splitBy<T, R extends string>(array: T[], getBucket: (value: T) => R) {
+  return array.reduce<Partial<Record<R, T[]>>>((acc, el) => {
+    const bucket = getBucket(el);
+    acc[bucket] ??= [];
+    acc[bucket]?.push(el);
+    return acc;
+  }, {});
 }
