@@ -181,7 +181,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       toast.error(`Couldn't delete image from review: ${e.message}`);
     },
   });
-  const { startUpload } = useUploadThing("reviewImageUploader", {
+  const { startUpload } = useUploadThing("reviewImage", {
     // hope 1.5s is enough for the update to catch up...
     onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
     onUploadError(e) {

@@ -82,7 +82,7 @@ function UserImage({ user }: UserImageProps) {
     }, 1000);
   }
 
-  const { startUpload, isUploading } = useUploadThing("userImageUploader", {
+  const { startUpload, isUploading } = useUploadThing("userImage", {
     onClientUploadComplete: syncUserImage,
     onUploadError(e) {
       toast.error(`Couldn't upload the image: ${e.message}`);

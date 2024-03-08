@@ -16,7 +16,7 @@ const uploadthing = createUploadthing();
 export const utapi = new UTApi({ apiKey: env.UPLOADTHING_SECRET });
 
 export const appFileRouter = {
-  reviewImageUploader: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
+  reviewImage: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
     .input(z.object({ barcode: z.string() }))
     .middleware(async ({ req, res, input: { barcode } }) => {
       if (!barcode) {
@@ -58,7 +58,7 @@ export const appFileRouter = {
           utapi.deleteFiles(file.key).catch(console.error);
         });
     }),
-  userImageUploader: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
+  userImage: uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
     .middleware(async ({ req, res }) => {
       const session = await getServerAuthSession({ req, res });
       if (!session) {

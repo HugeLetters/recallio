@@ -1,9 +1,9 @@
 import { db } from "@/server/database";
-import { account, session, user, verificationToken } from "@/server/database/schema/auth";
-import { review, reviewsToCategories } from "@/server/database/schema/product";
+import { account, user, verificationToken } from "@/server/database/schema/auth";
+import { review } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { ignore } from "@/utils";
-import { filterOut } from "@/utils/array";
+import { mapFilter } from "@/utils/array";
 import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull } from "drizzle-orm";
@@ -76,7 +76,7 @@ export const userRouter = createTRPCRouter({
         }
 
         if (!URL.canParse(image)) {
-          // todo - can I make this a part of transaction for rollback?
+          // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
           return utapi.deleteFiles([image]).then(ignore);
         }
       })
@@ -90,42 +90,41 @@ export const userRouter = createTRPCRouter({
       .then((accounts) => accounts.map((account) => account.provider));
   }),
   deleteAccount: deleteAccountProcedure,
-  deleteUser: protectedProcedure.mutation(({ ctx: { session: userSession } }) => {
-    // todo - batching
+  deleteUser: protectedProcedure.mutation(({ ctx }) => {
+    const { id: userId, email } = ctx.session.user;
     return db
-      .transaction(async (tx) => {
-        const [userImages, userAvatar] = await Promise.all([
-          tx
-            .select({ image: review.imageKey })
-            .from(review)
-            .where(and(eq(review.userId, userSession.user.id), isNotNull(review.imageKey)))
-            .then((values) => values.map(({ image }) => image)),
-          tx
-            .select({ image: user.image })
-            .from(user)
-            .where(eq(user.id, userSession.user.id))
-            .limit(1)
-            .then(([user]) => user?.image),
-        ]);
+      .batch([
+        db
+          .select({ image: review.imageKey })
+          .from(review)
+          .where(and(eq(review.userId, userId), isNotNull(review.imageKey))),
+        db.select({ image: user.image }).from(user).where(eq(user.id, userId)).limit(1),
+      ])
+      .then(([reviewImages, profileImage]) => {
+        return db
+          .transaction(async (tx) => {
+            await tx.delete(user).where(eq(user.id, userId));
+            if (email) {
+              await tx.delete(verificationToken).where(eq(verificationToken.identifier, email));
+            }
 
-        await tx
-          .delete(reviewsToCategories)
-          .where(eq(reviewsToCategories.userId, userSession.user.id));
-        await tx.delete(review).where(eq(review.userId, userSession.user.id));
-        await tx.delete(session).where(eq(session.userId, userSession.user.id));
-        if (userSession.user.email) {
-          await tx
-            .delete(verificationToken)
-            .where(eq(verificationToken.identifier, userSession.user.email));
-        }
-        await tx.delete(account).where(eq(account.userId, userSession.user.id));
-        await tx.delete(user).where(eq(user.id, userSession.user.id));
+            if (profileImage.length) {
+              reviewImages.push(
+                ...profileImage.filter(({ image }) => image && URL.canParse(image)),
+              );
+            }
 
-        if (userAvatar && !URL.canParse(userAvatar)) {
-          userImages.push(userAvatar);
-        }
-        await utapi.deleteFiles(filterOut(userImages, (img, bad) => (img ? img : bad)));
-      })
-      .catch((e) => throwDefaultError(e, "Failed to delete your account"));
+            if (!reviewImages.length) return;
+            // todo - add to pending delete table, delete files in cron
+            await utapi.deleteFiles(
+              mapFilter(
+                reviewImages,
+                (img) => img.image,
+                (img, bad) => (img ? img : bad),
+              ),
+            );
+          })
+          .catch((e) => throwDefaultError(e, "Failed to delete your account"));
+      });
   }),
 });

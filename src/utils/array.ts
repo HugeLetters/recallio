@@ -59,3 +59,18 @@ export function filterMap<A, B extends A, C>(
     return acc;
   }, []);
 }
+
+export function mapFilter<A, B, C extends B>(
+  array: A[],
+  transform: (value: A) => B,
+  filter: Filter<B, C>,
+): C[] {
+  return array.reduce<C[]>((acc, el) => {
+    const mapped = transform(el);
+    const result = filter(mapped, filterSymbol);
+    if (isNotFiltered(result)) {
+      acc.push(result);
+    }
+    return acc;
+  }, []);
+}

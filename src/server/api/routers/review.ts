@@ -3,6 +3,7 @@ import { count, query } from "@/server/database/query/utils";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { getFileUrl, utapi } from "@/server/uploadthing";
+import { ignore } from "@/utils";
 import { nonEmptyArray } from "@/utils/array";
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, gt, inArray, like, lt, or } from "drizzle-orm";
@@ -18,6 +19,8 @@ import {
   createMaxLengthMessage,
   createMinLengthMessage,
 } from "../utils/zod";
+
+// todo - return new data from mutations to cache on client
 
 const reviewSummaryPagination = createPagination(
   z.object({
@@ -245,8 +248,8 @@ export const reviewRouter = createTRPCRouter({
           }
 
           if (!review.imageKey) return;
-          // todo - can I make this a part of transaction?
-          utapi.deleteFiles(review.imageKey).catch(console.error);
+          // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
+          return utapi.deleteFiles(review.imageKey).then(ignore);
         })
         .catch((e) => throwDefaultError(e, `Failed to delete your review for barcode ${barcode}.`));
     }),
@@ -280,8 +283,8 @@ export const reviewRouter = createTRPCRouter({
             });
           }
 
-          // todo - can I make this a part of transaction?
-          utapi.deleteFiles(review.imageKey).catch(console.error);
+          // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
+          return utapi.deleteFiles(review.imageKey).then(ignore);
         })
         .catch((e) => throwDefaultError(e, "Failed to delete image"));
     }),
