@@ -50,9 +50,11 @@ export async function compressImage(file: File, targetBytes: number): Promise<Fi
   return blobToFile(bestFit, file.name);
 }
 
-function blobToFile(blob: Blob, name: string) {
+export function blobToFile(blob: Blob, name: string) {
   const fileExt = blob.type.match(/.+\/(.+$)/)?.at(1) ?? "webp";
-  const newFileName = name.replace(/(.+\.).+$/, `$1${fileExt}`);
+  const newFileName = name.includes(".")
+    ? name.replace(/(.+\.).+$/, `$1${fileExt}`)
+    : `${name}.${fileExt}`;
   return new File([blob], newFileName, { type: "image/" });
 }
 
