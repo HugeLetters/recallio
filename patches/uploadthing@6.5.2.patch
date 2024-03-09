@@ -1,0 +1,12 @@
+diff --git a/server/index.d.ts b/server/index.d.ts
+index 39d70ff277970ec30475cb1f4ba504bc274e1912..bd3166c230714fcd12b30edd9c74a5181775c1d3 100644
+--- a/server/index.d.ts
++++ b/server/index.d.ts
+@@ -4,7 +4,6 @@ export { FileRouter, UTFiles } from '../internal/types.js';
+ import * as _uploadthing_shared from '@uploadthing/shared';
+ import { Json, UploadThingError, FetchEsque, MaybeUrl, ContentDisposition, ACL, Either, SerializedUploadThingError, Time } from '@uploadthing/shared';
+ export { UploadThingError } from '@uploadthing/shared';
+-import { File } from 'undici';
+ import { UploadedFileData } from '../types/index.js';
+ 
+ type CreateBuilderOptions<TErrorShape extends Json> = {

@@ -264,21 +264,21 @@ async function seedUtImages(count: number): Promise<string[]> {
     faker.helpers
       .uniqueArray(randomImage, remaining)
       .map((url) => fetch(url).then((r) => r.blob())),
-  ).then((blobs) =>
-    utapi
-      .uploadFiles(
+  )
+    .then((blobs) =>
+      utapi.uploadFiles(
         blobs.map((blob) =>
           blobToFile(blob, `${faker.location.country()}-${faker.location.city()}`),
         ),
-      )
-      .then((responses) =>
-        filterMap(
-          responses,
-          (response, bad) => (!!response.data ? response : bad),
-          (x) => x.data.key,
-        ).concat(uploaded.map((file) => file.key)),
       ),
-  );
+    )
+    .then((responses) =>
+      filterMap(
+        responses,
+        (response, bad) => (!!response.data ? response : bad),
+        (x) => x.data.key,
+      ).concat(uploaded.map((file) => file.key)),
+    );
 }
 
 function splitBy<T, R extends string>(array: T[], getBucket: (value: T) => R) {
