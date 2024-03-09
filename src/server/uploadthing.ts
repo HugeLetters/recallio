@@ -32,7 +32,6 @@ export const appFileRouter = {
         .select({ image: review.imageKey })
         .from(review)
         .where(and(eq(review.userId, session.user.id), eq(review.barcode, barcode)))
-        .limit(1)
         .get();
 
       if (!reviewData) {
@@ -73,7 +72,6 @@ export const appFileRouter = {
         .select({ image: user.image })
         .from(user)
         .where(eq(user.id, session.user.id))
-        .limit(1)
         .get();
 
       if (!userData) {

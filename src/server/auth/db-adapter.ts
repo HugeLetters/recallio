@@ -48,7 +48,6 @@ export function DatabaseAdapter(): Adapter {
         .from(session)
         .where(eq(session.sessionToken, sessionToken))
         .innerJoin(user, eq(user.id, session.userId))
-        .limit(1)
         .get()
         .then((data) => {
           if (!data) return null;
@@ -83,7 +82,6 @@ export function DatabaseAdapter(): Adapter {
           and(eq(account.provider, provider), eq(account.providerAccountId, providerAccountId)),
         )
         .innerJoin(user, eq(user.id, account.userId))
-        .limit(1)
         .get()
         .then((data) => {
           if (!data) return null;

@@ -2,7 +2,6 @@ import { db } from "@/server/database";
 import { account, user, verificationToken } from "@/server/database/schema/auth";
 import { review } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
-import { ignore } from "@/utils";
 import { mapFilter } from "@/utils/array";
 import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
@@ -59,7 +58,7 @@ export const userRouter = createTRPCRouter({
 
     return db
       .batch([
-        db.select({ image: user.image }).from(user).where(filter).limit(1),
+        db.select({ image: user.image }).from(user).where(filter),
         db.update(user).set({ image: null }).where(filter),
       ])
       .then(([[user]]) => {
@@ -77,7 +76,7 @@ export const userRouter = createTRPCRouter({
 
         if (!URL.canParse(image)) {
           // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
-          return utapi.deleteFiles([image]).then(ignore);
+          return void utapi.deleteFiles([image]);
         }
       })
       .catch((e) => throwDefaultError(e, "Failed to delete image"));

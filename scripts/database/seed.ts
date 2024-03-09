@@ -229,12 +229,13 @@ async function cleanTable<T extends TableConfig>({
     let rowsDeleted = 0;
     const primaryColumn = table[primaryKey];
     while (true) {
-      const [row] = await db
+      const row = await db
         .select({ id: primaryColumn })
         .from(table)
         .limit(1)
         .offset(rowLimitPerOperation)
-        .orderBy(asc(primaryColumn));
+        .orderBy(asc(primaryColumn))
+        .get();
 
       const { rowsAffected } = await db
         .delete(table)
