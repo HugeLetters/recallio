@@ -249,15 +249,13 @@ async function cleanTable<T extends TableConfig>({
 }
 
 async function seedUtImages(count: number): Promise<string[]> {
-  const { removed, uploaded = [] } = await utapi
-    .listFiles({})
+  const { removed = [], uploaded = [] } = await utapi
+    .listFiles()
     .then((files) =>
       splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
     );
 
-  if (removed?.length) {
-    await utapi.deleteFiles(removed.map((file) => file.key));
-  }
+  await utapi.deleteFiles(removed.map((file) => file.key));
 
   const remaining = count - uploaded.length;
   return Promise.all(

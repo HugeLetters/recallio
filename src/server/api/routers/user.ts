@@ -1,7 +1,9 @@
 import { db } from "@/server/database";
+import { query } from "@/server/database/query/utils";
 import { account, user, verificationToken } from "@/server/database/schema/auth";
 import { review } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
+import { ignore } from "@/utils";
 import { mapFilter } from "@/utils/array";
 import { providers } from "@/utils/providers";
 import { TRPCError } from "@trpc/server";
@@ -76,7 +78,7 @@ export const userRouter = createTRPCRouter({
 
         if (!URL.canParse(image)) {
           // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
-          return void utapi.deleteFiles([image]);
+          return utapi.deleteFiles([image]).then(ignore);
         }
       })
       .catch((e) => throwDefaultError(e, "Failed to delete image"));
@@ -97,33 +99,34 @@ export const userRouter = createTRPCRouter({
           .select({ image: review.imageKey })
           .from(review)
           .where(and(eq(review.userId, userId), isNotNull(review.imageKey))),
-        db.select({ image: user.image }).from(user).where(eq(user.id, userId)).limit(1),
+        db
+          .select({ image: query.map(user.image, (key) => (URL.canParse(key) ? null : key)) })
+          .from(user)
+          .where(and(eq(user.id, userId), isNotNull(user.image))),
       ])
-      .then(([reviewImages, profileImage]) => {
-        return db
-          .transaction(async (tx) => {
-            await tx.delete(user).where(eq(user.id, userId));
-            if (email) {
-              await tx.delete(verificationToken).where(eq(verificationToken.identifier, email));
-            }
+      .then(([reviewImages, userImages]) => {
+        return db.transaction(async (tx) => {
+          await tx.delete(user).where(eq(user.id, userId));
+          if (email) {
+            await tx.delete(verificationToken).where(eq(verificationToken.identifier, email));
+          }
 
-            if (profileImage.length) {
-              reviewImages.push(
-                ...profileImage.filter(({ image }) => image && URL.canParse(image)),
-              );
-            }
-
-            if (!reviewImages.length) return;
-            // todo - add to pending delete table, delete files in cron
-            await utapi.deleteFiles(
+          reviewImages.push(...userImages);
+          const images = [
+            ...new Set(
               mapFilter(
                 reviewImages,
                 (img) => img.image,
                 (img, bad) => (img ? img : bad),
               ),
-            );
-          })
-          .catch((e) => throwDefaultError(e, "Failed to delete your account"));
-      });
+            ),
+          ];
+
+          if (!images.length) return;
+          // todo - add to pending delete table, delete files in cron
+          return utapi.deleteFiles(images).then(ignore);
+        });
+      })
+      .catch((e) => throwDefaultError(e, "Failed to delete your account"));
   }),
 });

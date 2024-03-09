@@ -2,6 +2,7 @@ import { env } from "@/env/index.mjs";
 import { db } from "@/server/database";
 import { user } from "@/server/database/schema/auth";
 import { review } from "@/server/database/schema/product";
+import { ignore } from "@/utils";
 import { and, eq } from "drizzle-orm";
 import type { FileRouter } from "uploadthing/next-legacy";
 import { createUploadthing } from "uploadthing/next-legacy";
@@ -53,7 +54,7 @@ export const appFileRouter = {
             .where(and(eq(review.userId, userId), eq(review.barcode, barcode)));
           if (!oldImageKey) return;
 
-          await utapi.deleteFiles(oldImageKey).catch(console.error);
+          return utapi.deleteFiles(oldImageKey).then(ignore);
         })
         .then(() => true)
         .catch((err) => {
