@@ -11,9 +11,6 @@ patchedDependencies:
   next-auth@4.23.1:
     hash: yvsgxii7fhox2eua2fqmbhdpzu
     path: patches/next-auth@4.23.1.patch
-  uploadthing@6.5.2:
-    hash: ty5j4ij3yzophbd3sysikdaun4
-    path: patches/uploadthing@6.5.2.patch
 
 dependencies:
   '@auth/core':
@@ -98,8 +95,8 @@ dependencies:
     specifier: ^10.45.0
     version: 10.45.0
   '@uploadthing/react':
-    specifier: ^6.3.4
-    version: 6.3.4(next@13.4.2)(react@18.2.0)(uploadthing@6.5.2)
+    specifier: ^6.4.0
+    version: 6.4.0(next@13.4.2)(react@18.2.0)(uploadthing@6.6.0)
   '@upstash/redis':
     specifier: ^1.28.3
     version: 1.28.3
@@ -155,8 +152,8 @@ dependencies:
     specifier: ^0.17.4
     version: 0.17.4(@svgr/core@8.1.0)
   uploadthing:
-    specifier: ^6.5.2
-    version: 6.5.2(patch_hash=ty5j4ij3yzophbd3sysikdaun4)(next@13.4.2)(tailwindcss@3.4.1)
+    specifier: ^6.6.0
+    version: 6.6.0(next@13.4.2)(tailwindcss@3.4.1)
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -2609,12 +2606,12 @@ packages:
     resolution: {integrity: sha512-mB7XAKy5ARltUWZxb2oE0OwUW5Wplxi7Z3cqCvf/ZFvQ1E6lcGVNNKbmJI8c4GaONyEYnalo0Yl228zzHzyZnQ==}
     dev: false
 
-  /@uploadthing/react@6.3.4(next@13.4.2)(react@18.2.0)(uploadthing@6.5.2):
-    resolution: {integrity: sha512-sSFfU3yYwvudMvbdVxrFWG8am7W80Vvr+pBSYDT1+lIMiHh7w3NhomyTr4HfQDHejfPmHQBCL2NGAlmcY6N9Vw==}
+  /@uploadthing/react@6.4.0(next@13.4.2)(react@18.2.0)(uploadthing@6.6.0):
+    resolution: {integrity: sha512-XvlrlgH6LM2Zmw/yzryyI6+6mdANFg9nCYvE4glF81cvqVl6X62nrwC3EhvC/H19ZaW8atwsvtyjNxZS3+l+gA==}
     peerDependencies:
       next: '*'
       react: ^17.0.2 || ^18.0.0
-      uploadthing: 6.5.2
+      uploadthing: 6.6.0
     peerDependenciesMeta:
       next:
         optional: true
@@ -2625,7 +2622,7 @@ packages:
       next: 13.4.2(@babel/core@7.23.9)(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       tailwind-merge: 2.2.1
-      uploadthing: 6.5.2(patch_hash=ty5j4ij3yzophbd3sysikdaun4)(next@13.4.2)(tailwindcss@3.4.1)
+      uploadthing: 6.6.0(next@13.4.2)(tailwindcss@3.4.1)
     transitivePeerDependencies:
       - '@uploadthing/mime-types'
       - solid-js
@@ -6993,8 +6990,8 @@ packages:
       escalade: 3.1.2
       picocolors: 1.0.0
 
-  /uploadthing@6.5.2(patch_hash=ty5j4ij3yzophbd3sysikdaun4)(next@13.4.2)(tailwindcss@3.4.1):
-    resolution: {integrity: sha512-p5vH+d8A07lbiVz49/ZmLsRc/sX+A+JcTLXZHt7zKPFETJC5ld0Be6L1oWnumiCtt4E15JRJ15x5rjyRg2Zp4Q==}
+  /uploadthing@6.6.0(next@13.4.2)(tailwindcss@3.4.1):
+    resolution: {integrity: sha512-PccLhKjxK1dBKcY9a5vUG+P+bu35cyB7dtDEm7xUVq/C+nc6hC/rh+vC+9jhoJhga+h+O7Rd7M8ZyBaf6W72sA==}
     engines: {node: '>=18.13.0'}
     peerDependencies:
       express: '*'
@@ -7021,7 +7018,6 @@ packages:
       std-env: 3.7.0
       tailwindcss: 3.4.1
     dev: false
-    patched: true
 
   /uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
