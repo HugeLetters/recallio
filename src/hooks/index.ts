@@ -5,6 +5,7 @@ import type React from "react";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+// todo - upload progress
 export const { useUploadThing } = generateReactHelpers<AppFileRouter>();
 
 /**

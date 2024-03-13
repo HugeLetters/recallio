@@ -36,6 +36,7 @@ export function ConsIcon() {
   return <MinusIcon className="h-fit w-full text-app-red-500" />;
 }
 
+// todo - create a single component to handle fallbacks and invalid urls
 type ImagePreviewProps = { src: string };
 export function ImagePreview({ src }: ImagePreviewProps) {
   return (

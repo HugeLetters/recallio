@@ -27,6 +27,7 @@ export function Card({
       {...linkProps}
       className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
     >
+      {/* todo - reuse the one from review components and make a single components maybe */}
       {image ? (
         <Image
           src={image}

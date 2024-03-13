@@ -5,6 +5,7 @@ import type { Session } from "next-auth";
 import Image from "next/image";
 import type { ComponentPropsWithoutRef } from "react";
 
+// todo - handle invalid images
 function getInitials(name: string) {
   const [first, second] = name.split(/[\s_+.-]/);
   return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();

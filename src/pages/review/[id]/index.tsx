@@ -111,6 +111,7 @@ type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {
   return (
     <div className="size-16 shrink-0">
+      {/* todo - make a generic image component maybe?? */}
       {image ? (
         <UrlDialogRoot dialogQueryKey="attached-image-dialog">
           <Dialog.Trigger
