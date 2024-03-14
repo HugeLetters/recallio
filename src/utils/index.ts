@@ -67,7 +67,7 @@ export function ignore() {
   return;
 }
 
-export function hasNonNullishProperty<O, K extends keyof O>(
+export function hasTruthyProperty<O, K extends keyof O>(
   object: O,
   key: K,
 ): object is O & Record<K, NonNullable<O[K]>> {

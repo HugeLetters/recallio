@@ -1,4 +1,4 @@
-import { hasNonNullishProperty } from "@/utils";
+import { hasTruthyProperty } from "@/utils";
 import { filterMap } from "@/utils/array";
 import type { Nullish } from "@/utils/type";
 import { parse } from "node-html-parser";
@@ -46,7 +46,7 @@ export default function getScrapedProducts(code: string): Promise<string[]> {
     return filterMap(
       results,
       (result, bad) =>
-        result.status === "fulfilled" && hasNonNullishProperty(result, "value") ? result : bad,
+        result.status === "fulfilled" && hasTruthyProperty(result, "value") ? result : bad,
       (result) => result.value,
     );
   });

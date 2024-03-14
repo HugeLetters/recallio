@@ -38,27 +38,28 @@ export function useReviewPrivateDefault() {
 }
 
 type OptmicticValue<T> = { value: T; isActive: true } | { value?: never; isActive: false };
-export function useOptimistic<T>() {
+export function useOptimistic<T>(value: T) {
   const [optimistic, setOptimistic] = useState<OptmicticValue<T>>({ isActive: false });
-  const queuedAction = useRef<() => void>();
+  const actionQueue = useRef<() => void>();
 
   return {
-    optimistic,
-    queueUpdate: (value: T, callback: () => void) => {
+    isUpdating: optimistic.isActive,
+    value: optimistic.isActive ? optimistic.value : value,
+    setOptimistic: (value: T, action: () => void) => {
       if (optimistic.isActive) {
-        queuedAction.current = callback;
+        actionQueue.current = action;
       } else {
-        callback();
+        action();
       }
       setOptimistic({ value, isActive: true });
     },
-    onUpdateEnd: () => {
-      if (!queuedAction.current) {
+    reset: () => {
+      if (!actionQueue.current) {
         setOptimistic({ isActive: false });
         return;
       }
-      queuedAction.current();
-      queuedAction.current = undefined;
+      actionQueue.current();
+      actionQueue.current = undefined;
     },
   };
 }

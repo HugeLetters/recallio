@@ -51,16 +51,16 @@ export default Page;
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
-  const { optimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
-  const optimisticUser = optimistic.isActive ? { ...user, image: optimistic.value } : user;
+  const { value: optimisticImage, isUpdating, setOptimistic, reset } = useOptimistic(user.image);
+  const optimisticUser = { ...user, image: optimisticImage };
 
   function updateUserImage(image: File | null) {
     if (!image) {
-      queueUpdate(image, remove);
+      setOptimistic(image, remove);
       return;
     }
 
-    queueUpdate(URL.createObjectURL(image), () => {
+    setOptimistic(URL.createObjectURL(image), () => {
       compressImage(image, 511 * 1024)
         .then((compressedImage) => startUpload([compressedImage ?? image]))
         .catch(logToastError("Couldn't upload the image.\nPlease try again."));
@@ -68,18 +68,14 @@ function UserImage({ user }: UserImageProps) {
   }
 
   function syncUserImage() {
-    setTimeout(() => {
-      update()
-        .catch(
-          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
-        )
-        .finally(() => {
-          if (optimistic.value) {
-            URL.revokeObjectURL(optimistic.value);
-          }
-          onUpdateEnd();
-        });
-    }, 1000);
+    update()
+      .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
+      .finally(() => {
+        if (optimisticImage) {
+          URL.revokeObjectURL(optimisticImage);
+        }
+        reset();
+      });
   }
 
   const { startUpload, isUploading } = useUploadThing("userImage", {
@@ -94,7 +90,7 @@ function UserImage({ user }: UserImageProps) {
     onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
-  useLoadingIndicator(optimistic.isActive || isUploading || isLoading, 300);
+  useLoadingIndicator(isUpdating || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -114,7 +110,7 @@ function UserImage({ user }: UserImageProps) {
         )}
       </div>
       <ImagePicker
-        isImageSet={!!optimistic.value && optimistic.isActive}
+        isImageSet={!!optimisticImage && isUpdating}
         className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
         onChange={(e) => {
           const file = e.target.files?.item(0);
