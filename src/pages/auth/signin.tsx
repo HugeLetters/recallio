@@ -13,6 +13,7 @@ const Page: NextPageWithLayout = function () {
   if (status === "authenticated") {
     router.replace("/profile").catch(console.error);
   }
+  // todo - validate callback url?
   const callbackUrl = getQueryParam(router.query.callbackUrl) ?? "/profile";
   const error = getErrorMessage(getQueryParam(router.query.error));
 
