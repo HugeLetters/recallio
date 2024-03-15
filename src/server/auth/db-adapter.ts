@@ -15,7 +15,7 @@ const generatorConfig: Config = { dictionaries: [adjectives, animals], separator
 
 export function DatabaseAdapter(): Adapter {
   return {
-    createUser: function (data) {
+    createUser(data) {
       return db
         .insert(user)
         .values({
@@ -27,22 +27,22 @@ export function DatabaseAdapter(): Adapter {
         .get()
         .then(userWithImageUrl);
     },
-    getUser: function (id) {
+    getUser(id) {
       return findFirst(user, eq(user.id, id)).then((user) => {
         if (!user) return null;
         return userWithImageUrl(user);
       });
     },
-    getUserByEmail: function (email) {
+    getUserByEmail(email) {
       return findFirst(user, eq(user.email, email)).then((user) => {
         if (!user) return null;
         return userWithImageUrl(user);
       });
     },
-    createSession: function (data) {
+    createSession(data) {
       return db.insert(session).values(data).returning().get();
     },
-    getSessionAndUser: function (sessionToken) {
+    getSessionAndUser(sessionToken) {
       return db
         .select()
         .from(session)
@@ -54,7 +54,7 @@ export function DatabaseAdapter(): Adapter {
           return { session: data.session, user: userWithImageUrl(data.user) };
         });
     },
-    updateUser: function (data) {
+    updateUser(data) {
       return db
         .update(user)
         .set({ ...data, name: data.name ?? undefined })
@@ -63,7 +63,7 @@ export function DatabaseAdapter(): Adapter {
         .get()
         .then(userWithImageUrl);
     },
-    updateSession: function (data) {
+    updateSession(data) {
       return db
         .update(session)
         .set(data)
@@ -71,10 +71,10 @@ export function DatabaseAdapter(): Adapter {
         .returning()
         .get();
     },
-    linkAccount: function (data): Promise<AdapterAccount> {
+    linkAccount(data): Promise<AdapterAccount> {
       return db.insert(account).values(data).returning().get().then(undefineObject);
     },
-    getUserByAccount: function ({ provider, providerAccountId }) {
+    getUserByAccount({ provider, providerAccountId }) {
       return db
         .select({ user })
         .from(account)
@@ -88,7 +88,7 @@ export function DatabaseAdapter(): Adapter {
           return userWithImageUrl(data.user);
         });
     },
-    deleteSession: function (token): Promise<AdapterSession | undefined> {
+    deleteSession(token): Promise<AdapterSession | undefined> {
       return db
         .delete(session)
         .where(or(eq(session.sessionToken, token), lt(session.expires, new Date())))
@@ -96,10 +96,10 @@ export function DatabaseAdapter(): Adapter {
         .all()
         .then((sessions) => sessions.find(({ sessionToken }) => sessionToken === token));
     },
-    createVerificationToken: function (token) {
+    createVerificationToken(token) {
       return db.insert(verificationToken).values(token).returning().get();
     },
-    useVerificationToken: function (data): Promise<VerificationToken | null> {
+    useVerificationToken(data): Promise<VerificationToken | null> {
       return db
         .delete(verificationToken)
         .where(
@@ -120,10 +120,10 @@ export function DatabaseAdapter(): Adapter {
             ) ?? null,
         );
     },
-    deleteUser: function (id) {
+    deleteUser(id) {
       return db.delete(user).where(eq(user.id, id)).returning().get();
     },
-    unlinkAccount: function ({ provider, providerAccountId }): Promise<AdapterAccount | undefined> {
+    unlinkAccount({ provider, providerAccountId }): Promise<AdapterAccount | undefined> {
       return db
         .delete(account)
         .where(
