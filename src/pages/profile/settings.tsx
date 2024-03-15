@@ -113,7 +113,7 @@ function UserImage({ user }: UserImageProps) {
       </div>
       <ImagePicker
         isImageSet={!!optimisticImage && isUpdating}
-        className="clickable btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
+        className="btn clickable ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;

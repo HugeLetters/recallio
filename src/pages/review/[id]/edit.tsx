@@ -251,7 +251,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       {hasReview && (
         <Link
           href={{ pathname: "/review/[id]", query: { id: barcode } }}
-          className="clickable btn ghost text-center"
+          className="btn clickable ghost text-center"
         >
           Cancel
         </Link>
@@ -419,7 +419,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         onChange={(e) => {
           setValue(e.target.files?.item(0));
         }}
-        className="clickable btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
+        className="btn clickable ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
       >
         {src ? "Change image" : "Upload image"}
       </ImagePicker>

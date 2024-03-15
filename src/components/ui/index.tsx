@@ -12,7 +12,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProp
     <button
       ref={ref}
       type={type ?? "button"}
-      className={tw("clickable btn", className)}
+      className={tw("btn clickable", className)}
       {...restProps}
     >
       {children}

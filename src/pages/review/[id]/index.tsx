@@ -90,7 +90,7 @@ function Review({ barcode }: ReviewProps) {
       </div>
       <Link
         href={{ pathname: "/review/[id]/edit", query: { id: barcode } }}
-        className="clickable btn ghost flex items-center justify-center"
+        className="btn clickable ghost flex items-center justify-center"
       >
         Update review
       </Link>
