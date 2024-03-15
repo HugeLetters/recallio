@@ -1,4 +1,4 @@
-import type { DistributedRecord } from "@/utils/type";
+import type { DistributedRecord } from "@/utils/object";
 import type { CSSProperties } from "react";
 import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
@@ -65,13 +65,11 @@ export default {
         ".disabled": {
           cursor: "default",
         },
-        ".btn": {
-          borderRadius: "0.75rem",
-          padding: "0.875rem 0.625rem",
+        ".clickable": {
           transitionProperty: "scale, transform, filter, color, background-color, outline-color",
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
           transitionDuration: "200ms",
-          "&:active:not([class*=disabled])": {
+          "&:active:not([class~=disabled])": {
             "--tw-brightness": "brightness(1.1)",
             filter:
               "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",

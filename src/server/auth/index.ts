@@ -1,7 +1,7 @@
-import { env } from "@/env.mjs";
+import { env } from "@/env/index.mjs";
 import type { GetServerSidePropsContext } from "next";
-import { getServerSession } from "next-auth";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
 import GithubProvider from "next-auth/providers/github";
@@ -22,22 +22,10 @@ declare module "next-auth" {
     user: DefaultSession["user"] & {
       id: string;
       name: string;
-      // ...other properties
-      // role: UserRole;
     };
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
 export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
@@ -101,23 +89,9 @@ export const authOptions: NextAuthOptions = {
       clientId: env.LINKED_IN_CLIENT_ID,
       clientSecret: env.LINKED_IN_CLIENT_SECRET,
     }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
   ],
 };
 
-/**
- * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
- *
- * @see https://next-auth.js.org/configuration/nextjs
- */
 export const getServerAuthSession = (ctx: {
   req: GetServerSidePropsContext["req"];
   res: GetServerSidePropsContext["res"];

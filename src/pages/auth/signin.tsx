@@ -1,6 +1,6 @@
-import { Button, Input, WithLabel } from "@/components/UI";
-import { providerIcons } from "@/utils/providers";
-import { getQueryParam } from "@/utils/query";
+import { providerIcons } from "@/auth/provider";
+import { getQueryParam } from "@/browser/query";
+import { Button, Input, WithLabel } from "@/components/ui";
 import type { NextPageWithLayout } from "@/utils/type";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
@@ -25,7 +25,7 @@ const Page: NextPageWithLayout = function () {
         </div>
       )}
       <div className="flex grow flex-col items-center justify-center">
-        <Logo className="shrink-0" />
+        <Logo className="h-24 w-52 shrink-0" />
         <p className="mb-6 text-xl">Unlock a world of informed shopping</p>
         <EmailSignIn callbackUrl={callbackUrl} />
         <div className="relative z-0 my-6 flex w-full justify-center">

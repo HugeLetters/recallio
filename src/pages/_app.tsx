@@ -1,9 +1,11 @@
-import { LoadingIndicatorProvider } from "@/components/Loading";
-import { ToastProvider } from "@/components/Toast";
+import { signOut } from "@/auth";
+import { LoadingIndicatorProvider } from "@/components/loading/indicator";
+import { logToastError } from "@/components/toast";
+import { ToastProvider } from "@/components/toast/provider";
+import { lato } from "@/styles/font";
 import "@/styles/globals.css";
-import { tw } from "@/utils";
-import { api } from "@/utils/api";
-import { lato } from "@/utils/font";
+import { tw } from "@/styles/tw";
+import { trpc } from "@/trpc";
 import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -31,10 +33,16 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
     </div>
   );
 };
-export default api.withTRPC(MyApp);
+export default trpc.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
-  useSession({ required: true });
+  useSession({
+    required: true,
+    onUnauthenticated: () => {
+      signOut().catch(logToastError("Authentication error.\nPlease reload the page."));
+    },
+  });
+
   return <>{children}</>;
 }
 

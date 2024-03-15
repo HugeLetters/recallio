@@ -1,20 +1,21 @@
-import { Layout } from "@/components/Layout";
-import { InfiniteScroll } from "@/components/List";
-import { Spinner } from "@/components/Loading";
-import { SortDialog, useParseSort } from "@/components/Search";
-import { Star, UserPic } from "@/components/UI";
+import { getQueryParam } from "@/browser/query";
+import { InfiniteScroll } from "@/components/list/infinite-scroll";
+import { Spinner } from "@/components/loading/spinner";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
+import { Star } from "@/components/ui/star";
+import { UserPic } from "@/components/ui/user-pic";
+import { Layout } from "@/layout";
 import {
-  CategoryButton,
+  CategoryCard,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/page/Review";
-import { fetchNextPage } from "@/utils";
-import { api } from "@/utils/api";
-import type { RouterInputs, RouterOutputs } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
+} from "@/product/components";
+import type { RouterInputs, RouterOutputs } from "@/trpc";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
 import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -35,7 +36,7 @@ type ProductPageProps = { barcode: string };
 function ProductPage({ barcode }: ProductPageProps) {
   const router = useRouter();
 
-  const summaryQuery = api.product.getProductSummary.useQuery(
+  const summaryQuery = trpc.product.getSummary.useQuery(
     { barcode },
     {
       select(data) {
@@ -70,7 +71,7 @@ export default Page;
 
 type SummaryProps = {
   barcode: string;
-  summary: NonNullable<RouterOutputs["product"]["getProductSummary"]>;
+  summary: NonNullable<RouterOutputs["product"]["getSummary"]>;
 };
 function Summary({
   barcode,
@@ -94,21 +95,16 @@ function Summary({
         <span className="text-neutral-400">{barcode}</span>
       </div>
       {!!categories?.length && (
-        <div className="flex flex-col gap-2 text-xs">
-          <span>Category</span>
-          <div className="flex gap-3">
+        <section className="flex flex-col gap-2 text-xs">
+          <h2>Category</h2>
+          <ul className="flex gap-2">
             {categories.map((category) => (
-              <CategoryButton
-                disabled
-                className="disabled"
-                role="generic"
-                key={category}
-              >
-                {category}
-              </CategoryButton>
+              <CategoryCard key={category}>
+                <li>{category}</li>
+              </CategoryCard>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
     </div>
   );
@@ -116,7 +112,7 @@ function Summary({
 
 type ProductNameProps = { barcode: string; name: string; reviewCount: number; rating: number };
 function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
-  const { data, isSuccess } = api.review.getUserReview.useQuery({ barcode });
+  const { data, isSuccess } = trpc.user.review.getOne.useQuery({ barcode });
 
   return (
     <Link
@@ -150,7 +146,7 @@ const sortByOptions = ["recent", "earliest", "best rated", "worst rated"] as con
 type SortyByOption = (typeof sortByOptions)[number];
 function parseSortByOption(
   option: SortyByOption,
-): RouterInputs["product"]["getProductReviews"]["sort"] {
+): RouterInputs["product"]["getReviewList"]["sort"] {
   switch (option) {
     case "recent":
       return { by: "date", desc: true };
@@ -170,8 +166,8 @@ type ReviewsProps = {
   reviewCount: number | undefined;
 };
 function Reviews({ barcode, reviewCount }: ReviewsProps) {
-  const sortParam = useParseSort(sortByOptions);
-  const reviewsQuery = api.product.getProductReviews.useInfiniteQuery(
+  const sortParam = useSortQuery(sortByOptions);
+  const reviewsQuery = trpc.product.getReviewList.useInfiniteQuery(
     {
       barcode,
       limit: 10,
@@ -211,7 +207,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
   );
 }
 
-type Review = RouterOutputs["product"]["getProductReviews"]["page"][number];
+type Review = RouterOutputs["product"]["getReviewList"]["page"][number];
 type ReviewCardProps = {
   review: Review;
 };

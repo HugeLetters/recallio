@@ -1,9 +1,10 @@
-import { Layout, scanTypeOffsetStore, scanTypeStore } from "@/components/Layout";
-import { logToastError, toast } from "@/components/Toast";
-import { ImageInput } from "@/components/UI";
-import { useSwipe } from "@/hooks";
-import { tw } from "@/utils";
-import { useStore } from "@/utils/store";
+import { useSwipe } from "@/browser/swipe";
+import { logToastError, toast } from "@/components/toast";
+import { ImagePicker } from "@/image/image-picker";
+import { Layout } from "@/layout";
+import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
+import { useStore } from "@/state/store";
+import { tw } from "@/styles/tw";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Slot } from "@radix-ui/react-slot";
 import type { QrcodeSuccessCallback } from "html5-qrcode";
@@ -109,7 +110,7 @@ const Page: NextPageWithLayout = function () {
         </ScanGrid>
         <ScanGrid className="relative z-20">
           <ScanButton active={scanType === "upload"}>
-            <ImageInput
+            <ImagePicker
               aria-label="Scan from file"
               isImageSet={true}
               onChange={(e) => {
@@ -120,7 +121,7 @@ const Page: NextPageWithLayout = function () {
               onClick={() => scanTypeStore.select("upload")}
             >
               Upload
-            </ImageInput>
+            </ImagePicker>
           </ScanButton>
           <ScanButton active={scanType === "scan"}>
             <button

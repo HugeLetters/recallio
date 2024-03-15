@@ -1,6 +1,6 @@
-import { isSome } from "@/utils";
 import type { NonEmptyArray } from "@/utils/array";
-import type { Option } from "@/utils/type";
+import type { Option } from "@/utils/option";
+import { isSome } from "@/utils/option";
 import { z } from "zod";
 
 const limitBaseSchema = z.number().int().min(1).max(100);
@@ -10,16 +10,20 @@ const cursorBaseSchema = z
   .refine(isSome, "Supplied string is an invalid base64 encoded json")
   .transform((option) => option.value);
 
-export function createPagination<Z extends Zod.Schema, S extends string>(
-  cursor: Z,
-  sortCols: NonEmptyArray<S>,
-) {
+type PaginationOptions<Z extends Zod.Schema, S extends string> = {
+  cursor: Z;
+  sortBy: NonEmptyArray<S>;
+};
+export function createPagination<Z extends Zod.Schema, S extends string>({
+  cursor,
+  sortBy,
+}: PaginationOptions<Z, S>) {
   return {
     schema: z.object({
       cursor: cursorBaseSchema.pipe(cursor).optional(),
       limit: limitBaseSchema,
       sort: z.object({
-        by: z.enum(sortCols),
+        by: z.enum(sortBy),
         desc: z.boolean(),
       }),
     }),

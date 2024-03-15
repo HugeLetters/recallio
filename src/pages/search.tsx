@@ -1,23 +1,24 @@
-import { Layout } from "@/components/Layout";
-import { Card, InfiniteScroll, NoResults } from "@/components/List";
-import { Spinner } from "@/components/Loading";
-import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
-import { Star } from "@/components/UI";
-import { fetchNextPage } from "@/utils";
-import { api } from "@/utils/api";
-import type { RouterInputs } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
+import { InfiniteScroll } from "@/components/list/infinite-scroll";
+import { Card, NoResults } from "@/components/list/product";
+import { Spinner } from "@/components/loading/spinner";
+import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
+import { Star } from "@/components/ui/star";
+import { Layout } from "@/layout";
+import type { RouterInputs } from "@/trpc";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
 
 const Page: NextPageWithLayout = function () {
-  const { query, isReady } = useRouter();
-  const sortParam = useParseSort(sortOptionList);
+  const { isReady } = useRouter();
+  const sortParam = useSortQuery(sortOptionList);
   const sort = parseSortParam(sortParam);
-  const filter = getQueryParam(query[SEARCH_QUERY_KEY]);
+  const filter = useSearchQuery();
 
-  const productListQuery = api.product.getProductSummaryList.useInfiniteQuery(
+  const productListQuery = trpc.product.getSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
     { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady },
   );
@@ -79,7 +80,7 @@ export default Page;
 
 const sortOptionList = ["most popular", "least popular", "best rated", "worst rated"] as const;
 type SortOption = (typeof sortOptionList)[number];
-type SortQuery = RouterInputs["product"]["getProductSummaryList"]["sort"];
+type SortQuery = RouterInputs["product"]["getSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
     case "most popular":

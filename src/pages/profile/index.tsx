@@ -1,12 +1,17 @@
-import { HeaderLink, Layout } from "@/components/Layout";
-import { Card, InfiniteScroll, NoResults } from "@/components/List";
-import { Spinner } from "@/components/Loading";
-import { HeaderSearchBar, SEARCH_QUERY_KEY, SortDialog, useParseSort } from "@/components/Search";
-import { Star, UserPic } from "@/components/UI";
-import { fetchNextPage, minutesToMs } from "@/utils";
-import { api } from "@/utils/api";
-import type { RouterInputs, RouterOutputs } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
+import { InfiniteScroll } from "@/components/list/infinite-scroll";
+import { Card, NoResults } from "@/components/list/product";
+import { Spinner } from "@/components/loading/spinner";
+import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
+import { ButtonLike } from "@/components/ui";
+import { Star } from "@/components/ui/star";
+import { UserPic } from "@/components/ui/user-pic";
+import { Layout } from "@/layout";
+import { HeaderLink } from "@/layout/header";
+import type { RouterInputs, RouterOutputs } from "@/trpc";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
+import { minutesToMs } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
@@ -68,7 +73,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
 
 const sortOptionList = ["recent", "earliest", "best rated", "worst rated"] as const;
 function Reviews() {
-  const countQuery = api.review.getReviewCount.useQuery(undefined, {
+  const countQuery = trpc.user.review.getCount.useQuery(undefined, {
     staleTime: minutesToMs(5),
   });
 
@@ -88,7 +93,7 @@ function Reviews() {
 }
 
 type SortOption = (typeof sortOptionList)[number];
-type SortQuery = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
+type SortQuery = RouterInputs["user"]["review"]["getSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
     case "recent":
@@ -107,12 +112,13 @@ function parseSortParam(param: SortOption): SortQuery {
 
 function ReviewCards() {
   const router = useRouter();
-  const sortParam = useParseSort(sortOptionList);
+  const sortParam = useSortQuery(sortOptionList);
+  const filter = useSearchQuery();
 
-  const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
+  const reviewCardsQuery = trpc.user.review.getSummaryList.useInfiniteQuery(
     {
       limit: 20,
-      filter: getQueryParam(router.query[SEARCH_QUERY_KEY]),
+      filter,
       sort: parseSortParam(sortParam),
     },
     {
@@ -147,7 +153,7 @@ function ReviewCards() {
 }
 
 const ratings = [1, 2, 3, 4, 5] as const;
-type ReviewSummary = RouterOutputs["review"]["getUserReviewSummaryList"]["page"][number];
+type ReviewSummary = RouterOutputs["user"]["review"]["getSummaryList"]["page"][number];
 type ReviewCardProps = { review: ReviewSummary };
 function ReviewCard({ review }: ReviewCardProps) {
   return (
@@ -174,12 +180,14 @@ function NoReviews() {
       <GroceriesIcon className="h-auto w-full" />
       <span className="pt-4 text-xl">Your review list is empty</span>
       <span className="pb-10 text-sm">All your scanned goods will be kept here</span>
-      <Link
-        href="/scan"
-        className="btn primary"
-      >
-        Scan for the first time
-      </Link>
+      <ButtonLike>
+        <Link
+          href="/scan"
+          className="primary"
+        >
+          Scan for the first time
+        </Link>
+      </ButtonLike>
     </div>
   );
 }

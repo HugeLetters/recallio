@@ -1,0 +1,41 @@
+import { tw } from "@/styles/tw";
+import type { ComponentPropsWithoutRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
+
+type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
+export const ImagePicker = forwardRef<HTMLInputElement, ImageInputProps>(function _(
+  { children, className, isImageSet, ...inputAttributes },
+  outerRef,
+) {
+  const innerRef = useRef<HTMLInputElement>(null);
+  const ref = outerRef ?? innerRef;
+  useEffect(() => {
+    if (!("current" in ref) || !ref.current || isImageSet) return;
+    ref.current.value = "";
+  }, [isImageSet, ref]);
+
+  return (
+    <label className={tw("cursor-pointer", className)}>
+      {children}
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        {...inputAttributes}
+      />
+    </label>
+  );
+});
+
+export const ImagePickerButton = forwardRef<HTMLInputElement, ImageInputProps>(
+  function _(props, ref) {
+    return (
+      <ImagePicker
+        ref={ref}
+        className="clickable ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
+        {...props}
+      />
+    );
+  },
+);

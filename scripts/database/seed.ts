@@ -1,42 +1,51 @@
-import { db } from "@/database";
-import { user } from "@/database/schema/auth";
-import {
-  category,
-  review,
-  reviewsToCategories,
-  type ReviewInsert,
-} from "@/database/schema/product";
-import { utapi } from "@/server/uploadthing";
+import { blobToFile } from "@/image/blob";
+import { db } from "@/server/database";
+import type { ReviewInsert } from "@/server/database/schema/product";
+import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import { user } from "@/server/database/schema/user";
+import { utapi } from "@/server/uploadthing/api";
 import { clamp } from "@/utils";
-import { filterMap } from "@/utils/array";
+import { filterMap } from "@/utils/array/filter";
 import { faker } from "@faker-js/faker";
-import { and, asc, like, lt, sql, type SQL } from "drizzle-orm";
-import type { MySqlTableWithColumns, TableConfig } from "drizzle-orm/mysql-core";
-import task, { type Task } from "tasuku";
+import type { SQL } from "drizzle-orm";
+import { and, asc, like, lt } from "drizzle-orm";
+import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-core";
+import type { Task } from "tasuku";
+import task from "tasuku";
 
 seed().catch(console.error);
 async function seed() {
-  await seedReviews(30000, 150, 10).catch(console.error);
+  // just awaiting for all root declaration to initialize
+  await Promise.resolve();
+  await seedReviews({
+    reviewCount: 30000,
+    reviewsPerUser: 150,
+    uniqueReviewsPerUser: 10,
+  }).catch(console.error);
 }
 
 type BarcodeData = { barcode: string; rating: number; names: string[] };
 const TEST_USER_ID_PREFIX = "test-user-";
 
-async function seedReviews(
-  reviewCount: number,
-  reviewsPerUser: number,
-  uniqieReviewsPerUser: number,
-) {
-  await Promise.all([cleanDatabase(100000), cleanUTFiles()]);
+type SeedReviewOptiosn = {
+  reviewCount: number;
+  reviewsPerUser: number;
+  uniqueReviewsPerUser: number;
+};
+async function seedReviews({
+  reviewCount,
+  reviewsPerUser,
+  uniqueReviewsPerUser,
+}: SeedReviewOptiosn) {
+  const [files] = await Promise.all([seedUtImages(100), cleanDatabase(100000)]);
   await createTestUsers(reviewCount / reviewsPerUser);
-
   const users = await db
-    .select()
+    .select({ id: user.id })
     .from(user)
-    .then((users) => users.map((user) => user.id));
-  const files = await createTestImages(100);
+    .all()
+    .then((users) => users.map(({ id }) => id));
 
-  const barcodePool: BarcodeData[] = faker.helpers
+  const commonBarcodes = faker.helpers
     .uniqueArray(randomBarcode, users.length)
     .map((barcode) => createBarcodeData(barcode, users.length / 10));
 
@@ -47,13 +56,14 @@ async function seedReviews(
       for (const user of users) {
         setTitle(`User ${user} processing`);
         const barcodes = faker.helpers.arrayElements(
-          barcodePool,
-          reviewsPerUser - uniqieReviewsPerUser,
+          commonBarcodes,
+          Math.max(reviewsPerUser - uniqueReviewsPerUser, 1),
         );
+
         await createReviews(user, barcodes, files).catch(console.error);
 
         const unqieBarcodes = faker.helpers
-          .uniqueArray(randomBarcode, uniqieReviewsPerUser)
+          .uniqueArray(randomBarcode, Math.max(reviewsPerUser - barcodes.length, 1))
           .map((barcode) => createBarcodeData(barcode, 1));
         await createReviews(user, unqieBarcodes, files).catch(console.error);
         setOuterStatus(`${((100 * ++usersProcessed) / users.length).toFixed(2)}%`);
@@ -73,10 +83,7 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   );
   if (!categories.length) return;
 
-  await db
-    .insert(category)
-    .values(categories)
-    .onDuplicateKeyUpdate({ set: { name: sql`${category.name}` } });
+  await db.insert(category).values(categories).onConflictDoNothing();
 
   const reviewsCategories: Array<typeof reviewsToCategories.$inferInsert> = values.flatMap(
     ({ review, categories }) =>
@@ -104,8 +111,10 @@ function createReviewValue(
       pros: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       cons: faker.helpers.maybe(randomParagraph, { probability: 0.8 }),
       isPrivate: Math.random() > 0.5,
-      imageKey: faker.helpers.maybe(() => faker.helpers.arrayElement(files)),
-      updatedAt: faker.date.past({ years: 3 }),
+      imageKey: files.length
+        ? faker.helpers.maybe(() => faker.helpers.arrayElement(files))
+        : undefined,
+      updatedAt: faker.helpers.maybe(() => faker.date.past({ years: 3 }), { probability: 0.9 }),
     },
     categories: faker.helpers.maybe(
       () =>
@@ -138,11 +147,11 @@ function randomImage() {
   return faker.image.url();
 }
 
-function createBarcodeData(barcode: string, namecount: number) {
+function createBarcodeData(barcode: string, namecount: number): BarcodeData {
   return {
     barcode,
     rating: randomBaseRating(),
-    names: faker.helpers.uniqueArray(randomName, Math.max(3, namecount)),
+    names: faker.helpers.uniqueArray(randomName, Math.max(namecount, 3)),
   };
 }
 
@@ -160,17 +169,6 @@ function createTestUsers(userCount: number) {
       email: faker.internet.email({ provider: faker.lorem.word() }),
       image: faker.helpers.maybe(randomImage),
     })),
-  );
-}
-
-function createTestImages(count: number) {
-  const imageUrls = faker.helpers.uniqueArray(randomImage, count);
-  return utapi.uploadFilesFromUrl(imageUrls).then((responses) =>
-    filterMap(
-      responses,
-      (response, bad) => (!!response.data ? response : bad),
-      (x) => x.data.key,
-    ),
   );
 }
 
@@ -214,7 +212,7 @@ async function cleanDatabase(rowLimitPerOperation: number) {
 type CleanTableOptions<T extends TableConfig> = {
   task: Task;
   taskName: string;
-  table: MySqlTableWithColumns<T>;
+  table: SQLiteTableWithColumns<T>;
   primaryKey: keyof T["columns"];
   rowLimitPerOperation: number;
   where?: SQL;
@@ -231,12 +229,13 @@ async function cleanTable<T extends TableConfig>({
     let rowsDeleted = 0;
     const primaryColumn = table[primaryKey];
     while (true) {
-      const [row] = await db
+      const row = await db
         .select({ id: primaryColumn })
         .from(table)
         .limit(1)
         .offset(rowLimitPerOperation)
-        .orderBy(asc(primaryColumn));
+        .orderBy(asc(primaryColumn))
+        .get();
 
       const { rowsAffected } = await db
         .delete(table)
@@ -249,9 +248,42 @@ async function cleanTable<T extends TableConfig>({
   });
 }
 
-async function cleanUTFiles() {
-  const files = await utapi.listFiles({}).then((files) => files.map((file) => file.key));
-  if (files.length) {
-    await utapi.deleteFiles(files);
-  }
+async function seedUtImages(count: number): Promise<string[]> {
+  const { removed = [], uploaded = [] } = await utapi
+    .listFiles()
+    .then((files) =>
+      splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
+    );
+
+  await utapi.deleteFiles(removed.map((file) => file.key));
+
+  const remaining = count - uploaded.length;
+  return Promise.all(
+    faker.helpers
+      .uniqueArray(randomImage, remaining)
+      .map((url) => fetch(url).then((r) => r.blob())),
+  )
+    .then((blobs) =>
+      utapi.uploadFiles(
+        blobs.map((blob) =>
+          blobToFile(blob, `${faker.location.country()}-${faker.location.city()}`),
+        ),
+      ),
+    )
+    .then((responses) =>
+      filterMap(
+        responses,
+        (response, bad) => (!!response.data ? response : bad),
+        (x) => x.data.key,
+      ).concat(uploaded.map((file) => file.key)),
+    );
+}
+
+function splitBy<T, R extends string>(array: T[], getBucket: (value: T) => R) {
+  return array.reduce<Partial<Record<R, T[]>>>((acc, el) => {
+    const bucket = getBucket(el);
+    acc[bucket] ??= [];
+    acc[bucket]?.push(el);
+    return acc;
+  }, {});
 }

@@ -1,6 +1,6 @@
-import { db } from "@/database";
-import { migrate } from "drizzle-orm/planetscale-serverless/migrator";
+import { db } from "@/server/database";
+import { migrate } from "drizzle-orm/libsql/migrator";
 
 (async () => {
-  await migrate(db, { migrationsFolder: "./src/database/migrations" });
+  await migrate(db, { migrationsFolder: "./database/migrations" });
 })().catch(console.error);

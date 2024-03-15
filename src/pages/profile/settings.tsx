@@ -1,21 +1,19 @@
-import { Layout } from "@/components/Layout";
-import { useLoadingIndicator } from "@/components/Loading";
-import { logToastError, toast } from "@/components/Toast";
-import {
-  Button,
-  DialogOverlay,
-  ImageInput,
-  Input,
-  LabeledSwitch,
-  UserPic,
-  WithLabel,
-  useUrlDialog,
-} from "@/components/UI";
-import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { signOut } from "@/utils";
-import { api } from "@/utils/api";
-import { compressImage } from "@/utils/image";
-import { providerIcons } from "@/utils/providers";
+import { signOut } from "@/auth";
+import { providerIcons } from "@/auth/provider";
+import { useLoadingIndicator } from "@/components/loading/indicator";
+import { logToastError, toast } from "@/components/toast";
+import { Button, Input, WithLabel } from "@/components/ui";
+import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
+import { LabeledSwitch } from "@/components/ui/switch";
+import { UserPic } from "@/components/ui/user-pic";
+import { compressImage } from "@/image/compress";
+import { ImagePickerButton } from "@/image/image-picker";
+import { Layout } from "@/layout";
+import { reviewPrivateDefaultStore } from "@/settings";
+import { useOptimistic } from "@/state/optimistic";
+import { useStore } from "@/state/store";
+import { trpc } from "@/trpc";
+import { useUploadThing } from "@/uploadthing";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
@@ -56,16 +54,16 @@ export default Page;
 type UserImageProps = { user: Session["user"] };
 function UserImage({ user }: UserImageProps) {
   const { update } = useSession();
-  const { optimistic, queueUpdate, onUpdateEnd } = useOptimistic<string | null>();
-  const optimisticUser = optimistic.isActive ? { ...user, image: optimistic.value } : user;
+  const { value: optimisticImage, isUpdating, setOptimistic, reset } = useOptimistic(user.image);
+  const optimisticUser = { ...user, image: optimisticImage };
 
   function updateUserImage(image: File | null) {
     if (!image) {
-      queueUpdate(image, remove);
+      setOptimistic(image, remove);
       return;
     }
 
-    queueUpdate(URL.createObjectURL(image), () => {
+    setOptimistic(URL.createObjectURL(image), () => {
       compressImage(image, 511 * 1024)
         .then((compressedImage) => startUpload([compressedImage ?? image]))
         .catch(logToastError("Couldn't upload the image.\nPlease try again."));
@@ -73,21 +71,17 @@ function UserImage({ user }: UserImageProps) {
   }
 
   function syncUserImage() {
-    setTimeout(() => {
-      update()
-        .catch(
-          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
-        )
-        .finally(() => {
-          if (optimistic.value) {
-            URL.revokeObjectURL(optimistic.value);
-          }
-          onUpdateEnd();
-        });
-    }, 1000);
+    update()
+      .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
+      .finally(() => {
+        if (optimisticImage) {
+          URL.revokeObjectURL(optimisticImage);
+        }
+        reset();
+      });
   }
 
-  const { startUpload, isUploading } = useUploadThing("userImageUploader", {
+  const { startUpload, isUploading } = useUploadThing("userImage", {
     onClientUploadComplete: syncUserImage,
     onUploadError(e) {
       toast.error(`Couldn't upload the image: ${e.message}`);
@@ -95,11 +89,11 @@ function UserImage({ user }: UserImageProps) {
     },
   });
 
-  const { mutate: remove, isLoading } = api.user.deleteImage.useMutation({
+  const { mutate: remove, isLoading } = trpc.user.deleteImage.useMutation({
     onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
-  useLoadingIndicator(optimistic.isActive || isUploading || isLoading, 300);
+  useLoadingIndicator(isUpdating || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -110,17 +104,17 @@ function UserImage({ user }: UserImageProps) {
         />
         {!!optimisticUser.image && (
           <button
-            className="absolute right-0 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
+            type="button"
             onClick={() => updateUserImage(null)}
             aria-label="Delete avatar"
+            className="absolute right-0 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
           >
             <DeleteIcon />
           </button>
         )}
       </div>
-      <ImageInput
-        isImageSet={!!optimistic.value && optimistic.isActive}
-        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
+      <ImagePickerButton
+        isImageSet={!!optimisticImage && isUpdating}
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
@@ -128,7 +122,7 @@ function UserImage({ user }: UserImageProps) {
         }}
       >
         {!!optimisticUser.image ? "Change avatar" : "Upload avatar"}
-      </ImageInput>
+      </ImagePickerButton>
     </div>
   );
 }
@@ -138,7 +132,7 @@ const USERNAME_MIN_LENGTH = 4;
 function UserName({ username }: UserNameProps) {
   const { update } = useSession();
   const [value, setValue] = useState(username);
-  const { mutate, isLoading } = api.user.setName.useMutation({
+  const { mutate, isLoading } = trpc.user.setName.useMutation({
     onSettled() {
       update()
         .then((session) => {
@@ -186,14 +180,14 @@ function UserName({ username }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const trpcUtils = api.useUtils();
-  const { data: accounts } = api.user.getAccountProviders.useQuery();
-  const { mutate: deleteAccount, isLoading } = api.user.deleteAccount.useMutation({
+  const trpcUtils = trpc.useUtils();
+  const { data: accounts } = trpc.user.account.getProviders.useQuery();
+  const { mutate: deleteAccount, isLoading } = trpc.user.account.deleteAccount.useMutation({
     onMutate({ provider }) {
       // optimistic update
-      const prevProviders = trpcUtils.user.getAccountProviders.getData();
+      const prevProviders = trpcUtils.user.account.getProviders.getData();
 
-      trpcUtils.user.getAccountProviders.setData(undefined, (providers) =>
+      trpcUtils.user.account.getProviders.setData(undefined, (providers) =>
         providers?.filter((name) => name !== provider),
       );
 
@@ -201,10 +195,10 @@ function LinkedAccounts() {
     },
     onError(e, __, prevProviders) {
       toast.error(`Couldn't unlink account: ${e.message}`);
-      trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
+      trpcUtils.user.account.getProviders.setData(undefined, prevProviders);
     },
     onSettled() {
-      trpcUtils.user.getAccountProviders.invalidate().catch(console.error);
+      trpcUtils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
   useLoadingIndicator(isLoading, 300);
@@ -228,7 +222,7 @@ function LinkedAccounts() {
                   onCheckedChange={(value) => {
                     if (value) {
                       // optimistic update
-                      trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                      trpcUtils.user.account.getProviders.setData(undefined, (providers) => {
                         return [...(providers ?? []), provider];
                       });
                       signIn(provider).catch(
@@ -254,7 +248,7 @@ function LinkedAccounts() {
 }
 
 function AppSettings() {
-  const [reviewPrivateDefault, setReviewPrivateDefault] = useReviewPrivateDefault();
+  const reviewPrivateDefault = useStore(reviewPrivateDefaultStore);
 
   return (
     <div>
@@ -262,7 +256,7 @@ function AppSettings() {
       <LabeledSwitch
         className="bg-app-green-100"
         checked={reviewPrivateDefault}
-        onCheckedChange={setReviewPrivateDefault}
+        onCheckedChange={reviewPrivateDefaultStore.setValue}
       >
         Reviews are private by default
       </LabeledSwitch>
@@ -272,12 +266,11 @@ function AppSettings() {
 
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
-  const [, setValue] = useReviewPrivateDefault();
   const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
-  const { mutate, isLoading } = api.user.deleteUser.useMutation({
+  const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {
       setIsOpen(false);
-      setValue(true);
+      reviewPrivateDefaultStore.setValue(true);
       signOut().catch(console.error);
     },
     onError(e) {

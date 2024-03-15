@@ -1,39 +1,39 @@
-import { Layout } from "@/components/Layout";
-import { InfiniteScroll } from "@/components/List";
-import { Spinner, useLoadingIndicator } from "@/components/Loading";
-import { DebouncedSearch, SEARCH_QUERY_KEY } from "@/components/Search";
-import { logToastError, toast } from "@/components/Toast";
-import {
-  AutoresizableInput,
-  Button,
-  DialogOverlay,
-  ImageInput,
-  LabeledSwitch,
-  Star,
-  useUrlDialog,
-} from "@/components/UI";
+import { getQueryParam } from "@/browser/query";
+import { InfiniteScroll } from "@/components/list/infinite-scroll";
+import { useLoadingIndicator } from "@/components/loading/indicator";
+import { Spinner } from "@/components/loading/spinner";
+import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
+import { logToastError, toast } from "@/components/toast";
+import { AutoresizableInput, Button, ButtonLike } from "@/components/ui";
+import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
+import { Star } from "@/components/ui/star";
+import { LabeledSwitch } from "@/components/ui/switch";
+import { useBlobUrl } from "@/image/blob";
+import { compressImage } from "@/image/compress";
+import { ImagePickerButton } from "@/image/image-picker";
+import { Layout } from "@/layout";
 import {
   BarcodeTitle,
-  CategoryButton,
+  CategoryCard,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/page/Review";
-import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
-import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
-import type { RouterOutputs } from "@/utils/api";
-import { api } from "@/utils/api";
-import { compressImage, useBlobUrl } from "@/utils/image";
-import { getQueryParam, setQueryParam } from "@/utils/query";
-import type {
-  ModelProps,
-  NextPageWithLayout,
-  Nullish,
-  StrictOmit,
-  TransformType,
-} from "@/utils/type";
+} from "@/product/components";
+import type { ReviewData } from "@/product/type";
+import { reviewPrivateDefaultStore } from "@/settings";
+import { useStore } from "@/state/store";
+import type { Model } from "@/state/type";
+import { tw } from "@/styles/tw";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
+import { useUploadThing } from "@/uploadthing";
+import { minutesToMs } from "@/utils";
+import type { StrictOmit, TransformType } from "@/utils/object";
+import { merge } from "@/utils/object";
+import { isSetEqual } from "@/utils/set";
+import type { NextPageWithLayout, Nullish } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -61,20 +61,19 @@ const Page: NextPageWithLayout = function () {
 Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
-type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
-  return mergeInto(data, { categories: data.categories.map((x) => ({ name: x })) });
+  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
 }
 
 type ReviewWrapperProps = { barcode: string };
 function ReviewWrapper({ barcode }: ReviewWrapperProps) {
-  const reviewQuery = api.review.getUserReview.useQuery(
+  const reviewQuery = trpc.user.review.getOne.useQuery(
     { barcode },
     { staleTime: Infinity, select: transformReview },
   );
-  const [isPrivate] = useReviewPrivateDefault();
+  const isPrivate = useStore(reviewPrivateDefaultStore);
 
   if (!reviewQuery.isSuccess) return <>Loading...</>;
 
@@ -146,16 +145,16 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       .catch(logToastError("Couldn't upload the image.\nPlease try again."));
   }
 
-  const apiUtils = api.useUtils();
+  const apiUtils = trpc.useUtils();
   function invalidateReviewData() {
-    const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
+    const optimisticImage = apiUtils.user.review.getOne.getData({ barcode })?.image;
     Promise.all([
-      apiUtils.review.getUserReview.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
+      apiUtils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
         if (!optimisticImage) return;
         URL.revokeObjectURL(optimisticImage);
       }),
-      apiUtils.review.getUserReviewSummaryList.invalidate(undefined, { refetchType: "all" }),
-      apiUtils.review.getReviewCount.invalidate(undefined, { refetchType: "all" }),
+      apiUtils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
+      apiUtils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
     ]).catch(
       logToastError("Couldn't update data from the server.\nReloading the page is advised."),
     );
@@ -163,7 +162,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
 
   const router = useRouter();
   function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
-    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
+    apiUtils.user.review.getOne.setData({ barcode }, (cache) => {
       if (!cache) {
         return { ...review, image: image ?? null };
       }
@@ -177,21 +176,20 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   }
 
   const [image, setImage] = useState<File | null>();
-  const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
+  const { mutate: deleteImage } = trpc.user.review.deleteImage.useMutation({
     onSettled: invalidateReviewData,
     onError(e) {
       toast.error(`Couldn't delete image from review: ${e.message}`);
     },
   });
-  const { startUpload } = useUploadThing("reviewImageUploader", {
-    // hope 1.5s is enough for the update to catch up...
-    onClientUploadComplete: () => setTimeout(invalidateReviewData, 1500),
+  const { startUpload } = useUploadThing("reviewImage", {
+    onClientUploadComplete: invalidateReviewData,
     onUploadError(e) {
       toast.error(`Couldn't upload the image: ${e.message}`);
       invalidateReviewData();
     },
   });
-  const { mutate: saveReview, isLoading } = api.review.upsertReview.useMutation({
+  const { mutate: saveReview, isLoading } = trpc.user.review.upsert.useMutation({
     onError(e) {
       toast.error(`Error while trying to save the review: ${e.message}`);
       invalidateReviewData();
@@ -250,12 +248,14 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
         {hasReview ? "Update" : "Save"}
       </Button>
       {hasReview && (
-        <Link
-          href={{ pathname: "/review/[id]", query: { id: barcode } }}
-          className="btn ghost text-center"
-        >
-          Cancel
-        </Link>
+        <ButtonLike>
+          <Link
+            href={{ pathname: "/review/[id]", query: { id: barcode } }}
+            className="ghost text-center"
+          >
+            Cancel
+          </Link>
+        </ButtonLike>
       )}
       {/* forces extra gap at the bottom */}
       <div className="pb-2" />
@@ -268,7 +268,7 @@ type NameProps = {
   register: UseFormRegisterReturn;
 };
 function Name({ barcode, register }: NameProps) {
-  const { data } = api.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
+  const { data } = trpc.product.getNames.useQuery({ barcode }, { staleTime: Infinity });
   const listId = "product-names";
   return (
     <label className="flex flex-col">
@@ -292,7 +292,7 @@ function Name({ barcode, register }: NameProps) {
 }
 
 const ratingList = [1, 2, 3, 4, 5] as const;
-function Rating({ value, setValue }: ModelProps<number>) {
+function Rating({ value, setValue }: Model<number>) {
   return (
     <Radio.Root
       value={value.toString()}
@@ -375,7 +375,7 @@ function ProsConsComment({
   );
 }
 
-function Private({ value, setValue }: ModelProps<boolean>) {
+function Private({ value, setValue }: Model<boolean>) {
   return (
     <LabeledSwitch
       className={tw(
@@ -390,7 +390,7 @@ function Private({ value, setValue }: ModelProps<boolean>) {
   );
 }
 
-type AttachedImageProps = { savedImage: string | null } & ModelProps<Nullish<File>>; // null - delete, undefined - keep as is
+type AttachedImageProps = { savedImage: string | null } & Model<Nullish<File>>; // null - delete, undefined - keep as is
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useBlobUrl(value);
   const src = value === null ? null : base64Image ?? savedImage;
@@ -401,7 +401,8 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
       <div className="relative size-16">
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {isImagePresent && (
-          <Button
+          <button
+            type="button"
             className={tw(
               "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
               src ? "text-app-red-500" : "text-neutral-950",
@@ -412,18 +413,17 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
             aria-label={src ? "Delete image" : "Reset image"}
           >
             {src ? <DeleteIcon /> : <ResetIcon />}
-          </Button>
+          </button>
         )}
       </div>
-      <ImageInput
+      <ImagePickerButton
         isImageSet={!!value}
         onChange={(e) => {
           setValue(e.target.files?.item(0));
         }}
-        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
       >
         {src ? "Change image" : "Upload image"}
-      </ImageInput>
+      </ImagePickerButton>
     </div>
   );
 }
@@ -457,12 +457,12 @@ function CategoryList({ control }: CategoryListProps) {
   function open() {
     setIsOpen(true);
   }
+  const setSearchQuery = useSetSearchQuery();
   function close() {
     setIsOpen(false);
     window.clearTimeout(debouncedQuery.current);
-    setQueryParam({ router, key: SEARCH_QUERY_KEY, value: null });
+    setSearchQuery(null);
   }
-  const router = useRouter();
   const debouncedQuery = useRef<number>();
   const isAtCategoryLimit = categories.length >= categoryLimit;
 
@@ -479,24 +479,25 @@ function CategoryList({ control }: CategoryListProps) {
           open();
         }}
       >
-        <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
-          <Toolbar.Button asChild>
-            <Dialog.Trigger
-              asChild
-              aria-disabled={isAtCategoryLimit}
-            >
-              <CategoryButton className={tw(isAtCategoryLimit && "opacity-60")}>
+        <Toolbar.Root
+          className="flex flex-wrap gap-2 text-xs"
+          aria-label="Review categories"
+        >
+          <CategoryCard>
+            <Toolbar.Button asChild>
+              <Dialog.Trigger
+                aria-disabled={isAtCategoryLimit}
+                className="clickable aria-disabled:opacity-60"
+              >
                 <PlusIcon className="size-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
-              </CategoryButton>
-            </Dialog.Trigger>
-          </Toolbar.Button>
+              </Dialog.Trigger>
+            </Toolbar.Button>
+          </CategoryCard>
           {categories.map(({ name }) => (
-            <Toolbar.Button
-              key={name}
-              asChild
-            >
-              <CategoryButton
+            <CategoryCard key={name}>
+              <Toolbar.Button
+                className="clickable"
                 aria-label={`Delete category ${name}`}
                 onClick={(e) => {
                   remove(name);
@@ -512,8 +513,8 @@ function CategoryList({ control }: CategoryListProps) {
                 <div className="flex h-6 items-center">
                   <DeleteIcon className="size-3" />
                 </div>
-              </CategoryButton>
-            </Toolbar.Button>
+              </Toolbar.Button>
+            </CategoryCard>
           ))}
         </Toolbar.Root>
         <Dialog.Portal>
@@ -554,11 +555,10 @@ function CategorySearch({
   close,
   debounceRef,
 }: CategorySearchProps) {
-  const router = useRouter();
-  const searchParam: string = getQueryParam(router.query[SEARCH_QUERY_KEY]) ?? "";
+  const searchParam: string = useSearchQuery() ?? "";
   const [search, setSearch] = useState(searchParam);
   const lowercaseSearch = search.toLowerCase();
-  const categoriesQuery = api.product.getCategories.useInfiniteQuery(
+  const categoriesQuery = trpc.product.getCategoryList.useInfiniteQuery(
     { filter: searchParam, limit: 30 },
     {
       enabled,

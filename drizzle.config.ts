@@ -1,11 +1,11 @@
 import "dotenv/config";
-import { env } from "@/env.mjs";
+import { env } from "@/env/index.mjs";
 import type { Config } from "drizzle-kit";
 
 export default {
-  out: "./src/database/migrations",
-  schema: "./src/database/schema/*",
-  driver: "mysql2",
-  dbCredentials: { connectionString: env.DATABASE_URL },
+  out: "./database/migrations",
+  schema: "./src/server/database/schema/*",
+  driver: "turso",
+  dbCredentials: { url: env.DATABASE_URL, authToken: env.DATABASE_TOKEN },
   breakpoints: true,
 } satisfies Config;
