@@ -1,4 +1,6 @@
+import { signOut } from "@/auth";
 import { LoadingIndicatorProvider } from "@/components/loading/indicator";
+import { logToastError } from "@/components/toast";
 import { ToastProvider } from "@/components/toast/provider";
 import { lato } from "@/styles/font";
 import "@/styles/globals.css";
@@ -34,7 +36,13 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
 export default trpc.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
-  useSession({ required: true });
+  useSession({
+    required: true,
+    onUnauthenticated: () => {
+      signOut().catch(logToastError("Authentication error.\nPlease reload the page."));
+    },
+  });
+
   return <>{children}</>;
 }
 

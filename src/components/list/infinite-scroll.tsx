@@ -1,7 +1,6 @@
 import type { Key, ReactNode } from "react";
 import { Fragment, useEffect, useRef } from "react";
 
-// todo - what if I just track scrolling???
 type InfiniteScrollProps<P, V> = {
   pages: P[];
   /** Retrieve values from a single page */
