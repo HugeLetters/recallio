@@ -1,22 +1,33 @@
 import { tw } from "@/styles/tw";
+import { Slot } from "@radix-ui/react-slot";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 
-// todo - delete it
+export const ButtonLike = forwardRef<HTMLElement, PropsWithChildren<ButtonProps>>(
+  function _(props, ref) {
+    return (
+      <Slot
+        ref={ref}
+        className="clickable rounded-xl px-2.5 py-3.5"
+        {...props}
+      />
+    );
+  },
+);
+
 type ButtonProps = ComponentPropsWithoutRef<"button">;
 export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(function _(
-  { className, type, children, ...restProps },
+  { type, ...restProps },
   ref,
 ) {
   return (
-    <button
-      ref={ref}
-      type={type ?? "button"}
-      className={tw("btn clickable", className)}
-      {...restProps}
-    >
-      {children}
-    </button>
+    <ButtonLike>
+      <button
+        ref={ref}
+        type={type ?? "button"}
+        {...restProps}
+      />
+    </ButtonLike>
   );
 });
 

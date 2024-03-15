@@ -62,10 +62,6 @@ export default {
         ".scrollbar-gutter": {
           "@media (pointer: fine), (pointer: none)": { scrollbarGutter: "stable" },
         },
-        ".btn": {
-          borderRadius: "0.75rem",
-          padding: "0.875rem 0.625rem",
-        },
         ".clickable": {
           transitionProperty: "scale, transform, filter, color, background-color, outline-color",
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",

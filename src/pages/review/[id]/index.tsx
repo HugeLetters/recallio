@@ -10,7 +10,7 @@ import {
   ProsIcon,
 } from "@/components/review";
 import { toast } from "@/components/toast";
-import { Button } from "@/components/ui";
+import { Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { Layout } from "@/layout";
@@ -88,12 +88,14 @@ function Review({ barcode }: ReviewProps) {
       >
         {review.isPrivate ? "Private" : "Public"} review
       </div>
-      <Link
-        href={{ pathname: "/review/[id]/edit", query: { id: barcode } }}
-        className="btn clickable ghost flex items-center justify-center"
-      >
-        Update review
-      </Link>
+      <ButtonLike>
+        <Link
+          href={{ pathname: "/review/[id]/edit", query: { id: barcode } }}
+          className="ghost flex items-center justify-center"
+        >
+          Update review
+        </Link>
+      </ButtonLike>
       <DeleteButton barcode={barcode} />
       {/* forces extra gap at the bottom */}
       <div className="pb-2" />

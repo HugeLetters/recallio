@@ -3,6 +3,7 @@ import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
+import { ButtonLike } from "@/components/ui";
 import { Star } from "@/components/ui/star";
 import { UserPic } from "@/components/ui/user-pic";
 import { Layout } from "@/layout";
@@ -179,12 +180,14 @@ function NoReviews() {
       <GroceriesIcon className="h-auto w-full" />
       <span className="pt-4 text-xl">Your review list is empty</span>
       <span className="pb-10 text-sm">All your scanned goods will be kept here</span>
-      <Link
-        href="/scan"
-        className="btn clickable primary"
-      >
-        Scan for the first time
-      </Link>
+      <ButtonLike>
+        <Link
+          href="/scan"
+          className="primary"
+        >
+          Scan for the first time
+        </Link>
+      </ButtonLike>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
 } from "@/components/review";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
-import { AutoresizableInput, Button } from "@/components/ui";
+import { AutoresizableInput, Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { LabeledSwitch } from "@/components/ui/switch";
@@ -248,12 +248,14 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
         {hasReview ? "Update" : "Save"}
       </Button>
       {hasReview && (
-        <Link
-          href={{ pathname: "/review/[id]", query: { id: barcode } }}
-          className="btn clickable ghost text-center"
-        >
-          Cancel
-        </Link>
+        <ButtonLike>
+          <Link
+            href={{ pathname: "/review/[id]", query: { id: barcode } }}
+            className="ghost text-center"
+          >
+            Cancel
+          </Link>
+        </ButtonLike>
       )}
       {/* forces extra gap at the bottom */}
       <div className="pb-2" />
