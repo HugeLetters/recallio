@@ -181,7 +181,7 @@ function NoReviews() {
       <span className="pb-10 text-sm">All your scanned goods will be kept here</span>
       <Link
         href="/scan"
-        className="btn primary"
+        className="clickable btn primary"
       >
         Scan for the first time
       </Link>

@@ -2,6 +2,7 @@ import { tw } from "@/styles/tw";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 
+// todo - delete it
 type ButtonProps = ComponentPropsWithoutRef<"button">;
 export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(function _(
   { className, type, children, ...restProps },
@@ -11,7 +12,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProp
     <button
       ref={ref}
       type={type ?? "button"}
-      className={tw("btn", className)}
+      className={tw("clickable btn", className)}
       {...restProps}
     >
       {children}
