@@ -19,7 +19,7 @@ import { Star } from "@/components/ui/star";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
-import { ImagePicker } from "@/image/image-picker";
+import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
 import { useReviewPrivateDefault } from "@/settings";
 import type { Model } from "@/state/type";
@@ -413,15 +413,14 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
           </Button>
         )}
       </div>
-      <ImagePicker
+      <ImagePickerButton
         isImageSet={!!value}
         onChange={(e) => {
           setValue(e.target.files?.item(0));
         }}
-        className="btn clickable ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
       >
         {src ? "Change image" : "Upload image"}
-      </ImagePicker>
+      </ImagePickerButton>
     </div>
   );
 }

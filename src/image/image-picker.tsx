@@ -27,3 +27,16 @@ export const ImagePicker = forwardRef<HTMLInputElement, ImageInputProps>(functio
     </label>
   );
 });
+
+export const ImagePickerButton = forwardRef<HTMLInputElement, ImageInputProps>(function _(
+  { ...props },
+  ref,
+) {
+  return (
+    <ImagePicker
+      ref={ref}
+      className="clickable ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
+      {...props}
+    />
+  );
+});

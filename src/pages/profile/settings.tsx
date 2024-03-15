@@ -7,7 +7,7 @@ import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { UserPic } from "@/components/ui/user-pic";
 import { compressImage } from "@/image/compress";
-import { ImagePicker } from "@/image/image-picker";
+import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
 import { useReviewPrivateDefault } from "@/settings";
 import { useOptimistic } from "@/state/optimistic";
@@ -111,9 +111,8 @@ function UserImage({ user }: UserImageProps) {
           </button>
         )}
       </div>
-      <ImagePicker
+      <ImagePickerButton
         isImageSet={!!optimisticImage && isUpdating}
-        className="btn clickable ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
         onChange={(e) => {
           const file = e.target.files?.item(0);
           if (!file) return;
@@ -121,7 +120,7 @@ function UserImage({ user }: UserImageProps) {
         }}
       >
         {!!optimisticUser.image ? "Change avatar" : "Upload avatar"}
-      </ImagePicker>
+      </ImagePickerButton>
     </div>
   );
 }
