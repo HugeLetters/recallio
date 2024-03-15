@@ -62,6 +62,9 @@ export default {
         ".scrollbar-gutter": {
           "@media (pointer: fine), (pointer: none)": { scrollbarGutter: "stable" },
         },
+        ".disabled": {
+          cursor: "default",
+        },
         ".clickable": {
           transitionProperty: "scale, transform, filter, color, background-color, outline-color",
           transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -72,9 +75,6 @@ export default {
               "var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)",
             "@media (prefers-reduced-motion: no-preference)": { scale: ".95" },
           },
-        },
-        ".disabled": {
-          cursor: "default",
         },
         ".primary": {
           backgroundColor: appGreenColor[500],

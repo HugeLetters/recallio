@@ -7,7 +7,7 @@
 import { signOut } from "@/auth";
 import { browser } from "@/browser";
 import { toast } from "@/components/toast";
-import type { AppRouter } from "@/server/api";
+import type { ApiRouter } from "@/server/api/router";
 import { hasProperty } from "@/utils/object";
 import { QueryCache } from "@tanstack/react-query";
 import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
@@ -22,15 +22,9 @@ function getBaseUrl() {
   return `http://localhost:${process.env.PORT ?? 1853}`; // dev SSR should use localhost
 }
 
-/** A set of type-safe react-query hooks for your tRPC API. */
-export const trpc = createTRPCNext<AppRouter>({
+export const trpc = createTRPCNext<ApiRouter>({
   config() {
     return {
-      /**
-       * Links used to determine request flow from client to server.
-       *
-       * @see https://trpc.io/docs/links
-       */
       links: [
         loggerLink({
           enabled: (opts) =>
@@ -64,24 +58,9 @@ export const trpc = createTRPCNext<AppRouter>({
       },
     };
   },
-  /**
-   * Whether tRPC should await queries when server rendering pages.
-   *
-   * @see https://trpc.io/docs/nextjs#ssr-boolean-default-false
-   */
   ssr: false,
 });
 
-/**
- * Inference helper for inputs.
- *
- * @example type HelloInput = RouterInputs['example']['hello']
- */
-export type RouterInputs = inferRouterInputs<AppRouter>;
+export type RouterInputs = inferRouterInputs<ApiRouter>;
 
-/**
- * Inference helper for outputs.
- *
- * @example type HelloOutput = RouterOutputs['example']['hello']
- */
-export type RouterOutputs = inferRouterOutputs<AppRouter>;
+export type RouterOutputs = inferRouterOutputs<ApiRouter>;

@@ -1,5 +1,10 @@
 import { getQueryParam } from "@/browser/query";
 import { useSetLoadingIndicator } from "@/components/loading/indicator";
+import { toast } from "@/components/toast";
+import { Button, ButtonLike } from "@/components/ui";
+import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
+import { Star } from "@/components/ui/star";
+import { Layout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
@@ -8,14 +13,9 @@ import {
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/review";
-import { toast } from "@/components/toast";
-import { Button, ButtonLike } from "@/components/ui";
-import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
-import { Star } from "@/components/ui/star";
-import { Layout } from "@/layout";
+} from "@/product/components";
+import type { ReviewData } from "@/product/type";
 import { tw } from "@/styles/tw";
-import type { RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -38,7 +38,7 @@ export default Page;
 type ReviewProps = { barcode: string };
 function Review({ barcode }: ReviewProps) {
   const router = useRouter();
-  const reviewQuery = trpc.review.getUserReview.useQuery(
+  const reviewQuery = trpc.user.review.getOne.useQuery(
     { barcode },
     {
       select(data) {
@@ -103,7 +103,6 @@ function Review({ barcode }: ReviewProps) {
   );
 }
 
-type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {
   return (
@@ -146,7 +145,7 @@ function AttachedImage({ image }: AttachedImageProps) {
 
 type NameProps = { barcode: string; name: string };
 function Name({ barcode, name }: NameProps) {
-  const { data } = trpc.product.getProductSummary.useQuery({ barcode });
+  const { data } = trpc.product.getSummary.useQuery({ barcode });
 
   const nameDiv = (
     <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xl">{name}</div>
@@ -211,7 +210,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
   const apiUtils = trpc.useUtils();
   const loading = useSetLoadingIndicator();
-  const { mutate } = trpc.review.deleteReview.useMutation({
+  const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {
       loading.enable();
       router.push("/profile").catch(console.error);
@@ -220,9 +219,9 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       toast.error(`Couldn't delete the review: ${e.message}`);
     },
     onSuccess() {
-      apiUtils.review.getUserReviewSummaryList.invalidate().catch(console.error);
-      apiUtils.review.getReviewCount.invalidate().catch(console.error);
-      apiUtils.product.getProductSummaryList.invalidate().catch(console.error);
+      apiUtils.user.review.getSummaryList.invalidate().catch(console.error);
+      apiUtils.user.review.getCount.invalidate().catch(console.error);
+      apiUtils.product.getSummaryList.invalidate().catch(console.error);
     },
     onSettled() {
       loading.disable();

@@ -1,6 +1,10 @@
 import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
+import { SortDialog, useSortQuery } from "@/components/search/sort";
+import { Star } from "@/components/ui/star";
+import { UserPic } from "@/components/ui/user-pic";
+import { Layout } from "@/layout";
 import {
   CategoryCard,
   ConsIcon,
@@ -8,11 +12,7 @@ import {
   NoImagePreview,
   ProsConsCommentWrapper,
   ProsIcon,
-} from "@/components/review";
-import { SortDialog, useSortQuery } from "@/components/search/sort";
-import { Star } from "@/components/ui/star";
-import { UserPic } from "@/components/ui/user-pic";
-import { Layout } from "@/layout";
+} from "@/product/components";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
@@ -36,7 +36,7 @@ type ProductPageProps = { barcode: string };
 function ProductPage({ barcode }: ProductPageProps) {
   const router = useRouter();
 
-  const summaryQuery = trpc.product.getProductSummary.useQuery(
+  const summaryQuery = trpc.product.getSummary.useQuery(
     { barcode },
     {
       select(data) {
@@ -71,7 +71,7 @@ export default Page;
 
 type SummaryProps = {
   barcode: string;
-  summary: NonNullable<RouterOutputs["product"]["getProductSummary"]>;
+  summary: NonNullable<RouterOutputs["product"]["getSummary"]>;
 };
 function Summary({
   barcode,
@@ -112,7 +112,7 @@ function Summary({
 
 type ProductNameProps = { barcode: string; name: string; reviewCount: number; rating: number };
 function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
-  const { data, isSuccess } = trpc.review.getUserReview.useQuery({ barcode });
+  const { data, isSuccess } = trpc.user.review.getOne.useQuery({ barcode });
 
   return (
     <Link
@@ -146,7 +146,7 @@ const sortByOptions = ["recent", "earliest", "best rated", "worst rated"] as con
 type SortyByOption = (typeof sortByOptions)[number];
 function parseSortByOption(
   option: SortyByOption,
-): RouterInputs["product"]["getProductReviews"]["sort"] {
+): RouterInputs["product"]["getReviewList"]["sort"] {
   switch (option) {
     case "recent":
       return { by: "date", desc: true };
@@ -167,7 +167,7 @@ type ReviewsProps = {
 };
 function Reviews({ barcode, reviewCount }: ReviewsProps) {
   const sortParam = useSortQuery(sortByOptions);
-  const reviewsQuery = trpc.product.getProductReviews.useInfiniteQuery(
+  const reviewsQuery = trpc.product.getReviewList.useInfiniteQuery(
     {
       barcode,
       limit: 10,
@@ -207,7 +207,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
   );
 }
 
-type Review = RouterOutputs["product"]["getProductReviews"]["page"][number];
+type Review = RouterOutputs["product"]["getReviewList"]["page"][number];
 type ReviewCardProps = {
   review: Review;
 };

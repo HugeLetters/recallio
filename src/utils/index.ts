@@ -13,3 +13,12 @@ export function isNonEmptyString(value: unknown): value is string {
 export function ignore() {
   return;
 }
+
+export function createTimer() {
+  let time = performance.now();
+  return function () {
+    const t = performance.now();
+    console.log(t - time);
+    time = t;
+  };
+}

@@ -2,15 +2,6 @@ import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
-import {
-  BarcodeTitle,
-  CategoryCard,
-  ConsIcon,
-  ImagePreview,
-  NoImagePreview,
-  ProsConsCommentWrapper,
-  ProsIcon,
-} from "@/components/review";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
 import { AutoresizableInput, Button, ButtonLike } from "@/components/ui";
@@ -21,10 +12,19 @@ import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
+import {
+  BarcodeTitle,
+  CategoryCard,
+  ConsIcon,
+  ImagePreview,
+  NoImagePreview,
+  ProsConsCommentWrapper,
+  ProsIcon,
+} from "@/product/components";
+import type { ReviewData } from "@/product/type";
 import { useReviewPrivateDefault } from "@/settings";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
-import type { RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { useUploadThing } from "@/uploadthing";
@@ -60,7 +60,6 @@ const Page: NextPageWithLayout = function () {
 Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
-type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
@@ -69,7 +68,7 @@ function transformReview(data: ReviewData | null): ReviewForm | null {
 
 type ReviewWrapperProps = { barcode: string };
 function ReviewWrapper({ barcode }: ReviewWrapperProps) {
-  const reviewQuery = trpc.review.getUserReview.useQuery(
+  const reviewQuery = trpc.user.review.getOne.useQuery(
     { barcode },
     { staleTime: Infinity, select: transformReview },
   );
@@ -147,14 +146,14 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
 
   const apiUtils = trpc.useUtils();
   function invalidateReviewData() {
-    const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
+    const optimisticImage = apiUtils.user.review.getOne.getData({ barcode })?.image;
     Promise.all([
-      apiUtils.review.getUserReview.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
+      apiUtils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
         if (!optimisticImage) return;
         URL.revokeObjectURL(optimisticImage);
       }),
-      apiUtils.review.getUserReviewSummaryList.invalidate(undefined, { refetchType: "all" }),
-      apiUtils.review.getReviewCount.invalidate(undefined, { refetchType: "all" }),
+      apiUtils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
+      apiUtils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
     ]).catch(
       logToastError("Couldn't update data from the server.\nReloading the page is advised."),
     );
@@ -162,7 +161,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
 
   const router = useRouter();
   function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
-    apiUtils.review.getUserReview.setData({ barcode }, (cache) => {
+    apiUtils.user.review.getOne.setData({ barcode }, (cache) => {
       if (!cache) {
         return { ...review, image: image ?? null };
       }
@@ -176,7 +175,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   }
 
   const [image, setImage] = useState<File | null>();
-  const { mutate: deleteImage } = trpc.review.deleteReviewImage.useMutation({
+  const { mutate: deleteImage } = trpc.user.review.deleteImage.useMutation({
     onSettled: invalidateReviewData,
     onError(e) {
       toast.error(`Couldn't delete image from review: ${e.message}`);
@@ -189,7 +188,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       invalidateReviewData();
     },
   });
-  const { mutate: saveReview, isLoading } = trpc.review.upsertReview.useMutation({
+  const { mutate: saveReview, isLoading } = trpc.user.review.upsert.useMutation({
     onError(e) {
       toast.error(`Error while trying to save the review: ${e.message}`);
       invalidateReviewData();
@@ -268,7 +267,7 @@ type NameProps = {
   register: UseFormRegisterReturn;
 };
 function Name({ barcode, register }: NameProps) {
-  const { data } = trpc.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
+  const { data } = trpc.product.getNames.useQuery({ barcode }, { staleTime: Infinity });
   const listId = "product-names";
   return (
     <label className="flex flex-col">
@@ -557,7 +556,7 @@ function CategorySearch({
   const searchParam: string = useSearchQuery() ?? "";
   const [search, setSearch] = useState(searchParam);
   const lowercaseSearch = search.toLowerCase();
-  const categoriesQuery = trpc.product.getCategories.useInfiniteQuery(
+  const categoriesQuery = trpc.product.getCategoryList.useInfiniteQuery(
     { filter: searchParam, limit: 30 },
     {
       enabled,

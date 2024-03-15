@@ -179,13 +179,13 @@ function UserName({ username }: UserNameProps) {
 
 function LinkedAccounts() {
   const trpcUtils = trpc.useUtils();
-  const { data: accounts } = trpc.user.getAccountProviders.useQuery();
-  const { mutate: deleteAccount, isLoading } = trpc.user.deleteAccount.useMutation({
+  const { data: accounts } = trpc.user.account.getProviders.useQuery();
+  const { mutate: deleteAccount, isLoading } = trpc.user.account.deleteAccount.useMutation({
     onMutate({ provider }) {
       // optimistic update
-      const prevProviders = trpcUtils.user.getAccountProviders.getData();
+      const prevProviders = trpcUtils.user.account.getProviders.getData();
 
-      trpcUtils.user.getAccountProviders.setData(undefined, (providers) =>
+      trpcUtils.user.account.getProviders.setData(undefined, (providers) =>
         providers?.filter((name) => name !== provider),
       );
 
@@ -193,10 +193,10 @@ function LinkedAccounts() {
     },
     onError(e, __, prevProviders) {
       toast.error(`Couldn't unlink account: ${e.message}`);
-      trpcUtils.user.getAccountProviders.setData(undefined, prevProviders);
+      trpcUtils.user.account.getProviders.setData(undefined, prevProviders);
     },
     onSettled() {
-      trpcUtils.user.getAccountProviders.invalidate().catch(console.error);
+      trpcUtils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
   useLoadingIndicator(isLoading, 300);
@@ -220,7 +220,7 @@ function LinkedAccounts() {
                   onCheckedChange={(value) => {
                     if (value) {
                       // optimistic update
-                      trpcUtils.user.getAccountProviders.setData(undefined, (providers) => {
+                      trpcUtils.user.account.getProviders.setData(undefined, (providers) => {
                         return [...(providers ?? []), provider];
                       });
                       signIn(provider).catch(

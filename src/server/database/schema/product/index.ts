@@ -1,13 +1,10 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "./auth";
+import { user } from "../user";
 
 export const category = sqliteTable("category", {
   name: text("name", { length: 31 }).primaryKey(),
 });
-export const categoryRelations = relations(category, ({ many }) => ({
-  reviews: many(reviewsToCategories),
-}));
 
 export const review = sqliteTable(
   "review",
@@ -36,13 +33,6 @@ export const review = sqliteTable(
     isPrivateIndex: index("review_is_private_index").on(table.isPrivate),
   }),
 );
-export const reviewRelations = relations(review, ({ many, one }) => ({
-  categories: many(reviewsToCategories),
-  user: one(user, {
-    fields: [review.userId],
-    references: [user.id],
-  }),
-}));
 export type ReviewInsert = typeof review.$inferInsert;
 
 export const reviewsToCategories = sqliteTable(
@@ -66,13 +56,3 @@ export const reviewsToCategories = sqliteTable(
     categoryIndex: index("reviews_to_categories_category_index").on(table.category),
   }),
 );
-export const reviewsToCategoriesRelations = relations(reviewsToCategories, ({ one }) => ({
-  review: one(review, {
-    fields: [reviewsToCategories.barcode, reviewsToCategories.userId],
-    references: [review.barcode, review.userId],
-  }),
-  category: one(category, {
-    fields: [reviewsToCategories.category],
-    references: [category.name],
-  }),
-}));

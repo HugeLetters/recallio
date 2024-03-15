@@ -1,7 +1,6 @@
 import type { AdapterAccount } from "@auth/core/adapters";
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { review } from "./product";
 
 export const user = sqliteTable("user", {
   id: text("id", { length: 255 }).notNull().primaryKey(),
@@ -11,11 +10,6 @@ export const user = sqliteTable("user", {
   /** Stored either as URL or an UploadThing key */
   image: text("image", { length: 255 }),
 });
-export const userRelations = relations(user, ({ many }) => ({
-  accounts: many(account),
-  sessions: many(session),
-  reviews: many(review),
-}));
 
 export const account = sqliteTable(
   "account",
@@ -43,12 +37,6 @@ export const account = sqliteTable(
     userIdIndex: index("account_user_id_index").on(table.userId),
   }),
 );
-export const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
 
 export const session = sqliteTable(
   "session",
@@ -64,12 +52,6 @@ export const session = sqliteTable(
     expiresIndex: index("session_expires_index").on(table.expires),
   }),
 );
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
-}));
 
 export const verificationToken = sqliteTable(
   "verification_token",

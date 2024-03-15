@@ -18,7 +18,7 @@ const Page: NextPageWithLayout = function () {
   const sort = parseSortParam(sortParam);
   const filter = useSearchQuery();
 
-  const productListQuery = trpc.product.getProductSummaryList.useInfiniteQuery(
+  const productListQuery = trpc.product.getSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
     { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady },
   );
@@ -80,7 +80,7 @@ export default Page;
 
 const sortOptionList = ["most popular", "least popular", "best rated", "worst rated"] as const;
 type SortOption = (typeof sortOptionList)[number];
-type SortQuery = RouterInputs["product"]["getProductSummaryList"]["sort"];
+type SortQuery = RouterInputs["product"]["getSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
     case "most popular":

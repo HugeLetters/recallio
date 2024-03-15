@@ -1,11 +1,11 @@
 import { env } from "@/env/index.mjs";
-import { appRouter } from "@/server/api";
+import { apiRouter } from "@/server/api/router";
 import { createTRPCContext } from "@/server/api/trpc";
 import { createNextApiHandler } from "@trpc/server/adapters/next";
 
 // export API handler
 export default createNextApiHandler({
-  router: appRouter,
+  router: apiRouter,
   createContext: createTRPCContext,
   onError:
     env.NEXT_PUBLIC_NODE_ENV === "development"

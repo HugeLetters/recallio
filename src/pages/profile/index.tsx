@@ -73,7 +73,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
 
 const sortOptionList = ["recent", "earliest", "best rated", "worst rated"] as const;
 function Reviews() {
-  const countQuery = trpc.review.getReviewCount.useQuery(undefined, {
+  const countQuery = trpc.user.review.getCount.useQuery(undefined, {
     staleTime: minutesToMs(5),
   });
 
@@ -93,7 +93,7 @@ function Reviews() {
 }
 
 type SortOption = (typeof sortOptionList)[number];
-type SortQuery = RouterInputs["review"]["getUserReviewSummaryList"]["sort"];
+type SortQuery = RouterInputs["user"]["review"]["getSummaryList"]["sort"];
 function parseSortParam(param: SortOption): SortQuery {
   switch (param) {
     case "recent":
@@ -115,7 +115,7 @@ function ReviewCards() {
   const sortParam = useSortQuery(sortOptionList);
   const filter = useSearchQuery();
 
-  const reviewCardsQuery = trpc.review.getUserReviewSummaryList.useInfiniteQuery(
+  const reviewCardsQuery = trpc.user.review.getSummaryList.useInfiniteQuery(
     {
       limit: 20,
       filter,
@@ -153,7 +153,7 @@ function ReviewCards() {
 }
 
 const ratings = [1, 2, 3, 4, 5] as const;
-type ReviewSummary = RouterOutputs["review"]["getUserReviewSummaryList"]["page"][number];
+type ReviewSummary = RouterOutputs["user"]["review"]["getSummaryList"]["page"][number];
 type ReviewCardProps = { review: ReviewSummary };
 function ReviewCard({ review }: ReviewCardProps) {
   return (

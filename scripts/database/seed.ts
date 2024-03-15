@@ -1,9 +1,9 @@
 import { blobToFile } from "@/image/blob";
 import { db } from "@/server/database";
-import { user } from "@/server/database/schema/auth";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
-import { utapi } from "@/server/uploadthing";
+import { user } from "@/server/database/schema/user";
+import { utapi } from "@/server/uploadthing/api";
 import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array/filter";
 import { faker } from "@faker-js/faker";
