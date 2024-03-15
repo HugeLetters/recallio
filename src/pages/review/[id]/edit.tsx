@@ -113,7 +113,6 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
-      // todo - submit new categories & deleted categories
       const { categories: categoriesField, image: _, ...restData } = data;
       const newCategories = categoriesField.map(({ name }) => name);
 

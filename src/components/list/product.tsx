@@ -57,7 +57,7 @@ export function Card({
 
 export function NoResults() {
   return (
-    <div className="flex w-full grow flex-col items-center justify-center px-12">
+    <div className="flex w-full grow flex-col items-center justify-center px-12 text-center">
       <EggBasketIcon className="h-auto w-full" />
       <span className="pt-4 text-xl">No results found</span>
       <span className="text-sm">Try using different keywords</span>

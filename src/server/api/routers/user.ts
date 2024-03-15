@@ -77,7 +77,6 @@ export const userRouter = createTRPCRouter({
         }
 
         if (!URL.canParse(image)) {
-          // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
           return utapi.deleteFiles([image]).then(ignore);
         }
       })
@@ -123,7 +122,6 @@ export const userRouter = createTRPCRouter({
           ];
 
           if (!images.length) return;
-          // todo - add to pending delete table, delete files in cron
           return utapi.deleteFiles(images).then(ignore);
         });
       })

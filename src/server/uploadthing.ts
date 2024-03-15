@@ -11,7 +11,6 @@ import { z } from "zod";
 import { getServerAuthSession } from "./auth";
 
 // todo - server ddd
-// todo - notify user on image upload
 const uploadthing = createUploadthing();
 
 export const utapi = new UTApi({ apiKey: env.UPLOADTHING_SECRET });
@@ -45,7 +44,6 @@ export const appFileRouter = {
       console.error(error);
     })
     .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
-      // todo - signal if ok or not
       return db
         .transaction(async (tx) => {
           await tx
@@ -88,7 +86,6 @@ export const appFileRouter = {
       console.error(error);
     })
     .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
-      // todo - signal if ok or not
       return db
         .update(user)
         .set({ image: file.key })

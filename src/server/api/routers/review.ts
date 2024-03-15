@@ -20,8 +20,6 @@ import {
 } from "../utils/zod";
 import { ignore } from "@/utils";
 
-// todo - return new data from mutations to cache on client
-
 const reviewSummaryPagination = createPagination(
   z.object({
     barcode: createBarcodeSchema(undefined),
@@ -248,7 +246,6 @@ export const reviewRouter = createTRPCRouter({
           }
 
           if (!review.imageKey) return;
-          // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
           return utapi.deleteFiles(review.imageKey).then(ignore);
         })
         .catch((e) => throwDefaultError(e, `Failed to delete your review for barcode ${barcode}.`));
@@ -283,7 +280,6 @@ export const reviewRouter = createTRPCRouter({
             });
           }
 
-          // todo - 1) put this into transaction 2) add file key to pending delete, delete files in cron
           return utapi.deleteFiles(review.imageKey).then(ignore);
         })
         .catch((e) => throwDefaultError(e, "Failed to delete image"));

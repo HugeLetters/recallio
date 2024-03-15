@@ -28,7 +28,6 @@ const Page: NextPageWithLayout = function () {
         onSubmit={(e) => {
           e.preventDefault();
 
-          // todo - validate callback url?
           const { callbackUrl = "/profile", email } = router.query;
           router
             .push({
