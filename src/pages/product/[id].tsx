@@ -2,7 +2,7 @@ import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import {
-  CategoryButton,
+  CategoryCard,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
@@ -95,21 +95,16 @@ function Summary({
         <span className="text-neutral-400">{barcode}</span>
       </div>
       {!!categories?.length && (
-        <div className="flex flex-col gap-2 text-xs">
-          <span>Category</span>
-          <div className="flex gap-3">
+        <section className="flex flex-col gap-2 text-xs">
+          <h2>Category</h2>
+          <ul className="flex gap-2">
             {categories.map((category) => (
-              <CategoryButton
-                disabled
-                className="disabled"
-                role="generic"
-                key={category}
-              >
-                {category}
-              </CategoryButton>
+              <CategoryCard key={category}>
+                <li>{category}</li>
+              </CategoryCard>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
     </div>
   );

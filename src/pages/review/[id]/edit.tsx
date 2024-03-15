@@ -4,7 +4,7 @@ import { useLoadingIndicator } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
 import {
   BarcodeTitle,
-  CategoryButton,
+  CategoryCard,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
@@ -251,7 +251,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       {hasReview && (
         <Link
           href={{ pathname: "/review/[id]", query: { id: barcode } }}
-          className="btn ghost text-center"
+          className="clickable btn ghost text-center"
         >
           Cancel
         </Link>
@@ -419,7 +419,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
         onChange={(e) => {
           setValue(e.target.files?.item(0));
         }}
-        className="btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
+        className="clickable btn ghost rounded-lg px-4 py-0 outline-1 focus-within:outline-app-green-500"
       >
         {src ? "Change image" : "Upload image"}
       </ImagePicker>
@@ -478,24 +478,25 @@ function CategoryList({ control }: CategoryListProps) {
           open();
         }}
       >
-        <Toolbar.Root className="flex flex-wrap gap-2 text-xs">
-          <Toolbar.Button asChild>
-            <Dialog.Trigger
-              asChild
-              aria-disabled={isAtCategoryLimit}
-            >
-              <CategoryButton className={tw(isAtCategoryLimit && "opacity-60")}>
+        <Toolbar.Root
+          className="flex flex-wrap gap-2 text-xs"
+          aria-label="Review categories"
+        >
+          <CategoryCard>
+            <Toolbar.Button asChild>
+              <Dialog.Trigger
+                aria-disabled={isAtCategoryLimit}
+                className="clickable aria-disabled:opacity-60"
+              >
                 <PlusIcon className="size-6" />
                 <span className="whitespace-nowrap py-2">Add category</span>
-              </CategoryButton>
-            </Dialog.Trigger>
-          </Toolbar.Button>
+              </Dialog.Trigger>
+            </Toolbar.Button>
+          </CategoryCard>
           {categories.map(({ name }) => (
-            <Toolbar.Button
-              key={name}
-              asChild
-            >
-              <CategoryButton
+            <CategoryCard key={name}>
+              <Toolbar.Button
+                className="clickable"
                 aria-label={`Delete category ${name}`}
                 onClick={(e) => {
                   remove(name);
@@ -511,8 +512,8 @@ function CategoryList({ control }: CategoryListProps) {
                 <div className="flex h-6 items-center">
                   <DeleteIcon className="size-3" />
                 </div>
-              </CategoryButton>
-            </Toolbar.Button>
+              </Toolbar.Button>
+            </CategoryCard>
           ))}
         </Toolbar.Root>
         <Dialog.Portal>

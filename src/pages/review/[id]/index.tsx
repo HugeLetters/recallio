@@ -2,7 +2,7 @@ import { getQueryParam } from "@/browser/query";
 import { useSetLoadingIndicator } from "@/components/loading/indicator";
 import {
   BarcodeTitle,
-  CategoryButton,
+  CategoryCard,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
@@ -67,21 +67,16 @@ function Review({ barcode }: ReviewProps) {
         />
       </div>
       {!!review.categories.length && (
-        <div className="flex flex-col gap-1 text-xs">
-          <div>Category</div>
-          <div className="flex flex-wrap gap-2">
+        <section className="flex flex-col gap-1 text-xs">
+          <h2>Category</h2>
+          <ul className="flex flex-wrap gap-2">
             {review.categories.map((label) => (
-              <CategoryButton
-                disabled
-                className="disabled"
-                role="generic"
-                key={label}
-              >
-                {label}
-              </CategoryButton>
+              <CategoryCard key={label}>
+                <li>{label}</li>
+              </CategoryCard>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
       <Rating value={review.rating} />
       <ProsConsComment review={review} />
@@ -95,7 +90,7 @@ function Review({ barcode }: ReviewProps) {
       </div>
       <Link
         href={{ pathname: "/review/[id]/edit", query: { id: barcode } }}
-        className="btn ghost flex items-center justify-center"
+        className="clickable btn ghost flex items-center justify-center"
       >
         Update review
       </Link>
