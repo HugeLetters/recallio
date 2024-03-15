@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 
 export function blobToFile(blob: Blob, name: string) {
   const fileExt = blob.type.match(/.+\/(.+$)/)?.at(1) ?? "webp";
@@ -9,18 +9,15 @@ export function blobToFile(blob: Blob, name: string) {
 }
 
 export function useBlobUrl<B extends Blob | null | undefined>(blob: B) {
-  const url = useMemo(
-    () => (typeof blob === "undefined" || blob === null ? blob : URL.createObjectURL(blob)),
-    [blob],
-  );
-  const oldUrl = useRef(url);
+  const url = useMemo(() => {
+    return typeof blob === "undefined" || blob === null ? blob : URL.createObjectURL(blob);
+  }, [blob]);
 
   useEffect(() => {
-    if (oldUrl.current) {
-      // timeout so that on unmount it doesn't revoke it before a new element renders
-      setTimeout((url) => URL.revokeObjectURL(url), 1000, oldUrl.current);
-    }
-    oldUrl.current = url;
+    return () => {
+      if (!url) return;
+      URL.revokeObjectURL(url);
+    };
   }, [url]);
 
   return url;

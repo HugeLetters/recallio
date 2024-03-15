@@ -104,9 +104,10 @@ function UserImage({ user }: UserImageProps) {
         />
         {!!optimisticUser.image && (
           <button
-            className="absolute right-0 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
+            type="button"
             onClick={() => updateUserImage(null)}
             aria-label="Delete avatar"
+            className="absolute right-0 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 text-rose-700"
           >
             <DeleteIcon />
           </button>
