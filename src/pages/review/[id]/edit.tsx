@@ -401,7 +401,8 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
       <div className="relative size-16">
         {src ? <ImagePreview src={src} /> : <NoImagePreview />}
         {isImagePresent && (
-          <Button
+          <button
+            type="button"
             className={tw(
               "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
               src ? "text-app-red-500" : "text-neutral-950",
@@ -412,7 +413,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
             aria-label={src ? "Delete image" : "Reset image"}
           >
             {src ? <DeleteIcon /> : <ResetIcon />}
-          </Button>
+          </button>
         )}
       </div>
       <ImagePickerButton
