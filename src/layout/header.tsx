@@ -1,5 +1,6 @@
-import { tw } from "@/utils";
-import type { DiscriminatedUnion, Icon } from "@/utils/type";
+import type { Icon } from "@/image/icon";
+import { tw } from "@/styles/tw";
+import type { DiscriminatedUnion } from "@/utils/object";
 import Link from "next/link";
 import router from "next/router";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";

@@ -1,5 +1,5 @@
-import { tw } from "@/utils";
-import type { StrictOmit } from "@/utils/type";
+import { tw } from "@/styles/tw";
+import type { StrictOmit } from "@/utils/object";
 import * as Toast from "@radix-ui/react-toast";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { forwardRef } from "react";

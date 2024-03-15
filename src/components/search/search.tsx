@@ -1,6 +1,6 @@
-import { hasFocusWithin } from "@/hooks";
-import { getQueryParam, setQueryParam } from "@/utils/query";
-import type { ModelProps } from "@/utils/type";
+import { hasFocusWithin } from "@/browser/focus";
+import { getQueryParam, setQueryParam } from "@/browser/query";
+import type { Model } from "@/state/type";
 import { useRouter } from "next/router";
 import type { FormEvent, MutableRefObject, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -66,7 +66,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   );
 }
 
-type DebouncedSearchProps = ModelProps<string> & {
+type DebouncedSearchProps = Model<string> & {
   onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   onReset?: () => void;
   debounceRef: MutableRefObject<number | undefined>;

@@ -1,6 +1,6 @@
-import { tw } from "@/utils";
-import { lato } from "@/utils/font";
-import { getQueryParam, setQueryParam } from "@/utils/query";
+import { getQueryParam, setQueryParam } from "@/browser/query";
+import { lato } from "@/styles/font";
+import { tw } from "@/styles/tw";
 import { Overlay, Root } from "@radix-ui/react-dialog";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithRef, PropsWithChildren } from "react";

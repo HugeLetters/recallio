@@ -1,16 +1,18 @@
+import { signOut } from "@/auth";
+import { providerIcons } from "@/auth/provider";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
-import { ImagePicker } from "@/components/ui/image-picker";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { UserPic } from "@/components/ui/user-pic";
-import { useOptimistic, useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { compressImage } from "@/image/compress";
+import { ImagePicker } from "@/image/image-picker";
 import { Layout } from "@/layout";
-import { signOut } from "@/utils";
-import { api } from "@/utils/api";
-import { compressImage } from "@/utils/image";
-import { providerIcons } from "@/utils/providers";
+import { useReviewPrivateDefault } from "@/settings";
+import { useOptimistic } from "@/state/optimistic";
+import { trpc } from "@/trpc";
+import { useUploadThing } from "@/uploadthing";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
@@ -86,7 +88,7 @@ function UserImage({ user }: UserImageProps) {
     },
   });
 
-  const { mutate: remove, isLoading } = api.user.deleteImage.useMutation({
+  const { mutate: remove, isLoading } = trpc.user.deleteImage.useMutation({
     onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
@@ -129,7 +131,7 @@ const USERNAME_MIN_LENGTH = 4;
 function UserName({ username }: UserNameProps) {
   const { update } = useSession();
   const [value, setValue] = useState(username);
-  const { mutate, isLoading } = api.user.setName.useMutation({
+  const { mutate, isLoading } = trpc.user.setName.useMutation({
     onSettled() {
       update()
         .then((session) => {
@@ -177,9 +179,9 @@ function UserName({ username }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const trpcUtils = api.useUtils();
-  const { data: accounts } = api.user.getAccountProviders.useQuery();
-  const { mutate: deleteAccount, isLoading } = api.user.deleteAccount.useMutation({
+  const trpcUtils = trpc.useUtils();
+  const { data: accounts } = trpc.user.getAccountProviders.useQuery();
+  const { mutate: deleteAccount, isLoading } = trpc.user.deleteAccount.useMutation({
     onMutate({ provider }) {
       // optimistic update
       const prevProviders = trpcUtils.user.getAccountProviders.getData();
@@ -265,7 +267,7 @@ type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
   const [, setValue] = useReviewPrivateDefault();
   const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
-  const { mutate, isLoading } = api.user.deleteUser.useMutation({
+  const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {
       setIsOpen(false);
       setValue(true);

@@ -5,9 +5,9 @@ import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
 import { Layout } from "@/layout";
-import { fetchNextPage } from "@/utils";
-import type { RouterInputs } from "@/utils/api";
-import { api } from "@/utils/api";
+import type { RouterInputs } from "@/trpc";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
@@ -18,7 +18,7 @@ const Page: NextPageWithLayout = function () {
   const sort = parseSortParam(sortParam);
   const filter = useSearchQuery();
 
-  const productListQuery = api.product.getProductSummaryList.useInfiniteQuery(
+  const productListQuery = trpc.product.getProductSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
     { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady },
   );

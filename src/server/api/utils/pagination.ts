@@ -1,6 +1,6 @@
-import { isSome } from "@/utils";
 import type { NonEmptyArray } from "@/utils/array";
-import type { Option } from "@/utils/type";
+import type { Option } from "@/utils/option";
+import { isSome } from "@/utils/option";
 import { z } from "zod";
 
 const limitBaseSchema = z.number().int().min(1).max(100);

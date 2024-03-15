@@ -1,4 +1,4 @@
-import { Store } from "@/utils/store";
+import { Store } from "@/state/store";
 import type { ReactNode } from "react";
 import { flushSync } from "react-dom";
 

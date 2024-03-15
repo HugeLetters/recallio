@@ -1,11 +1,11 @@
+import { blobToFile } from "@/image/blob";
 import { db } from "@/server/database";
 import { user } from "@/server/database/schema/auth";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { clamp } from "@/utils";
-import { filterMap } from "@/utils/array";
-import { blobToFile } from "@/utils/image";
+import { filterMap } from "@/utils/array/filter";
 import { faker } from "@faker-js/faker";
 import type { SQL } from "drizzle-orm";
 import { and, asc, like, lt } from "drizzle-orm";

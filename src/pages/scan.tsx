@@ -1,10 +1,10 @@
+import { useSwipe } from "@/browser/swipe";
 import { logToastError, toast } from "@/components/toast";
-import { ImagePicker } from "@/components/ui/image-picker";
-import { useSwipe } from "@/hooks";
+import { ImagePicker } from "@/image/image-picker";
 import { Layout } from "@/layout";
 import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
-import { tw } from "@/utils";
-import { useStore } from "@/utils/store";
+import { useStore } from "@/state/store";
+import { tw } from "@/styles/tw";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Slot } from "@radix-ui/react-slot";
 import type { QrcodeSuccessCallback } from "html5-qrcode";

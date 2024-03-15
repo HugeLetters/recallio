@@ -1,5 +1,5 @@
-import { useClient } from "@/hooks/client";
-import { Store, useStore } from "@/utils/store";
+import { useClient } from "@/browser";
+import { Store, useStore } from "@/state/store";
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";

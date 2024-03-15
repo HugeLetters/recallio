@@ -6,7 +6,7 @@ import { category, review, reviewsToCategories } from "@/server/database/schema/
 import { cacheProductNames, getProductNames } from "@/server/redis";
 import { getFileUrl } from "@/server/uploadthing";
 import getScrapedProducts from "@/server/utils/scrapers";
-import { mostCommonItems } from "@/utils/array";
+import { mostCommon } from "@/utils/array";
 import type { SQL } from "drizzle-orm";
 import { and, asc, desc, eq, exists, gt, like, lt, or } from "drizzle-orm";
 import { z } from "zod";
@@ -45,7 +45,7 @@ const productSummaryListQuery = protectedProcedure
     const sq = db
       .select({
         barcode: review.barcode,
-        names: query.aggregate(review.name, mostCommonItems(4)).as("names"),
+        names: query.aggregate(review.name, mostCommon(4)).as("names"),
         averageRating: ratingCol,
         reviewCount: reviewCol,
         image: query.min(review.imageKey).as("image"),
@@ -214,9 +214,7 @@ export const productRouter = createTRPCRouter({
       const categorySq = db
         .select({
           barcode: reviewsToCategories.barcode,
-          categories: query
-            .aggregate(reviewsToCategories.barcode, mostCommonItems(3))
-            .as("categories"),
+          categories: query.aggregate(reviewsToCategories.barcode, mostCommon(3)).as("categories"),
         })
         .from(reviewsToCategories)
         .where(
@@ -241,7 +239,7 @@ export const productRouter = createTRPCRouter({
 
       return db
         .select({
-          name: query.aggregate(review.name, (x) => mostCommonItems(1)(x)[0]!),
+          name: query.aggregate(review.name, (x) => mostCommon(1)(x)[0]!),
           rating: query.avg(review.rating),
           reviewCount: query.count(),
           image: query.map(query.min(review.imageKey), getFileUrl),

@@ -1,6 +1,7 @@
-import { hasFocusWithin, useHasMouse } from "@/hooks";
-import { tw } from "@/utils";
-import { useStore } from "@/utils/store";
+import { useHasMouse } from "@/browser";
+import { hasFocusWithin } from "@/browser/focus";
+import { useStore } from "@/state/store";
+import { tw } from "@/styles/tw";
 import * as Toast from "@radix-ui/react-toast";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";

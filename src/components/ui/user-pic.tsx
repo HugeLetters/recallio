@@ -1,6 +1,6 @@
 import BlankAvatarBg from "@/assets/blank-avatar.png";
-import { tw } from "@/utils";
-import type { StrictOmit } from "@/utils/type";
+import { tw } from "@/styles/tw";
+import type { StrictOmit } from "@/utils/object";
 import type { Session } from "next-auth";
 import Image from "next/image";
 import type { ComponentPropsWithoutRef } from "react";

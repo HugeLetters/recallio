@@ -1,3 +1,4 @@
+import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
@@ -14,23 +15,22 @@ import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components
 import { logToastError, toast } from "@/components/toast";
 import { AutoresizableInput, Button } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
-import { ImagePicker } from "@/components/ui/image-picker";
 import { Star } from "@/components/ui/star";
 import { LabeledSwitch } from "@/components/ui/switch";
-import { useReviewPrivateDefault, useUploadThing } from "@/hooks";
+import { useBlobUrl } from "@/image/blob";
+import { compressImage } from "@/image/compress";
+import { ImagePicker } from "@/image/image-picker";
 import { Layout } from "@/layout";
-import { fetchNextPage, isSetEqual, mergeInto, minutesToMs, tw } from "@/utils";
-import type { RouterOutputs } from "@/utils/api";
-import { api } from "@/utils/api";
-import { compressImage, useBlobUrl } from "@/utils/image";
-import { getQueryParam } from "@/utils/query";
-import type {
-  ModelProps,
-  NextPageWithLayout,
-  Nullish,
-  StrictOmit,
-  TransformType,
-} from "@/utils/type";
+import { useReviewPrivateDefault } from "@/settings";
+import type { Model } from "@/state/type";
+import { tw } from "@/styles/tw";
+import { trpc, type RouterOutputs } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
+import { useUploadThing } from "@/uploadthing";
+import { minutesToMs } from "@/utils";
+import { merge, type StrictOmit, type TransformType } from "@/utils/object";
+import { isSetEqual } from "@/utils/set";
+import type { NextPageWithLayout, Nullish } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -62,12 +62,12 @@ type ReviewData = NonNullable<RouterOutputs["review"]["getUserReview"]>;
 type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
-  return mergeInto(data, { categories: data.categories.map((x) => ({ name: x })) });
+  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
 }
 
 type ReviewWrapperProps = { barcode: string };
 function ReviewWrapper({ barcode }: ReviewWrapperProps) {
-  const reviewQuery = api.review.getUserReview.useQuery(
+  const reviewQuery = trpc.review.getUserReview.useQuery(
     { barcode },
     { staleTime: Infinity, select: transformReview },
   );
@@ -144,7 +144,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       .catch(logToastError("Couldn't upload the image.\nPlease try again."));
   }
 
-  const apiUtils = api.useUtils();
+  const apiUtils = trpc.useUtils();
   function invalidateReviewData() {
     const optimisticImage = apiUtils.review.getUserReview.getData({ barcode })?.image;
     Promise.all([
@@ -175,7 +175,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   }
 
   const [image, setImage] = useState<File | null>();
-  const { mutate: deleteImage } = api.review.deleteReviewImage.useMutation({
+  const { mutate: deleteImage } = trpc.review.deleteReviewImage.useMutation({
     onSettled: invalidateReviewData,
     onError(e) {
       toast.error(`Couldn't delete image from review: ${e.message}`);
@@ -188,7 +188,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       invalidateReviewData();
     },
   });
-  const { mutate: saveReview, isLoading } = api.review.upsertReview.useMutation({
+  const { mutate: saveReview, isLoading } = trpc.review.upsertReview.useMutation({
     onError(e) {
       toast.error(`Error while trying to save the review: ${e.message}`);
       invalidateReviewData();
@@ -265,7 +265,7 @@ type NameProps = {
   register: UseFormRegisterReturn;
 };
 function Name({ barcode, register }: NameProps) {
-  const { data } = api.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
+  const { data } = trpc.product.getProductNames.useQuery({ barcode }, { staleTime: Infinity });
   const listId = "product-names";
   return (
     <label className="flex flex-col">
@@ -289,7 +289,7 @@ function Name({ barcode, register }: NameProps) {
 }
 
 const ratingList = [1, 2, 3, 4, 5] as const;
-function Rating({ value, setValue }: ModelProps<number>) {
+function Rating({ value, setValue }: Model<number>) {
   return (
     <Radio.Root
       value={value.toString()}
@@ -372,7 +372,7 @@ function ProsConsComment({
   );
 }
 
-function Private({ value, setValue }: ModelProps<boolean>) {
+function Private({ value, setValue }: Model<boolean>) {
   return (
     <LabeledSwitch
       className={tw(
@@ -387,7 +387,7 @@ function Private({ value, setValue }: ModelProps<boolean>) {
   );
 }
 
-type AttachedImageProps = { savedImage: string | null } & ModelProps<Nullish<File>>; // null - delete, undefined - keep as is
+type AttachedImageProps = { savedImage: string | null } & Model<Nullish<File>>; // null - delete, undefined - keep as is
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useBlobUrl(value);
   const src = value === null ? null : base64Image ?? savedImage;
@@ -554,7 +554,7 @@ function CategorySearch({
   const searchParam: string = useSearchQuery() ?? "";
   const [search, setSearch] = useState(searchParam);
   const lowercaseSearch = search.toLowerCase();
-  const categoriesQuery = api.product.getCategories.useInfiniteQuery(
+  const categoriesQuery = trpc.product.getCategories.useInfiniteQuery(
     { filter: searchParam, limit: 30 },
     {
       enabled,

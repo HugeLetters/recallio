@@ -1,3 +1,4 @@
+import { getQueryParam } from "@/browser/query";
 import { useSetLoadingIndicator } from "@/components/loading/indicator";
 import {
   BarcodeTitle,
@@ -13,10 +14,9 @@ import { Button } from "@/components/ui";
 import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { Layout } from "@/layout";
-import { tw } from "@/utils";
-import type { RouterOutputs } from "@/utils/api";
-import { api } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
+import { tw } from "@/styles/tw";
+import type { RouterOutputs } from "@/trpc";
+import { trpc } from "@/trpc";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
@@ -38,7 +38,7 @@ export default Page;
 type ReviewProps = { barcode: string };
 function Review({ barcode }: ReviewProps) {
   const router = useRouter();
-  const reviewQuery = api.review.getUserReview.useQuery(
+  const reviewQuery = trpc.review.getUserReview.useQuery(
     { barcode },
     {
       select(data) {
@@ -150,7 +150,7 @@ function AttachedImage({ image }: AttachedImageProps) {
 
 type NameProps = { barcode: string; name: string };
 function Name({ barcode, name }: NameProps) {
-  const { data } = api.product.getProductSummary.useQuery({ barcode });
+  const { data } = trpc.product.getProductSummary.useQuery({ barcode });
 
   const nameDiv = (
     <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xl">{name}</div>
@@ -213,9 +213,9 @@ type DeleteButtonProps = { barcode: string };
 const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
-  const apiUtils = api.useUtils();
+  const apiUtils = trpc.useUtils();
   const loading = useSetLoadingIndicator();
-  const { mutate } = api.review.deleteReview.useMutation({
+  const { mutate } = trpc.review.deleteReview.useMutation({
     onMutate() {
       loading.enable();
       router.push("/profile").catch(console.error);

@@ -12,6 +12,7 @@ type SetQueryParamOptions = {
   value?: string | null;
   push?: boolean;
 };
+
 /** Deletes falsy values */
 export function setQueryParam({ key, router, push, value }: SetQueryParamOptions) {
   if (!value) {

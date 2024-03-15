@@ -1,4 +1,4 @@
-import type { DistributedRecord } from "@/utils/type";
+import type { DistributedRecord } from "@/utils/object";
 import type { CSSProperties } from "react";
 import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";

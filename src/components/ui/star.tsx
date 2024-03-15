@@ -1,4 +1,4 @@
-import { tw } from "@/utils";
+import { tw } from "@/styles/tw";
 import StarIcon from "~icons/typcn/star-full-outline";
 
 type StarProps = { highlight?: boolean; className?: string };

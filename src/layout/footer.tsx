@@ -1,9 +1,9 @@
 import { Flipped } from "@/animation/flip";
 import { ToolbarLink } from "@/components/ui/toolbar";
-import { tw } from "@/utils";
+import type { Icon } from "@/image/icon";
+import { DerivedStore, Store, useStore } from "@/state/store";
+import { tw } from "@/styles/tw";
 import { indexOf } from "@/utils/array";
-import { DerivedStore, Store, useStore } from "@/utils/store";
-import type { Icon } from "@/utils/type";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import type { LinkProps } from "next/link";
 import { useRouter } from "next/router";

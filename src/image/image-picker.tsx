@@ -1,4 +1,4 @@
-import { tw } from "@/utils";
+import { tw } from "@/styles/tw";
 import type { ComponentPropsWithoutRef } from "react";
 import { forwardRef, useEffect, useRef } from "react";
 

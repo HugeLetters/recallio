@@ -7,9 +7,10 @@ import { Star } from "@/components/ui/star";
 import { UserPic } from "@/components/ui/user-pic";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
-import { fetchNextPage, minutesToMs } from "@/utils";
-import type { RouterInputs, RouterOutputs } from "@/utils/api";
-import { api } from "@/utils/api";
+import type { RouterInputs, RouterOutputs } from "@/trpc";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
+import { minutesToMs } from "@/utils";
 import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
@@ -71,7 +72,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
 
 const sortOptionList = ["recent", "earliest", "best rated", "worst rated"] as const;
 function Reviews() {
-  const countQuery = api.review.getReviewCount.useQuery(undefined, {
+  const countQuery = trpc.review.getReviewCount.useQuery(undefined, {
     staleTime: minutesToMs(5),
   });
 
@@ -113,7 +114,7 @@ function ReviewCards() {
   const sortParam = useSortQuery(sortOptionList);
   const filter = useSearchQuery();
 
-  const reviewCardsQuery = api.review.getUserReviewSummaryList.useInfiniteQuery(
+  const reviewCardsQuery = trpc.review.getUserReviewSummaryList.useInfiniteQuery(
     {
       limit: 20,
       filter,

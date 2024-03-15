@@ -1,4 +1,4 @@
-import { tw } from "@/utils";
+import { tw } from "@/styles/tw";
 
 const DURATION = 1000;
 const DOT_COUNT = 12;

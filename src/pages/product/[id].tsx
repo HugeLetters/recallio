@@ -1,3 +1,4 @@
+import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import {
@@ -12,10 +13,9 @@ import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
 import { UserPic } from "@/components/ui/user-pic";
 import { Layout } from "@/layout";
-import { fetchNextPage } from "@/utils";
-import type { RouterInputs, RouterOutputs } from "@/utils/api";
-import { api } from "@/utils/api";
-import { getQueryParam } from "@/utils/query";
+import type { RouterInputs, RouterOutputs } from "@/trpc";
+import { trpc } from "@/trpc";
+import { fetchNextPage } from "@/trpc/infinite-query";
 import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -36,7 +36,7 @@ type ProductPageProps = { barcode: string };
 function ProductPage({ barcode }: ProductPageProps) {
   const router = useRouter();
 
-  const summaryQuery = api.product.getProductSummary.useQuery(
+  const summaryQuery = trpc.product.getProductSummary.useQuery(
     { barcode },
     {
       select(data) {
@@ -117,7 +117,7 @@ function Summary({
 
 type ProductNameProps = { barcode: string; name: string; reviewCount: number; rating: number };
 function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
-  const { data, isSuccess } = api.review.getUserReview.useQuery({ barcode });
+  const { data, isSuccess } = trpc.review.getUserReview.useQuery({ barcode });
 
   return (
     <Link
@@ -172,7 +172,7 @@ type ReviewsProps = {
 };
 function Reviews({ barcode, reviewCount }: ReviewsProps) {
   const sortParam = useSortQuery(sortByOptions);
-  const reviewsQuery = api.product.getProductReviews.useInfiniteQuery(
+  const reviewsQuery = trpc.product.getProductReviews.useInfiniteQuery(
     {
       barcode,
       limit: 10,

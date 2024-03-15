@@ -1,5 +1,5 @@
+import type { Icon } from "@/image/icon";
 import type { Entries, NonEmptyArray } from "@/utils/array";
-import type { Icon } from "@/utils/type";
 import type { OAuthProviderType } from "next-auth/providers";
 import DiscordIcon from "~icons/logos/discord-icon";
 import GoogleIcon from "~icons/logos/google-icon";

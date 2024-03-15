@@ -1,6 +1,6 @@
+import { providerIcons } from "@/auth/provider";
+import { getQueryParam } from "@/browser/query";
 import { Button, Input, WithLabel } from "@/components/ui";
-import { providerIcons } from "@/utils/providers";
-import { getQueryParam } from "@/utils/query";
 import type { NextPageWithLayout } from "@/utils/type";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";

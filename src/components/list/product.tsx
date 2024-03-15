@@ -1,4 +1,4 @@
-import type { StrictOmit } from "@/utils/type";
+import type { StrictOmit } from "@/utils/object";
 import Image from "next/image";
 import type { LinkProps } from "next/link";
 import type { PropsWithChildren } from "react";

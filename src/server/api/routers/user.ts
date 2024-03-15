@@ -1,11 +1,11 @@
+import { providers } from "@/auth/provider";
 import { db } from "@/server/database";
 import { query } from "@/server/database/query/utils";
 import { account, user, verificationToken } from "@/server/database/schema/auth";
 import { review } from "@/server/database/schema/product";
 import { utapi } from "@/server/uploadthing";
 import { ignore } from "@/utils";
-import { mapFilter } from "@/utils/array";
-import { providers } from "@/utils/providers";
+import { mapFilter } from "@/utils/array/filter";
 import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import { browser } from ".";
+import { browser } from "@/browser";
+import { blobToFile } from "./blob";
 
 export async function compressImage(file: File, targetBytes: number): Promise<File | null> {
   if (!browser) throw Error("This function is browser-only");
@@ -48,30 +48,4 @@ export async function compressImage(file: File, targetBytes: number): Promise<Fi
 
   if (!bestFit) return null;
   return blobToFile(bestFit, file.name);
-}
-
-export function blobToFile(blob: Blob, name: string) {
-  const fileExt = blob.type.match(/.+\/(.+$)/)?.at(1) ?? "webp";
-  const newFileName = name.includes(".")
-    ? name.replace(/(.+\.).+$/, `$1${fileExt}`)
-    : `${name}.${fileExt}`;
-  return new File([blob], newFileName, { type: "image/" });
-}
-
-export function useBlobUrl<B extends Blob | null | undefined>(blob: B) {
-  const url = useMemo(
-    () => (typeof blob === "undefined" || blob === null ? blob : URL.createObjectURL(blob)),
-    [blob],
-  );
-  const oldUrl = useRef(url);
-
-  useEffect(() => {
-    if (oldUrl.current) {
-      // timeout so that on onmount it doesn't revoke it before a new element renders
-      setTimeout((url) => URL.revokeObjectURL(url), 1000, oldUrl.current);
-    }
-    oldUrl.current = url;
-  }, [url]);
-
-  return url;
 }
