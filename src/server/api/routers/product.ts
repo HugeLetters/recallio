@@ -157,7 +157,6 @@ const productReviewsQuery = protectedProcedure
         if (!page.length) return { page };
         const lastProduct = page.at(-1);
         if (!lastProduct) return { page };
-        console.log(page.map((p) => [p.authorName, p.authorId, p.updatedAt]));
         return {
           page,
           cursor: productReviewsPagination.encode({
@@ -214,7 +213,7 @@ export const productRouter = createTRPCRouter({
       const categorySq = db
         .select({
           barcode: reviewsToCategories.barcode,
-          categories: query.aggregate(reviewsToCategories.barcode, mostCommon(3)).as("categories"),
+          categories: query.aggregate(reviewsToCategories.category, mostCommon(3)).as("categories"),
         })
         .from(reviewsToCategories)
         .where(
