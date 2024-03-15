@@ -9,8 +9,9 @@ import { UserPic } from "@/components/ui/user-pic";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
-import { useReviewPrivateDefault } from "@/settings";
+import { reviewPrivateDefaultStore } from "@/settings";
 import { useOptimistic } from "@/state/optimistic";
+import { useStore } from "@/state/store";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -246,7 +247,7 @@ function LinkedAccounts() {
 }
 
 function AppSettings() {
-  const [reviewPrivateDefault, setReviewPrivateDefault] = useReviewPrivateDefault();
+  const reviewPrivateDefault = useStore(reviewPrivateDefaultStore);
 
   return (
     <div>
@@ -254,7 +255,7 @@ function AppSettings() {
       <LabeledSwitch
         className="bg-app-green-100"
         checked={reviewPrivateDefault}
-        onCheckedChange={setReviewPrivateDefault}
+        onCheckedChange={reviewPrivateDefaultStore.setValue}
       >
         Reviews are private by default
       </LabeledSwitch>
@@ -264,12 +265,11 @@ function AppSettings() {
 
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
-  const [, setValue] = useReviewPrivateDefault();
   const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {
       setIsOpen(false);
-      setValue(true);
+      reviewPrivateDefaultStore.setValue(true);
       signOut().catch(console.error);
     },
     onError(e) {

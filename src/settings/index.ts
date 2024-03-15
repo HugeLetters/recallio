@@ -1,16 +1,15 @@
 import { browser } from "@/browser";
-import { useCallback, useState } from "react";
+import { Store } from "@/state/store";
 
 const reviewPrivateDefaultKey = "review-private-default";
-export function useReviewPrivateDefault() {
-  const [value, setStateValue] = useState(() =>
-    browser ? localStorage.getItem(reviewPrivateDefaultKey) !== "false" : true,
-  );
 
-  function setValue(value: boolean) {
-    setStateValue(value);
+class ReviewPrivateDefaultStore extends Store<boolean> {
+  setValue = (value: boolean) => {
+    this.setState(value);
     localStorage.setItem(reviewPrivateDefaultKey, `${value}`);
-  }
-
-  return [value, useCallback(setValue, [])] as const;
+  };
 }
+
+export const reviewPrivateDefaultStore = new ReviewPrivateDefaultStore(
+  browser ? localStorage.getItem(reviewPrivateDefaultKey) !== "false" : true,
+);

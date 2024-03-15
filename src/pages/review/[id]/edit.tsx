@@ -22,7 +22,8 @@ import {
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
-import { useReviewPrivateDefault } from "@/settings";
+import { reviewPrivateDefaultStore } from "@/settings";
+import { useStore } from "@/state/store";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
@@ -72,7 +73,7 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
     { barcode },
     { staleTime: Infinity, select: transformReview },
   );
-  const [isPrivate] = useReviewPrivateDefault();
+  const isPrivate = useStore(reviewPrivateDefaultStore);
 
   if (!reviewQuery.isSuccess) return <>Loading...</>;
 
