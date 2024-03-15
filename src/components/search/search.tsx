@@ -74,11 +74,11 @@ type DebouncedSearchProps = Model<string> & {
 export function DebouncedSearch({
   value,
   setValue,
+  debounceRef,
   onReset,
   onSubmit = function (event) {
     event.preventDefault();
   },
-  debounceRef,
 }: DebouncedSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const setSearchQuery = useSetSearchQuery();
