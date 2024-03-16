@@ -1,4 +1,4 @@
-import { signOut } from "@/auth";
+import { signIn } from "@/auth";
 import { LoadingIndicatorProvider } from "@/components/loading/indicator";
 import { logToastError } from "@/components/toast";
 import { ToastProvider } from "@/components/toast/provider";
@@ -39,7 +39,7 @@ function AuthProtection({ children }: { children: ReactNode }) {
   useSession({
     required: true,
     onUnauthenticated: () => {
-      signOut().catch(logToastError("Authentication error.\nPlease reload the page."));
+      signIn().catch(logToastError("Authentication error.\nPlease reload the page."));
     },
   });
 
