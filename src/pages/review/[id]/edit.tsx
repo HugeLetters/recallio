@@ -1,4 +1,5 @@
 import { getQueryParam } from "@/browser/query";
+import { ScrollUpButton } from "@/browser/scroll-up";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { useLoadingIndicator } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
@@ -615,8 +616,9 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 pt-5"
+        className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5"
       >
+        <ScrollUpButton />
         {!!search && (
           <label
             className={tw(
