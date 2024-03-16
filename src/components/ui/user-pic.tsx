@@ -11,7 +11,10 @@ function getInitials(name: string) {
 }
 type UserPicProps = {
   user: Pick<Session["user"], "image" | "name">;
-} & StrictOmit<ComponentPropsWithoutRef<typeof Image>, "src" | "alt" | "width" | "height">;
+} & StrictOmit<
+  ComponentPropsWithoutRef<typeof Image>,
+  "src" | "alt" | "width" | "height" | "children"
+>;
 export function UserPic({ user, className, ...props }: UserPicProps) {
   return (
     <div className={tw("aspect-square size-full select-none", className)}>

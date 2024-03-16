@@ -615,7 +615,7 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pt-5"
+        className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 pt-5"
       >
         {!!search && (
           <label
@@ -636,7 +636,6 @@ function CategorySearch({
             </Toolbar.Button>
           </label>
         )}
-
         {categoriesQuery.isSuccess ? (
           <InfiniteScroll
             pages={categoriesQuery.data.pages}

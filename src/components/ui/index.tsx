@@ -3,17 +3,20 @@ import { Slot } from "@radix-ui/react-slot";
 import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 
-export const ButtonLike = forwardRef<HTMLElement, PropsWithChildren<ButtonProps>>(
-  function _(props, ref) {
-    return (
-      <Slot
-        ref={ref}
-        className="clickable rounded-xl px-2.5 py-3.5"
-        {...props}
-      />
-    );
-  },
-);
+export const ButtonLike = forwardRef<HTMLElement, PropsWithChildren<ButtonProps>>(function _(
+  { children, ...props },
+  ref,
+) {
+  return (
+    <Slot
+      ref={ref}
+      className="clickable rounded-xl px-2.5 py-3.5"
+      {...props}
+    >
+      {children}
+    </Slot>
+  );
+});
 
 type ButtonProps = ComponentPropsWithoutRef<"button">;
 export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(function _(
@@ -53,7 +56,7 @@ type AutoresizableInputProps = {
   rootClassName?: string;
 } & ComponentPropsWithoutRef<"textarea">;
 export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableInputProps>(
-  function _({ initialContent, rootClassName, className, onChange, ...props }, ref) {
+  function _({ initialContent, rootClassName, className, onChange, children, ...props }, ref) {
     return (
       <div className={tw("overflow-hidden", rootClassName)}>
         <div
@@ -75,7 +78,9 @@ export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableI
 
               parent.dataset.input = e.target.value + "\n";
             }}
-          />
+          >
+            {children}
+          </textarea>
         </div>
       </div>
     );
