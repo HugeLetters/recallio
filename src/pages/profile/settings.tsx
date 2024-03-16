@@ -1,6 +1,6 @@
 import { signOut } from "@/auth";
 import { providerIcons } from "@/auth/provider";
-import { useLoadingIndicator } from "@/components/loading/indicator";
+import { loadingTracker } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
@@ -12,6 +12,7 @@ import { Layout } from "@/layout";
 import { reviewPrivateDefaultStore } from "@/settings";
 import { useOptimistic } from "@/state/optimistic";
 import { useStore } from "@/state/store";
+import { useTrackerValue } from "@/state/store/tracker/hooks";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -93,7 +94,7 @@ function UserImage({ user }: UserImageProps) {
     onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
-  useLoadingIndicator(isUpdating || isUploading || isLoading, 300);
+  useTrackerValue(loadingTracker, isUpdating || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -147,7 +148,7 @@ function UserName({ username }: UserNameProps) {
       toast.error(`Couldn't update username: ${e.message}`);
     },
   });
-  useLoadingIndicator(isLoading, 300);
+  useTrackerValue(loadingTracker, isLoading, 300);
 
   function saveName(value: string) {
     if (value === username || value.length < USERNAME_MIN_LENGTH) return;
@@ -201,7 +202,7 @@ function LinkedAccounts() {
       trpcUtils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
-  useLoadingIndicator(isLoading, 300);
+  useTrackerValue(loadingTracker, isLoading, 300);
 
   return (
     <div>
@@ -277,7 +278,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       toast.error(`Couldn't delete your profile: ${e.message}`);
     },
   });
-  useLoadingIndicator(isLoading);
+  useTrackerValue(loadingTracker, isLoading);
 
   const confirmationPromp = `delete ${username}`;
 

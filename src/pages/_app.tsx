@@ -1,5 +1,5 @@
 import { signIn } from "@/auth";
-import { LoadingIndicatorProvider } from "@/components/loading/indicator";
+import { LoadingProvider } from "@/components/loading/indicator";
 import { logToastError } from "@/components/toast";
 import { ToastProvider } from "@/components/toast/provider";
 import { lato } from "@/styles/font";
@@ -50,7 +50,7 @@ function Providers({ children, session }: { children: ReactNode; session: Sessio
   return (
     <SessionProvider session={session}>
       <ToastProvider>
-        <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+        <LoadingProvider>{children}</LoadingProvider>
       </ToastProvider>
     </SessionProvider>
   );

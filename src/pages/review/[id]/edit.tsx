@@ -1,7 +1,7 @@
 import { getQueryParam } from "@/browser/query";
 import { ScrollUpButton } from "@/browser/scroll-up";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
-import { useLoadingIndicator } from "@/components/loading/indicator";
+import { loadingTracker } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
@@ -25,6 +25,7 @@ import {
 import type { ReviewData } from "@/product/type";
 import { reviewPrivateDefaultStore } from "@/settings";
 import { useStore } from "@/state/store";
+import { useTrackerValue } from "@/state/store/tracker/hooks";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
@@ -196,7 +197,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       invalidateReviewData();
     },
   });
-  useLoadingIndicator(isLoading);
+  useTrackerValue(loadingTracker, isLoading);
 
   return (
     <form
