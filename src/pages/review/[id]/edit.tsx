@@ -23,7 +23,7 @@ import {
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
-import { reviewPrivateDefaultStore } from "@/settings";
+import { reviewPrivateDefaultStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { Model } from "@/state/type";

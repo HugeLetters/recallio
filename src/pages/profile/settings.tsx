@@ -9,7 +9,7 @@ import { UserPic } from "@/components/ui/user-pic";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
-import { reviewPrivateDefaultStore } from "@/settings";
+import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useOptimistic } from "@/state/optimistic";
 import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
@@ -205,15 +205,16 @@ function LinkedAccounts() {
   useTracker(loadingTracker, isLoading, 300);
 
   return (
-    <div>
-      <p className="p-2 text-sm">Linked accounts</p>
+    <section>
+      <h2 className="p-2 text-sm">Linked accounts</h2>
       <Toolbar
         orientation="vertical"
-        className="flex flex-col divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
+        className="grid auto-rows-fr divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
       >
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
+            // extra div prevents dividers from being rounded
             <div key={provider}>
               <ToolbarButton asChild>
                 <LabeledSwitch
@@ -244,24 +245,35 @@ function LinkedAccounts() {
           );
         })}
       </Toolbar>
-    </div>
+    </section>
   );
 }
 
 function AppSettings() {
   const reviewPrivateDefault = useStore(reviewPrivateDefaultStore);
+  const scrollUpButtonEnabled = useStore(scrollUpButtonEnabledStore);
 
   return (
-    <div>
-      <p className="p-2 text-sm">App settings</p>
-      <LabeledSwitch
-        className="bg-app-green-100"
-        checked={reviewPrivateDefault}
-        onCheckedChange={reviewPrivateDefaultStore.setValue}
-      >
-        Reviews are private by default
-      </LabeledSwitch>
-    </div>
+    <section>
+      <h2 className="p-2 text-sm">App settings</h2>
+      {/* todo - mimic providers layout */}
+      <div className="flex flex-col gap-2">
+        <LabeledSwitch
+          className="bg-app-green-100"
+          checked={reviewPrivateDefault}
+          onCheckedChange={reviewPrivateDefaultStore.setValue}
+        >
+          Reviews are private by default
+        </LabeledSwitch>
+        <LabeledSwitch
+          className="bg-app-green-100"
+          checked={scrollUpButtonEnabled}
+          onCheckedChange={scrollUpButtonEnabledStore.setValue}
+        >
+          Scroll-up button enabled
+        </LabeledSwitch>
+      </div>
+    </section>
   );
 }
 

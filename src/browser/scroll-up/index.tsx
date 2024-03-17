@@ -1,8 +1,10 @@
 import { Transition } from "@/animation/transition";
+import { scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import type { TrackerStore } from "@/state/store/tracker";
 import { tw } from "@/styles/tw";
-import { useEffect, useRef, useState } from "react";
+import type { FC } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import RightIcon from "~icons/formkit/right";
 
 type ScrollUpProps = {
@@ -11,7 +13,11 @@ type ScrollUpProps = {
 };
 
 type ScrollUpButtonProps = { show: boolean } & ScrollUpProps;
-export function ScrollUpButton({ show, threshold = 500, className }: ScrollUpButtonProps) {
+export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
+  show,
+  threshold = 500,
+  className,
+}: ScrollUpButtonProps) {
   const root = useRef<HTMLDivElement>(null);
   const [isThershold, setIsThershold] = useState(false);
 
@@ -64,7 +70,7 @@ export function ScrollUpButton({ show, threshold = 500, className }: ScrollUpBut
       </Transition>
     </div>
   );
-}
+});
 
 type TrackedScrollUpButtonProps = { tracker: TrackerStore } & ScrollUpProps;
 export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButtonProps) {
@@ -77,4 +83,10 @@ export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButt
   );
 }
 
-// todo - add profile setting to disable scroll up button
+function ScrollUpButtonEnabledGuard<P>(Component: FC<P>) {
+  return function _(props: P & React.JSX.IntrinsicAttributes) {
+    const enabled = useStore(scrollUpButtonEnabledStore);
+    if (!enabled) return null;
+    return <Component {...props} />;
+  };
+}
