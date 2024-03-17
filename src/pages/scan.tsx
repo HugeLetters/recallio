@@ -3,7 +3,7 @@ import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
 import { Layout } from "@/layout";
 import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
-import { barcodeMinLength } from "@/product/validation";
+import { barcodeLengthMax, barcodeLengthMin } from "@/product/validation";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -194,7 +194,8 @@ function BarcodeInput({ goToReview }: BarcodeInputProps) {
         name="barcode"
         autoFocus
         required
-        minLength={barcodeMinLength}
+        minLength={barcodeLengthMin}
+        maxLength={barcodeLengthMax}
         autoComplete="off"
       />
       <button

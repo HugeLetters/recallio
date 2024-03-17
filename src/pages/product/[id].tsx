@@ -11,8 +11,9 @@ import {
   ConsIcon,
   ImagePreview,
   NoImagePreview,
-  ProsConsCommentWrapper,
+  CommentSection,
   ProsIcon,
+  Comment,
 } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
@@ -184,7 +185,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
   useTracker(layoutScrollUpTracker, true);
 
   return (
-    <div>
+    <div className="pb-6">
       <div className="flex justify-between py-4">
         <span className="font-semibold">
           Reviews {reviewCount !== undefined ? `(${reviewCount})` : ""}
@@ -219,6 +220,7 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   year: "numeric",
 });
+// todo - allow to collapse reviews maybe? if comments/pros/cons are too long?
 function ReviewCard({
   review: { authorAvatar, authorName, rating, pros, cons, comment, updatedAt },
 }: ReviewCardProps) {
@@ -263,20 +265,20 @@ function ProsConsComment({ comment, cons, pros }: ProsConsCommentProps) {
   if (!pros && !cons && !comment) return null;
 
   return (
-    <ProsConsCommentWrapper>
+    <CommentSection>
       {!!pros && (
         <>
           <ProsIcon />
-          <div className="whitespace-pre-wrap pt-1.5">{pros}</div>
+          <Comment>{pros}</Comment>
         </>
       )}
       {!!cons && (
         <>
           <ConsIcon />
-          <div className="whitespace-pre-wrap pt-1.5">{cons}</div>
+          <Comment>{cons}</Comment>
         </>
       )}
-      {!!comment && <div className="col-span-2 whitespace-pre-wrap pt-1.5">{comment}</div>}
-    </ProsConsCommentWrapper>
+      {!!comment && <Comment className="col-span-2">{comment}</Comment>}
+    </CommentSection>
   );
 }

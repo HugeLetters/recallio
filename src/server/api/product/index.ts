@@ -7,7 +7,7 @@ import { mostCommon } from "@/utils/array";
 import { and, eq, exists, gt, like } from "drizzle-orm";
 import { z } from "zod";
 import { cacheProductNames, getProductNames } from "../../product/cache";
-import { createBarcodeSchema } from "../../product/schema";
+import { createBarcodeSchema } from "../../product/validation";
 import getScrapedProducts from "../../product/scrapers";
 import { throwDefaultError } from "../utils/error";
 import { getReviewList } from "./review-list";

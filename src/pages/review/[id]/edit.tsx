@@ -19,10 +19,16 @@ import {
   ConsIcon,
   ImagePreview,
   NoImagePreview,
-  ProsConsCommentWrapper,
+  CommentSection,
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
+import {
+  productCommentLengthMax,
+  productNameLengthMax,
+  productNameLengthMin,
+  productRatingMax,
+} from "@/product/validation";
 import { reviewPrivateDefaultStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
@@ -279,8 +285,8 @@ function Name({ barcode, register }: NameProps) {
         <input
           {...register}
           required
-          minLength={6}
-          maxLength={60}
+          minLength={productNameLengthMin}
+          maxLength={productNameLengthMax}
           placeholder={data?.[0] ?? "Name"}
           autoComplete="off"
           className="grow outline-none"
@@ -293,7 +299,7 @@ function Name({ barcode, register }: NameProps) {
   );
 }
 
-const ratingList = [1, 2, 3, 4, 5] as const;
+const ratingList = Array.from({ length: productRatingMax }, (_, i) => i + 1);
 function Rating({ value, setValue }: Model<number>) {
   return (
     <Radio.Root
@@ -343,7 +349,7 @@ function ProsConsComment({
   review,
 }: ProsConsCommentProps) {
   return (
-    <ProsConsCommentWrapper>
+    <CommentSection>
       <>
         <ProsIcon />
         <AutoresizableInput
@@ -351,8 +357,7 @@ function ProsConsComment({
           initialContent={review.pros ?? ""}
           {...registerPros}
           placeholder="Pros"
-          minLength={1}
-          maxLength={4095}
+          maxLength={productCommentLengthMax}
         />
       </>
       <>
@@ -362,8 +367,7 @@ function ProsConsComment({
           initialContent={review.cons ?? ""}
           {...registerCons}
           placeholder="Cons"
-          minLength={1}
-          maxLength={4095}
+          maxLength={productCommentLengthMax}
         />
       </>
       <AutoresizableInput
@@ -371,10 +375,9 @@ function ProsConsComment({
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"
-        minLength={1}
-        maxLength={2047}
+        maxLength={productCommentLengthMax}
       />
-    </ProsConsCommentWrapper>
+    </CommentSection>
   );
 }
 

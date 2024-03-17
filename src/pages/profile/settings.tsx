@@ -16,6 +16,7 @@ import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
+import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
@@ -130,7 +131,6 @@ function UserImage({ user }: UserImageProps) {
 }
 
 type UserNameProps = { username: string };
-const USERNAME_MIN_LENGTH = 4;
 function UserName({ username }: UserNameProps) {
   const { update } = useSession();
   const [value, setValue] = useState(username);
@@ -152,7 +152,7 @@ function UserName({ username }: UserNameProps) {
   useTracker(loadingTracker, isLoading, 300);
 
   function saveName(value: string) {
-    if (value === username || value.length < USERNAME_MIN_LENGTH) return;
+    if (value === username || value.length < usernameMinLength) return;
     mutate(value);
   }
 
@@ -168,8 +168,9 @@ function UserName({ username }: UserNameProps) {
           value={value}
           name="username"
           required
-          minLength={USERNAME_MIN_LENGTH}
-          maxLength={30}
+          minLength={usernameMinLength}
+          maxLength={usernameMaxLength}
+          autoComplete="off"
           onChange={(e) => {
             setValue(e.target.value);
           }}

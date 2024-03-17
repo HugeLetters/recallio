@@ -1,23 +1,24 @@
+import {
+  barcodeLengthMax,
+  productCommentLengthMax,
+  productNameLengthMax,
+} from "@/product/validation";
 import { sql } from "drizzle-orm";
 import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user } from "../user";
-
-export const category = sqliteTable("category", {
-  name: text("name", { length: 31 }).primaryKey(),
-});
+import { user, userIdLength } from "../user";
 
 export const review = sqliteTable(
   "review",
   {
-    userId: text("user_id", { length: 255 })
+    userId: text("user_id", { length: userIdLength })
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),
-    barcode: text("barcode", { length: 55 }).notNull(),
-    name: text("name", { length: 255 }).notNull(),
+    barcode: text("barcode", { length: barcodeLengthMax }).notNull(),
+    name: text("name", { length: productNameLengthMax }).notNull(),
     rating: int("rating").notNull(),
-    pros: text("pros", { length: 4095 }),
-    cons: text("cons", { length: 4095 }),
-    comment: text("comment", { length: 2047 }),
+    pros: text("pros", { length: productCommentLengthMax }),
+    cons: text("cons", { length: productCommentLengthMax }),
+    comment: text("comment", { length: productCommentLengthMax }),
     imageKey: text("image_key", { length: 255 }),
     updatedAt: int("updated_at", { mode: "timestamp" })
       .notNull()
@@ -35,11 +36,15 @@ export const review = sqliteTable(
 );
 export type ReviewInsert = typeof review.$inferInsert;
 
+export const category = sqliteTable("category", {
+  name: text("name", { length: 31 }).primaryKey(),
+});
+
 export const reviewsToCategories = sqliteTable(
   "reviews_to_categories",
   {
-    userId: text("user_id", { length: 255 }).notNull(),
-    barcode: text("barcode", { length: 55 }).notNull(),
+    userId: text("user_id", { length: userIdLength }).notNull(),
+    barcode: text("barcode", { length: barcodeLengthMax }).notNull(),
     category: text("category", { length: 31 })
       .notNull()
       .references(() => category.name, { onDelete: "restrict", onUpdate: "restrict" }),
