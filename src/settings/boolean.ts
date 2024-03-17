@@ -30,3 +30,4 @@ class BooleanSettingStore extends Store<boolean> {
 
 export const reviewPrivateDefaultStore = new BooleanSettingStore("review-private-default", true);
 export const scrollUpButtonEnabledStore = new BooleanSettingStore("scroll-up-button", true);
+export { type BooleanSettingStore };

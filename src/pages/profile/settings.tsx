@@ -9,6 +9,7 @@ import { UserPic } from "@/components/ui/user-pic";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
+import type { BooleanSettingStore } from "@/settings/boolean";
 import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useOptimistic } from "@/state/optimistic";
 import { useStore } from "@/state/store";
@@ -250,30 +251,41 @@ function LinkedAccounts() {
 }
 
 function AppSettings() {
-  const reviewPrivateDefault = useStore(reviewPrivateDefaultStore);
-  const scrollUpButtonEnabled = useStore(scrollUpButtonEnabledStore);
-
   return (
     <section>
       <h2 className="p-2 text-sm">App settings</h2>
-      {/* todo - mimic providers layout */}
-      <div className="flex flex-col gap-2">
-        <LabeledSwitch
-          className="bg-app-green-100"
-          checked={reviewPrivateDefault}
-          onCheckedChange={reviewPrivateDefaultStore.setValue}
-        >
-          Reviews are private by default
-        </LabeledSwitch>
-        <LabeledSwitch
-          className="bg-app-green-100"
-          checked={scrollUpButtonEnabled}
-          onCheckedChange={scrollUpButtonEnabledStore.setValue}
-        >
-          Scroll-up button enabled
-        </LabeledSwitch>
-      </div>
+      <Toolbar
+        orientation="vertical"
+        className="grid auto-rows-fr divide-y-2 divide-app-green-400/25 overflow-hidden rounded-lg bg-app-green-100"
+      >
+        <SettingToggle
+          label="Reviews are private by default"
+          store={reviewPrivateDefaultStore}
+        />
+        <SettingToggle
+          label="Scroll-up button enabled"
+          store={scrollUpButtonEnabledStore}
+        />
+      </Toolbar>
     </section>
+  );
+}
+
+type SettingToggleProps = { label: string; store: BooleanSettingStore };
+function SettingToggle({ label, store }: SettingToggleProps) {
+  const value = useStore(store);
+  return (
+    <div>
+      <ToolbarButton asChild>
+        <LabeledSwitch
+          className="bg-app-green-100"
+          checked={value}
+          onCheckedChange={store.setValue}
+        >
+          {label}
+        </LabeledSwitch>
+      </ToolbarButton>
+    </div>
   );
 }
 
