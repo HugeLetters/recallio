@@ -1,4 +1,7 @@
 import {
+  categoryCountMax,
+  categoryLengthMax,
+  categoryLengthMin,
   productCommentLengthMax,
   productNameLengthMax,
   productNameLengthMin,
@@ -41,10 +44,10 @@ const upsertSchema = z
       .array(
         z
           .string()
-          .min(1, createMinMessage("A single category", 1))
-          .max(25, createMaxMessage("A single category", 25)),
+          .min(categoryLengthMin, createMinMessage("A single category", categoryLengthMin))
+          .max(categoryLengthMax, createMaxMessage("A single category", categoryLengthMax)),
       )
-      .max(25, "Review can't have more than 25 categories")
+      .max(categoryCountMax, `Review can't have more than ${categoryCountMax} categories`)
       .optional(),
   })
   // enforce default behaviour - we don't wanna update imageKey here

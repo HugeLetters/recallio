@@ -16,14 +16,17 @@ import { Layout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
+  CommentSection,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
-  CommentSection,
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import {
+  categoryCountMax,
+  categoryLengthMax,
+  categoryLengthMin,
   productCommentLengthMax,
   productNameLengthMax,
   productNameLengthMin,
@@ -434,9 +437,8 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   );
 }
 
-const categoryLimit = 25;
 function categoryLimitErrorToast() {
-  return toast.error(`You can't add more than ${categoryLimit} categories.`, {
+  return toast.error(`You can't add more than ${categoryCountMax} categories.`, {
     id: "review-edit-category-limit",
   });
 }
@@ -470,7 +472,7 @@ function CategoryList({ control }: CategoryListProps) {
     setSearchQuery(null);
   }
   const debouncedQuery = useRef<number>();
-  const isAtCategoryLimit = categories.length >= categoryLimit;
+  const isAtCategoryLimit = categories.length >= categoryCountMax;
 
   return (
     <div>
@@ -575,9 +577,7 @@ function CategorySearch({
     },
   );
 
-  const minLength = 4;
-  const maxLength = 25;
-  const isSearchValid = search.length >= minLength && search.length <= maxLength;
+  const isSearchValid = search.length >= categoryLengthMin && search.length <= categoryLengthMax;
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
   const isSearchAdded = includes(lowercaseSearch);
   const canAddSearch = canAddCategories && isSearchValid && !isSearchAdded;
@@ -585,7 +585,7 @@ function CategorySearch({
   function addCustomCategory() {
     if (!isSearchValid) {
       return toast.error(
-        `Category must be between ${minLength} and ${maxLength} characters long.`,
+        `Category must be between ${categoryLengthMin} and ${categoryLengthMax} characters long.`,
         { id: "review-edit-category-length" },
       );
     }

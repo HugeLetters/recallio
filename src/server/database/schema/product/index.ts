@@ -1,5 +1,6 @@
 import {
   barcodeLengthMax,
+  categoryLengthMax,
   productCommentLengthMax,
   productNameLengthMax,
 } from "@/product/validation";
@@ -37,7 +38,7 @@ export const review = sqliteTable(
 export type ReviewInsert = typeof review.$inferInsert;
 
 export const category = sqliteTable("category", {
-  name: text("name", { length: 31 }).primaryKey(),
+  name: text("name", { length: categoryLengthMax }).primaryKey(),
 });
 
 export const reviewsToCategories = sqliteTable(
@@ -45,7 +46,7 @@ export const reviewsToCategories = sqliteTable(
   {
     userId: text("user_id", { length: userIdLength }).notNull(),
     barcode: text("barcode", { length: barcodeLengthMax }).notNull(),
-    category: text("category", { length: 31 })
+    category: text("category", { length: categoryLengthMax })
       .notNull()
       .references(() => category.name, { onDelete: "restrict", onUpdate: "restrict" }),
   },
