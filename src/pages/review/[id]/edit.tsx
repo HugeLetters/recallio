@@ -600,7 +600,7 @@ function CategorySearch({
 
   return (
     <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
-      <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
+      <div className="flex w-full shrink-0 basis-14 items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="size-7 shrink-0" />
         <DebouncedSearch
           value={search}
@@ -617,7 +617,7 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5"
+        className="scrollbar-gutter flex flex-col gap-6 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
           show
