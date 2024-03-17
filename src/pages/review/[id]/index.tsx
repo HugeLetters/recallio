@@ -1,5 +1,5 @@
 import { getQueryParam } from "@/browser/query";
-import { useSetLoadingIndicator } from "@/components/loading/indicator";
+import { loadingTracker } from "@/components/loading/indicator";
 import { toast } from "@/components/toast";
 import { Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import {
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
+import { useTrackerController } from "@/state/store/tracker/hooks";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -209,7 +210,7 @@ const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
   const apiUtils = trpc.useUtils();
-  const loading = useSetLoadingIndicator();
+  const loading = useTrackerController(loadingTracker);
   const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {
       loading.enable();

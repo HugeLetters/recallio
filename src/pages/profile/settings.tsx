@@ -1,6 +1,6 @@
 import { signOut } from "@/auth";
 import { providerIcons } from "@/auth/provider";
-import { useLoadingIndicator } from "@/components/loading/indicator";
+import { loadingTracker } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
@@ -9,9 +9,11 @@ import { UserPic } from "@/components/ui/user-pic";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
-import { reviewPrivateDefaultStore } from "@/settings";
+import type { BooleanSettingStore } from "@/settings/boolean";
+import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useOptimistic } from "@/state/optimistic";
 import { useStore } from "@/state/store";
+import { useTracker } from "@/state/store/tracker/hooks";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -93,7 +95,7 @@ function UserImage({ user }: UserImageProps) {
     onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
-  useLoadingIndicator(isUpdating || isUploading || isLoading, 300);
+  useTracker(loadingTracker, isUpdating || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -147,7 +149,7 @@ function UserName({ username }: UserNameProps) {
       toast.error(`Couldn't update username: ${e.message}`);
     },
   });
-  useLoadingIndicator(isLoading, 300);
+  useTracker(loadingTracker, isLoading, 300);
 
   function saveName(value: string) {
     if (value === username || value.length < USERNAME_MIN_LENGTH) return;
@@ -201,18 +203,19 @@ function LinkedAccounts() {
       trpcUtils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
-  useLoadingIndicator(isLoading, 300);
+  useTracker(loadingTracker, isLoading, 300);
 
   return (
-    <div>
-      <p className="p-2 text-sm">Linked accounts</p>
+    <section>
+      <h2 className="p-2 text-sm">Linked accounts</h2>
       <Toolbar
         orientation="vertical"
-        className="flex flex-col divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
+        className="grid auto-rows-fr divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
       >
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
           return (
+            // extra div prevents dividers from being rounded
             <div key={provider}>
               <ToolbarButton asChild>
                 <LabeledSwitch
@@ -243,23 +246,46 @@ function LinkedAccounts() {
           );
         })}
       </Toolbar>
-    </div>
+    </section>
   );
 }
 
 function AppSettings() {
-  const reviewPrivateDefault = useStore(reviewPrivateDefaultStore);
-
   return (
-    <div>
-      <p className="p-2 text-sm">App settings</p>
-      <LabeledSwitch
-        className="bg-app-green-100"
-        checked={reviewPrivateDefault}
-        onCheckedChange={reviewPrivateDefaultStore.setValue}
+    <section>
+      <h2 className="p-2 text-sm">App settings</h2>
+      <Toolbar
+        orientation="vertical"
+        className="grid auto-rows-fr divide-y-2 divide-app-green-400/25 overflow-hidden rounded-lg bg-app-green-100"
       >
-        Reviews are private by default
-      </LabeledSwitch>
+        <SettingToggle
+          label="Reviews are private by default"
+          store={reviewPrivateDefaultStore}
+        />
+        <SettingToggle
+          label="Scroll-up button enabled"
+          store={scrollUpButtonEnabledStore}
+        />
+      </Toolbar>
+    </section>
+  );
+}
+
+type SettingToggleProps = { label: string; store: BooleanSettingStore };
+function SettingToggle({ label, store }: SettingToggleProps) {
+  const value = useStore(store);
+  return (
+    // extra div prevents dividers from being rounded
+    <div>
+      <ToolbarButton asChild>
+        <LabeledSwitch
+          className="bg-app-green-100"
+          checked={value}
+          onCheckedChange={store.setValue}
+        >
+          {label}
+        </LabeledSwitch>
+      </ToolbarButton>
     </div>
   );
 }
@@ -277,7 +303,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       toast.error(`Couldn't delete your profile: ${e.message}`);
     },
   });
-  useLoadingIndicator(isLoading);
+  useTracker(loadingTracker, isLoading);
 
   const confirmationPromp = `delete ${username}`;
 

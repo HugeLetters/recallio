@@ -1,5 +1,5 @@
-import { signOut } from "@/auth";
-import { LoadingIndicatorProvider } from "@/components/loading/indicator";
+import { signIn } from "@/auth";
+import { LoadingProvider } from "@/components/loading/indicator";
 import { logToastError } from "@/components/toast";
 import { ToastProvider } from "@/components/toast/provider";
 import { lato } from "@/styles/font";
@@ -39,7 +39,7 @@ function AuthProtection({ children }: { children: ReactNode }) {
   useSession({
     required: true,
     onUnauthenticated: () => {
-      signOut().catch(logToastError("Authentication error.\nPlease reload the page."));
+      signIn().catch(logToastError("Authentication error.\nPlease reload the page."));
     },
   });
 
@@ -50,7 +50,7 @@ function Providers({ children, session }: { children: ReactNode; session: Sessio
   return (
     <SessionProvider session={session}>
       <ToastProvider>
-        <LoadingIndicatorProvider>{children}</LoadingIndicatorProvider>
+        <LoadingProvider>{children}</LoadingProvider>
       </ToastProvider>
     </SessionProvider>
   );

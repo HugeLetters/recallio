@@ -1,6 +1,7 @@
 import { getQueryParam } from "@/browser/query";
+import { ScrollUpButton } from "@/browser/scroll-up";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
-import { useLoadingIndicator } from "@/components/loading/indicator";
+import { loadingTracker } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
@@ -22,8 +23,9 @@ import {
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
-import { reviewPrivateDefaultStore } from "@/settings";
+import { reviewPrivateDefaultStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
+import { useTracker } from "@/state/store/tracker/hooks";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
@@ -195,7 +197,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       invalidateReviewData();
     },
   });
-  useLoadingIndicator(isLoading);
+  useTracker(loadingTracker, isLoading);
 
   return (
     <form
@@ -299,7 +301,8 @@ function Rating({ value, setValue }: Model<number>) {
       onValueChange={(val) => {
         setValue(+val);
       }}
-      className="group flex justify-between gap-4 text-6xl"
+      // radio item renders an invisible absolute input - relative keeps it in place
+      className="group relative flex justify-between gap-4 text-6xl"
     >
       <Radio.Item
         value="0"
@@ -614,8 +617,12 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="flex basis-full flex-col gap-6 overflow-y-auto px-7 pt-5"
+        className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5"
       >
+        <ScrollUpButton
+          show
+          className="-translate-y-1 scale-90"
+        />
         {!!search && (
           <label
             className={tw(
@@ -635,7 +642,6 @@ function CategorySearch({
             </Toolbar.Button>
           </label>
         )}
-
         {categoriesQuery.isSuccess ? (
           <InfiniteScroll
             pages={categoriesQuery.data.pages}

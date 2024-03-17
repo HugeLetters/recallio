@@ -1,3 +1,4 @@
+import { useSyncedRef } from "@/state/ref";
 import type { Key, ReactNode } from "react";
 import { Fragment, useEffect, useRef } from "react";
 
@@ -26,6 +27,7 @@ export function InfiniteScroll<P, V>({
   spinner,
 }: InfiniteScrollProps<P, V>) {
   const triggerRef = useRef<HTMLDivElement>(null);
+  const getNextPageSync = useSyncedRef(getNextPage);
   useEffect(() => {
     if (!triggerRef.current) return;
     const trigger = triggerRef.current.firstElementChild;
@@ -34,7 +36,7 @@ export function InfiniteScroll<P, V>({
     const observer = new IntersectionObserver((events) => {
       events.forEach((event) => {
         if (event.target !== trigger || !event.isIntersecting) return;
-        getNextPage();
+        getNextPageSync.current();
       });
     });
     observer.observe(trigger);
@@ -42,9 +44,7 @@ export function InfiniteScroll<P, V>({
     return () => {
       observer.disconnect();
     };
-    // I don't want to enforce a getNextPage function to be stable
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pages]);
+  }, [pages, getNextPageSync]);
 
   const lastNonEmptyPageIndex = pages.findLastIndex((page) => !!getPageValues(page).length);
   return (

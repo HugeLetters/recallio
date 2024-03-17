@@ -4,7 +4,7 @@ import * as BaseSwitch from "@radix-ui/react-switch";
 import type { PropsWithChildren } from "react";
 import { forwardRef } from "react";
 
-type SwitchProps = StrictOmit<BaseSwitch.SwitchProps, "className">;
+type SwitchProps = StrictOmit<BaseSwitch.SwitchProps, "className" | "children">;
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function _(props, ref) {
   return (
     <BaseSwitch.Root

@@ -5,6 +5,8 @@ import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
 import { Layout } from "@/layout";
+import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
+import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
@@ -17,6 +19,7 @@ const Page: NextPageWithLayout = function () {
   const sortParam = useSortQuery(sortOptionList);
   const sort = parseSortParam(sortParam);
   const filter = useSearchQuery();
+  useTracker(layoutScrollUpTracker, true);
 
   const productListQuery = trpc.product.getSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
