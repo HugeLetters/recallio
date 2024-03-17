@@ -1,14 +1,17 @@
-import RightIcon from "~icons/formkit/right";
 import { Transition } from "@/animation/transition";
+import { useStore } from "@/state/store";
+import type { TrackerStore } from "@/state/store/tracker";
 import { tw } from "@/styles/tw";
 import { useEffect, useRef, useState } from "react";
+import RightIcon from "~icons/formkit/right";
 
-type ScrollUpButtonProps = {
+type ScrollUpProps = {
   threshold?: number;
   className?: string;
-  hide?: boolean;
 };
-export function ScrollUpButton({ threshold = 500, hide, className }: ScrollUpButtonProps) {
+
+type ScrollUpButtonProps = { show: boolean } & ScrollUpProps;
+export function ScrollUpButton({ show, threshold = 500, className }: ScrollUpButtonProps) {
   const root = useRef<HTMLDivElement>(null);
   const [isThershold, setIsThershold] = useState(false);
 
@@ -40,7 +43,7 @@ export function ScrollUpButton({ threshold = 500, hide, className }: ScrollUpBut
         inClassName="animate-slide-up"
         outClassName="animate-slide-up-reverse"
       >
-        {!hide && isThershold && (
+        {show && isThershold && (
           <div className={tw("fixed z-10", className)}>
             <div className="-translate-x-full -translate-y-full">
               <button
@@ -63,5 +66,15 @@ export function ScrollUpButton({ threshold = 500, hide, className }: ScrollUpBut
   );
 }
 
+type TrackedScrollUpButtonProps = { tracker: TrackerStore } & ScrollUpProps;
+export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButtonProps) {
+  const show = useStore(tracker);
+  return (
+    <ScrollUpButton
+      show={show}
+      {...props}
+    />
+  );
+}
+
 // todo - add profile setting to disable scroll up button
-// todo - scroll-up button hide/show should be controlled by a stack store

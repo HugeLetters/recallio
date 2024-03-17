@@ -8,6 +8,8 @@ import { Star } from "@/components/ui/star";
 import { UserPic } from "@/components/ui/user-pic";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
+import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
+import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
@@ -114,6 +116,7 @@ function ReviewCards() {
   const router = useRouter();
   const sortParam = useSortQuery(sortOptionList);
   const filter = useSearchQuery();
+  useTracker(layoutScrollUpTracker, true);
 
   const reviewCardsQuery = trpc.user.review.getSummaryList.useInfiniteQuery(
     {

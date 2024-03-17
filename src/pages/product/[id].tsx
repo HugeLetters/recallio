@@ -5,6 +5,7 @@ import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
 import { UserPic } from "@/components/ui/user-pic";
 import { Layout } from "@/layout";
+import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
 import {
   CategoryCard,
   ConsIcon,
@@ -13,6 +14,7 @@ import {
   ProsConsCommentWrapper,
   ProsIcon,
 } from "@/product/components";
+import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
@@ -50,7 +52,7 @@ function ProductPage({ barcode }: ProductPageProps) {
   );
 
   return (
-    <div className="w-full overflow-x-hidden p-4 pb-5">
+    <div className="w-full p-4 pb-5">
       {summaryQuery.isSuccess ? (
         <Summary
           barcode={barcode}
@@ -179,6 +181,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
       },
     },
   );
+  useTracker(layoutScrollUpTracker, true);
 
   return (
     <div>

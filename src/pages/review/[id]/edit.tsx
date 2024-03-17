@@ -25,7 +25,7 @@ import {
 import type { ReviewData } from "@/product/type";
 import { reviewPrivateDefaultStore } from "@/settings";
 import { useStore } from "@/state/store";
-import { useTrackerValue } from "@/state/store/tracker/hooks";
+import { useTracker } from "@/state/store/tracker/hooks";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
@@ -197,7 +197,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       invalidateReviewData();
     },
   });
-  useTrackerValue(loadingTracker, isLoading);
+  useTracker(loadingTracker, isLoading);
 
   return (
     <form
@@ -619,7 +619,10 @@ function CategorySearch({
         orientation="vertical"
         className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5"
       >
-        <ScrollUpButton />
+        <ScrollUpButton
+          show
+          className="-translate-y-1 scale-90"
+        />
         {!!search && (
           <label
             className={tw(

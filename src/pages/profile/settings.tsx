@@ -12,7 +12,7 @@ import { Layout } from "@/layout";
 import { reviewPrivateDefaultStore } from "@/settings";
 import { useOptimistic } from "@/state/optimistic";
 import { useStore } from "@/state/store";
-import { useTrackerValue } from "@/state/store/tracker/hooks";
+import { useTracker } from "@/state/store/tracker/hooks";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import type { NextPageWithLayout } from "@/utils/type";
@@ -94,7 +94,7 @@ function UserImage({ user }: UserImageProps) {
     onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
-  useTrackerValue(loadingTracker, isUpdating || isUploading || isLoading, 300);
+  useTracker(loadingTracker, isUpdating || isUploading || isLoading, 300);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -148,7 +148,7 @@ function UserName({ username }: UserNameProps) {
       toast.error(`Couldn't update username: ${e.message}`);
     },
   });
-  useTrackerValue(loadingTracker, isLoading, 300);
+  useTracker(loadingTracker, isLoading, 300);
 
   function saveName(value: string) {
     if (value === username || value.length < USERNAME_MIN_LENGTH) return;
@@ -202,7 +202,7 @@ function LinkedAccounts() {
       trpcUtils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
-  useTrackerValue(loadingTracker, isLoading, 300);
+  useTracker(loadingTracker, isLoading, 300);
 
   return (
     <div>
@@ -278,7 +278,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       toast.error(`Couldn't delete your profile: ${e.message}`);
     },
   });
-  useTrackerValue(loadingTracker, isLoading);
+  useTracker(loadingTracker, isLoading);
 
   const confirmationPromp = `delete ${username}`;
 

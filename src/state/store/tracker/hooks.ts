@@ -6,7 +6,7 @@ export function useTrackerController(store: TrackerStore) {
   return { enable: () => store.add(id), disable: () => store.remove(id) };
 }
 
-export function useTrackerValue(store: TrackerStore, enable: boolean, delay = 0) {
+export function useTracker(store: TrackerStore, enable: boolean, delay = 0) {
   const timeout = useRef<number>();
   const id = useId();
 
