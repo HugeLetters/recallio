@@ -275,6 +275,7 @@ type SettingToggleProps = { label: string; store: BooleanSettingStore };
 function SettingToggle({ label, store }: SettingToggleProps) {
   const value = useStore(store);
   return (
+    // extra div prevents dividers from being rounded
     <div>
       <ToolbarButton asChild>
         <LabeledSwitch
