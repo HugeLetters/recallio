@@ -14,7 +14,7 @@ import { createPagination } from "../utils/pagination";
 
 const pagination = createPagination({
   cursor: z.object({
-    barcode: createBarcodeSchema(undefined),
+    barcode: createBarcodeSchema(),
     sorted: z.number(),
   }),
   sortBy: ["reviews", "rating"],

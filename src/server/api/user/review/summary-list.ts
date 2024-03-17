@@ -12,7 +12,7 @@ import { createPagination } from "../../utils/pagination";
 
 const pagination = createPagination({
   cursor: z.object({
-    barcode: createBarcodeSchema(undefined),
+    barcode: createBarcodeSchema(),
     sorted: z.number().or(z.coerce.date()),
   }),
   sortBy: ["date", "rating"],
