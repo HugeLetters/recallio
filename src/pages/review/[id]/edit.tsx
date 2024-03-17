@@ -5,7 +5,7 @@ import { loadingTracker } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
-import { AutoresizableInput, Button, ButtonLike } from "@/components/ui";
+import { AutoresizableInput, Button, ButtonLike, Input } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { LabeledSwitch } from "@/components/ui/switch";
@@ -284,20 +284,17 @@ function Name({ barcode, register }: NameProps) {
   return (
     <label className="flex flex-col">
       <span className="p-2 text-sm">Name</span>
-      <div className="flex rounded-lg p-3 outline outline-1 outline-app-green-500 focus-within:outline-2">
-        <input
-          {...register}
-          required
-          minLength={productNameLengthMin}
-          maxLength={productNameLengthMax}
-          placeholder={data?.[0] ?? "Name"}
-          autoComplete="off"
-          className="grow outline-none"
-          aria-label="Product name"
-          list={listId}
-        />
-        <datalist id={listId}>{data?.map((name) => <option key={name}>{name}</option>)}</datalist>
-      </div>
+      <Input
+        {...register}
+        required
+        minLength={productNameLengthMin}
+        maxLength={productNameLengthMax}
+        placeholder={data?.[0] ?? "Name"}
+        autoComplete="off"
+        aria-label="Product name"
+        list={listId}
+      />
+      <datalist id={listId}>{data?.map((name) => <option key={name}>{name}</option>)}</datalist>
     </label>
   );
 }

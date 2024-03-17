@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function _(
     <input
       ref={ref}
       className={tw(
-        "rounded-lg p-3 outline outline-1 outline-app-green-500 focus-within:outline-2",
+        "rounded-lg p-3 outline outline-1 outline-offset-0 outline-app-green-500 focus-within:outline-2",
         className,
       )}
       {...inputProps}
