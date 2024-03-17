@@ -10,8 +10,8 @@ import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
-type ProsConsCommentWrapperProps = { children: ReactNode[] };
-export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps) {
+type CommentSectionProps = { children: ReactNode[] };
+export function CommentSection({ children }: CommentSectionProps) {
   const separator = <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />;
   const filtered = children.filter(Boolean);
   const lastIndex = filtered.length - 1;
@@ -24,6 +24,16 @@ export function ProsConsCommentWrapper({ children }: ProsConsCommentWrapperProps
           {i !== lastIndex && separator}
         </Fragment>
       ))}
+    </div>
+  );
+}
+
+// todo - maybe this should have limited height and scroll?
+type CommentProps = { children: string; className?: string };
+export function Comment({ children, className }: CommentProps) {
+  return (
+    <div className={tw("overflow-hidden whitespace-pre-wrap break-words pt-1.5", className)}>
+      {children}
     </div>
   );
 }

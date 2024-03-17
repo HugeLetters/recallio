@@ -16,13 +16,22 @@ import { Layout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
+  CommentSection,
   ConsIcon,
   ImagePreview,
   NoImagePreview,
-  ProsConsCommentWrapper,
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
+import {
+  categoryCountMax,
+  categoryLengthMax,
+  categoryLengthMin,
+  productCommentLengthMax,
+  productNameLengthMax,
+  productNameLengthMin,
+  productRatingMax,
+} from "@/product/validation";
 import { reviewPrivateDefaultStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
@@ -279,8 +288,8 @@ function Name({ barcode, register }: NameProps) {
         <input
           {...register}
           required
-          minLength={6}
-          maxLength={60}
+          minLength={productNameLengthMin}
+          maxLength={productNameLengthMax}
           placeholder={data?.[0] ?? "Name"}
           autoComplete="off"
           className="grow outline-none"
@@ -293,7 +302,7 @@ function Name({ barcode, register }: NameProps) {
   );
 }
 
-const ratingList = [1, 2, 3, 4, 5] as const;
+const ratingList = Array.from({ length: productRatingMax }, (_, i) => i + 1);
 function Rating({ value, setValue }: Model<number>) {
   return (
     <Radio.Root
@@ -343,7 +352,7 @@ function ProsConsComment({
   review,
 }: ProsConsCommentProps) {
   return (
-    <ProsConsCommentWrapper>
+    <CommentSection>
       <>
         <ProsIcon />
         <AutoresizableInput
@@ -351,8 +360,7 @@ function ProsConsComment({
           initialContent={review.pros ?? ""}
           {...registerPros}
           placeholder="Pros"
-          minLength={1}
-          maxLength={4095}
+          maxLength={productCommentLengthMax}
         />
       </>
       <>
@@ -362,8 +370,7 @@ function ProsConsComment({
           initialContent={review.cons ?? ""}
           {...registerCons}
           placeholder="Cons"
-          minLength={1}
-          maxLength={4095}
+          maxLength={productCommentLengthMax}
         />
       </>
       <AutoresizableInput
@@ -371,10 +378,9 @@ function ProsConsComment({
         initialContent={review.comment ?? ""}
         {...registerComment}
         placeholder="Comment"
-        minLength={1}
-        maxLength={2047}
+        maxLength={productCommentLengthMax}
       />
-    </ProsConsCommentWrapper>
+    </CommentSection>
   );
 }
 
@@ -431,9 +437,8 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   );
 }
 
-const categoryLimit = 25;
 function categoryLimitErrorToast() {
-  return toast.error(`You can't add more than ${categoryLimit} categories.`, {
+  return toast.error(`You can't add more than ${categoryCountMax} categories.`, {
     id: "review-edit-category-limit",
   });
 }
@@ -467,7 +472,7 @@ function CategoryList({ control }: CategoryListProps) {
     setSearchQuery(null);
   }
   const debouncedQuery = useRef<number>();
-  const isAtCategoryLimit = categories.length >= categoryLimit;
+  const isAtCategoryLimit = categories.length >= categoryCountMax;
 
   return (
     <div>
@@ -572,9 +577,7 @@ function CategorySearch({
     },
   );
 
-  const minLength = 4;
-  const maxLength = 25;
-  const isSearchValid = search.length >= minLength && search.length <= maxLength;
+  const isSearchValid = search.length >= categoryLengthMin && search.length <= categoryLengthMax;
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
   const isSearchAdded = includes(lowercaseSearch);
   const canAddSearch = canAddCategories && isSearchValid && !isSearchAdded;
@@ -582,7 +585,7 @@ function CategorySearch({
   function addCustomCategory() {
     if (!isSearchValid) {
       return toast.error(
-        `Category must be between ${minLength} and ${maxLength} characters long.`,
+        `Category must be between ${categoryLengthMin} and ${categoryLengthMax} characters long.`,
         { id: "review-edit-category-length" },
       );
     }

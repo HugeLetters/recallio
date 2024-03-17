@@ -1,7 +1,16 @@
+import {
+  categoryCountMax,
+  categoryLengthMax,
+  categoryLengthMin,
+  productCommentLengthMax,
+  productNameLengthMax,
+  productNameLengthMin,
+  productRatingMax,
+} from "@/product/validation";
 import { db } from "@/server/database";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
-import { createBarcodeSchema } from "@/server/product/schema";
+import { createBarcodeSchema } from "@/server/product/validation";
 import {
   createLongTextSchema,
   createMaxMessage,
@@ -20,25 +29,25 @@ const upsertSchema = z
     name: stringLikeSchema({
       required_error: "Product name is required to create a review",
     })
-      .min(6, createMinMessage("Product name", 6))
-      .max(60, createMaxMessage("Product name", 60)),
+      .min(productNameLengthMin, createMinMessage("Product name", productNameLengthMin))
+      .max(productNameLengthMax, createMaxMessage("Product name", productNameLengthMax)),
     rating: z
       .number()
       .int("Rating has to be an integer")
       .min(0, "Rating can't be less than 0")
-      .max(5, "Rating can't be greater than 5"),
-    pros: createLongTextSchema("Pros", 4095).nullish(),
-    cons: createLongTextSchema("Cons", 4095).nullish(),
-    comment: createLongTextSchema("Comment", 2047).nullish(),
+      .max(productRatingMax, `Rating can't be greater than ${productRatingMax}`),
+    pros: createLongTextSchema("Pros", productCommentLengthMax).nullish(),
+    cons: createLongTextSchema("Cons", productCommentLengthMax).nullish(),
+    comment: createLongTextSchema("Comment", productCommentLengthMax).nullish(),
     isPrivate: z.boolean(),
     categories: z
       .array(
         z
           .string()
-          .min(1, createMinMessage("A single category", 1))
-          .max(25, createMaxMessage("A single category", 25)),
+          .min(categoryLengthMin, createMinMessage("A single category", categoryLengthMin))
+          .max(categoryLengthMax, createMaxMessage("A single category", categoryLengthMax)),
       )
-      .max(25, "Review can't have more than 25 categories")
+      .max(categoryCountMax, `Review can't have more than ${categoryCountMax} categories`)
       .optional(),
   })
   // enforce default behaviour - we don't wanna update imageKey here

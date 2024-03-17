@@ -66,7 +66,7 @@ export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableI
           <textarea
             ref={ref}
             className={tw(
-              "absolute inset-0 size-full resize-none break-words outline-none",
+              "absolute inset-0 size-full resize-none overflow-hidden break-words outline-none",
               className,
             )}
             {...props}

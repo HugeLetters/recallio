@@ -7,7 +7,7 @@ import { mostCommon } from "@/utils/array";
 import { and, eq, exists, gt, like } from "drizzle-orm";
 import { z } from "zod";
 import { cacheProductNames, getProductNames } from "../../product/cache";
-import { createBarcodeSchema } from "../../product/schema";
+import { createBarcodeSchema } from "../../product/validation";
 import getScrapedProducts from "../../product/scrapers";
 import { throwDefaultError } from "../utils/error";
 import { getReviewList } from "./review-list";
@@ -64,7 +64,7 @@ export const productRouter = createTRPCRouter({
   getReviewList,
   getSummary,
   getNames: protectedProcedure
-    .input(z.object({ barcode: createBarcodeSchema(undefined) }))
+    .input(z.object({ barcode: createBarcodeSchema() }))
     .query(({ input: { barcode } }): Promise<string[]> => {
       return getProductNames(barcode)
         .then((cached) => {

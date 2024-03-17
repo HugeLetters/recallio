@@ -1,4 +1,5 @@
 import { blobToFile } from "@/image/blob";
+import { productNameLengthMax, productNameLengthMin, productRatingMax } from "@/product/validation";
 import { db } from "@/server/database";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
@@ -136,11 +137,11 @@ function randomBarcode() {
 }
 
 function randomName() {
-  return faker.word.noun({ length: { min: 6, max: 50 } });
+  return faker.word.noun({ length: { min: productNameLengthMin, max: productNameLengthMax } });
 }
 
 function randomBaseRating() {
-  return faker.number.int({ min: 0, max: 5 });
+  return faker.number.int({ min: 0, max: productRatingMax });
 }
 
 function randomImage() {

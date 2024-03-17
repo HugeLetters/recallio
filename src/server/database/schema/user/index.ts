@@ -1,10 +1,12 @@
+import { usernameMaxLength } from "@/user/validation";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { sql } from "drizzle-orm";
 import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+export const userIdLength = 255;
 export const user = sqliteTable("user", {
-  id: text("id", { length: 255 }).notNull().primaryKey(),
-  name: text("name", { length: 255 }).notNull(),
+  id: text("id", { length: userIdLength }).notNull().primaryKey(),
+  name: text("name", { length: usernameMaxLength }).notNull(),
   email: text("email", { length: 255 }).notNull().unique(),
   emailVerified: int("email_verified", { mode: "timestamp" }).default(sql`(unixepoch())`),
   /** Stored either as URL or an UploadThing key */
@@ -14,7 +16,7 @@ export const user = sqliteTable("user", {
 export const account = sqliteTable(
   "account",
   {
-    userId: text("user_id", { length: 255 })
+    userId: text("user_id", { length: userIdLength })
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),
     type: text("type", { length: 255 }).$type<AdapterAccount["type"]>().notNull(),
@@ -42,7 +44,7 @@ export const session = sqliteTable(
   "session",
   {
     sessionToken: text("session_token", { length: 255 }).notNull().primaryKey(),
-    userId: text("user_id", { length: 255 })
+    userId: text("user_id", { length: userIdLength })
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),
     expires: int("expires", { mode: "timestamp" }).notNull(),

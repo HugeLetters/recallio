@@ -11,8 +11,9 @@ import {
   ConsIcon,
   ImagePreview,
   NoImagePreview,
-  ProsConsCommentWrapper,
+  CommentSection,
   ProsIcon,
+  Comment,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
@@ -187,21 +188,21 @@ function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentPro
   if (!pros && !cons && !comment) return null;
 
   return (
-    <ProsConsCommentWrapper>
+    <CommentSection>
       {!!pros && (
         <>
           <ProsIcon />
-          <div className="whitespace-pre-wrap pt-1.5">{pros}</div>
+          <Comment>{pros}</Comment>
         </>
       )}
       {!!cons && (
         <>
           <ConsIcon />
-          <div className="whitespace-pre-wrap pt-1.5">{cons}</div>
+          <Comment>{cons}</Comment>
         </>
       )}
-      {!!comment && <div className="col-span-2 whitespace-pre-wrap pt-1.5">{comment}</div>}
-    </ProsConsCommentWrapper>
+      {!!comment && <Comment className="col-span-2">{comment}</Comment>}
+    </CommentSection>
   );
 }
 

@@ -1,6 +1,6 @@
 import { db } from "@/server/database";
 import { review } from "@/server/database/schema/product";
-import { createBarcodeSchema } from "@/server/product/schema";
+import { createBarcodeSchema } from "@/server/product/validation";
 import { utapi } from "@/server/uploadthing/api";
 import { ignore } from "@/utils";
 import { TRPCError } from "@trpc/server";

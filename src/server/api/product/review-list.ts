@@ -6,7 +6,7 @@ import { getFileUrl } from "@/server/uploadthing";
 import { and, asc, desc, eq, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { user } from "../../database/schema/user";
-import { createBarcodeSchema } from "../../product/schema";
+import { createBarcodeSchema } from "../../product/validation";
 import { throwDefaultError } from "../utils/error";
 import type { Paginated } from "../utils/pagination";
 import { createPagination } from "../utils/pagination";

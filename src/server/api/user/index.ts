@@ -6,6 +6,7 @@ import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
 import { utapi } from "@/server/uploadthing/api";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
+import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
 import { mapFilter } from "@/utils/array/filter";
 import { TRPCError } from "@trpc/server";
@@ -16,8 +17,8 @@ import { reviewRouter } from "./review";
 const setName = protectedProcedure
   .input(
     stringLikeSchema({ required_error: "Username was not provided" })
-      .min(4, createMinMessage("Username", 4))
-      .max(30, createMaxMessage("Username", 30)),
+      .min(usernameMinLength, createMinMessage("Username", usernameMinLength))
+      .max(usernameMaxLength, createMaxMessage("Username", usernameMaxLength)),
   )
   .mutation(({ input, ctx: { session } }) => {
     return db
