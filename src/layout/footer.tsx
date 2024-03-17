@@ -19,7 +19,7 @@ export function Footer() {
   const translate = useStore(scanTypeOffsetStore);
 
   return (
-    <footer className="flex h-16 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
+    <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
       <Toolbar.Root asChild>
         <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
           <Flipper
