@@ -1,17 +1,16 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { throwDefaultError } from "@/server/api/utils/error";
 import { db } from "@/server/database";
-import { query } from "@/server/database/query/aggregate";
+import { nonNullableSQL } from "@/server/database/query";
 import { fileDeleteQueue } from "@/server/database/schema/file";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
-import { utapi } from "@/server/uploadthing/api";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
-import { filterOut, mapFilter } from "@/utils/array/filter";
+import { filterOut } from "@/utils/array/filter";
 import { TRPCError } from "@trpc/server";
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { accountRouter } from "./account";
 import { reviewRouter } from "./review";
 
@@ -39,7 +38,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
   const filter = and(eq(user.id, userId), isNotNull(user.image));
 
   return db
-    .select({ fileKey: sql<string>`${user.image}` })
+    .select({ fileKey: nonNullableSQL(user.image) })
     .from(user)
     .where(filter)
     .then((images) => {
@@ -66,36 +65,28 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
   return db
     .batch([
       db
-        .select({ image: review.imageKey })
+        .select({ image: nonNullableSQL(review.imageKey) })
         .from(review)
         .where(and(eq(review.userId, userId), isNotNull(review.imageKey))),
       db
-        .select({ image: query.map(user.image, (key) => (URL.canParse(key) ? null : key)) })
+        .select({ image: nonNullableSQL(user.image) })
         .from(user)
         .where(and(eq(user.id, userId), isNotNull(user.image))),
     ])
     .then(([reviewImages, userImages]) => {
-      return db.transaction(async (tx) => {
-        await tx.delete(user).where(eq(user.id, userId));
-        if (email) {
-          await tx.delete(verificationToken).where(eq(verificationToken.identifier, email));
-        }
-
-        reviewImages.push(...userImages);
-        const images = [
-          ...new Set(
-            mapFilter(
-              reviewImages,
-              (img) => img.image,
-              (img, bad) => (img ? img : bad),
-            ),
-          ),
-        ];
-
-        if (!images.length) return;
-        return utapi.deleteFiles(images).then(ignore);
-      });
+      reviewImages.push(...userImages.filter(({ image }) => !URL.canParse(image)));
+      const images = [...new Set(reviewImages.map(({ image }) => image))];
+      return db.batch([
+        db.delete(user).where(eq(user.id, userId)),
+        ...(email
+          ? [db.delete(verificationToken).where(eq(verificationToken.identifier, email))]
+          : []),
+        ...(images.length
+          ? [db.insert(fileDeleteQueue).values(images.map((image) => ({ fileKey: image })))]
+          : []),
+      ]);
     })
+    .then(ignore)
     .catch((e) => throwDefaultError(e, "Failed to delete your account"));
 });
 
