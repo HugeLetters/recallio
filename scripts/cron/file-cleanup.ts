@@ -17,9 +17,7 @@ export default async function main() {
   await killSchedules();
   return await schedules.create({
     destination,
-    // todo - test this on an hourly setup maybe first?
-    // cron: "0 0 * * 0", // every week
-    cron: "0 * * * *", // every hour
+    cron: "0 0 * * 0", // every week
     retries: 1,
   });
 }
