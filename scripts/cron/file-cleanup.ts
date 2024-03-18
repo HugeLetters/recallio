@@ -1,15 +1,13 @@
 import "dotenv/config";
 
 import { env } from "@/env/index.mjs";
-import { Client } from "@upstash/qstash";
-import { getBaseUrl } from "@/browser";
 import { filterMap } from "@/utils/array/filter";
+import { Client } from "@upstash/qstash";
 
 const client = new Client({ token: env.QSTASH_TOKEN });
 const schedules = client.schedules;
 const route = "api/file-cleanup";
-const url = getBaseUrl();
-const destination = `${url}/${route}`;
+const destination = `${env.NEXTAUTH_URL}/${route}`;
 
 export default async function main() {
   if (env.NEXT_PUBLIC_NODE_ENV !== "production") return;

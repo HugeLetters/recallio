@@ -2,10 +2,6 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 export const env = createEnv({
-  /**
-   * Specify your server-side environment variables schema here. This way you can ensure the app
-   * isn't built with invalid env vars.
-   */
   server: {
     DATABASE_URL: z.string().min(1),
     DATABASE_TOKEN: z.string(),
@@ -39,15 +35,12 @@ export const env = createEnv({
     NODEMAILER_EMAIL: z.string(),
   },
 
-  /**
-   * Specify your client-side environment variables schema here. This way you can ensure the app
-   * isn't built with invalid env vars. To expose them to the client, prefix them with
-   * `NEXT_PUBLIC_`.
-   */
+  //! To expose them to the client, prefix them with `NEXT_PUBLIC_`.
   client: {
-    NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-
-    // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
+    NEXT_PUBLIC_NODE_ENV: z.preprocess(
+      (str) => process.env.VERCEL_ENV ?? str,
+      z.enum(["development", "test", "preview", "production"]).default("development"),
+    ),
   },
 
   /**
@@ -78,11 +71,9 @@ export const env = createEnv({
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     NODEMAILER_PASSWORD: process.env.NODEMAILER_PASSWORD,
     NODEMAILER_EMAIL: process.env.NODEMAILER_EMAIL,
-    // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
-   * This is especially useful for Docker builds.
    */
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
