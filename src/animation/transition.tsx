@@ -44,7 +44,7 @@ export function Transition({
       for (const node of removedNodes) {
         if (!isExternalElement(node)) continue;
 
-        node.classList.add(...outClassList);
+        node.classList.add(...outClassList, "pointer-events-none");
         node.setAttribute(markerAttributeName, id);
 
         target.insertBefore(node, nextSibling);

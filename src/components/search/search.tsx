@@ -1,9 +1,11 @@
-import { hasFocusWithin } from "@/browser/focus";
+import { Transition } from "@/animation/transition";
+import { useClient } from "@/browser";
 import { getQueryParam, setQueryParam } from "@/browser/query";
 import type { Model } from "@/state/type";
+import { tw } from "@/styles/tw";
 import { useRouter } from "next/router";
-import type { FormEvent, MutableRefObject, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import type { ComponentPropsWithoutRef, FormEvent, MutableRefObject, ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
@@ -26,20 +28,16 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   return (
     <div
       className="flex h-full items-center gap-2 px-2 text-xl"
-      onBlur={hasFocusWithin((hasFocus) => {
-        if (!isOpen) return;
-        setIsOpen(hasFocus);
-      })}
       onKeyDown={(e) => {
         if (e.code === "Escape") setIsOpen(false);
       }}
     >
+      <Overlay
+        show={isOpen}
+        onClick={() => setIsOpen(false)}
+      />
       {isOpen ? (
         <>
-          {createPortal(
-            <div className="absolute inset-0 z-0 animate-fade-in bg-black/50" />,
-            document.body,
-          )}
           {searchIcon}
           <DebouncedSearch
             value={search}
@@ -52,9 +50,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
         <>
           <button
             aria-label="Start search"
-            onClick={() => {
-              setIsOpen(true);
-            }}
+            onClick={() => setIsOpen(true)}
           >
             {searchIcon}
           </button>
@@ -119,6 +115,28 @@ export function DebouncedSearch({
         <ResetIcon className="size-7" />
       </button>
     </form>
+  );
+}
+
+type OverlayProps = { target?: HTMLElement; show: boolean } & ComponentPropsWithoutRef<"div">;
+function Overlay({ target, className, show, ...props }: OverlayProps) {
+  const client = useClient();
+  const getTarget = useCallback(() => target ?? document.body, [target]);
+
+  if (!client) return null;
+  return createPortal(
+    <Transition
+      inClassName="animate-fade-in"
+      outClassName="animate-fade-in-reverse"
+    >
+      {show && (
+        <div
+          className={tw("fixed inset-0 bg-black/50", className)}
+          {...props}
+        />
+      )}
+    </Transition>,
+    getTarget(),
   );
 }
 
