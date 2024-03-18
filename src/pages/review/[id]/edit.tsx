@@ -621,7 +621,7 @@ function CategorySearch({
       >
         <ScrollUpButton
           show
-          className="-translate-y-1 scale-90"
+          className="z-10 -translate-y-1 scale-90"
         />
         {!!search && (
           <label
