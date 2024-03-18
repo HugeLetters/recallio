@@ -1,9 +1,11 @@
 import { db } from "@/server/database";
 import { user } from "@/server/database/schema/user";
+import { ignore } from "@/utils";
 import { eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { getServerAuthSession } from "../auth";
-import { uploadthing, utapi } from "./api";
+import { uploadthing } from "./api";
+import { createDeleteQueueQuery } from "./delete-queue";
 
 export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .middleware(async ({ req, res }) => {
@@ -26,21 +28,17 @@ export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", ma
       userImageKey: userData.image && !URL.canParse(userData.image) ? userData.image : null,
     };
   })
-  .onUploadError(({ error }) => {
-    console.error(error);
-  })
+  .onUploadError(({ error }) => console.error(error))
   .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
     return db
-      .update(user)
-      .set({ image: file.key })
-      .where(eq(user.id, userId))
-      .then((query) => {
-        if (!query.rowsAffected || !userImageKey) return;
-
-        utapi.deleteFiles(userImageKey).catch(console.error);
+      .batch([
+        db.update(user).set({ image: file.key }).where(eq(user.id, userId)),
+        ...(userImageKey ? createDeleteQueueQuery([{ fileKey: userImageKey }]) : []),
+      ])
+      .catch((e) => {
+        console.error(e);
+        return createDeleteQueueQuery([{ fileKey: file.key }]);
       })
-      .catch((err) => {
-        console.error(err);
-        utapi.deleteFiles(file.key).catch(console.error);
-      });
+      .then(ignore)
+      .catch(console.error);
   });

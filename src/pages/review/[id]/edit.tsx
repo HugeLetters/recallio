@@ -113,6 +113,7 @@ type ReviewProps = {
   hasReview: boolean;
   barcode: string;
 };
+// todo - would be nice to clean this shit up
 function Review({ barcode, review, hasReview }: ReviewProps) {
   const {
     register,
@@ -448,6 +449,7 @@ function CategoryList({ control }: CategoryListProps) {
     () => new Set(categories.map((x) => x.name)),
     [categories],
   );
+
   function remove(value: string) {
     replace(categories.filter((category) => category.name !== value));
   }
@@ -459,9 +461,6 @@ function CategoryList({ control }: CategoryListProps) {
   }
 
   const { isOpen, setIsOpen } = useUrlDialog("category-modal");
-  function open() {
-    setIsOpen(true);
-  }
   const setSearchQuery = useSetSearchQuery();
   function close() {
     setIsOpen(false);
@@ -481,7 +480,7 @@ function CategoryList({ control }: CategoryListProps) {
             categoryLimitErrorToast();
             return;
           }
-          open();
+          setIsOpen(true);
         }}
       >
         <Toolbar.Root
