@@ -220,7 +220,6 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   year: "numeric",
 });
-// todo - allow to collapse reviews maybe? if comments/pros/cons are too long?
 function ReviewCard({
   review: { authorAvatar, authorName, rating, pros, cons, comment, updatedAt },
 }: ReviewCardProps) {

@@ -113,7 +113,6 @@ type ReviewProps = {
   hasReview: boolean;
   barcode: string;
 };
-// todo - would be nice to clean this shit up
 function Review({ barcode, review, hasReview }: ReviewProps) {
   const {
     register,
@@ -122,9 +121,24 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     formState: { isDirty: isFormDirty },
   } = useForm({ defaultValues: review });
 
+  const setOptimisticReview = useSetOptimisticReview(barcode);
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
+      function onReviewSave(review: StrictOmit<ReviewData, "image">) {
+        if (!image) {
+          setOptimisticReview(review, image);
+        }
+        if (image === undefined) return invalidateReviewData();
+        if (image === null) return deleteImage({ barcode });
+
+        setOptimisticReview(review, URL.createObjectURL(image));
+
+        compressImage(image, 511 * 1024)
+          .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
+          .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+      }
+
       const { categories: categoriesField, image: _, ...restData } = data;
       const newCategories = categoriesField.map(({ name }) => name);
 
@@ -143,50 +157,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
   }
 
-  function onReviewSave(review: StrictOmit<ReviewData, "image">) {
-    if (!image) {
-      setOptimisticReview(review, image);
-    }
-    if (image === undefined) return invalidateReviewData();
-    if (image === null) return deleteImage({ barcode });
-
-    setOptimisticReview(review, URL.createObjectURL(image));
-
-    compressImage(image, 511 * 1024)
-      .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
-      .catch(logToastError("Couldn't upload the image.\nPlease try again."));
-  }
-
-  const apiUtils = trpc.useUtils();
-  function invalidateReviewData() {
-    const optimisticImage = apiUtils.user.review.getOne.getData({ barcode })?.image;
-    Promise.all([
-      apiUtils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
-        if (!optimisticImage) return;
-        URL.revokeObjectURL(optimisticImage);
-      }),
-      apiUtils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
-      apiUtils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
-    ]).catch(
-      logToastError("Couldn't update data from the server.\nReloading the page is advised."),
-    );
-  }
-
-  const router = useRouter();
-  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
-    apiUtils.user.review.getOne.setData({ barcode }, (cache) => {
-      if (!cache) {
-        return { ...review, image: image ?? null };
-      }
-      if (image === undefined) {
-        return { ...cache, ...review };
-      }
-      return { ...cache, ...review, image };
-    });
-
-    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
-  }
-
+  const invalidateReviewData = useInvalidateReview(barcode);
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = trpc.user.review.deleteImage.useMutation({
     onSettled: invalidateReviewData,
@@ -273,6 +244,41 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       <div className="pb-2" />
     </form>
   );
+}
+
+function useSetOptimisticReview(barcode: string) {
+  const router = useRouter();
+  const utils = trpc.useUtils();
+  return function (review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
+    utils.user.review.getOne.setData({ barcode }, (cache) => {
+      if (!cache) {
+        return { ...review, image: image ?? null };
+      }
+      if (image === undefined) {
+        return { ...cache, ...review };
+      }
+      return { ...cache, ...review, image };
+    });
+
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
+  };
+}
+
+function useInvalidateReview(barcode: string) {
+  const utils = trpc.useUtils();
+  return function () {
+    const optimisticImage = utils.user.review.getOne.getData({ barcode })?.image;
+    Promise.all([
+      utils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
+        if (!optimisticImage) return;
+        URL.revokeObjectURL(optimisticImage);
+      }),
+      utils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
+      utils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
+    ]).catch(
+      logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+    );
+  };
 }
 
 type NameProps = {

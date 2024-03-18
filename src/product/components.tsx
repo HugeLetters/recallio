@@ -28,7 +28,6 @@ export function CommentSection({ children }: CommentSectionProps) {
   );
 }
 
-// todo - maybe this should have limited height and scroll?
 type CommentProps = { children: string; className?: string };
 export function Comment({ children, className }: CommentProps) {
   return (
