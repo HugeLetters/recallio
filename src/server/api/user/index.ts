@@ -2,9 +2,9 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { throwDefaultError } from "@/server/api/utils/error";
 import { db } from "@/server/database";
 import { nonNullableSQL } from "@/server/database/query";
-import { fileDeleteQueue } from "@/server/database/schema/file";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
+import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
@@ -51,9 +51,9 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
 
       return db.batch([
         db.update(user).set({ image: null }).where(filter),
-        db
-          .insert(fileDeleteQueue)
-          .values(filterOut(images, (image, bad) => (URL.canParse(image.fileKey) ? bad : image))),
+        ...createDeleteQueueQuery(
+          filterOut(images, (image, bad) => (URL.canParse(image.fileKey) ? bad : image)),
+        ),
       ]);
     })
     .then(ignore)
@@ -81,9 +81,7 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
         ...(email
           ? [db.delete(verificationToken).where(eq(verificationToken.identifier, email))]
           : []),
-        ...(images.length
-          ? [db.insert(fileDeleteQueue).values(images.map((image) => ({ fileKey: image })))]
-          : []),
+        ...createDeleteQueueQuery(images.map((image) => ({ fileKey: image }))),
       ]);
     })
     .then(ignore)

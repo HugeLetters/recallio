@@ -1,12 +1,13 @@
 import { db } from "@/server/database";
+import { nonNullableSQL } from "@/server/database/query";
 import { count, query } from "@/server/database/query/aggregate";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
-import { utapi } from "@/server/uploadthing/api";
+import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { throwDefaultError } from "../../utils/error";
@@ -54,27 +55,23 @@ const deleteImage = protectedProcedure
     const filter = and(eq(review.userId, userId), eq(review.barcode, barcode));
 
     return db
-      .batch([
-        db.select({ imageKey: review.imageKey }).from(review).where(filter),
-        db.update(review).set({ imageKey: null }).where(filter),
-      ])
-      .then(([[review]]) => {
-        if (!review) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Couldn't find your review for barcode ${barcode}.`,
-          });
-        }
-
-        if (!review.imageKey) {
+      .select({ fileKey: nonNullableSQL(review.imageKey) })
+      .from(review)
+      .where(and(filter, isNotNull(review.imageKey)))
+      .then((fileKeys) => {
+        if (!fileKeys.length) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
             message: `No image attached to your review for barcode ${barcode}.`,
           });
         }
 
-        return utapi.deleteFiles(review.imageKey).then(ignore);
+        return db.batch([
+          db.update(review).set({ imageKey: null }).where(filter),
+          ...createDeleteQueueQuery(fileKeys),
+        ]);
       })
+      .then(ignore)
       .catch((e) => throwDefaultError(e, "Failed to delete image"));
   });
 
