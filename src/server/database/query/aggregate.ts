@@ -1,8 +1,9 @@
 import { throwDefaultError } from "@/server/api/utils/error";
-import type { GetColumnData, SQL } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { db } from "..";
+import type { SQLLike, SQLType } from "./type";
 
 export function count<T extends SQLiteTable>(table: T, where: SQL | undefined) {
   return db
@@ -32,13 +33,6 @@ export const query = {
     return sql<number | (null & SQLType<C>)>`avg(${col})`;
   },
 };
-
-type SQLLike = SQLiteColumn | SQL.Aliased | SQL;
-type SQLType<C extends SQLLike> = C extends SQLiteColumn
-  ? GetColumnData<C>
-  : C extends SQL | SQL.Aliased
-    ? C["_"]["type"]
-    : never;
 
 function aggregateArray<C extends SQLLike>(column: C): SQL<Array<SQLType<C>>>;
 function aggregateArray<C extends SQLLike, R>(

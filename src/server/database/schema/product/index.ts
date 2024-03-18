@@ -4,9 +4,9 @@ import {
   productCommentLengthMax,
   productNameLengthMax,
 } from "@/product/validation";
-import { sql } from "drizzle-orm";
 import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { user, userIdLength } from "../user";
+import { timestampColumn } from "../utils";
 
 export const review = sqliteTable(
   "review",
@@ -21,9 +21,7 @@ export const review = sqliteTable(
     cons: text("cons", { length: productCommentLengthMax }),
     comment: text("comment", { length: productCommentLengthMax }),
     imageKey: text("image_key", { length: 255 }),
-    updatedAt: int("updated_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
+    updatedAt: timestampColumn("updated_at").notNull(),
     isPrivate: int("is_private", { mode: "boolean" }).notNull().default(true),
   },
   (table) => ({

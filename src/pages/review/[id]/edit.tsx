@@ -5,7 +5,7 @@ import { loadingTracker } from "@/components/loading/indicator";
 import { Spinner } from "@/components/loading/spinner";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
-import { AutoresizableInput, Button, ButtonLike } from "@/components/ui";
+import { AutoresizableInput, Button, ButtonLike, Input } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { LabeledSwitch } from "@/components/ui/switch";
@@ -121,9 +121,24 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     formState: { isDirty: isFormDirty },
   } = useForm({ defaultValues: review });
 
+  const setOptimisticReview = useSetOptimisticReview(barcode);
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
+      function onReviewSave(review: StrictOmit<ReviewData, "image">) {
+        if (!image) {
+          setOptimisticReview(review, image);
+        }
+        if (image === undefined) return invalidateReviewData();
+        if (image === null) return deleteImage({ barcode });
+
+        setOptimisticReview(review, URL.createObjectURL(image));
+
+        compressImage(image, 511 * 1024)
+          .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
+          .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+      }
+
       const { categories: categoriesField, image: _, ...restData } = data;
       const newCategories = categoriesField.map(({ name }) => name);
 
@@ -142,50 +157,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
   }
 
-  function onReviewSave(review: StrictOmit<ReviewData, "image">) {
-    if (!image) {
-      setOptimisticReview(review, image);
-    }
-    if (image === undefined) return invalidateReviewData();
-    if (image === null) return deleteImage({ barcode });
-
-    setOptimisticReview(review, URL.createObjectURL(image));
-
-    compressImage(image, 511 * 1024)
-      .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
-      .catch(logToastError("Couldn't upload the image.\nPlease try again."));
-  }
-
-  const apiUtils = trpc.useUtils();
-  function invalidateReviewData() {
-    const optimisticImage = apiUtils.user.review.getOne.getData({ barcode })?.image;
-    Promise.all([
-      apiUtils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
-        if (!optimisticImage) return;
-        URL.revokeObjectURL(optimisticImage);
-      }),
-      apiUtils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
-      apiUtils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
-    ]).catch(
-      logToastError("Couldn't update data from the server.\nReloading the page is advised."),
-    );
-  }
-
-  const router = useRouter();
-  function setOptimisticReview(review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
-    apiUtils.user.review.getOne.setData({ barcode }, (cache) => {
-      if (!cache) {
-        return { ...review, image: image ?? null };
-      }
-      if (image === undefined) {
-        return { ...cache, ...review };
-      }
-      return { ...cache, ...review, image };
-    });
-
-    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
-  }
-
+  const invalidateReviewData = useInvalidateReview(barcode);
   const [image, setImage] = useState<File | null>();
   const { mutate: deleteImage } = trpc.user.review.deleteImage.useMutation({
     onSettled: invalidateReviewData,
@@ -274,6 +246,41 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   );
 }
 
+function useSetOptimisticReview(barcode: string) {
+  const router = useRouter();
+  const utils = trpc.useUtils();
+  return function (review: StrictOmit<ReviewData, "image">, image: Nullish<string>) {
+    utils.user.review.getOne.setData({ barcode }, (cache) => {
+      if (!cache) {
+        return { ...review, image: image ?? null };
+      }
+      if (image === undefined) {
+        return { ...cache, ...review };
+      }
+      return { ...cache, ...review, image };
+    });
+
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
+  };
+}
+
+function useInvalidateReview(barcode: string) {
+  const utils = trpc.useUtils();
+  return function () {
+    const optimisticImage = utils.user.review.getOne.getData({ barcode })?.image;
+    Promise.all([
+      utils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
+        if (!optimisticImage) return;
+        URL.revokeObjectURL(optimisticImage);
+      }),
+      utils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
+      utils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
+    ]).catch(
+      logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+    );
+  };
+}
+
 type NameProps = {
   barcode: string;
   register: UseFormRegisterReturn;
@@ -284,20 +291,17 @@ function Name({ barcode, register }: NameProps) {
   return (
     <label className="flex flex-col">
       <span className="p-2 text-sm">Name</span>
-      <div className="flex rounded-lg p-3 outline outline-1 outline-app-green-500 focus-within:outline-2">
-        <input
-          {...register}
-          required
-          minLength={productNameLengthMin}
-          maxLength={productNameLengthMax}
-          placeholder={data?.[0] ?? "Name"}
-          autoComplete="off"
-          className="grow outline-none"
-          aria-label="Product name"
-          list={listId}
-        />
-        <datalist id={listId}>{data?.map((name) => <option key={name}>{name}</option>)}</datalist>
-      </div>
+      <Input
+        {...register}
+        required
+        minLength={productNameLengthMin}
+        maxLength={productNameLengthMax}
+        placeholder={data?.[0] ?? "Name"}
+        autoComplete="off"
+        aria-label="Product name"
+        list={listId}
+      />
+      <datalist id={listId}>{data?.map((name) => <option key={name}>{name}</option>)}</datalist>
     </label>
   );
 }
@@ -451,6 +455,7 @@ function CategoryList({ control }: CategoryListProps) {
     () => new Set(categories.map((x) => x.name)),
     [categories],
   );
+
   function remove(value: string) {
     replace(categories.filter((category) => category.name !== value));
   }
@@ -462,9 +467,6 @@ function CategoryList({ control }: CategoryListProps) {
   }
 
   const { isOpen, setIsOpen } = useUrlDialog("category-modal");
-  function open() {
-    setIsOpen(true);
-  }
   const setSearchQuery = useSetSearchQuery();
   function close() {
     setIsOpen(false);
@@ -484,7 +486,7 @@ function CategoryList({ control }: CategoryListProps) {
             categoryLimitErrorToast();
             return;
           }
-          open();
+          setIsOpen(true);
         }}
       >
         <Toolbar.Root
@@ -603,7 +605,7 @@ function CategorySearch({
 
   return (
     <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
-      <div className="flex h-14 w-full items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
+      <div className="flex w-full shrink-0 basis-14 items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
         <SearchIcon className="size-7 shrink-0" />
         <DebouncedSearch
           value={search}
@@ -620,11 +622,11 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="scrollbar-gutter flex basis-full flex-col gap-6 overflow-y-auto px-7 py-5"
+        className="scrollbar-gutter flex flex-col gap-6 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
           show
-          className="-translate-y-1 scale-90"
+          className="z-10 -translate-y-1 scale-90"
         />
         {!!search && (
           <label

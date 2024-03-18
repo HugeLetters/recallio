@@ -87,7 +87,7 @@ const Page: NextPageWithLayout = function () {
   return (
     <div
       ref={draggedDivRef}
-      className="relative isolate flex size-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
+      className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
     >
       <div
         id={id}

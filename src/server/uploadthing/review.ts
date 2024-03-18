@@ -5,7 +5,8 @@ import { and, eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
 import { getServerAuthSession } from "../auth";
-import { uploadthing, utapi } from "./api";
+import { uploadthing } from "./api";
+import { createDeleteQueueQuery } from "./delete-queue";
 
 export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .input(z.object({ barcode: z.string() }))
@@ -36,19 +37,17 @@ export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", 
   })
   .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
     return db
-      .transaction(async (tx) => {
-        await tx
+      .batch([
+        db
           .update(review)
           .set({ imageKey: file.key, updatedAt: new Date() })
-          .where(and(eq(review.userId, userId), eq(review.barcode, barcode)));
-        if (!oldImageKey) return;
-
-        return utapi.deleteFiles(oldImageKey).then(ignore);
+          .where(and(eq(review.userId, userId), eq(review.barcode, barcode))),
+        ...(oldImageKey ? createDeleteQueueQuery([{ fileKey: oldImageKey }]) : []),
+      ])
+      .catch((e) => {
+        console.error(e);
+        return createDeleteQueueQuery([{ fileKey: file.key }]);
       })
-      .then(() => true)
-      .catch((err) => {
-        console.error(err);
-        utapi.deleteFiles(file.key).catch(console.error);
-        return false;
-      });
+      .then(ignore)
+      .catch(console.error);
   });

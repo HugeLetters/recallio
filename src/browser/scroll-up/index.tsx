@@ -50,7 +50,7 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
         outClassName="animate-slide-up-reverse"
       >
         {show && isThershold && (
-          <div className={tw("fixed z-10", className)}>
+          <div className={tw("fixed z-0", className)}>
             <div className="-translate-x-full -translate-y-full">
               <button
                 type="button"

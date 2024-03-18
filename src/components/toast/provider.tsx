@@ -112,7 +112,7 @@ function ToastSlot({
       translate
       className={tw(
         "animate-slide-left animate-function-ease-out",
-        !isLast && "data-[transition=out]:animate-duration-0",
+        isStacked && !isLast && "data-[transition=out]:animate-duration-0",
       )}
     >
       <Toast.Root

@@ -1,10 +1,10 @@
 import { db } from "@/server/database";
+import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { createBarcodeSchema } from "@/server/product/validation";
-import { utapi } from "@/server/uploadthing/api";
+import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
-import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 import { throwDefaultError } from "../../utils/error";
@@ -16,20 +16,13 @@ export const deleteReview = protectedProcedure
     const filter = and(eq(review.userId, userId), eq(review.barcode, barcode));
 
     return db
-      .batch([
-        db.select({ imageKey: review.imageKey }).from(review).where(filter),
-        db.delete(review).where(filter),
-      ])
-      .then(([[review]]) => {
-        if (!review) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Couldn't find your review for barcode ${barcode}.`,
-          });
-        }
-
-        if (!review.imageKey) return;
-        return utapi.deleteFiles(review.imageKey).then(ignore);
+      .select({ fileKey: nonNullableSQL(review.imageKey) })
+      .from(review)
+      .where(and(filter, isNotNull(review.imageKey)))
+      .then((files) => {
+        return db
+          .batch([db.delete(review).where(filter), ...createDeleteQueueQuery(files)])
+          .then(ignore);
       })
       .catch((e) => throwDefaultError(e, `Failed to delete your review for barcode ${barcode}.`));
   });
