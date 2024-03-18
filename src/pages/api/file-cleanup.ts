@@ -10,12 +10,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 export const config = { api: { bodyParser: false } };
 
-export default verifySignature(handler, {
+const verifiedHandler = verifySignature(handler, {
   currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY,
   nextSigningKey: env.QSTASH_NEXT_SIGNING_KEY,
 });
 
-async function handler(_: NextApiRequest, res: NextApiResponse) {
+async function innerHandler(_: NextApiRequest, res: NextApiResponse) {
   await deletePendingFiles();
   res.status(200).json(null);
 }
@@ -27,10 +27,8 @@ function deletePendingFiles() {
         .select({ key: fileDeleteQueue.fileKey })
         .from(fileDeleteQueue)
         .orderBy(fileDeleteQueue.fileKey)
-        // todo - increase limit after resting
-        .limit(2);
+        .limit(1000);
 
-      console.log(pendingFiles);
       const lastFile = pendingFiles.at(-1);
       if (!lastFile) return;
 
@@ -38,4 +36,10 @@ function deletePendingFiles() {
       return await utapi.deleteFiles(pendingFiles.map((file) => file.key)).then(ignore);
     })
     .catch(throwDefaultError);
+}
+
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (env.NEXT_PUBLIC_NODE_ENV !== "production") return innerHandler(req, res);
+
+  return verifiedHandler(req, res);
 }
