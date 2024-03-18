@@ -1,14 +1,14 @@
 import { usernameMaxLength } from "@/user/validation";
 import type { AdapterAccount } from "@auth/core/adapters";
-import { sql } from "drizzle-orm";
 import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { timestampColumn } from "../utils";
 
 export const userIdLength = 255;
 export const user = sqliteTable("user", {
   id: text("id", { length: userIdLength }).notNull().primaryKey(),
   name: text("name", { length: usernameMaxLength }).notNull(),
   email: text("email", { length: 255 }).notNull().unique(),
-  emailVerified: int("email_verified", { mode: "timestamp" }).default(sql`(unixepoch())`),
+  emailVerified: timestampColumn("email_verified"),
   /** Stored either as URL or an UploadThing key */
   image: text("image", { length: 255 }),
 });
