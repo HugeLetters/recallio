@@ -622,7 +622,7 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="scrollbar-gutter flex flex-col gap-6 overflow-y-auto px-7 py-5"
+        className="scrollbar-gutter flex grow flex-col gap-6 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
           show
