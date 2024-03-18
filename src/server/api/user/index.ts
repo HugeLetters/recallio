@@ -2,15 +2,16 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { throwDefaultError } from "@/server/api/utils/error";
 import { db } from "@/server/database";
 import { query } from "@/server/database/query/aggregate";
+import { fileDeleteQueue } from "@/server/database/schema/file";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
 import { utapi } from "@/server/uploadthing/api";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
-import { mapFilter } from "@/utils/array/filter";
+import { filterOut, mapFilter } from "@/utils/array/filter";
 import { TRPCError } from "@trpc/server";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { accountRouter } from "./account";
 import { reviewRouter } from "./review";
 
@@ -35,30 +36,28 @@ const setName = protectedProcedure
 
 const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
   const userId = session.user.id;
-  const filter = eq(user.id, userId);
+  const filter = and(eq(user.id, userId), isNotNull(user.image));
 
   return db
-    .batch([
-      db.select({ image: user.image }).from(user).where(filter),
-      db.update(user).set({ image: null }).where(filter),
-    ])
-    .then(([[user]]) => {
-      if (!user) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
-      }
-
-      const { image } = user;
-      if (!image) {
+    .select({ fileKey: sql<string>`${user.image}` })
+    .from(user)
+    .where(filter)
+    .then((images) => {
+      if (!images.length) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: "No image attached to the user",
         });
       }
 
-      if (!URL.canParse(image)) {
-        return utapi.deleteFiles([image]).then(ignore);
-      }
+      return db.batch([
+        db.update(user).set({ image: null }).where(filter),
+        db
+          .insert(fileDeleteQueue)
+          .values(filterOut(images, (image, bad) => (URL.canParse(image.fileKey) ? bad : image))),
+      ]);
     })
+    .then(ignore)
     .catch((e) => throwDefaultError(e, "Failed to delete image"));
 });
 
