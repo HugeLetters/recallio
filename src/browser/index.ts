@@ -17,3 +17,9 @@ export function useClient() {
     () => false,
   );
 }
+
+export function getBaseUrl() {
+  if (browser) return ""; // browser should use relative url
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
+  return `http://localhost:${process.env.PORT ?? 1853}`; // dev SSR should use localhost
+}

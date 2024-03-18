@@ -1,5 +1,5 @@
 import { signOut } from "@/auth";
-import { browser } from "@/browser";
+import { getBaseUrl } from "@/browser";
 import { toast } from "@/components/toast";
 import type { ApiRouter } from "@/server/api/router";
 import { hasProperty } from "@/utils/object";
@@ -7,12 +7,6 @@ import { QueryCache } from "@tanstack/react-query";
 import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
-
-function getBaseUrl() {
-  if (browser) return ""; // browser should use relative url
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
-  return `http://localhost:${process.env.PORT ?? 1853}`; // dev SSR should use localhost
-}
 
 export const trpc = createTRPCNext<ApiRouter>({
   config() {
