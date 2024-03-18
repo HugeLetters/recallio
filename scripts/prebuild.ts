@@ -4,7 +4,7 @@ import fileCleanupCron from "./cron/file-cleanup";
 import { execAsync } from "./utils";
 
 export default async function main() {
-  await Promise.all([migrateSchema(), generateRouteTypes(), fileCleanupCron()]);
+  return await Promise.all([migrateSchema(), generateRouteTypes(), fileCleanupCron()]);
 }
 
 async function migrateSchema() {
