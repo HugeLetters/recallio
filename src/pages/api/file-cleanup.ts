@@ -35,7 +35,7 @@ function deletePendingFiles() {
 }
 
 const handler =
-  env.NEXT_PUBLIC_NODE_ENV === "production"
+  env.NEXT_PUBLIC_NODE_ENV !== "development"
     ? verifySignature(innerHandler, {
         currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY,
         nextSigningKey: env.QSTASH_NEXT_SIGNING_KEY,
