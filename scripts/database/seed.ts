@@ -14,8 +14,7 @@ import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-cor
 import type { Task } from "tasuku";
 import task from "tasuku";
 
-seed().catch(console.error);
-async function seed() {
+export default async function seed() {
   // just awaiting for all root declaration to initialize
   await Promise.resolve();
   await seedReviews({

@@ -5,7 +5,7 @@
   "packageManager": "pnpm@8.10.0",
   "scripts": {
     "dev": "pnpm cleanup && next dev -p 1853",
-    "build": "pnpm db-migrate && pnpm nextjs-routes&& next build",
+    "build": "pnpm rscript prebuild && next build",
     "analyze": "ANALYZE=true next build",
     "cleanup": "rm -rf .next",
     "start": "next start",
@@ -17,7 +17,8 @@
     "rscript": "tsx ./scripts/run.ts",
     "db-studio": "drizzle-kit studio",
     "db-seed": "pnpm rscript database/seed",
-    "db-migrate": "drizzle-kit generate:sqlite && pnpm rscript database/migration"
+    "db-generate": "pnpm rscript database/migration/generate",
+    "db-migrate": "pnpm rscript database/migration/apply"
   },
   "dependencies": {
     "@auth/core": "^0.12.0",
