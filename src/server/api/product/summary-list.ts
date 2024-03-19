@@ -1,16 +1,16 @@
 import { protectedProcedure } from "@/server/api/trpc";
+import type { Paginated } from "@/server/api/utils/pagination";
+import { createPagination } from "@/server/api/utils/pagination";
 import { db } from "@/server/database";
 import { query } from "@/server/database/query/aggregate";
 import { review } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
+import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { mostCommon } from "@/utils/array";
 import type { SQL } from "drizzle-orm";
 import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
 import { z } from "zod";
-import { createBarcodeSchema } from "../../product/validation";
-import { throwDefaultError } from "../utils/error";
-import type { Paginated } from "../utils/pagination";
-import { createPagination } from "../utils/pagination";
 
 const pagination = createPagination({
   cursor: z.object({
@@ -94,5 +94,5 @@ export const getSummaryList = protectedProcedure
           }),
         };
       })
-      .catch(throwDefaultError);
+      .catch(throwExpectedError);
   });

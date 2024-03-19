@@ -4,9 +4,9 @@ import {
   productCommentLengthMax,
   productNameLengthMax,
 } from "@/product/validation";
+import { user, userIdLength } from "@/server/database/schema/user";
+import { timestampColumn } from "@/server/database/schema/utils";
 import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { user, userIdLength } from "../user";
-import { timestampColumn } from "../utils";
 
 export const review = sqliteTable(
   "review",

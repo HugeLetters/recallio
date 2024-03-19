@@ -41,7 +41,7 @@ const scrapers: Array<(barcode: string) => Promise<Nullish<string>>> = [
   Brocade,
   GoUPC,
 ];
-export default function getScrapedProducts(code: string): Promise<string[]> {
+export function getScrapedProducts(code: string): Promise<string[]> {
   return Promise.allSettled(scrapers.map((query) => query(code))).then((results) => {
     return filterMap(
       results,

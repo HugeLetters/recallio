@@ -1,7 +1,7 @@
 import { env } from "@/env/index.mjs";
-import { throwDefaultError } from "@/server/api/utils/error";
 import { db } from "@/server/database";
 import { fileDeleteQueue } from "@/server/database/schema/file";
+import { throwExpectedError } from "@/server/error/trpc";
 import { utapi } from "@/server/uploadthing/api";
 import { ignore } from "@/utils";
 import { verifySignature } from "@upstash/qstash/dist/nextjs";
@@ -15,7 +15,7 @@ function innerHandler(_: NextApiRequest, res: NextApiResponse) {
     .then(() => {
       res.status(200).json(null);
     })
-    .catch(throwDefaultError);
+    .catch(throwExpectedError);
 }
 
 function deletePendingFiles() {

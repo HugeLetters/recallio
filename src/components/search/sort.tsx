@@ -1,12 +1,12 @@
+import { Flipped } from "@/animation/flip";
 import { getQueryParam, setQueryParam } from "@/browser/query";
+import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
 import { includes } from "@/utils/array";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
 import { Flipper } from "react-flip-toolkit";
 import SwapIcon from "~icons/iconamoon/swap-light";
-import { Flipped } from "../../animation/flip";
-import { DialogOverlay, UrlDialogRoot } from "../ui/dialog";
 
 type SortDialogProps = { optionList: OptionList };
 export function SortDialog({ optionList }: SortDialogProps) {

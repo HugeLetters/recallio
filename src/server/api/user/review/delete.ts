@@ -1,13 +1,13 @@
+import { protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../trpc";
-import { throwDefaultError } from "../../utils/error";
 
 export const deleteReview = protectedProcedure
   .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))
@@ -24,5 +24,5 @@ export const deleteReview = protectedProcedure
           .batch([db.delete(review).where(filter), ...createDeleteQueueQuery(files)])
           .then(ignore);
       })
-      .catch((e) => throwDefaultError(e, `Failed to delete your review for barcode ${barcode}.`));
+      .catch((e) => throwExpectedError(e, `Failed to delete your review for barcode ${barcode}.`));
   });

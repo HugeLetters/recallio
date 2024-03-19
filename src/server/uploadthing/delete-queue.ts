@@ -1,5 +1,5 @@
-import { db } from "../database";
-import { fileDeleteQueue } from "../database/schema/file";
+import { db } from "@/server/database";
+import { fileDeleteQueue } from "@/server/database/schema/file";
 
 type PendingFile = typeof fileDeleteQueue.$inferInsert;
 export function createDeleteQueueQuery(values: Array<PendingFile>) {

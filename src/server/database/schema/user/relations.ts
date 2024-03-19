@@ -1,5 +1,5 @@
+import { review } from "@/server/database/schema/product";
 import { relations } from "drizzle-orm";
-import { review } from "../product";
 import { account, session, user } from ".";
 
 export const userRelations = relations(user, ({ many }) => ({

@@ -1,7 +1,7 @@
+import { timestampColumn } from "@/server/database/schema/utils";
 import { usernameMaxLength } from "@/user/validation";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { timestampColumn } from "../utils";
 
 export const userIdLength = 255;
 export const user = sqliteTable("user", {

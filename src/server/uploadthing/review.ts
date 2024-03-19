@@ -1,10 +1,10 @@
+import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/database";
 import { review } from "@/server/database/schema/product";
 import { ignore } from "@/utils";
 import { and, eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
-import { getServerAuthSession } from "../auth";
 import { uploadthing } from "./api";
 import { createDeleteQueueQuery } from "./delete-queue";
 

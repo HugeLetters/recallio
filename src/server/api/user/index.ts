@@ -1,15 +1,14 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { throwDefaultError } from "@/server/api/utils/error";
 import { db } from "@/server/database";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
+import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
 import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
 import { filterOut } from "@/utils/array/filter";
-import { TRPCError } from "@trpc/server";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { accountRouter } from "./account";
 import { reviewRouter } from "./review";
@@ -25,10 +24,10 @@ const setName = protectedProcedure
       .update(user)
       .set({ name: input })
       .where(eq(user.id, session.user.id))
-      .catch((e) => throwDefaultError(e, "Failed to update your username."))
+      .catch((e) => throwExpectedError(e, "Failed to update your username."))
       .then((query) => {
         if (!query.rowsAffected) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+          throw new ExpectedError({ code: "NOT_FOUND", message: "User not found" });
         }
       });
   });
@@ -43,7 +42,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
     .where(filter)
     .then((images) => {
       if (!images.length) {
-        throw new TRPCError({
+        throw new ExpectedError({
           code: "PRECONDITION_FAILED",
           message: "No image attached to the user",
         });
@@ -57,7 +56,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
       ]);
     })
     .then(ignore)
-    .catch((e) => throwDefaultError(e, "Failed to delete image"));
+    .catch((e) => throwExpectedError(e, "Failed to delete image"));
 });
 
 const deleteUser = protectedProcedure.mutation(({ ctx }) => {
@@ -85,7 +84,7 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
       ]);
     })
     .then(ignore)
-    .catch((e) => throwDefaultError(e, "Failed to delete your account"));
+    .catch((e) => throwExpectedError(e, "Failed to delete your account"));
 });
 
 export const userRouter = createTRPCRouter({
