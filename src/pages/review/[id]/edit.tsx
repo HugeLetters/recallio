@@ -19,7 +19,6 @@ import {
   CommentSection,
   ConsIcon,
   ImagePreview,
-  NoImagePreview,
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
@@ -412,9 +411,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative size-16">
-        <ImagePreview src={src}>
-          <NoImagePreview />
-        </ImagePreview>
+        <ImagePreview src={src} />
         {isImagePresent && (
           <button
             type="button"

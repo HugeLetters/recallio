@@ -3,22 +3,21 @@ import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
-import { UserPicture } from "@/user/picture";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
 import {
   CategoryCard,
+  Comment,
+  CommentSection,
   ConsIcon,
   ImagePreview,
-  NoImagePreview,
-  CommentSection,
   ProsIcon,
-  Comment,
 } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
+import { UserPicture } from "@/user/picture";
 import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -84,9 +83,7 @@ function Summary({
     <div className="flex flex-col gap-7">
       <div className="flex h-16 gap-3">
         <div className="size-16 shrink-0">
-          <ImagePreview src={image}>
-            <NoImagePreview />
-          </ImagePreview>
+          <ImagePreview src={image} />
         </div>
         <ProductName
           barcode={barcode}

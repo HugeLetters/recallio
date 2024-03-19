@@ -45,12 +45,8 @@ export function ConsIcon() {
   return <MinusIcon className="h-fit w-full text-app-red-500" />;
 }
 
-type ImagePreviewProps = {
-  src: string | null;
-  /** Fallback */
-  children?: ReactNode;
-};
-export function ImagePreview({ src, children }: ImagePreviewProps) {
+type ImagePreviewProps = { src: string | null };
+export function ImagePreview({ src }: ImagePreviewProps) {
   return (
     <Image
       alt="Review image"
@@ -59,17 +55,10 @@ export function ImagePreview({ src, children }: ImagePreviewProps) {
       height={144}
       className="size-full rounded-full object-cover"
     >
-      {children}
+      <div className="flex h-full items-center justify-center rounded-full bg-neutral-400 p-2 text-white">
+        <MilkIcon className="size-full" />
+      </div>
     </Image>
-  );
-}
-
-// todo - merge this with ImagePreview if possible
-export function NoImagePreview() {
-  return (
-    <div className="flex h-full items-center justify-center rounded-full bg-neutral-400 p-2 text-white">
-      <MilkIcon className="size-full" />
-    </div>
   );
 }
 
