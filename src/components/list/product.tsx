@@ -1,6 +1,6 @@
 import { ToolbarLink } from "@/components/ui/toolbar";
+import { Image } from "@/image";
 import type { StrictOmit } from "@/utils/object";
-import Image from "next/image";
 import type { LinkProps } from "next/link";
 import type { PropsWithChildren } from "react";
 import EggBasketIcon from "~icons/custom/egg-basket";
@@ -26,20 +26,20 @@ export function Card({
       {...linkProps}
       className="flex items-center gap-3 rounded-xl bg-neutral-100 p-4"
     >
-      {image ? (
+      <div className="size-9 shrink-0">
         <Image
           src={image}
           alt=""
           width={50}
           height={50}
           sizes="50px"
-          className="aspect-square size-9 shrink-0 rounded-full bg-white object-cover shadow-around sa-o-10 sa-r-0.5"
-        />
-      ) : (
-        <div className="flex aspect-square size-9 items-center justify-center rounded-full bg-neutral-400 p-1">
-          <MilkIcon className="size-full text-white" />
-        </div>
-      )}
+          className="size-full rounded-full object-cover shadow-around sa-o-10 sa-r-0.5"
+        >
+          <div className="flex size-full items-center justify-center rounded-full bg-neutral-400">
+            <MilkIcon className="size-7 text-white" />
+          </div>
+        </Image>
+      </div>
       <div className="flex h-10 min-w-0 flex-col justify-between">
         <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm capitalize">
           {label}
