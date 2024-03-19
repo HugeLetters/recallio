@@ -27,6 +27,7 @@ import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
 const Page: NextPageWithLayout = function () {
   const { data } = useSession();
+
   // Can't rely on status since during session refetches it reports loading
   return !!data ? (
     <div className="flex w-full flex-col items-stretch gap-3 p-4">

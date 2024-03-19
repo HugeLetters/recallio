@@ -13,10 +13,10 @@ export function getCookies(): Option<Record<string, unknown>> {
       const [key, value] = cookie.split("=");
       if (!key || !value) return null;
 
-      const data = decodeJSON(decodeURIComponent(value));
-      if (!isSome(data)) return null;
+      const decoded = decodeURIComponent(value);
+      const data = decodeJSON(decoded);
 
-      return [key, data.value] as const;
+      return [key, isSome(data) ? data.value : decoded] as const;
     },
     (v, bad) => (v ? v : bad),
   );
