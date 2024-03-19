@@ -1,4 +1,4 @@
-import { redis } from "../redis";
+import { redis } from "@/server/redis";
 
 function productNameKey(barcode: string) {
   return `product-name:${barcode}`;

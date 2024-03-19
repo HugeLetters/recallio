@@ -3,13 +3,13 @@ import { db } from "@/server/database";
 import { query } from "@/server/database/query/aggregate";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";
+import { cacheProductNames, getProductNames } from "@/server/product/cache";
+import { getScrapedProducts } from "@/server/product/scrapers";
+import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { mostCommon } from "@/utils/array";
 import { and, eq, exists, gt, like } from "drizzle-orm";
 import { z } from "zod";
-import { cacheProductNames, getProductNames } from "../../product/cache";
-import getScrapedProducts from "../../product/scrapers";
-import { createBarcodeSchema } from "../../product/validation";
 import { getReviewList } from "./review-list";
 import { getSummaryList } from "./summary-list";
 

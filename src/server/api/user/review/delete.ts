@@ -1,3 +1,4 @@
+import { protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
@@ -7,7 +8,6 @@ import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../trpc";
 
 export const deleteReview = protectedProcedure
   .input(z.object({ barcode: createBarcodeSchema("Barcode is required to delete a review") }))

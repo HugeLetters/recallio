@@ -1,6 +1,6 @@
+import { user } from "@/server/database/schema/user";
 import { relations } from "drizzle-orm";
 import { category, review, reviewsToCategories } from ".";
-import { user } from "../user";
 
 export const reviewRelations = relations(review, ({ many, one }) => ({
   categories: many(reviewsToCategories),

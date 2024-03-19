@@ -1,10 +1,10 @@
+import { ToolbarLink } from "@/components/ui/toolbar";
 import type { StrictOmit } from "@/utils/object";
 import Image from "next/image";
 import type { LinkProps } from "next/link";
 import type { PropsWithChildren } from "react";
 import EggBasketIcon from "~icons/custom/egg-basket";
 import MilkIcon from "~icons/custom/milk";
-import { ToolbarLink } from "../ui/toolbar";
 
 type CardProps = {
   image?: string | null;

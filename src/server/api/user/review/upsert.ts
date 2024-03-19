@@ -7,6 +7,7 @@ import {
   productNameLengthMin,
   productRatingMax,
 } from "@/product/validation";
+import { protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
@@ -21,7 +22,6 @@ import {
 import { nonEmptyArray } from "@/utils/array";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { protectedProcedure } from "../../trpc";
 
 const upsertSchema = z
   .object({

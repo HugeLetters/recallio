@@ -1,9 +1,9 @@
+import { Transition } from "@/animation/transition";
 import { useClient } from "@/browser";
 import { useStore } from "@/state/store";
 import { TrackerStore } from "@/state/store/tracker";
 import type { PropsWithChildren } from "react";
 import { createPortal } from "react-dom";
-import { Transition } from "../../animation/transition";
 import { Spinner } from "./spinner";
 
 export const loadingTracker = new TrackerStore();
