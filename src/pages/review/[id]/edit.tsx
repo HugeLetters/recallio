@@ -41,7 +41,7 @@ import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { useUploadThing } from "@/uploadthing";
 import { minutesToMs } from "@/utils";
-import type { StrictOmit, TransformType } from "@/utils/object";
+import type { StrictOmit, TransformProperty } from "@/utils/object";
 import { merge } from "@/utils/object";
 import { isSetEqual } from "@/utils/set";
 import type { NextPageWithLayout, Nullish } from "@/utils/type";
@@ -72,7 +72,7 @@ const Page: NextPageWithLayout = function () {
 Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
-type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
+type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
   return merge(data, { categories: data.categories.map((x) => ({ name: x })) });

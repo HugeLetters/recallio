@@ -3,7 +3,7 @@ import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
-import { UserPic } from "@/components/ui/user-pic";
+import { UserPicture } from "@/user/picture";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
 import {
@@ -227,10 +227,7 @@ function ReviewCard({
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="h-7">
-          <UserPic
-            className="text-xs"
-            user={{ name: authorName, image: authorAvatar }}
-          />
+          <UserPicture user={{ name: authorName, image: authorAvatar }} />
         </div>
         <span>{authorName}</span>
         <span className="ml-auto">{dateFormatter.format(new Date(updatedAt))}</span>

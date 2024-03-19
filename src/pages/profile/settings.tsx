@@ -5,7 +5,6 @@ import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
 import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { LabeledSwitch } from "@/components/ui/switch";
-import { UserPic } from "@/components/ui/user-pic";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
@@ -16,6 +15,7 @@ import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
+import { UserPicture } from "@/user/picture";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -101,9 +101,9 @@ function UserImage({ user }: UserImageProps) {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative size-16">
-        <UserPic
-          className="text-2xl"
+        <UserPicture
           user={optimisticUser}
+          priority
         />
         {!!optimisticUser.image && (
           <button

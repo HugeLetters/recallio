@@ -5,7 +5,7 @@ import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { ButtonLike } from "@/components/ui";
 import { Star } from "@/components/ui/star";
-import { UserPic } from "@/components/ui/user-pic";
+import { UserPicture } from "@/user/picture";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
@@ -62,8 +62,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="size-16">
-        <UserPic
-          className="text-2xl"
+        <UserPicture
           user={user}
           priority
         />
