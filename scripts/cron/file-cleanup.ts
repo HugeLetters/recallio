@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { env } from "@/env/index.mjs";
+import { env } from "@/server/env/index.mjs";
 import { filterMap } from "@/utils/array/filter";
 import { Client } from "@upstash/qstash";
 

@@ -1,4 +1,4 @@
-import { env } from "@/env/index.mjs";
+import { env } from "@/server/env/index.mjs";
 import { getServerAuthSession } from "@/server/auth";
 import { ExpectedError } from "@/server/error/trpc";
 import { initTRPC } from "@trpc/server";

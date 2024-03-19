@@ -1,4 +1,4 @@
-import { env } from "@/env/index.mjs";
+import { env } from "@/server/env/index.mjs";
 import { createUploadthing } from "uploadthing/next-legacy";
 import { UTApi } from "uploadthing/server";
 

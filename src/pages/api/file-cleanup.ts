@@ -1,4 +1,4 @@
-import { env } from "@/env/index.mjs";
+import { env } from "@/server/env/index.mjs";
 import { db } from "@/server/database";
 import { fileDeleteQueue } from "@/server/database/schema/file";
 import { throwExpectedError } from "@/server/error/trpc";

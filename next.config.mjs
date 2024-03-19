@@ -2,7 +2,8 @@
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
  */
-await import("./src/env/index.mjs");
+await import("./src/server/env/index.mjs");
+
 import BundleAnalyzer from "@next/bundle-analyzer";
 import nextRoutes from "nextjs-routes/config";
 import { FileSystemIconLoader } from "unplugin-icons/loaders";
