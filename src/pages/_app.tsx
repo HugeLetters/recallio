@@ -2,11 +2,12 @@ import { signIn } from "@/auth";
 import { LoadingProvider } from "@/components/loading/indicator";
 import { logToastError } from "@/components/toast";
 import { ToastProvider } from "@/components/toast/provider";
+import type { NextPageWithLayout } from "@/layout";
+import { defaultGetLayout } from "@/layout";
 import { lato } from "@/styles/font";
 import "@/styles/globals.css";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
-import type { NextPageWithLayout } from "@/utils/type";
 import type { Session } from "next-auth";
 import { SessionProvider, useSession } from "next-auth/react";
 import type { AppProps } from "next/app";
@@ -15,8 +16,8 @@ import type { ReactNode } from "react";
 
 type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
-  const getLayout = Component.getLayout ?? ((x) => x);
-  const page = getLayout(<Component {...pageProps} />);
+  const Layout = Component.getLayout ?? defaultGetLayout;
+  const Page = <Component {...pageProps} />;
 
   return (
     <div className={tw("contents font-lato", lato.variable)}>
@@ -28,7 +29,7 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             href="/favicon.ico"
           />
         </Head>
-        {!Component.noAuth ? <AuthProtection>{page}</AuthProtection> : page}
+        <Layout>{!Component.noAuth ? <AuthProtection>{Page}</AuthProtection> : Page}</Layout>
       </Providers>
     </div>
   );
@@ -36,14 +37,21 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
 export default trpc.withTRPC(MyApp);
 
 function AuthProtection({ children }: { children: ReactNode }) {
-  useSession({
+  const { data } = useSession({
     required: true,
     onUnauthenticated: () => {
       signIn().catch(logToastError("Authentication error.\nPlease reload the page."));
     },
   });
 
-  return <>{children}</>;
+  if (!data)
+    return (
+      <div className="flex size-full items-center justify-center bg-red-500 text-8xl">
+        Loading...
+      </div>
+    );
+
+  return children;
 }
 
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {

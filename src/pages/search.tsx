@@ -4,13 +4,13 @@ import { Spinner } from "@/components/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
-import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
 
@@ -76,8 +76,8 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = (page) => {
-  return <Layout header={{ header: <HeaderSearchBar title="Search" /> }}>{page}</Layout>;
+Page.getLayout = ({ children }) => {
+  return <Layout header={{ header: <HeaderSearchBar title="Search" /> }}>{children}</Layout>;
 };
 export default Page;
 

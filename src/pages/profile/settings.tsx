@@ -7,6 +7,7 @@ import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import type { BooleanSettingStore } from "@/settings/boolean";
 import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
@@ -17,7 +18,6 @@ import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import { UserPicture } from "@/user/picture";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
-import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
@@ -51,7 +51,7 @@ const Page: NextPageWithLayout = function () {
     "Loading"
   );
 };
-Page.getLayout = (page) => <Layout header={{ title: "Settings" }}>{page}</Layout>;
+Page.getLayout = ({ children }) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
 
 export default Page;
 
