@@ -10,6 +10,7 @@ import {
 import { db } from "@/server/database";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import {
   createLongTextSchema,
@@ -21,7 +22,6 @@ import { nonEmptyArray } from "@/utils/array";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import { throwDefaultError } from "../../utils/error";
 
 const upsertSchema = z
   .object({
@@ -70,7 +70,7 @@ export const upsert = protectedProcedure.input(upsertSchema).mutation(async ({ i
         .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData }),
       ...getCategoriesBatch(reviewData, categories),
     ])
-    .catch((e) => throwDefaultError(e, "Failed to post the review"));
+    .catch((e) => throwExpectedError(e, "Failed to post the review"));
 });
 
 function getCategoriesBatch(reviewData: ReviewInsert, categories: string[] | undefined) {

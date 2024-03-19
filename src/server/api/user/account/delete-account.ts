@@ -1,9 +1,8 @@
 import { providers } from "@/auth/provider";
 import { protectedProcedure } from "@/server/api/trpc";
-import { throwDefaultError } from "@/server/api/utils/error";
 import { db } from "@/server/database";
 import { account } from "@/server/database/schema/user";
-import { TRPCError } from "@trpc/server";
+import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -19,10 +18,10 @@ export const deleteAccount = protectedProcedure
     return db
       .delete(account)
       .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
-      .catch((e) => throwDefaultError(e, `Failed to unlink ${provider} account.`))
+      .catch((e) => throwExpectedError(e, `Failed to unlink ${provider} account.`))
       .then((query) => {
         if (!query.rowsAffected) {
-          throw new TRPCError({
+          throw new ExpectedError({
             code: "NOT_FOUND",
             message: `We couldn't find a ${provider} account linked to your profile`,
           });

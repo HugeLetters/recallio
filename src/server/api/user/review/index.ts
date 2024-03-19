@@ -2,15 +2,15 @@ import { db } from "@/server/database";
 import { nonNullableSQL } from "@/server/database/query";
 import { count, query } from "@/server/database/query/aggregate";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
-import { TRPCError } from "@trpc/server";
+import { ExpectedError } from "@/server/error/trpc";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
-import { throwDefaultError } from "../../utils/error";
 import { deleteReview } from "./delete";
 import { getSummaryList } from "./summary-list";
 import { upsert } from "./upsert";
@@ -41,7 +41,7 @@ const getOne = protectedProcedure
       .groupBy(review.barcode, review.userId)
       .limit(1)
       .then(([data]) => data ?? null)
-      .catch(throwDefaultError);
+      .catch(throwExpectedError);
   });
 
 const deleteImage = protectedProcedure
@@ -60,7 +60,7 @@ const deleteImage = protectedProcedure
       .where(and(filter, isNotNull(review.imageKey)))
       .then((fileKeys) => {
         if (!fileKeys.length) {
-          throw new TRPCError({
+          throw new ExpectedError({
             code: "PRECONDITION_FAILED",
             message: `No image attached to your review for barcode ${barcode}.`,
           });
@@ -72,7 +72,7 @@ const deleteImage = protectedProcedure
         ]);
       })
       .then(ignore)
-      .catch((e) => throwDefaultError(e, "Failed to delete image"));
+      .catch((e) => throwExpectedError(e, "Failed to delete image"));
   });
 
 export const reviewRouter = createTRPCRouter({

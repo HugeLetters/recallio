@@ -2,14 +2,14 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database";
 import { query } from "@/server/database/query/aggregate";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
 import { getFileUrl } from "@/server/uploadthing";
 import { mostCommon } from "@/utils/array";
 import { and, eq, exists, gt, like } from "drizzle-orm";
 import { z } from "zod";
 import { cacheProductNames, getProductNames } from "../../product/cache";
-import { createBarcodeSchema } from "../../product/validation";
 import getScrapedProducts from "../../product/scrapers";
-import { throwDefaultError } from "../utils/error";
+import { createBarcodeSchema } from "../../product/validation";
 import { getReviewList } from "./review-list";
 import { getSummaryList } from "./summary-list";
 
@@ -56,7 +56,7 @@ const getSummary = protectedProcedure
       .groupBy(review.barcode)
       .limit(1)
       .then(([x]) => x ?? null)
-      .catch(throwDefaultError);
+      .catch(throwExpectedError);
   });
 
 export const productRouter = createTRPCRouter({
@@ -75,7 +75,7 @@ export const productRouter = createTRPCRouter({
             return products;
           });
         })
-        .catch(throwDefaultError);
+        .catch(throwExpectedError);
     }),
   getCategoryList: protectedProcedure
     .input(
@@ -95,6 +95,6 @@ export const productRouter = createTRPCRouter({
         .limit(limit)
         .orderBy(category.name)
         .then((data) => data.map((x) => x.name))
-        .catch(throwDefaultError);
+        .catch(throwExpectedError);
     }),
 });

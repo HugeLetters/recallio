@@ -1,4 +1,4 @@
-import { throwDefaultError } from "@/server/api/utils/error";
+import { throwExpectedError } from "@/server/error/trpc";
 import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
@@ -48,7 +48,7 @@ function aggregateArray<C extends SQLLike, R>(
     return transform ? transform(arr) : arr;
   });
   col.mapWith = () => {
-    throwDefaultError(
+    throwExpectedError(
       new Error("Don't call `mapWith` on aggregated columns - use `transform` parameter instead"),
     );
   };

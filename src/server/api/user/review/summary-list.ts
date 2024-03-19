@@ -1,12 +1,12 @@
 import { db } from "@/server/database";
 import { query } from "@/server/database/query/aggregate";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { and, asc, desc, eq, gt, inArray, like, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import { throwDefaultError } from "../../utils/error";
 import type { Paginated } from "../../utils/pagination";
 import { createPagination } from "../../utils/pagination";
 
@@ -100,5 +100,5 @@ export const getSummaryList = protectedProcedure
           page,
         };
       })
-      .catch(throwDefaultError);
+      .catch(throwExpectedError);
   });

@@ -1,6 +1,7 @@
 import { env } from "@/env/index.mjs";
 import { getServerAuthSession } from "@/server/auth";
-import { TRPCError, initTRPC } from "@trpc/server";
+import { ExpectedError } from "@/server/error/trpc";
+import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { Session } from "next-auth";
 import { ZodError } from "zod";
@@ -21,10 +22,19 @@ export async function createTRPCContext({ req, res }: CreateNextContextOptions) 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {
     const cause = error.cause;
+    const message =
+      cause instanceof ZodError
+        ? `${cause.errors[0]?.message}`
+        : error instanceof ExpectedError
+          ? error.message
+          : error.code;
+
     return {
-      message: cause instanceof ZodError ? `${cause.errors[0]?.message}` : error.message,
+      message,
       data:
-        env.NEXT_PUBLIC_NODE_ENV === "production" ? ({} as Partial<typeof shape.data>) : shape.data,
+        env.NEXT_PUBLIC_NODE_ENV === "development"
+          ? shape.data
+          : ({} as Partial<typeof shape.data>),
       code: shape.code,
     };
   },
@@ -36,7 +46,7 @@ export const publicProcedure = t.procedure;
 
 const authMiddleware = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+    throw new ExpectedError({ code: "UNAUTHORIZED" });
   }
 
   return next({ ctx: { session: ctx.session } });
