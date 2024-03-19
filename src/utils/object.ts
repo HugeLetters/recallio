@@ -19,13 +19,11 @@ export function hasProperty<O, K extends PropertyKey>(
   return value && typeof value === "object" && key in value;
 }
 
-export type Prettify<O> = { [K in keyof O]: O[K] } & NonNullable<unknown>;
+export type Prettify<T> = { [K in keyof T]: T[K] } & NonNullable<unknown>;
 export type DistributedRecord<K extends PropertyKey, V> = K extends K ? Record<K, V> : never;
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
-export type TransformType<O, K extends keyof O, T> = Omit<StrictOmit<O, K> & Record<K, T>, never>;
-export type DiscriminatedUnion<
-  V extends Record<string, unknown>,
-  U extends Record<string, unknown>,
-> =
+export type TransformProperty<O, K extends keyof O, T> = Prettify<StrictOmit<O, K> & Record<K, T>>;
+export type ExtendPropety<O, K extends keyof O, E> = TransformProperty<O, K, O[K] | E>;
+export type DiscriminatedUnion<V, U> =
   | Prettify<V & { [K in Exclude<keyof U, keyof V>]?: never }>
   | Prettify<U & { [K in Exclude<keyof V, keyof U>]?: never }>;
