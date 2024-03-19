@@ -10,6 +10,7 @@ export function Spinner({ className }: SpinnerProps) {
       viewBox="0 0 24 24"
       className={className}
     >
+      <title>Server request is being processed</title>
       {DOTS.map((_, i) => (
         <circle
           key={i}

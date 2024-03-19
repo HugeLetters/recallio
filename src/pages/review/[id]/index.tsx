@@ -4,16 +4,16 @@ import { toast } from "@/components/toast";
 import { Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
+import { Image } from "@/image";
 import { Layout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
+  Comment,
+  CommentSection,
   ConsIcon,
   ImagePreview,
-  NoImagePreview,
-  CommentSection,
   ProsIcon,
-  Comment,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
@@ -21,7 +21,6 @@ import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
 import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
@@ -108,40 +107,43 @@ function Review({ barcode }: ReviewProps) {
 type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {
   return (
-    <div className="size-16 shrink-0">
-      {image ? (
-        <UrlDialogRoot dialogQueryKey="attached-image-dialog">
-          <Dialog.Trigger
-            className="size-full rounded-full outline-app-green-500"
-            aria-label="Open full image view"
-          >
-            <ImagePreview src={image} />
-          </Dialog.Trigger>
-          <Dialog.Portal>
-            <DialogOverlay className="flex items-center justify-center">
-              <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-in-reverse">
-                <Dialog.Close
-                  className="flex"
-                  aria-label="Close full image view"
-                >
-                  <Image
-                    alt="Full-size review image"
-                    src={image}
-                    width={999999}
-                    height={999999}
-                    quality={100}
-                    sizes="99999px"
-                    className="size-full object-contain"
-                  />
-                </Dialog.Close>
-              </Dialog.Content>
-            </DialogOverlay>
-          </Dialog.Portal>
-        </UrlDialogRoot>
-      ) : (
-        <NoImagePreview />
+    <UrlDialogRoot dialogQueryKey="attached-image-dialog">
+      <Dialog.Trigger
+        className="rounded-full outline-app-green-500"
+        aria-label={
+          image
+            ? "Open full image view"
+            : "Cannot open full image view if not image attached to review"
+        }
+        disabled={!image}
+      >
+        <ImagePreview
+          src={image}
+          size="md"
+        />
+      </Dialog.Trigger>
+      {image && (
+        <Dialog.Portal>
+          <DialogOverlay className="flex items-center justify-center">
+            <Dialog.Content className="max-h-dvh max-w-app animate-fade-in overflow-y-auto data-[state=closed]:animate-fade-in-reverse">
+              <Dialog.Close
+                className="flex"
+                aria-label="Close full image view"
+              >
+                <Image
+                  alt="Full-size review image"
+                  src={image}
+                  width={99999}
+                  height={99999}
+                  quality={100}
+                  className="size-full object-contain"
+                />
+              </Dialog.Close>
+            </Dialog.Content>
+          </DialogOverlay>
+        </Dialog.Portal>
       )}
-    </div>
+    </UrlDialogRoot>
   );
 }
 

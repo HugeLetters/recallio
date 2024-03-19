@@ -19,7 +19,6 @@ import {
   CommentSection,
   ConsIcon,
   ImagePreview,
-  NoImagePreview,
   ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
@@ -41,7 +40,7 @@ import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { useUploadThing } from "@/uploadthing";
 import { minutesToMs } from "@/utils";
-import type { StrictOmit, TransformType } from "@/utils/object";
+import type { StrictOmit, TransformProperty } from "@/utils/object";
 import { merge } from "@/utils/object";
 import { isSetEqual } from "@/utils/set";
 import type { NextPageWithLayout, Nullish } from "@/utils/type";
@@ -72,7 +71,7 @@ const Page: NextPageWithLayout = function () {
 Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
-type ReviewForm = TransformType<ReviewData, "categories", Array<{ name: string }>>;
+type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
 function transformReview(data: ReviewData | null): ReviewForm | null {
   if (!data) return data;
   return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
@@ -403,7 +402,9 @@ function Private({ value, setValue }: Model<boolean>) {
   );
 }
 
-type AttachedImageProps = { savedImage: string | null } & Model<Nullish<File>>; // null - delete, undefined - keep as is
+// null - delete, undefined - keep as is
+type FileModel = Model<Nullish<File>>;
+type AttachedImageProps = { savedImage: string | null } & FileModel;
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useBlobUrl(value);
   const src = value === null ? null : base64Image ?? savedImage;
@@ -411,8 +412,11 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative size-16">
-        {src ? <ImagePreview src={src} /> : <NoImagePreview />}
+      <div className="relative">
+        <ImagePreview
+          src={src}
+          size="md"
+        />
         {isImagePresent && (
           <button
             type="button"

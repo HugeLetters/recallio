@@ -3,22 +3,21 @@ import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
-import { UserPic } from "@/components/ui/user-pic";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
 import {
   CategoryCard,
+  Comment,
+  CommentSection,
   ConsIcon,
   ImagePreview,
-  NoImagePreview,
-  CommentSection,
   ProsIcon,
-  Comment,
 } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
+import { UserPicture } from "@/user/picture";
 import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -82,10 +81,11 @@ function Summary({
 }: SummaryProps) {
   return (
     <div className="flex flex-col gap-7">
-      <div className="flex h-16 gap-3">
-        <div className="size-16 shrink-0">
-          {image ? <ImagePreview src={image} /> : <NoImagePreview />}
-        </div>
+      <div className="flex gap-3">
+        <ImagePreview
+          src={image}
+          size="md"
+        />
         <ProductName
           barcode={barcode}
           name={name}
@@ -227,10 +227,7 @@ function ReviewCard({
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="h-7">
-          <UserPic
-            className="text-xs"
-            user={{ name: authorName, image: authorAvatar }}
-          />
+          <UserPicture user={{ name: authorName, image: authorAvatar }} />
         </div>
         <span>{authorName}</span>
         <span className="ml-auto">{dateFormatter.format(new Date(updatedAt))}</span>

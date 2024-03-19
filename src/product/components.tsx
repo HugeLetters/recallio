@@ -1,8 +1,9 @@
 import { getQueryParam } from "@/browser/query";
+import { Image } from "@/image";
 import { tw } from "@/styles/tw";
+import type { Nullish } from "@/utils/type";
 import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Fragment, forwardRef } from "react";
@@ -45,24 +46,24 @@ export function ConsIcon() {
   return <MinusIcon className="h-fit w-full text-app-red-500" />;
 }
 
-type ImagePreviewProps = { src: string };
-export function ImagePreview({ src }: ImagePreviewProps) {
+type Size = "md" | "sm";
+const sizeToRenderSize: Record<Size, number> = { md: 144, sm: 50 };
+type ImagePreviewProps = { src: Nullish<string>; size: Size };
+export function ImagePreview({ src, size }: ImagePreviewProps) {
+  const renderSize = sizeToRenderSize[size];
   return (
-    <Image
-      alt="Review image"
-      src={src}
-      width={144}
-      height={144}
-      sizes="144px"
-      className="size-full rounded-full object-cover"
-    />
-  );
-}
-
-export function NoImagePreview() {
-  return (
-    <div className="flex h-full items-center justify-center rounded-full bg-neutral-400 p-2 text-white">
-      <MilkIcon className="size-full" />
+    <div className={tw("shrink-0", size === "md" ? "size-16" : "size-9")}>
+      <Image
+        src={src}
+        alt="Review image"
+        width={renderSize}
+        height={renderSize}
+        className="size-full rounded-full object-cover shadow-around sa-o-10 sa-r-0.5"
+      >
+        <div className="flex size-full items-center justify-center rounded-full bg-neutral-400 text-white">
+          <MilkIcon className="size-3/4" />
+        </div>
+      </Image>
     </div>
   );
 }
