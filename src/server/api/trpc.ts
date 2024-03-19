@@ -1,5 +1,5 @@
-import { env } from "@/server/env/index.mjs";
 import { getServerAuthSession } from "@/server/auth";
+import { env } from "@/server/env/index.mjs";
 import { ExpectedError } from "@/server/error/trpc";
 import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";

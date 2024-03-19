@@ -5,6 +5,7 @@ import { Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import {
   BarcodeTitle,
@@ -19,7 +20,6 @@ import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
-import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -33,7 +33,7 @@ const Page: NextPageWithLayout = function () {
   return !!barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
+Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 export default Page;
 
 type ReviewProps = { barcode: string };
@@ -55,7 +55,7 @@ function Review({ barcode }: ReviewProps) {
     },
   );
 
-  if (!reviewQuery.isSuccess) return <>Loading...</>;
+  if (!reviewQuery.isSuccess) return "Loading...";
 
   const review = reviewQuery.data;
   return (

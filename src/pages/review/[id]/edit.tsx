@@ -13,6 +13,7 @@ import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Layout } from "@/layout";
+import type { NextPageWithLayout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
@@ -43,7 +44,7 @@ import { minutesToMs } from "@/utils";
 import type { StrictOmit, TransformProperty } from "@/utils/object";
 import { merge } from "@/utils/object";
 import { isSetEqual } from "@/utils/set";
-import type { NextPageWithLayout, Nullish } from "@/utils/type";
+import type { Nullish } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -67,8 +68,8 @@ const Page: NextPageWithLayout = function () {
 
   return !!barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
 };
+Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 
-Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
 type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
@@ -85,7 +86,7 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
   );
   const isPrivate = useStore(reviewPrivateDefaultStore);
 
-  if (!reviewQuery.isSuccess) return <>Loading...</>;
+  if (!reviewQuery.isSuccess) return "Loading...";
 
   return (
     <Review

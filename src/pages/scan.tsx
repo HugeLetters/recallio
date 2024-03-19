@@ -1,12 +1,12 @@
 import { useSwipe } from "@/browser/swipe";
 import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
 import { barcodeLengthMax, barcodeLengthMin } from "@/product/validation";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
-import type { NextPageWithLayout } from "@/utils/type";
 import { Slot } from "@radix-ui/react-slot";
 import type { QrcodeSuccessCallback } from "html5-qrcode";
 import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
@@ -152,8 +152,8 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = function useLayout(page) {
-  return <Layout header={{ title: "Scanner" }}>{page}</Layout>;
+Page.getLayout = function useLayout({ children }) {
+  return <Layout header={{ title: "Scanner" }}>{children}</Layout>;
 };
 
 export default Page;
