@@ -65,6 +65,7 @@
     "react-dom": "18.2.0",
     "react-flip-toolkit": "^7.1.0",
     "react-hook-form": "^7.50.1",
+    "sharp": "^0.33.2",
     "tailwindcss": "^3.4.1",
     "unique-names-generator": "^4.7.1",
     "unplugin-icons": "^0.17.4",
