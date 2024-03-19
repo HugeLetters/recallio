@@ -127,10 +127,9 @@ function AttachedImage({ image }: AttachedImageProps) {
                   <Image
                     alt="Full-size review image"
                     src={image}
-                    width={999999}
-                    height={999999}
+                    width={99999}
+                    height={99999}
                     quality={100}
-                    sizes="99999px"
                     className="size-full object-contain"
                   />
                 </Dialog.Close>

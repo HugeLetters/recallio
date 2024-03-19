@@ -32,7 +32,6 @@ export function Card({
           alt=""
           width={50}
           height={50}
-          sizes="50px"
           className="size-full rounded-full object-cover shadow-around sa-o-10 sa-r-0.5"
         >
           <div className="flex size-full items-center justify-center rounded-full bg-neutral-400">

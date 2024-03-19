@@ -412,7 +412,9 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative size-16">
-        {src ? <ImagePreview src={src} /> : <NoImagePreview />}
+        <ImagePreview src={src}>
+          <NoImagePreview />
+        </ImagePreview>
         {isImagePresent && (
           <button
             type="button"

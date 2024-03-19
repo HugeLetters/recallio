@@ -1,8 +1,8 @@
 import { getQueryParam } from "@/browser/query";
+import { Image } from "@/image";
 import { tw } from "@/styles/tw";
 import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Fragment, forwardRef } from "react";
@@ -45,20 +45,26 @@ export function ConsIcon() {
   return <MinusIcon className="h-fit w-full text-app-red-500" />;
 }
 
-type ImagePreviewProps = { src: string };
-export function ImagePreview({ src }: ImagePreviewProps) {
+type ImagePreviewProps = {
+  src: string | null;
+  /** Fallback */
+  children?: ReactNode;
+};
+export function ImagePreview({ src, children }: ImagePreviewProps) {
   return (
     <Image
       alt="Review image"
       src={src}
       width={144}
       height={144}
-      sizes="144px"
       className="size-full rounded-full object-cover"
-    />
+    >
+      {children}
+    </Image>
   );
 }
 
+// todo - merge this with ImagePreview if possible
 export function NoImagePreview() {
   return (
     <div className="flex h-full items-center justify-center rounded-full bg-neutral-400 p-2 text-white">

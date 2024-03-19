@@ -84,7 +84,9 @@ function Summary({
     <div className="flex flex-col gap-7">
       <div className="flex h-16 gap-3">
         <div className="size-16 shrink-0">
-          {image ? <ImagePreview src={image} /> : <NoImagePreview />}
+          <ImagePreview src={image}>
+            <NoImagePreview />
+          </ImagePreview>
         </div>
         <ProductName
           barcode={barcode}
