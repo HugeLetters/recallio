@@ -81,10 +81,11 @@ function Summary({
 }: SummaryProps) {
   return (
     <div className="flex flex-col gap-7">
-      <div className="flex h-16 gap-3">
-        <div className="size-16 shrink-0">
-          <ImagePreview src={image} />
-        </div>
+      <div className="flex gap-3">
+        <ImagePreview
+          src={image}
+          size="md"
+        />
         <ProductName
           barcode={barcode}
           name={name}

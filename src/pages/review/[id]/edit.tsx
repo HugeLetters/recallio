@@ -402,7 +402,9 @@ function Private({ value, setValue }: Model<boolean>) {
   );
 }
 
-type AttachedImageProps = { savedImage: string | null } & Model<Nullish<File>>; // null - delete, undefined - keep as is
+// null - delete, undefined - keep as is
+type FileModel = Model<Nullish<File>>;
+type AttachedImageProps = { savedImage: string | null } & FileModel;
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useBlobUrl(value);
   const src = value === null ? null : base64Image ?? savedImage;
@@ -410,8 +412,11 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative size-16">
-        <ImagePreview src={src} />
+      <div className="relative">
+        <ImagePreview
+          src={src}
+          size="md"
+        />
         {isImagePresent && (
           <button
             type="button"

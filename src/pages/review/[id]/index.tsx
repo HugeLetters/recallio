@@ -109,7 +109,7 @@ function AttachedImage({ image }: AttachedImageProps) {
   return (
     <UrlDialogRoot dialogQueryKey="attached-image-dialog">
       <Dialog.Trigger
-        className="size-16 shrink-0 rounded-full outline-app-green-500"
+        className="rounded-full outline-app-green-500"
         aria-label={
           image
             ? "Open full image view"
@@ -117,7 +117,10 @@ function AttachedImage({ image }: AttachedImageProps) {
         }
         disabled={!image}
       >
-        <ImagePreview src={image} />
+        <ImagePreview
+          src={image}
+          size="md"
+        />
       </Dialog.Trigger>
       {image && (
         <Dialog.Portal>

@@ -9,4 +9,4 @@ export type NextPageWithLayout<Props = unknown, InitialProps = Props> = NextPage
   getLayout?: (page: ReactNode) => ReactNode;
 };
 
-export type Nullish<T> = T | null | undefined;
+export type Nullish<T = never> = T | null | undefined;
