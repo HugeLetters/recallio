@@ -1,7 +1,7 @@
 import { protectedProcedure } from "@/server/api/trpc";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { query } from "@/server/database/query/aggregate";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";

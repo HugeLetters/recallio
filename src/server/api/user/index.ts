@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";

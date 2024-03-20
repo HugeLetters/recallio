@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { account } from "@/server/database/schema/user";
 import { eq } from "drizzle-orm";
 import { deleteAccount } from "./delete-account";

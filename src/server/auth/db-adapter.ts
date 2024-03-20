@@ -1,4 +1,4 @@
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { findFirst } from "@/server/database/query";
 import { account, session, user, verificationToken } from "@/server/database/schema/user";
 import { getFileUrl } from "@/server/uploadthing";

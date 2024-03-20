@@ -1,4 +1,4 @@
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { fileDeleteQueue } from "@/server/database/schema/file";
 
 type PendingFile = typeof fileDeleteQueue.$inferInsert;

@@ -1,5 +1,5 @@
 import { env } from "@/server/env/index.mjs";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { fileDeleteQueue } from "@/server/database/schema/file";
 import { throwExpectedError } from "@/server/error/trpc";
 import { utapi } from "@/server/uploadthing/api";

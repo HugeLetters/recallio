@@ -1,5 +1,5 @@
 import { getServerAuthSession } from "@/server/auth";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { user } from "@/server/database/schema/user";
 import { ignore } from "@/utils";
 import { eq } from "drizzle-orm";

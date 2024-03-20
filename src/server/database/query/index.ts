@@ -1,7 +1,7 @@
+import { db } from "@/server/database/client";
 import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
-import { db } from "..";
 import type { SQLLike, SQLType } from "./type";
 
 export function findFirst<T extends SQLiteTable>(table: T, where: SQL | undefined) {

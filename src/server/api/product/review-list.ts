@@ -1,7 +1,7 @@
 import { protectedProcedure } from "@/server/api/trpc";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { query } from "@/server/database/query/aggregate";
 import { review } from "@/server/database/schema/product";
 import { user } from "@/server/database/schema/user";
@@ -13,7 +13,7 @@ import { z } from "zod";
 
 const pagination = createPagination({
   cursor: z.object({
-    author: z.string(),
+    id: z.string(),
     sorted: z.number().or(z.coerce.date()),
   }),
   sortBy: ["date", "rating"],
@@ -28,34 +28,35 @@ export const getReviewList = protectedProcedure
       .merge(pagination.schema),
   )
   .query(({ input: { barcode, limit, sort, cursor } }) => {
-    function getSortByColumn() {
+    function getSortByKey() {
       switch (sort.by) {
         case "date":
-          return review.updatedAt;
+          return "updatedAt";
         case "rating":
-          return review.rating;
+          return "rating";
         default:
           const x: never = sort.by;
           return x;
       }
     }
     const direction = sort.desc ? desc : asc;
-    const sortBy = getSortByColumn();
+    const sortBy = getSortByKey();
+    const sortByCol = review[sortBy];
     const cursorClause = cursor
       ? or(
-          (sort.desc ? lt : gt)(sortBy, cursor.sorted),
-          and(gt(review.userId, cursor.author), eq(sortBy, cursor.sorted)),
+          (sort.desc ? lt : gt)(sortByCol, cursor.sorted),
+          and(gt(review.userId, cursor.id), eq(sortByCol, cursor.sorted)),
         )
       : undefined;
 
     return db
       .select({
+        id: review.id,
         rating: review.rating,
         pros: review.pros,
         cons: review.cons,
         comment: review.comment,
         updatedAt: review.updatedAt,
-        authorId: review.userId,
         authorAvatar: query.map(user.image, (imageKey) => {
           return URL.canParse(imageKey) ? imageKey : getFileUrl(imageKey);
         }),
@@ -65,17 +66,14 @@ export const getReviewList = protectedProcedure
       .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false), cursorClause))
       .innerJoin(user, eq(user.id, review.userId))
       .limit(limit)
-      .orderBy(direction(sortBy), asc(review.userId))
+      .orderBy(direction(sortByCol), asc(review.id))
       .then((page): Paginated<typeof page> => {
         if (!page.length) return { page };
         const lastProduct = page.at(-1);
         if (!lastProduct) return { page };
         return {
           page,
-          cursor: pagination.encode({
-            author: lastProduct.authorId,
-            sorted: sort.by === "rating" ? lastProduct.rating : lastProduct.updatedAt,
-          }),
+          cursor: pagination.encode({ id: lastProduct.id, sorted: lastProduct[sortBy] }),
         };
       })
       .catch(throwExpectedError);

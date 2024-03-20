@@ -1,4 +1,4 @@
-import { db } from "@/server/database";
+import { db } from "@/server/database/client";
 import { migrate } from "drizzle-orm/libsql/migrator";
 
 export default async function main() {
