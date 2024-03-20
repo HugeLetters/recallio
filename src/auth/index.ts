@@ -1,5 +1,6 @@
 import { signOut as signOutBase } from "next-auth/react";
 import router from "next/router";
+import { getSignInPath } from "./url";
 
 export function signOut() {
   return signOutBase({ redirect: false }).then(({ url: urlString }) => {
@@ -10,5 +11,5 @@ export function signOut() {
 }
 
 export function signIn(url = location.href) {
-  return router.push(`/auth/signin?callbackUrl=${encodeURIComponent(url)}`);
+  return router.push(getSignInPath(url));
 }
