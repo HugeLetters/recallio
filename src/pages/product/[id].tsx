@@ -197,7 +197,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
           <InfiniteScroll
             pages={reviewsQuery.data.pages}
             getPageValues={({ page }) => page}
-            getKey={(review) => review.authorId}
+            getKey={(review) => review.id}
             getNextPage={fetchNextPage(reviewsQuery)}
             spinner={reviewsQuery.isFetching ? <Spinner className="h-16" /> : null}
           >
