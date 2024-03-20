@@ -1,6 +1,5 @@
-import { signIn } from "@/auth";
+import { AuthGuard } from "@/auth/guard";
 import { LoadingProvider } from "@/components/loading/indicator";
-import { logToastError } from "@/components/toast";
 import { ToastProvider } from "@/components/toast/provider";
 import type { NextPageWithLayout } from "@/layout";
 import { defaultGetLayout } from "@/layout";
@@ -9,7 +8,7 @@ import "@/styles/globals.css";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
 import type { Session } from "next-auth";
-import { SessionProvider, useSession } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import type { ReactNode } from "react";
@@ -29,26 +28,12 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             href="/favicon.ico"
           />
         </Head>
-        <Layout>{!Component.noAuth ? <AuthProtection>{Page}</AuthProtection> : Page}</Layout>
+        <Layout>{!Component.noAuth ? <AuthGuard>{Page}</AuthGuard> : Page}</Layout>
       </Providers>
     </div>
   );
 };
 export default trpc.withTRPC(MyApp);
-
-function AuthProtection({ children }: { children: ReactNode }) {
-  const { data } = useSession({
-    required: true,
-    onUnauthenticated: () => {
-      signIn().catch(logToastError("Authentication error.\nPlease reload the page."));
-    },
-  });
-
-  if (!data) {
-    return <div className="flex size-full items-center justify-center text-8xl"> Loading...</div>;
-  }
-  return children;
-}
 
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
   return (
