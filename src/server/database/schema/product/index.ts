@@ -14,7 +14,7 @@ export const review = sqliteTable(
     id: text("id", { length: 10 })
       .notNull()
       .unique()
-      .$defaultFn(() => crypto.randomUUID().slice(10)),
+      .$defaultFn(() => crypto.randomUUID().slice(0, 10)),
     userId: text("user_id", { length: userIdLength })
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),

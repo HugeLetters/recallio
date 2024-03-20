@@ -152,6 +152,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       const categories = areCategoriesUnchanged ? undefined : newCategories;
       const updatedReview = { ...optimisticReview, categories };
       saveReview(updatedReview, {
+        // todo - can I move this hook callback?
         onSuccess: () => onReviewSave(optimisticReview),
       });
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
