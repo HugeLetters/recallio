@@ -1,7 +1,8 @@
 import type { Option } from "@/utils/option";
 
 export function encodeJSON<V>(value: V) {
-  return Buffer.from(JSON.stringify(value)).toString("base64");
+  const sanitized = value ?? null;
+  return Buffer.from(JSON.stringify(sanitized)).toString("base64");
 }
 
 export function decodeJSON(value: string): Option<unknown> {
