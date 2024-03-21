@@ -406,7 +406,9 @@ function Private({ value, setValue }: Model<boolean>) {
 
 // null - delete, undefined - keep as is
 type FileModel = Model<Nullish<File>>;
-type AttachedImageProps = { savedImage: string | null } & FileModel;
+interface AttachedImageProps extends FileModel {
+  savedImage: string | null;
+}
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useBlobUrl(value);
   const src = value === null ? null : base64Image ?? savedImage;

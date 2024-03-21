@@ -2,7 +2,9 @@ import { tw } from "@/styles/tw";
 import type { ComponentPropsWithoutRef } from "react";
 import { forwardRef, useEffect, useRef } from "react";
 
-type ImageInputProps = ComponentPropsWithoutRef<"input"> & { isImageSet: boolean };
+interface ImageInputProps extends ComponentPropsWithoutRef<"input"> {
+  isImageSet: boolean;
+}
 export const ImagePicker = forwardRef<HTMLInputElement, ImageInputProps>(function _(
   { children, className, isImageSet, ...inputAttributes },
   outerRef,

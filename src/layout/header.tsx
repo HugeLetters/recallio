@@ -41,7 +41,9 @@ export function Header({ header, left, right, title }: HeaderProps) {
   );
 }
 
-type HeaderButtonProps = { Icon: Icon } & ComponentPropsWithoutRef<"button">;
+interface HeaderButtonProps extends ComponentPropsWithoutRef<"button"> {
+  Icon: Icon;
+}
 export function HeaderButton({ Icon, type, className, ...butonAttributes }: HeaderButtonProps) {
   return (
     <button
@@ -54,7 +56,9 @@ export function HeaderButton({ Icon, type, className, ...butonAttributes }: Head
   );
 }
 
-type HeaderLinkProps = { Icon: Icon } & ComponentPropsWithoutRef<typeof Link>;
+interface HeaderLinkProps extends ComponentPropsWithoutRef<typeof Link> {
+  Icon: Icon;
+}
 export function HeaderLink({ Icon, className, ...linkAttributes }: HeaderLinkProps) {
   return (
     <Link

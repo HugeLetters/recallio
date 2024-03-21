@@ -3,10 +3,10 @@ import { Flipped as NativeFlipped } from "react-flip-toolkit";
 import { getClassList, onSelfAnimationEnd } from "./utils";
 
 const dataTransitionName = "data-transition";
-export type FlippedProps = ComponentPropsWithoutRef<typeof NativeFlipped> & {
+export interface FlippedProps extends ComponentPropsWithoutRef<typeof NativeFlipped> {
   /** These classes will be applied on in and out transitions. Out transition will also apply `animate-reverse` class */
   className?: string;
-};
+}
 /**
  * You may detect if element is currently transitioning in or out with `data-transition` attribute with values `in | out`
  */

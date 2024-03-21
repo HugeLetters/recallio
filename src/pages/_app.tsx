@@ -14,7 +14,9 @@ import type { ReactNode } from "react";
 
 const defaultGetLayout: GetLayout = ({ children }) => children;
 
-type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
+interface AppPropsWithLayout extends AppProps<{ session: Session | null }> {
+  Component: NextPageWithLayout;
+}
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
   const Layout = Component.getLayout ?? defaultGetLayout;
   const Page = <Component {...pageProps} />;

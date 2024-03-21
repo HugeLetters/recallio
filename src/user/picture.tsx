@@ -9,9 +9,14 @@ function getInitials(name: string) {
   const [first, second] = name.split(/[\s_+.-]/);
   return (first && second ? `${first.at(0)}${second.at(0)}` : name.slice(0, 2)).toUpperCase();
 }
-type UserPictureProps = {
+
+type UserPictureImageProps = StrictOmit<
+  ComponentPropsWithoutRef<typeof Image>,
+  "src" | "alt" | "children"
+>;
+interface UserPictureProps extends UserPictureImageProps {
   user: Pick<Session["user"], "image" | "name">;
-} & StrictOmit<ComponentPropsWithoutRef<typeof Image>, "src" | "alt" | "children">;
+}
 export function UserPicture({ user, className, ...props }: UserPictureProps) {
   return (
     <div className={tw("aspect-square size-full", className)}>

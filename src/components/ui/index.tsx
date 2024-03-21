@@ -51,10 +51,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function _(
   );
 });
 
-type AutoresizableInputProps = {
+interface AutoresizableInputProps extends ComponentPropsWithoutRef<"textarea"> {
   initialContent: string;
   rootClassName?: string;
-} & ComponentPropsWithoutRef<"textarea">;
+}
 export const AutoresizableInput = forwardRef<HTMLTextAreaElement, AutoresizableInputProps>(
   function _({ initialContent, rootClassName, className, onChange, children, ...props }, ref) {
     return (

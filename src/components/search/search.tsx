@@ -62,11 +62,11 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   );
 }
 
-type DebouncedSearchProps = Model<string> & {
+interface DebouncedSearchProps extends Model<string> {
   onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
   onReset?: () => void;
   debounceRef: MutableRefObject<number | undefined>;
-};
+}
 export function DebouncedSearch({
   value,
   setValue,
@@ -118,7 +118,10 @@ export function DebouncedSearch({
   );
 }
 
-type OverlayProps = { target?: HTMLElement; show: boolean } & ComponentPropsWithoutRef<"div">;
+interface OverlayProps extends ComponentPropsWithoutRef<"div"> {
+  target?: HTMLElement;
+  show: boolean;
+}
 function Overlay({ target, className, show, ...props }: OverlayProps) {
   const client = useClient();
   const getTarget = useCallback(() => target ?? document.body, [target]);

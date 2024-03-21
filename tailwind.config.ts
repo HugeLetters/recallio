@@ -165,10 +165,8 @@ export default {
   ],
 } satisfies Config;
 
-type Keyframes = DistributedRecord<
-  "from" | "to" | `${number}%`,
-  CSSProperties & Record<string, string>
->;
+type StringCSSProperties = { [K in keyof CSSProperties]: Extract<CSSProperties[K], string> };
+type Keyframes = DistributedRecord<"from" | "to" | `${number}%`, StringCSSProperties>;
 type Animation = {
   animation: Record<string, string>;
   keyframes: Record<string, Keyframes>;

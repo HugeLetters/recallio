@@ -17,12 +17,14 @@ import { DatabaseAdapter } from "./db-adapter";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
+type DefaultUser = NonNullable<DefaultSession["user"]>;
 declare module "next-auth" {
+  interface User extends DefaultUser {
+    id: string;
+    name: string;
+  }
   interface Session extends DefaultSession {
-    user: DefaultSession["user"] & {
-      id: string;
-      name: string;
-    };
+    user: User;
   }
 }
 
