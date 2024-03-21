@@ -2,7 +2,7 @@
   "name": "recallio",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@8.10.0",
+  "packageManager": "pnpm@8.15.4",
   "scripts": {
     "dev": "pnpm cleanup && next dev -p 1853",
     "build": "pnpm rscript prebuild && next build",
@@ -110,8 +110,11 @@
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
     "tasuku": "^2.0.1",
+    "tree-sitter": "^0.20.6",
+    "tree-sitter-typescript": "^0.20.5",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "webpack": "^5.91.0"
   },
   "ct3aMetadata": {
     "initVersion": "7.18.0"
