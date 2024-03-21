@@ -115,6 +115,9 @@ dependencies:
   immer:
     specifier: ^10.0.3
     version: 10.0.3
+  libsql-stateless-easy:
+    specifier: ^1.5.4
+    version: 1.5.4
   next:
     specifier: 13.4.2
     version: 13.4.2(@babel/core@7.23.9)(react-dom@18.2.0)(react@18.2.0)
@@ -5337,6 +5340,17 @@ packages:
       prelude-ls: 1.2.1
       type-check: 0.4.0
     dev: true
+
+  /libsql-stateless-easy@1.5.4:
+    resolution: {integrity: sha512-SbHeu15chRG967q/VAmPR1CQ+zpgMe9lGllt2KitCA5kMRBrKuGJRACrotgiKcfBQrJ/ZI+D3Y9ED24Va7s+JA==}
+    dependencies:
+      js-base64: 3.7.7
+      libsql-stateless: 2.7.4
+    dev: false
+
+  /libsql-stateless@2.7.4:
+    resolution: {integrity: sha512-yd0f+NptVDhwY8Yqu0rRc3embIHQQLbJdPIhAAEnGi6JKO6M9RO3dL6Ke/0pUgZujOndk6vrrlbIN8ErayrzlA==}
+    dev: false
 
   /libsql@0.3.7:
     resolution: {integrity: sha512-gdRVGBr0kBk98p7Bo86mo0l1J9TapLoDOmEBLItFtT3r1fVHlzMqOehpSP3R0MWfbJb+qJcTVzb1mSGywv8eWQ==}

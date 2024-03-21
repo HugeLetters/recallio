@@ -4,6 +4,10 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
+    DATABASE_HTTPS_URL: z
+      .string()
+      .min(1)
+      .transform((str) => str.replace("libsql://", "https://")),
     DATABASE_TOKEN: z.string(),
     NEXTAUTH_SECRET:
       process.env.NODE_ENV === "production" ? z.string().min(1) : z.string().min(1).optional(),
@@ -54,6 +58,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_HTTPS_URL: process.env.DATABASE_URL,
     DATABASE_TOKEN: process.env.DATABASE_TOKEN,
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
