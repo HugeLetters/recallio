@@ -1,8 +1,7 @@
 import { AuthGuard } from "@/auth/guard";
 import { LoadingProvider } from "@/components/loading/indicator";
 import { ToastProvider } from "@/components/toast/provider";
-import type { NextPageWithLayout } from "@/layout";
-import { defaultGetLayout } from "@/layout";
+import type { GetLayout, NextPageWithLayout } from "@/layout";
 import { lato } from "@/styles/font";
 import "@/styles/globals.css";
 import { tw } from "@/styles/tw";
@@ -12,6 +11,8 @@ import { SessionProvider } from "next-auth/react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import type { ReactNode } from "react";
+
+const defaultGetLayout: GetLayout = ({ children }) => children;
 
 type AppPropsWithLayout = AppProps<{ session: Session | null }> & { Component: NextPageWithLayout };
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {

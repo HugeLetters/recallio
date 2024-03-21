@@ -22,7 +22,7 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   );
 }
 
-type GetLayout = ({ children }: PropsWithChildren) => ReactNode;
+export type GetLayout = ({ children }: PropsWithChildren) => ReactNode;
 export type NextPageWithLayout<Props = unknown, InitialProps = Props> = NextPage<
   Props,
   InitialProps
@@ -30,5 +30,3 @@ export type NextPageWithLayout<Props = unknown, InitialProps = Props> = NextPage
   noAuth?: boolean;
   getLayout?: GetLayout;
 };
-
-export const defaultGetLayout: GetLayout = ({ children }) => children;
