@@ -1,8 +1,12 @@
-export function merge<T extends Record<never, unknown>, O>(
+export function merge<T extends BaseObject, O>(
   target: T,
   object: O,
 ): Prettify<Omit<T, keyof O> & O> {
   return { ...target, ...object };
+}
+
+export function isObject(value: unknown): value is BaseObject {
+  return !!value && typeof value === "object";
 }
 
 export function hasTruthyProperty<O, K extends keyof O>(
@@ -12,13 +16,14 @@ export function hasTruthyProperty<O, K extends keyof O>(
   return !!object[key];
 }
 
-export function hasProperty<O, K extends PropertyKey>(
-  value: O,
+export function hasProperty<K extends PropertyKey>(
+  value: BaseObject,
   key: K,
-): value is O & Record<K, unknown> {
-  return value && typeof value === "object" && key in value;
+): value is Record<K, unknown> {
+  return key in value;
 }
 
+export type BaseObject = Record<never, unknown>;
 export type Prettify<T> = { [K in keyof T]: T[K] } & NonNullable<unknown>;
 export type DistributedRecord<K extends PropertyKey, V> = K extends K ? Record<K, V> : never;
 export type StrictOmit<T, K extends keyof T> = Omit<T, K>;
