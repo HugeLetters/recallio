@@ -1,4 +1,4 @@
-import { decodeJSON, encodeJSON } from "@/encode/json";
+import { decodeJSON, encodeJSON } from "@/server/encode/json";
 import type { NonEmptyArray } from "@/utils/array";
 import { isSome } from "@/utils/option";
 import { z } from "zod";
