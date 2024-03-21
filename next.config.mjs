@@ -38,8 +38,11 @@ const config = {
       { hostname: "cloudflare-ipfs.com", pathname: "/ipfs/**" },
     ],
   },
-  /** @type { (config:{plugins: unknown[]})=> typeof config } */
-  webpack(config) {
+  /**
+   * @param {{plugins: unknown[]}} config
+   * @returns {typeof config}
+   */
+  webpack(config, ctx) {
     config.plugins.push(
       unpluginIcons({
         compiler: "jsx",
