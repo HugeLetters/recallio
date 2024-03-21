@@ -1,3 +1,4 @@
+import { useCachedSession } from "@/auth/session";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
@@ -17,16 +18,15 @@ import { UserPicture } from "@/user/picture";
 import { minutesToMs } from "@/utils";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 const Page: NextPageWithLayout = function () {
-  const { data, status } = useSession();
+  const { data } = useCachedSession();
 
-  return status === "authenticated" ? (
+  return data ? (
     <div className="flex w-full flex-col gap-6 p-4">
       <ProfileInfo user={data.user} />
       <Reviews />

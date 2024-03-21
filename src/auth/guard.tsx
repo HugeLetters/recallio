@@ -11,7 +11,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   }, [data]);
 
   if (!data) {
-    return <div className="flex size-full items-center justify-center text-8xl"> Loading...</div>;
+    return <div className="flex size-full items-center justify-center text-8xl">Loading...</div>;
   }
 
   return children;

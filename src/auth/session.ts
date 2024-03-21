@@ -1,12 +1,12 @@
 import { signIn } from "@/auth";
 import { useClient } from "@/browser";
 import { logToastError } from "@/components/toast";
-import { useSession as useNextAuthSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useMemo } from "react";
 import { cookieSession } from "./session-cookie";
 
-export const useSession: typeof useNextAuthSession = function (opts) {
-  const ctx = useNextAuthSession(opts);
+export const useCachedSession: typeof useSession = function (opts) {
+  const ctx = useSession(opts);
   const isClient = useClient();
 
   return useMemo(() => {
@@ -17,7 +17,7 @@ export const useSession: typeof useNextAuthSession = function (opts) {
 };
 
 export function useRequiredSession() {
-  return useSession({ required: true, onUnauthenticated });
+  return useCachedSession({ required: true, onUnauthenticated });
 }
 
 function onUnauthenticated() {
