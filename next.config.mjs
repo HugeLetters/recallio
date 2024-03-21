@@ -56,6 +56,7 @@ const config = {
   experimental: {
     esmExternals: false,
   },
+  typescript: { ignoreBuildErrors: !!process.env.NO_TSC },
 };
 
 export default function NextConfig() {
