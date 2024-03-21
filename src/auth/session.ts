@@ -1,28 +1,25 @@
 import { signIn } from "@/auth";
+import { useClient } from "@/browser";
 import { logToastError } from "@/components/toast";
-import { setCookie } from "@/encode/cookie";
-import { encodeJSON } from "@/encode/json";
-import type { Session } from "next-auth";
-import { useSession } from "next-auth/react";
+import { useSession as useNextAuthSession } from "next-auth/react";
+import { useMemo } from "react";
+import { cookieSession } from "./session-cookie";
+
+export const useSession: typeof useNextAuthSession = function (opts) {
+  const ctx = useNextAuthSession(opts);
+  const isClient = useClient();
+
+  return useMemo(() => {
+    if (!isClient) return ctx;
+
+    return { ...ctx, data: ctx.data ?? cookieSession };
+  }, [isClient, ctx]);
+};
 
 export function useRequiredSession() {
-  return useSession({
-    required: true,
-    onUnauthenticated,
-  });
+  return useSession({ required: true, onUnauthenticated });
 }
 
 function onUnauthenticated() {
   signIn().catch(logToastError("Authentication error.\nPlease reload the page."));
-}
-
-export function setSessionDataCookie(data: Session | null) {
-  return setCookie({
-    name: "session-data",
-    value: data ? encodeJSON(data) : "",
-    expiry: data ? new Date(data.expires) : new Date(),
-    path: "/",
-    sameSite: "lax",
-    secure: true,
-  });
 }
