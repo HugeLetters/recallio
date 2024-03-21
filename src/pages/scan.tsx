@@ -9,7 +9,7 @@ import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import { Slot } from "@radix-ui/react-slot";
 import type { QrcodeSuccessCallback } from "html5-qrcode";
-import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
+import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef, useState } from "react";
@@ -91,7 +91,7 @@ const Page: NextPageWithLayout = function () {
     >
       <div
         id={id}
-        className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!flex-shrink-0"
+        className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
       />
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       <div
@@ -208,7 +208,6 @@ function BarcodeInput({ goToReview }: BarcodeInputProps) {
   );
 }
 
-type Scanner = Html5Qrcode;
 type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
 /**
  * Scanner cleans-up on being unmounted automatically.
@@ -286,7 +285,7 @@ function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
 }
 
 function createScanner(id: string) {
-  return new Html5Qrcode(id, {
+  return new Scanner(id, {
     useBarCodeDetectorIfSupported: true,
     verbose: false,
   });
