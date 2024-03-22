@@ -8,6 +8,7 @@ import BundleAnalyzer from "@next/bundle-analyzer";
 import nextRoutes from "nextjs-routes/config";
 import { FileSystemIconLoader } from "unplugin-icons/loaders";
 import unpluginIcons from "unplugin-icons/webpack";
+import { authRoutesPlugin } from "./webpack/auth-routes.mjs";
 const withRoutes = nextRoutes();
 
 /** @type {import("next").NextConfig} */
@@ -54,6 +55,7 @@ const config = {
         },
       }),
     );
+    config.plugins.push(authRoutesPlugin(ctx.dev));
     return config;
   },
   experimental: {
