@@ -27,6 +27,6 @@ export type NextPageWithLayout<Props = unknown, InitialProps = Props> = NextPage
   Props,
   InitialProps
 > & {
-  noAuth?: boolean;
+  isPublic?: boolean;
   getLayout?: GetLayout;
 };

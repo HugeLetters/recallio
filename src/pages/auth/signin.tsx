@@ -37,7 +37,7 @@ const Page: NextPageWithLayout = function () {
     </div>
   );
 };
-Page.noAuth = true;
+Page.isPublic = true;
 
 export default Page;
 

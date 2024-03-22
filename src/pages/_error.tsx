@@ -5,6 +5,6 @@ const Page: NextPageWithLayout = function () {
   return <Error message="Something went wrong" />;
 };
 
-Page.noAuth = true;
+Page.isPublic = true;
 
 export default Page;

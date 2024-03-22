@@ -5,6 +5,6 @@ const Page: NextPageWithLayout = function () {
   return <Error message="Page not found" />;
 };
 
-Page.noAuth = true;
+Page.isPublic = true;
 
 export default Page;

@@ -31,7 +31,7 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             href="/favicon.ico"
           />
         </Head>
-        <Layout>{!Component.noAuth ? <AuthGuard>{Page}</AuthGuard> : Page}</Layout>
+        <Layout>{!Component.isPublic ? <AuthGuard>{Page}</AuthGuard> : Page}</Layout>
       </Providers>
     </div>
   );
