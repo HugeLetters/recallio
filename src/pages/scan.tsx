@@ -91,6 +91,7 @@ const Page: NextPageWithLayout = function () {
     >
       <div
         id={id}
+        // dont remove braces - w/o them ast-grep parses this file incorrectly
         className={
           "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
         }
