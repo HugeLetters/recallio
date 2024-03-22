@@ -91,7 +91,9 @@ const Page: NextPageWithLayout = function () {
     >
       <div
         id={id}
-        className="!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
+        className={
+          "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
+        }
       />
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       <div
