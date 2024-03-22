@@ -168,6 +168,9 @@ dependencies:
     version: 3.22.4
 
 devDependencies:
+  '@ast-grep/napi':
+    specifier: ^0.19.4
+    version: 0.19.4
   '@faker-js/faker':
     specifier: ^8.4.0
     version: 8.4.0
@@ -273,12 +276,6 @@ devDependencies:
   tasuku:
     specifier: ^2.0.1
     version: 2.0.1
-  tree-sitter:
-    specifier: ^0.20.6
-    version: 0.20.6
-  tree-sitter-typescript:
-    specifier: ^0.20.5
-    version: 0.20.5
   tsx:
     specifier: ^4.7.0
     version: 4.7.0
@@ -319,6 +316,92 @@ packages:
   /@antfu/utils@0.7.7:
     resolution: {integrity: sha512-gFPqTG7otEJ8uP6wrhDv6mqwGWYZKNvAcCq6u9hOj0c+IKCEsY4L1oC9trPq2SaWIzAfHvqfBDxF591JkMf+kg==}
     dev: false
+
+  /@ast-grep/napi-darwin-arm64@0.19.4:
+    resolution: {integrity: sha512-tZUCBZuP0jFkdNHuEbjJD6KgPe15CEMrA5bAl3W2zyo/QiwNStHqDekgWgwLY46ct/Y2BQaTjuvSDy0Ze651gg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-darwin-x64@0.19.4:
+    resolution: {integrity: sha512-GBT+LFRaSrUz897C2XlLrnEp6mI6kYpkzaQRncERbWMiuH9gWiBc1r5GLJVEqFLssnC+e9e6FLnI3PrcnEGf1w==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-linux-arm64-gnu@0.19.4:
+    resolution: {integrity: sha512-xwtuUurvz1np3YIdljuCKOPH0bLtHK7Fs70nT+HDl7sUEo/7a8mp3EOmuLgviB6GIpOx/Lzbptp+d1EYW4eUIw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-linux-x64-gnu@0.19.4:
+    resolution: {integrity: sha512-NDtmg7Zp7zxUhJ1mpOpeAshI5SJhIRlOnBncAWqb+LgzwHafXBLGXnCQ5GNU6xcOyhZRDS2OpPSIhd1E+ztTTw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-linux-x64-musl@0.19.4:
+    resolution: {integrity: sha512-Xgd4CFIugfbdoyN0pYWEwhbdq9EK9y2yGjxXNRs4raW91b6Vdc+140FsBJgWeO1/ek1f5zOzOguJh+L5fuBynQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-win32-arm64-msvc@0.19.4:
+    resolution: {integrity: sha512-gZpq5dSEObJJLY9Vd3oDc3FtsvLAKjc7XS2X2c9trjHZ64KTt9t59SKG8bvBcAe5mqejPWjnWJYdIh7wQLgRZA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-win32-ia32-msvc@0.19.4:
+    resolution: {integrity: sha512-kSqYHfsd8yfMkLJU6R8iJyJ/APsmm/8TEUcAOcaFR2TY26eFPNKhF4cDxVs7ZFsRLFItHlT4mj6b8VJn4lXPWA==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi-win32-x64-msvc@0.19.4:
+    resolution: {integrity: sha512-Dh9AKWk5AoxLgeQxiJCSTHFlagS/SMznaLv7Q0RyalXoOzZSdMBtJ345tYRbISKubMg3uO7PWu4vrQN1EvPqMg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@ast-grep/napi@0.19.4:
+    resolution: {integrity: sha512-Lv68h2sePJApz7LkOJ4S6lUQgI5L28BDfbzeyK6BeU3t9Df6AbqiwWfAxc1C6vbUcRDv+AH3t0+eI+iLFBhoTw==}
+    engines: {node: '>= 10'}
+    optionalDependencies:
+      '@ast-grep/napi-darwin-arm64': 0.19.4
+      '@ast-grep/napi-darwin-x64': 0.19.4
+      '@ast-grep/napi-linux-arm64-gnu': 0.19.4
+      '@ast-grep/napi-linux-x64-gnu': 0.19.4
+      '@ast-grep/napi-linux-x64-musl': 0.19.4
+      '@ast-grep/napi-win32-arm64-msvc': 0.19.4
+      '@ast-grep/napi-win32-ia32-msvc': 0.19.4
+      '@ast-grep/napi-win32-x64-msvc': 0.19.4
+    dev: true
 
   /@auth/core@0.12.0(nodemailer@6.9.9):
     resolution: {integrity: sha512-XYipdAc/nKu014VOgpcPyLlj1ghWlnwyloaB1UjQd9ElZRZQ9YpSizzXGLON23t/a0FyabOBBl0/awD2tW58Rg==}
@@ -5783,10 +5866,6 @@ packages:
       thenify-all: 1.6.0
     dev: false
 
-  /nan@2.19.0:
-    resolution: {integrity: sha512-nO1xXxfh/RWNxfd/XPfbIfFk5vgLsAxUR9y5O0cHMJu/AW9U95JLXqthYHjEp+8gQ5p96K9jUp8nbVOxCdRbtw==}
-    dev: true
-
   /nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -7366,22 +7445,6 @@ packages:
   /tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
     dev: false
-
-  /tree-sitter-typescript@0.20.5:
-    resolution: {integrity: sha512-RzK/Pc6k4GiXvInIBlo8ZggekP6rODfW2P6KHFCTSUHENsw6ynh+iacFhfkJRa4MT8EIN2WHygFJ7076/+eHKg==}
-    requiresBuild: true
-    dependencies:
-      nan: 2.19.0
-      tree-sitter: 0.20.6
-    dev: true
-
-  /tree-sitter@0.20.6:
-    resolution: {integrity: sha512-GxJodajVpfgb3UREzzIbtA1hyRnTxVbWVXrbC6sk4xTMH5ERMBJk9HJNq4c8jOJeUaIOmLcwg+t6mez/PDvGqg==}
-    requiresBuild: true
-    dependencies:
-      nan: 2.19.0
-      prebuild-install: 7.1.2
-    dev: true
 
   /ts-api-utils@1.2.0(typescript@5.3.3):
     resolution: {integrity: sha512-d+3WxW4r8WQy2cZWpNRPPGExX8ffOLGcIhheUANKbL5Sqjbhkneki76fRAWeXkaslV2etTb4tSJBSxOsH5+CJw==}

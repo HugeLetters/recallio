@@ -75,6 +75,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@ast-grep/napi": "^0.19.4",
     "@faker-js/faker": "^8.4.0",
     "@iconify-json/carbon": "^1.1.28",
     "@iconify-json/fluent": "^1.1.47",
@@ -110,8 +111,6 @@
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.11",
     "tasuku": "^2.0.1",
-    "tree-sitter": "^0.20.6",
-    "tree-sitter-typescript": "^0.20.5",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "webpack": "^5.91.0"
