@@ -1,5 +1,5 @@
-import { useRequiredSession } from "@/auth/session";
-import { setSessionDataCookie } from "@/auth/session-cookie";
+import { setSessionDataCookie } from "@/auth/session/cookie";
+import { useRequiredSession } from "@/auth/session/hooks";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 

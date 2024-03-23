@@ -1,6 +1,6 @@
 import { signOut } from "@/auth";
 import { providerIcons } from "@/auth/provider";
-import { useCachedSession } from "@/auth/session";
+import { useCachedSession } from "@/auth/session/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";

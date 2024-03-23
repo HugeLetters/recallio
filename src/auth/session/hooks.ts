@@ -2,7 +2,7 @@ import { signIn } from "@/auth";
 import { useClient } from "@/browser";
 import { logToastError } from "@/components/toast";
 import { useSession } from "next-auth/react";
-import { cookieSession } from "./session-cookie";
+import { cookieSession } from "./cookie";
 
 export const useCachedSession: typeof useSession = function (opts) {
   const ctx = useSession(opts);

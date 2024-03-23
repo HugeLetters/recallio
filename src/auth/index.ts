@@ -1,4 +1,4 @@
-import { setSessionDataCookie } from "@/auth/session-cookie";
+import { setSessionDataCookie } from "@/auth/session/cookie";
 import { getSignInPath } from "@/auth/url";
 import { signOut as signOutBase } from "next-auth/react";
 import router from "next/router";

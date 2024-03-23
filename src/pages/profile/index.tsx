@@ -1,4 +1,4 @@
-import { useCachedSession } from "@/auth/session";
+import { useCachedSession } from "@/auth/session/hooks";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
