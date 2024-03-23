@@ -163,7 +163,7 @@ class AuthRoutesPlugin {
    */
   createRouteFile(data) {
     return `
-type RouteType = ${routeTypeList.map((x) => `"${x}"`).join("|")};
+export type RouteType = ${routeTypeList.map((x) => `"${x}"`).join("|")};
 type RouteEnd<Marker extends PropertyKey> = { [K in Marker]?: RouteType };
 type RouteMatcher<EndMarker extends symbol, Dynamic extends symbol> = RouteEnd<EndMarker> & {
     [chunk in string | Dynamic]?: RouteMatcher<EndMarker, Dynamic>;
