@@ -1,7 +1,7 @@
 import { tsx } from "@ast-grep/napi";
 import { watch } from "node:fs";
 import { readFile, readdir, writeFile } from "node:fs/promises";
-import path, { resolve } from "node:path";
+import { resolve } from "node:path";
 
 const pagesDirectory = "src/pages/";
 const pageExtensionList = ["tsx", "jsx"];
@@ -188,5 +188,3 @@ export function authRoutesPlugin(watch) {
     },
   };
 }
-
-authRoutesPlugin(true).apply();
