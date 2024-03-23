@@ -1,21 +1,48 @@
+import { sessionDataCookieName } from "@/auth/session/cookie/name";
 import { getSignInPath } from "@/auth/url";
+import { getRouteInfo } from "@/router/check";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-export function middleware(request: NextRequest) {
-  // todo - redirect if no cookie
-  const { cookies, nextUrl } = request;
-  const token = cookies.get("next-auth.session-token");
-  const session = cookies.get("session-data");
-  console.log(session);
-  // todo - get pages which don't require auth and check them here
-  if (nextUrl.pathname !== "/auth/signin") {
-    if (!token) {
-      return NextResponse.redirect(new URL(getSignInPath(nextUrl.href), nextUrl.href), request);
-    }
-  }
-}
 
 export const config = {
   matcher: "/((?!api|static|.*\\..*|_next).*)?",
 };
+
+export function middleware(request: NextRequest): NextResponse | void {
+  const { cookies, nextUrl } = request;
+  if (isValidUserSession(cookies)) {
+    return;
+  }
+
+  const routePublicity = getRouteInfo(nextUrl.pathname);
+  const next = NextResponse.next();
+  next.cookies.delete(sessionDataCookieName);
+  switch (routePublicity) {
+    case "public": {
+      return next;
+    }
+    case "private": {
+      const signinUrl = new URL(getSignInPath(nextUrl.href), nextUrl.href);
+      return NextResponse.redirect(signinUrl, { headers: next.headers });
+    }
+    default:
+      return routePublicity satisfies never;
+  }
+}
+
+function isValidUserSession(cookies: NextRequest["cookies"]): boolean {
+  return !!cookies.get("next-auth.session-token");
+
+  // For now lets just check for existence of session token - using checks below results in problems on initial sign in since session data is still not set yet even though user is authed already
+  // const sessionToken = cookies.get("next-auth.session-token");
+  // if (!sessionToken) return false;
+
+  // const sessionData = cookies.get(sessionDataCookieName);
+  // if (!sessionData) return false;
+
+  // const sessionOption = decodeJSON(sessionData.value);
+  // if (!isSome(sessionOption)) return false;
+
+  // const session = parseWithExpires(sessionOption.value);
+  // return !!session && new Date() <= new Date(session.expires);
+}
