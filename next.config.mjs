@@ -14,6 +14,7 @@ const withRoutes = nextRoutes();
 
 /** @type {import("next").NextConfig} */
 const config = {
+  swcMinify: true,
   reactStrictMode: true,
   redirects() {
     return Promise.resolve([{ source: "/", destination: "/scan", permanent: true }]);
