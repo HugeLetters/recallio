@@ -18,161 +18,154 @@ const specialSymbolRegex = new RegExp(
   "g",
 );
 
-class AuthRoutesPlugin {
-  /**
-   * @param {boolean} watch
-   */
-  constructor(watch) {
-    void this.readPages().then(() => {
-      if (!watch) return;
-      this.watchPages();
-    });
-  }
+async function readPages() {
+  const pages = await readdir(pagesDirectory, { recursive: true, withFileTypes: true });
+  return Promise.all(
+    pages.map((event) => {
+      if (!event.isFile()) return;
+      return handleFileEvent(event.name, event.path).catch(console.error);
+    }),
+  );
+}
+function watchPages() {
+  watch(pagesDirectory, { recursive: true }).addListener("change", (_, filename) => {
+    if (typeof filename !== "string") return;
+    handleFileEvent(filename, pagesDirectory).catch(console.error);
+  });
+}
 
-  async readPages() {
-    const pages = await readdir(pagesDirectory, { recursive: true, withFileTypes: true });
-    for (const event of pages) {
-      if (!event.isFile()) continue;
-      this.handleFileEvent(event.name, event.path).catch(console.error);
+/**
+ * Indicates whether a route is public or not
+ * @type {Map<string,boolean>}
+ * */
+const routeInfo = new Map();
+
+/**
+ * @param {string} filename
+ * @param {string} directory
+ */
+async function handleFileEvent(filename, directory) {
+  if (!pageExtensionList.some((extension) => filename.endsWith(`.${extension}`))) return;
+
+  const filepath = resolve(`${directory}/${filename}`);
+  const pathname = getPathname(filepath);
+  if (ignoredRouteList.includes(pathname)) return;
+
+  return readFileMaybe(filepath).then((contents) => {
+    if (!contents) {
+      return updateRouteInfo(pathname, null);
     }
-  }
-  watchPages() {
-    watch(pagesDirectory, { recursive: true }).addListener("change", (_, filename) => {
-      if (typeof filename !== "string") return;
-      this.handleFileEvent(filename, pagesDirectory).catch(console.error);
-    });
-  }
 
-  /**
-   * Indicates whether a route is public or not
-   * @type {Map<string,boolean>}
-   * */
-  routeInfo = new Map();
-
-  /** @type {ReturnType<typeof setTimeout>|undefined} */
-  fileWriteTimeout = undefined;
-  /**
-   * @param {string} filename
-   * @param {string} directory
-   */
-  async handleFileEvent(filename, directory) {
-    if (!pageExtensionList.some((extension) => filename.endsWith(`.${extension}`))) return;
-
-    const filepath = resolve(`${directory}/${filename}`);
-    const pathname = this.getPathname(filepath);
-    if (ignoredRouteList.includes(pathname)) return;
-
-    return this.readFile(filepath).then((contents) => {
-      if (!contents) {
-        return this.updateRouteInfo(pathname, null);
-      }
-
-      return this.isPublicPage(contents)
-        .then((isPublic) => this.updateRouteInfo(pathname, isPublic))
-        .catch((e) => {
-          return this.updateRouteInfo(pathname, null).then(() => {
-            throw Error(`Error while parsing ${pathname} page`, { cause: e });
-          });
+    return isPublicPage(contents)
+      .then((isPublic) => updateRouteInfo(pathname, isPublic))
+      .catch((e) => {
+        return updateRouteInfo(pathname, null).then(() => {
+          throw Error(`Error while parsing ${pathname} page`, { cause: e });
         });
-    });
+      });
+  });
+}
+
+let cancelTrieUpdate = () => void 0;
+/**
+ * @param {string} pathname
+ * @param {boolean|null} value
+ * @returns {Promise<void>}
+ */
+async function updateRouteInfo(pathname, value) {
+  const prevValue = routeInfo.get(pathname) ?? null;
+  if (value === null) {
+    routeInfo.delete(pathname);
+  } else {
+    routeInfo.set(pathname, value);
   }
+  if (routeInfo.get(pathname) === prevValue) return;
 
-  /**
-   * @param {string} pathname
-   * @param {boolean|null} value
-   */
-  async updateRouteInfo(pathname, value) {
-    const prevValue = this.routeInfo.get(pathname) ?? null;
-    if (value === null) {
-      this.routeInfo.delete(pathname);
-    } else {
-      this.routeInfo.set(pathname, value);
-    }
-    if (this.routeInfo.get(pathname) === prevValue) return;
+  cancelTrieUpdate();
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      createRouteTrie()
+        .then((trie) => {
+          const stringified = stringifyRouteTrie(trie);
+          const fileContents = createRouteFile(stringified);
+          return format(fileContents, { ...prettierConfig, parser: "typescript" });
+        })
+        .then((contents) => writeFile("src/router/matcher.ts", contents))
+        .then(resolve)
+        .catch(reject);
+    }, 5000);
+    cancelTrieUpdate = () => {
+      clearTimeout(timeout);
+      resolve();
+    };
+  });
+}
 
-    clearTimeout(this.fileWriteTimeout);
-    return new Promise((resolve, reject) => {
-      this.fileWriteTimeout = setTimeout(() => {
-        this.createRouteTrie()
-          .then((trie) => {
-            const stringified = this.stringifyRouteTrie(trie);
-            const fileContents = this.createRouteFile(stringified);
-            return format(fileContents, { ...prettierConfig, parser: "typescript" });
-          })
-          .then(
-            (contents) => (console.log("writing"), writeFile("src/router/matcher.ts", contents)),
-          )
-          .then(resolve)
-          .catch(reject);
-      }, 1000);
-    });
-  }
+/**
+ * @param {string} filepath
+ */
+function readFileMaybe(filepath) {
+  return readFile(filepath, "utf-8").catch(() => null);
+}
 
-  /**
-   * @param {string} filepath
-   */
-  readFile(filepath) {
-    return readFile(filepath, "utf-8").catch(() => null);
-  }
+/**
+ * @param {string} contents
+ * @returns {Promise<boolean>}
+ */
+function isPublicPage(contents) {
+  return tsx.parseAsync(contents).then((sg) => {
+    const tree = sg.root();
+    const defaultExport = tree.find("export default $A;")?.getMatch("A")?.text();
+    if (!defaultExport) return Promise.reject("Page has no default export");
+    return !!tree.find(`${defaultExport}.isPublic=true`);
+  });
+}
 
-  /**
-   * @param {string} contents
-   * @returns {Promise<boolean>}
-   */
-  isPublicPage(contents) {
-    return tsx.parseAsync(contents).then((sg) => {
-      const tree = sg.root();
-      const defaultExport = tree.find("export default $A;")?.getMatch("A")?.text();
-      if (!defaultExport) return Promise.reject("Page has no default export");
-      return !!tree.find(`${defaultExport}.isPublic=true`);
-    });
-  }
+/**
+ * @param {string} filepath
+ */
+function getPathname(filepath) {
+  const pathnameFile = filepath.split(pagesDirectory).at(-1);
+  if (!pathnameFile) throw "todo";
+  const pathname = pathnameFile.split(".").at(0);
+  if (!pathname) throw "todo";
+  return pathname.replace(/\/index$/, "");
+}
 
-  /**
-   * @param {string} filepath
-   */
-  getPathname(filepath) {
-    const pathnameFile = filepath.split(pagesDirectory).at(-1);
-    if (!pathnameFile) throw "todo";
-    const pathname = pathnameFile.split(".").at(0);
-    if (!pathname) throw "todo";
-    return pathname.replace(/\/index$/, "");
-  }
+async function createRouteTrie() {
+  /** @type {import("./auth-routes.types").RouteMatcherTrie} */
+  const trie = {};
+  for (const [route, isPublic] of routeInfo) {
+    const chunks = route.split("/");
+    let node = trie;
+    for (const chunk of chunks) {
+      const chunkName =
+        chunk.startsWith("[") && chunk.endsWith("]") ? `[${dynamicSymbolName}]` : chunk;
 
-  async createRouteTrie() {
-    /** @type {import("./auth-routes.types").RouteMatcherTrie} */
-    const trie = {};
-    for (const [route, isPublic] of this.routeInfo) {
-      const chunks = route.split("/");
-      let node = trie;
-      for (const chunk of chunks) {
-        const chunkName =
-          chunk.startsWith("[") && chunk.endsWith("]") ? `[${dynamicSymbolName}]` : chunk;
-
-        node[chunkName] ??= {};
-        const child = node[chunkName];
-        if (typeof child !== "object") {
-          return Promise.reject(`Path ${route} has invalid segment ${chunk}`);
-        }
-        node = child;
+      node[chunkName] ??= {};
+      const child = node[chunkName];
+      if (typeof child !== "object") {
+        return Promise.reject(`Path ${route} has invalid segment ${chunk}`);
       }
-      node[`[${routeEndSymbolName}]`] = isPublic ? "public" : "private";
+      node = child;
     }
-    return trie;
+    node[`[${routeEndSymbolName}]`] = isPublic ? "public" : "private";
   }
+  return trie;
+}
 
-  /**
-   * @param {import("./auth-routes.types").RouteMatcherTrie} trie
-   */
-  stringifyRouteTrie(trie) {
-    return JSON.stringify(trie).replaceAll(specialSymbolRegex, "$1");
-  }
+/**
+ * @param {import("./auth-routes.types").RouteMatcherTrie} trie
+ */
+function stringifyRouteTrie(trie) {
+  return JSON.stringify(trie).replaceAll(specialSymbolRegex, "$1");
+}
 
-  /**
-   * @param {string} data
-   */
-  createRouteFile(data) {
-    return `
+/**
+ * @param {string} data
+ */
+function createRouteFile(data) {
+  return `
 export type RouteType = ${routeTypeList.map((x) => `"${x}"`).join("|")};
 type RouteEnd<Marker extends PropertyKey> = { [K in Marker]?: RouteType };
 type RouteMatcher<EndMarker extends symbol, Dynamic extends symbol> = RouteEnd<EndMarker> & {
@@ -182,19 +175,21 @@ export const ${routeEndSymbolName}: unique symbol = Symbol("route-end");
 export const ${dynamicSymbolName}: unique symbol = Symbol("dynamic");
 export const routeMatcher: RouteMatcher<typeof ${routeEndSymbolName}, typeof ${dynamicSymbolName}> = ${data};
     `;
-  }
 }
 
-/** @type {AuthRoutesPlugin|undefined} */
-let watcher = undefined;
+let initialized = false;
 /**
  * @param {boolean} watch
  */
 export function authRoutesPlugin(watch) {
   return {
     apply() {
-      watcher ??= new AuthRoutesPlugin(watch);
-      return watcher;
+      if (initialized) return;
+      initialized = true;
+      return readPages().then(() => {
+        if (!watch) return;
+        return watchPages();
+      });
     },
   };
 }
