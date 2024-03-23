@@ -35,8 +35,7 @@ export const getSummaryList = protectedProcedure
         case "rating":
           return review.rating;
         default:
-          const x: never = sort.by;
-          return x;
+          return sort.by satisfies never;
       }
     }
 

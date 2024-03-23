@@ -30,8 +30,7 @@ export const getSummaryList = protectedProcedure
         case "rating":
           return ratingCol;
         default:
-          const x: never = sort.by;
-          return x;
+          return sort.by satisfies never;
       }
     }
 

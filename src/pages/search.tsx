@@ -95,7 +95,6 @@ function parseSortParam(param: SortOption): SortQuery {
     case "worst rated":
       return { by: "rating", desc: false };
     default:
-      const x: never = param;
-      return x;
+      return param satisfies never;
   }
 }

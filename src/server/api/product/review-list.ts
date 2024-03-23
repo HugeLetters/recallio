@@ -35,8 +35,7 @@ export const getReviewList = protectedProcedure
         case "rating":
           return "rating";
         default:
-          const x: never = sort.by;
-          return x;
+          return sort.by satisfies never;
       }
     }
     const direction = sort.desc ? desc : asc;

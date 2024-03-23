@@ -160,8 +160,7 @@ function parseSortByOption(
     case "worst rated":
       return { by: "rating", desc: false };
     default:
-      const x: never = option;
-      return x;
+      return option satisfies never;
   }
 }
 type ReviewsProps = {
