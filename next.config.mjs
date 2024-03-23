@@ -14,8 +14,8 @@ const withRoutes = nextRoutes();
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-  rewrites() {
-    return Promise.resolve([{ source: "/", destination: "/scan" }]);
+  redirects() {
+    return Promise.resolve([{ source: "/", destination: "/scan", permanent: true }]);
   },
   /**
    * If you are using `appDir` then you must comment the below `i18n` config out.
