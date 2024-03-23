@@ -2,6 +2,8 @@ import { tsx } from "@ast-grep/napi";
 import { watch } from "node:fs";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { format } from "prettier";
+import prettierConfig from "../prettier.config.cjs";
 
 const pagesDirectory = "src/pages/";
 const pageExtensionList = ["tsx", "jsx"];
@@ -31,7 +33,7 @@ class AuthRoutesPlugin {
     const pages = await readdir(pagesDirectory, { recursive: true, withFileTypes: true });
     for (const event of pages) {
       if (!event.isFile()) continue;
-      await this.handleFileEvent(event.name, event.path).catch(console.error);
+      this.handleFileEvent(event.name, event.path).catch(console.error);
     }
   }
   watchPages() {
@@ -88,12 +90,20 @@ class AuthRoutesPlugin {
     }
     if (this.routeInfo.get(pathname) === prevValue) return;
 
-    return this.createRouteTrie().then((trie) => {
-      const stringified = this.stringifyRouteTrie(trie);
-      const fileContents = this.createRouteFile(stringified);
-      clearTimeout(this.fileWriteTimeout);
+    clearTimeout(this.fileWriteTimeout);
+    return new Promise((resolve, reject) => {
       this.fileWriteTimeout = setTimeout(() => {
-        writeFile("src/router/matcher.ts", fileContents).catch(console.error);
+        this.createRouteTrie()
+          .then((trie) => {
+            const stringified = this.stringifyRouteTrie(trie);
+            const fileContents = this.createRouteFile(stringified);
+            return format(fileContents, { ...prettierConfig, parser: "typescript" });
+          })
+          .then(
+            (contents) => (console.log("writing"), writeFile("src/router/matcher.ts", contents)),
+          )
+          .then(resolve)
+          .catch(reject);
       }, 1000);
     });
   }
@@ -166,7 +176,7 @@ class AuthRoutesPlugin {
 export type RouteType = ${routeTypeList.map((x) => `"${x}"`).join("|")};
 type RouteEnd<Marker extends PropertyKey> = { [K in Marker]?: RouteType };
 type RouteMatcher<EndMarker extends symbol, Dynamic extends symbol> = RouteEnd<EndMarker> & {
-    [chunk in string | Dynamic]?: RouteMatcher<EndMarker, Dynamic>;
+  [chunk in string | Dynamic]?: RouteMatcher<EndMarker, Dynamic>;
 };
 export const ${routeEndSymbolName}: unique symbol = Symbol("route-end");
 export const ${dynamicSymbolName}: unique symbol = Symbol("dynamic");
