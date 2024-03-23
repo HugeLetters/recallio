@@ -57,7 +57,11 @@ const config = {
         },
       }),
     );
-    config.plugins.push(authRoutesPlugin(ctx.dev));
+    // can't run this during build because type-checking will fail before this plugin does its job
+    // this plugin is executed in `prebuild` script instead
+    if (ctx.dev) {
+      config.plugins.push(authRoutesPlugin(ctx.dev));
+    }
     return config;
   },
   experimental: {
