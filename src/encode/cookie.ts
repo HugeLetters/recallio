@@ -1,13 +1,9 @@
-import { browser } from "@/browser";
 import { mapFilter } from "@/utils/array/filter";
-import type { Option } from "@/utils/option";
 import { isSome } from "@/utils/option";
 import type { Nullish } from "@/utils/type";
 import { decodeJSON } from "./json";
 
-export function getCookies(): Option<Record<string, unknown>> {
-  if (!browser) return { ok: false };
-
+export function getCookies() {
   const cookieEntries = mapFilter(
     document.cookie.split("; "),
     (cookie) => {
@@ -22,7 +18,7 @@ export function getCookies(): Option<Record<string, unknown>> {
     (v, bad) => (v ? v : bad),
   );
 
-  return { ok: true, value: Object.fromEntries(cookieEntries) };
+  return Object.fromEntries(cookieEntries);
 }
 
 type Cookie = {
@@ -34,7 +30,6 @@ type Cookie = {
   sameSite?: string;
 };
 export function setCookie({ name, value, expiry, path, sameSite, secure }: Cookie) {
-  if (!browser) return;
   const cookie = `${name}=${value}; ${cookieChunk("Expires", expiry?.toUTCString())} ${cookieChunk("Path", path)} ${cookieChunk("sameSite", sameSite)} ${cookieChunk("Secure", secure)}`;
   document.cookie = cookie;
 }
