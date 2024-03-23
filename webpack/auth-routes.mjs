@@ -7,6 +7,7 @@ import prettierConfig from "../prettier.config.cjs";
 
 const pagesDirectory = "src/pages/";
 const pageExtensionList = ["tsx", "jsx"];
+const pathNameRegex = new RegExp(`${pagesDirectory}(.+?)\\..+$`);
 const ignoredRouteList = ["404", "500", "_app", "_error"];
 
 /** @type {Array<import("./auth-routes.types").RouteType>} */
@@ -93,7 +94,7 @@ async function updateRouteInfo(pathname, value) {
         .then((contents) => writeFile("src/router/matcher.ts", contents))
         .then(resolve)
         .catch(reject);
-    }, 5000);
+    }, 1000);
     cancelTrieUpdate = () => {
       clearTimeout(timeout);
       resolve();
@@ -125,11 +126,9 @@ function isPublicPage(contents) {
  * @param {string} filepath
  */
 function getPathname(filepath) {
-  const pathnameFile = filepath.split(pagesDirectory).at(-1);
-  if (!pathnameFile) throw "todo";
-  const pathname = pathnameFile.split(".").at(0);
-  if (!pathname) throw "todo";
-  return pathname.replace(/\/index$/, "");
+  const pathname = filepath.match(pathNameRegex)?.[1]?.replace(/\/index$/, "");
+  if (!pathname) throw Error(`Couldn't parse "${filepath}" as a valid pathname`);
+  return pathname;
 }
 
 async function createRouteTrie() {
