@@ -29,6 +29,9 @@ const Page: NextPageWithLayout = function () {
           e.preventDefault();
 
           const { callbackUrl = "/profile", email } = router.query;
+
+          // FYI - on dev there is a bug that this doesn't cause a hard redirect
+          // which causes useSession to keep it's previous session state which is "unauthenticated"
           router
             .push({
               pathname: "/api/auth/[...nextauth]",
