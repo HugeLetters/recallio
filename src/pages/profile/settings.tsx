@@ -107,7 +107,7 @@ function UserImage({ user, sync }: UserImageProps) {
   }
 
   const { startUpload, isUploading } = useUploadThing("userImage", {
-    onClientUploadComplete: (result) => {
+    onClientUploadComplete(result) {
       if (result.some((x) => !x.serverData)) {
         toast.error("Failed to upload upload the image");
       }
