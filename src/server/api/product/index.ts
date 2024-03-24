@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database/client";
+import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";

@@ -8,7 +8,7 @@ import {
   productRatingMax,
 } from "@/product/validation";
 import { protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database/client";
+import { db } from "@/server/database/client/serverless";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";
@@ -19,6 +19,7 @@ import {
   createMinMessage,
   stringLikeSchema,
 } from "@/server/validation/string";
+import { ignore } from "@/utils";
 import { nonEmptyArray } from "@/utils/array";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -62,15 +63,19 @@ export const upsert = protectedProcedure.input(upsertSchema).mutation(async ({ i
     updatedAt: new Date(),
   };
 
-  return db
-    .batch([
-      db
-        .insert(review)
-        .values(reviewData)
-        .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData }),
-      ...getCategoriesBatch(reviewData, categories),
-    ])
-    .catch((e) => throwExpectedError(e, "Failed to post the review"));
+  return (
+    db
+      .batch([
+        db
+          .insert(review)
+          .values(reviewData)
+          .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData }),
+        ...getCategoriesBatch(reviewData, categories),
+      ])
+      // todo - check other spots ffs
+      .then(ignore)
+      .catch((e) => throwExpectedError(e, "Failed to post the review"))
+  );
 });
 
 function getCategoriesBatch(reviewData: ReviewInsert, categories: string[] | undefined) {

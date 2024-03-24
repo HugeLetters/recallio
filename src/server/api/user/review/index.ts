@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database/client";
+import { db } from "@/server/database/client/serverless";
 import { nonNullableSQL } from "@/server/database/query";
 import { count, query } from "@/server/database/query/aggregate";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
@@ -67,7 +67,7 @@ const deleteImage = protectedProcedure
 
         return db.batch([
           db.update(review).set({ imageKey: null }).where(filter),
-          ...createDeleteQueueQuery(fileKeys),
+          ...createDeleteQueueQuery(db, fileKeys),
         ]);
       })
       .then(ignore)
@@ -81,6 +81,6 @@ export const reviewRouter = createTRPCRouter({
   deleteReview,
   deleteImage,
   getCount: protectedProcedure.query(({ ctx: { session } }) => {
-    return count(review, eq(review.userId, session.user.id));
+    return count(db, review, eq(review.userId, session.user.id));
   }),
 });

@@ -1,8 +1,8 @@
-import { db } from "@/server/database/client";
+import type { DatabaseClient } from "@/server/database/client";
 import { fileDeleteQueue } from "@/server/database/schema/file";
 
 type PendingFile = typeof fileDeleteQueue.$inferInsert;
-export function createDeleteQueueQuery(values: Array<PendingFile>) {
+export function createDeleteQueueQuery(client: DatabaseClient, values: Array<PendingFile>) {
   if (!values.length) return [] satisfies [];
-  return [db.insert(fileDeleteQueue).values(values).onConflictDoNothing()] satisfies [unknown];
+  return [client.insert(fileDeleteQueue).values(values).onConflictDoNothing()] satisfies [unknown];
 }

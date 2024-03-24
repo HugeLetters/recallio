@@ -1,6 +1,6 @@
 import { blobToFile } from "@/image/blob";
 import { productNameLengthMax, productNameLengthMin, productRatingMax } from "@/product/validation";
-import { db } from "@/server/database/client";
+import { db } from "@/server/database/client/serverless";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
 import { user } from "@/server/database/schema/user";
