@@ -76,7 +76,7 @@ export const upsert = protectedProcedure.input(upsertSchema).mutation(async ({ i
 });
 
 function getCategoriesBatch(reviewData: ReviewInsert, categories: string[] | undefined) {
-  if (!categories) return [];
+  if (!categories) return [] satisfies [];
 
   const batch = db
     .delete(reviewsToCategories)

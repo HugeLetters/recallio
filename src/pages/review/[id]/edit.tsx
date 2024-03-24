@@ -118,7 +118,8 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     register,
     control,
     handleSubmit,
-    formState: { isDirty: isFormDirty },
+    // isDirty has to be destructured so that we subscribe to its value
+    formState: { isDirty },
   } = useForm({ defaultValues: review });
 
   const setOptimisticReview = useSetOptimisticReview(barcode);
@@ -126,35 +127,33 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
-      function onReviewSave(review: StrictOmit<ReviewData, "image">) {
-        if (!image) {
-          setOptimisticReview(review, image);
-        }
-        if (image === undefined) return invalidateReviewData();
-        if (image === null) return deleteImage({ barcode });
-
-        setOptimisticReview(review, URL.createObjectURL(image));
-
-        compressImage(image, 511 * 1024)
-          .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
-          .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+      const newCategories = data.categories.map(({ name }) => name);
+      const optimistic = { ...data, categories: newCategories };
+      if (!isDirty && hasReview) {
+        return onReviewSave(optimistic);
       }
 
-      const { categories: categoriesField, image: _, ...restData } = data;
-      const newCategories = categoriesField.map(({ name }) => name);
-
-      const optimisticReview = { ...restData, barcode, categories: newCategories };
-      if (!isFormDirty && hasReview) {
-        return onReviewSave(optimisticReview);
-      }
-
-      const reviewCategories = review.categories.map(({ name }) => name);
-      const areCategoriesUnchanged = isSetEqual(new Set(newCategories), new Set(reviewCategories));
-      const categories = areCategoriesUnchanged ? undefined : newCategories;
-      const updatedReview = { ...optimisticReview, categories };
-      onReviewUpdateSuccess.current = () => onReviewSave(optimisticReview);
+      const currentCategories = review.categories.map(({ name }) => name);
+      const didCategoriesChange = !isSetEqual(new Set(newCategories), new Set(currentCategories));
+      const categories = didCategoriesChange ? newCategories : undefined;
+      const updatedReview = { ...data, categories, barcode };
+      onReviewUpdateSuccess.current = () => onReviewSave(optimistic);
       saveReview(updatedReview);
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
+
+    function onReviewSave(review: StrictOmit<ReviewData, "image">) {
+      if (!image) {
+        setOptimisticReview(review, image);
+        if (image === undefined) return invalidateReviewData();
+
+        return deleteImage({ barcode });
+      }
+
+      setOptimisticReview(review, URL.createObjectURL(image));
+      compressImage(image, 511 * 1024)
+        .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
+        .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+    }
   }
 
   const invalidateReviewData = useInvalidateReview(barcode);
