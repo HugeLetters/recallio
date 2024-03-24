@@ -1,4 +1,5 @@
 import { signOut } from "@/auth";
+import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider";
 import { useCachedSession } from "@/auth/session/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
@@ -21,6 +22,7 @@ import { UserPicture } from "@/user/picture";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
+import { useMutation } from "@tanstack/react-query";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
@@ -197,28 +199,51 @@ function UserName({ username, sync }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const trpcUtils = trpc.useUtils();
   const { data: accounts } = trpc.user.account.getProviders.useQuery();
-  const { mutate: deleteAccount, isLoading } = trpc.user.account.deleteAccount.useMutation({
-    onMutate({ provider }) {
-      // optimistic update
-      const prevProviders = trpcUtils.user.account.getProviders.getData();
 
-      trpcUtils.user.account.getProviders.setData(undefined, (providers) =>
+  const utils = trpc.useUtils();
+  const { mutate: addAccount, isLoading: isAdding } = useMutation({
+    mutationFn(provider: Provider) {
+      return signIn(provider);
+    },
+    onMutate(provider) {
+      utils.user.account.getProviders.setData(undefined, (providers) => {
+        if (!providers) return [provider];
+        return [...providers, provider];
+      });
+    },
+    onError(error, provider) {
+      logToastError(`Couldn't link ${provider} account.\nPlease try again.`)(error);
+      utils.user.account.getProviders.setData(undefined, (providers) =>
         providers?.filter((name) => name !== provider),
       );
-
-      return prevProviders;
-    },
-    onError(e, __, prevProviders) {
-      toast.error(`Couldn't unlink account: ${e.message}`);
-      trpcUtils.user.account.getProviders.setData(undefined, prevProviders);
-    },
-    onSettled() {
-      trpcUtils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
-  useTracker(loadingTracker, isLoading, 300);
+  useTracker(loadingTracker, isAdding, 0);
+
+  const { mutate: deleteAccount, isLoading: isDeleting } =
+    trpc.user.account.deleteAccount.useMutation({
+      onMutate({ provider }) {
+        const current = utils.user.account.getProviders.getData();
+
+        utils.user.account.getProviders.setData(undefined, (providers) =>
+          providers?.filter((name) => name !== provider),
+        );
+
+        return current;
+      },
+      onError(e, __, prev) {
+        toast.error(`Couldn't unlink account: ${e.message}`);
+        utils.user.account.getProviders.setData(undefined, prev);
+      },
+      onSuccess(deletedProvier, _, prev) {
+        utils.user.account.getProviders.setData(
+          undefined,
+          prev?.filter((name) => name !== deletedProvier),
+        );
+      },
+    });
+  useTracker(loadingTracker, isDeleting, 300);
 
   return (
     <section>
@@ -229,6 +254,8 @@ function LinkedAccounts() {
       >
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
+          const isDisabled = isAdding && !isLinked;
+          // todo - visual indication of pending state while adding a provider
           return (
             // extra div prevents dividers from being rounded
             <div key={provider}>
@@ -236,16 +263,13 @@ function LinkedAccounts() {
                 <LabeledSwitch
                   className="capitalize"
                   aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+                  aria-disabled={isDisabled}
                   checked={isLinked}
                   onCheckedChange={(value) => {
+                    if (isDisabled) return;
+
                     if (value) {
-                      // optimistic update
-                      trpcUtils.user.account.getProviders.setData(undefined, (providers) => {
-                        return [...(providers ?? []), provider];
-                      });
-                      signIn(provider).catch(
-                        logToastError("Couldn't link account.\nPlease try again."),
-                      );
+                      addAccount(provider);
                     } else {
                       deleteAccount({ provider });
                     }

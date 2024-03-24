@@ -18,13 +18,16 @@ export const deleteAccount = protectedProcedure
     return db
       .delete(account)
       .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
+      .returning({ provider: account.provider })
+      .get()
       .catch((e) => throwExpectedError(e, `Failed to unlink ${provider} account.`))
       .then((query) => {
-        if (!query.rowsAffected) {
+        if (!query) {
           throw new ExpectedError({
             code: "NOT_FOUND",
             message: `We couldn't find a ${provider} account linked to your profile`,
           });
         }
+        return query.provider;
       });
   });

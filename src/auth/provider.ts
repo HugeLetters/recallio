@@ -14,3 +14,4 @@ const providerRecord = {
 } satisfies Partial<Record<OAuthProviderType, Icon>>;
 export const providerIcons = Object.entries(providerRecord) as Entries<typeof providerRecord>;
 export const providers = Object.keys(providerRecord) as NonEmptyArray<keyof typeof providerRecord>;
+export type Provider = keyof typeof providerRecord;
