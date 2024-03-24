@@ -1,7 +1,6 @@
 import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/database/client/serverless";
 import { user } from "@/server/database/schema/user";
-import { ignore } from "@/utils";
 import { eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { uploadthing } from "./api";
@@ -35,10 +34,13 @@ export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", ma
         db.update(user).set({ image: file.key }).where(eq(user.id, userId)),
         ...(userImageKey ? createDeleteQueueQuery(db, [{ fileKey: userImageKey }]) : []),
       ])
+      .then(() => true)
       .catch((e) => {
         console.error(e);
-        return createDeleteQueueQuery(db, [{ fileKey: file.key }]);
-      })
-      .then(ignore)
-      .catch(console.error);
+        return (
+          createDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
+            ?.catch(console.error)
+            .then(() => false) ?? false
+        );
+      });
   });

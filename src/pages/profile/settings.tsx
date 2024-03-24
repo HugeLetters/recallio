@@ -37,7 +37,9 @@ const Page: NextPageWithLayout = function () {
       .then((x) => {
         session = x;
       })
-      .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
+      .catch(
+        logToastError("Failed to update data from the server.\nReloading the page is advised."),
+      )
       .finally(() => {
         callback(session);
       });
@@ -91,7 +93,7 @@ function UserImage({ user, sync }: UserImageProps) {
     setOptimistic(URL.createObjectURL(image), () => {
       compressImage(image, 511 * 1024)
         .then((compressedImage) => startUpload([compressedImage ?? image]))
-        .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+        .catch(logToastError("Failed to upload the image.\nPlease try again."));
     });
   }
 
@@ -105,15 +107,20 @@ function UserImage({ user, sync }: UserImageProps) {
   }
 
   const { startUpload, isUploading } = useUploadThing("userImage", {
-    onClientUploadComplete: syncUserImage,
+    onClientUploadComplete: (result) => {
+      if (result.some((x) => !x.serverData)) {
+        toast.error("Failed to upload upload the image");
+      }
+      syncUserImage();
+    },
     onUploadError(e) {
-      toast.error(`Couldn't upload the image: ${e.message}`);
+      toast.error(`Failed to upload upload the image: ${e.message}`);
       syncUserImage();
     },
   });
 
   const { mutate: remove, isLoading } = trpc.user.deleteImage.useMutation({
-    onError: (error) => toast.error(`Couldn't delete profile picture: ${error.message}`),
+    onError: (error) => toast.error(`Failed to delete profile picture: ${error.message}`),
     onSettled: syncUserImage,
   });
   useTracker(loadingTracker, isUpdating || isUploading || isLoading, 300);
@@ -158,7 +165,7 @@ function UserName({ username, sync }: UserNameProps) {
     onSuccess: setValue,
     onError(e) {
       setValue(username);
-      toast.error(`Couldn't update username: ${e.message}`);
+      toast.error(`Failed to update username: ${e.message}`);
     },
     onSettled() {
       sync((session) => {
@@ -218,7 +225,7 @@ function LinkedAccounts() {
       return current;
     },
     onError(error, provider, prev) {
-      logToastError(`Couldn't link ${provider} account.\nPlease try again.`)(error);
+      logToastError(`Failed to link ${provider} account.\nPlease try again.`)(error);
       utils.user.account.getProviders.setData(undefined, prev);
       utils.user.account.getProviders.invalidate().catch(console.error);
     },
@@ -236,7 +243,7 @@ function LinkedAccounts() {
         return current;
       },
       onError(e, __, prev) {
-        toast.error(`Couldn't unlink account: ${e.message}`);
+        toast.error(`Failed to unlink account: ${e.message}`);
         utils.user.account.getProviders.setData(undefined, prev);
         utils.user.account.getProviders.invalidate().catch(console.error);
       },
@@ -343,7 +350,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       signOut().catch(console.error);
     },
     onError(e) {
-      toast.error(`Couldn't delete your profile: ${e.message}`);
+      toast.error(`Failed to delete your profile: ${e.message}`);
     },
     onSettled() {
       utils.invalidate().catch(console.error);
