@@ -1,7 +1,6 @@
 import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/database/client/serverless";
 import { review } from "@/server/database/schema/product";
-import { ignore } from "@/utils";
 import { and, eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
@@ -44,10 +43,13 @@ export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", 
           .where(and(eq(review.userId, userId), eq(review.barcode, barcode))),
         ...(oldImageKey ? createDeleteQueueQuery(db, [{ fileKey: oldImageKey }]) : []),
       ])
+      .then(() => true)
       .catch((e) => {
         console.error(e);
-        return createDeleteQueueQuery(db, [{ fileKey: file.key }]);
-      })
-      .then(ignore)
-      .catch(console.error);
+        return (
+          createDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
+            ?.catch(console.error)
+            .then(() => false) ?? false
+        );
+      });
   });

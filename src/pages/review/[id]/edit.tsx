@@ -152,7 +152,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       setOptimisticReview(review, URL.createObjectURL(image));
       compressImage(image, 511 * 1024)
         .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
-        .catch(logToastError("Couldn't upload the image.\nPlease try again."));
+        .catch(logToastError("Failed to upload the image.\nPlease try again."));
     }
   }
 
@@ -161,13 +161,18 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   const { mutate: deleteImage } = trpc.user.review.deleteImage.useMutation({
     onSettled: invalidateReviewData,
     onError(e) {
-      toast.error(`Couldn't delete image from review: ${e.message}`);
+      toast.error(`Failed to delete image from review: ${e.message}`);
     },
   });
   const { startUpload } = useUploadThing("reviewImage", {
-    onClientUploadComplete: invalidateReviewData,
+    onClientUploadComplete(result) {
+      if (result.some((x) => !x.serverData)) {
+        toast.error("Failed to upload the image");
+      }
+      invalidateReviewData();
+    },
     onUploadError(e) {
-      toast.error(`Couldn't upload the image: ${e.message}`);
+      toast.error(`Failed to upload the image: ${e.message}`);
       invalidateReviewData();
     },
   });
@@ -277,7 +282,7 @@ function useInvalidateReview(barcode: string) {
       utils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
       utils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
     ]).catch(
-      logToastError("Couldn't update data from the server.\nReloading the page is advised."),
+      logToastError("Failed to update data from the server.\nReloading the page is advised."),
     );
   };
 }
