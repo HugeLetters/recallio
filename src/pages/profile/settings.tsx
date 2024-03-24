@@ -251,11 +251,10 @@ function LinkedAccounts() {
       <Toolbar
         orientation="vertical"
         className="grid auto-rows-fr divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
+        aria-disabled={isAdding}
       >
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
-          const isDisabled = isAdding && !isLinked;
-          // todo - visual indication of pending state while adding a provider
           return (
             // extra div prevents dividers from being rounded
             <div key={provider}>
@@ -263,10 +262,10 @@ function LinkedAccounts() {
                 <LabeledSwitch
                   className="capitalize"
                   aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
-                  aria-disabled={isDisabled}
+                  aria-disabled={isAdding}
                   checked={isLinked}
                   onCheckedChange={(value) => {
-                    if (isDisabled) return;
+                    if (isAdding) return;
 
                     if (value) {
                       addAccount(provider);
