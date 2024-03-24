@@ -223,6 +223,8 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       toast.error(`Couldn't delete the review: ${e.message}`);
     },
     onSuccess() {
+      apiUtils.user.review.getOne.setData({ barcode }, null);
+      apiUtils.user.review.getOne.invalidate({ barcode }).catch(console.error);
       apiUtils.user.review.getSummaryList.invalidate().catch(console.error);
       apiUtils.user.review.getCount.invalidate().catch(console.error);
       apiUtils.product.getSummaryList.invalidate().catch(console.error);
