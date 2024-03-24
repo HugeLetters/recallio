@@ -10,7 +10,7 @@ export const config = {
 
 export function middleware(request: NextRequest): NextResponse | void {
   const { cookies, nextUrl } = request;
-  if (isValidUserSession(cookies)) {
+  if (isValidUserSession(cookies, nextUrl.protocol === "https:")) {
     return;
   }
 
@@ -30,8 +30,10 @@ export function middleware(request: NextRequest): NextResponse | void {
   }
 }
 
-function isValidUserSession(cookies: NextRequest["cookies"]): boolean {
-  return !!cookies.get("next-auth.session-token");
+const baseTokenCookieName = "next-auth.session-token";
+function isValidUserSession(cookies: NextRequest["cookies"], secure: boolean): boolean {
+  const sessionTokenName = secure ? `__Secure-${baseTokenCookieName}` : baseTokenCookieName;
+  return !!cookies.get(sessionTokenName);
 
   // For now lets just check for existence of session token - using checks below results in problems on initial sign in since session data is still not set yet even though user is authed already
   // const sessionToken = cookies.get("next-auth.session-token");
