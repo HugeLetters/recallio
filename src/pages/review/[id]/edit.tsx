@@ -12,8 +12,8 @@ import { LabeledSwitch } from "@/components/ui/switch";
 import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
-import { Layout } from "@/layout";
 import type { NextPageWithLayout } from "@/layout";
+import { Layout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
@@ -122,6 +122,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   } = useForm({ defaultValues: review });
 
   const setOptimisticReview = useSetOptimisticReview(barcode);
+  const onReviewUpdateSuccess = useRef<() => void>(() => void 0);
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
@@ -151,10 +152,8 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       const areCategoriesUnchanged = isSetEqual(new Set(newCategories), new Set(reviewCategories));
       const categories = areCategoriesUnchanged ? undefined : newCategories;
       const updatedReview = { ...optimisticReview, categories };
-      saveReview(updatedReview, {
-        // todo - can I move this hook callback?
-        onSuccess: () => onReviewSave(optimisticReview),
-      });
+      onReviewUpdateSuccess.current = () => onReviewSave(optimisticReview);
+      saveReview(updatedReview);
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
   }
 
@@ -174,6 +173,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     },
   });
   const { mutate: saveReview, isLoading } = trpc.user.review.upsert.useMutation({
+    onSuccess: () => onReviewUpdateSuccess.current(),
     onError(e) {
       toast.error(`Error while trying to save the review: ${e.message}`);
       invalidateReviewData();
@@ -261,6 +261,7 @@ function useSetOptimisticReview(barcode: string) {
       return { ...cache, ...review, image };
     });
 
+    if (location.pathname !== `/review/${barcode}/edit`) return;
     router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
   };
 }
