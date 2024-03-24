@@ -26,18 +26,17 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
-type Sync = (onUpdate: (session: Session) => void) => void;
+type Sync = (onUpdate: (session: Session | null) => void) => void;
 const Page: NextPageWithLayout = function () {
   const { data, update } = useCachedSession();
   const sync: Sync = function (callback) {
-    let session: Session | null;
+    let session: Session | null = null;
     update()
       .then((x) => {
         session = x;
       })
       .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
       .finally(() => {
-        if (!session) return;
         callback(session);
       });
   };
