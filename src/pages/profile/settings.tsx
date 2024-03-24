@@ -207,16 +207,18 @@ function LinkedAccounts() {
       return signIn(provider);
     },
     onMutate(provider) {
+      const current = accounts;
+
       utils.user.account.getProviders.setData(undefined, (providers) => {
         if (!providers) return [provider];
         return [...providers, provider];
       });
+      return current;
     },
-    onError(error, provider) {
+    onError(error, provider, prev) {
       logToastError(`Couldn't link ${provider} account.\nPlease try again.`)(error);
-      utils.user.account.getProviders.setData(undefined, (providers) =>
-        providers?.filter((name) => name !== provider),
-      );
+      utils.user.account.getProviders.setData(undefined, prev);
+      utils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
   useTracker(loadingTracker, isAdding, 0);
@@ -224,17 +226,17 @@ function LinkedAccounts() {
   const { mutate: deleteAccount, isLoading: isDeleting } =
     trpc.user.account.deleteAccount.useMutation({
       onMutate({ provider }) {
-        const current = utils.user.account.getProviders.getData();
+        const current = accounts;
 
         utils.user.account.getProviders.setData(undefined, (providers) =>
           providers?.filter((name) => name !== provider),
         );
-
         return current;
       },
       onError(e, __, prev) {
         toast.error(`Couldn't unlink account: ${e.message}`);
         utils.user.account.getProviders.setData(undefined, prev);
+        utils.user.account.getProviders.invalidate().catch(console.error);
       },
       onSuccess(deletedProvier, _, prev) {
         utils.user.account.getProviders.setData(
