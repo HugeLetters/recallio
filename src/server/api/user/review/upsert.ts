@@ -63,19 +63,16 @@ export const upsert = protectedProcedure.input(upsertSchema).mutation(async ({ i
     updatedAt: new Date(),
   };
 
-  return (
-    db
-      .batch([
-        db
-          .insert(review)
-          .values(reviewData)
-          .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData }),
-        ...getCategoriesBatch(reviewData, categories),
-      ])
-      // todo - check other spots ffs
-      .then(ignore)
-      .catch((e) => throwExpectedError(e, "Failed to post the review"))
-  );
+  return db
+    .batch([
+      db
+        .insert(review)
+        .values(reviewData)
+        .onConflictDoUpdate({ target: [review.userId, review.barcode], set: reviewData }),
+      ...getCategoriesBatch(reviewData, categories),
+    ])
+    .then(ignore)
+    .catch((e) => throwExpectedError(e, "Failed to post the review"));
 });
 
 function getCategoriesBatch(reviewData: ReviewInsert, categories: string[] | undefined) {
