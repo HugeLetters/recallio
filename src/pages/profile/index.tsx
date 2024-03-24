@@ -41,6 +41,7 @@ Page.getLayout = ({ children }) => {
     <HeaderLink
       Icon={SettingsIcon}
       href="/profile/settings"
+      className="transition-transform delay-300 active:rotate-45 active:delay-0"
     />
   );
   const header = (
