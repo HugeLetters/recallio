@@ -1,4 +1,5 @@
 import { signOut } from "@/auth";
+import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider";
 import { useCachedSession } from "@/auth/session/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
@@ -21,23 +22,23 @@ import { UserPicture } from "@/user/picture";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
+import { useMutation } from "@tanstack/react-query";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
-type Sync = (onUpdate: (session: Session) => void) => void;
+type Sync = (onUpdate: (session: Session | null) => void) => void;
 const Page: NextPageWithLayout = function () {
   const { data, update } = useCachedSession();
   const sync: Sync = function (callback) {
-    let session: Session | null;
+    let session: Session | null = null;
     update()
       .then((x) => {
         session = x;
       })
       .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
       .finally(() => {
-        if (!session) return;
         callback(session);
       });
   };
@@ -80,7 +81,6 @@ type UserImageProps = {
 };
 function UserImage({ user, sync }: UserImageProps) {
   const { value: optimisticImage, isUpdating, setOptimistic, reset } = useOptimistic(user.image);
-  const optimisticUser = { ...user, image: optimisticImage };
 
   function updateUserImage(image: File | null) {
     if (!image) {
@@ -118,6 +118,7 @@ function UserImage({ user, sync }: UserImageProps) {
   });
   useTracker(loadingTracker, isUpdating || isUploading || isLoading, 300);
 
+  const optimisticUser = { ...user, image: optimisticImage };
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative size-16">
@@ -154,14 +155,16 @@ type UserNameProps = { username: string; sync: Sync };
 function UserName({ username, sync }: UserNameProps) {
   const [value, setValue] = useState(username);
   const { mutate, isLoading } = trpc.user.setName.useMutation({
+    onSuccess: setValue,
+    onError(e) {
+      setValue(username);
+      toast.error(`Couldn't update username: ${e.message}`);
+    },
     onSettled() {
       sync((session) => {
         if (!session) return;
         setValue(session.user.name);
       });
-    },
-    onError(e) {
-      toast.error(`Couldn't update username: ${e.message}`);
     },
   });
   useTracker(loadingTracker, isLoading, 300);
@@ -198,28 +201,53 @@ function UserName({ username, sync }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const trpcUtils = trpc.useUtils();
   const { data: accounts } = trpc.user.account.getProviders.useQuery();
-  const { mutate: deleteAccount, isLoading } = trpc.user.account.deleteAccount.useMutation({
-    onMutate({ provider }) {
-      // optimistic update
-      const prevProviders = trpcUtils.user.account.getProviders.getData();
 
-      trpcUtils.user.account.getProviders.setData(undefined, (providers) =>
-        providers?.filter((name) => name !== provider),
-      );
+  const utils = trpc.useUtils();
+  const { mutate: addAccount, isLoading: isAdding } = useMutation({
+    mutationFn(provider: Provider) {
+      return signIn(provider);
+    },
+    onMutate(provider) {
+      const current = accounts;
 
-      return prevProviders;
+      utils.user.account.getProviders.setData(undefined, (providers) => {
+        if (!providers) return [provider];
+        return [...providers, provider];
+      });
+      return current;
     },
-    onError(e, __, prevProviders) {
-      toast.error(`Couldn't unlink account: ${e.message}`);
-      trpcUtils.user.account.getProviders.setData(undefined, prevProviders);
-    },
-    onSettled() {
-      trpcUtils.user.account.getProviders.invalidate().catch(console.error);
+    onError(error, provider, prev) {
+      logToastError(`Couldn't link ${provider} account.\nPlease try again.`)(error);
+      utils.user.account.getProviders.setData(undefined, prev);
+      utils.user.account.getProviders.invalidate().catch(console.error);
     },
   });
-  useTracker(loadingTracker, isLoading, 300);
+  useTracker(loadingTracker, isAdding, 0);
+
+  const { mutate: deleteAccount, isLoading: isDeleting } =
+    trpc.user.account.deleteAccount.useMutation({
+      onMutate({ provider }) {
+        const current = accounts;
+
+        utils.user.account.getProviders.setData(undefined, (providers) =>
+          providers?.filter((name) => name !== provider),
+        );
+        return current;
+      },
+      onError(e, __, prev) {
+        toast.error(`Couldn't unlink account: ${e.message}`);
+        utils.user.account.getProviders.setData(undefined, prev);
+        utils.user.account.getProviders.invalidate().catch(console.error);
+      },
+      onSuccess(deletedProvier, _, prev) {
+        utils.user.account.getProviders.setData(
+          undefined,
+          prev?.filter((name) => name !== deletedProvier),
+        );
+      },
+    });
+  useTracker(loadingTracker, isDeleting, 300);
 
   return (
     <section>
@@ -227,6 +255,7 @@ function LinkedAccounts() {
       <Toolbar
         orientation="vertical"
         className="grid auto-rows-fr divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
+        aria-disabled={isAdding}
       >
         {providerIcons.map(([provider, Icon]) => {
           const isLinked = accounts?.includes(provider);
@@ -237,16 +266,13 @@ function LinkedAccounts() {
                 <LabeledSwitch
                   className="capitalize"
                   aria-label={`${isLinked ? "unlink" : "link"} ${provider} account`}
+                  aria-disabled={isAdding}
                   checked={isLinked}
                   onCheckedChange={(value) => {
+                    if (isAdding) return;
+
                     if (value) {
-                      // optimistic update
-                      trpcUtils.user.account.getProviders.setData(undefined, (providers) => {
-                        return [...(providers ?? []), provider];
-                      });
-                      signIn(provider).catch(
-                        logToastError("Couldn't link account.\nPlease try again."),
-                      );
+                      addAccount(provider);
                     } else {
                       deleteAccount({ provider });
                     }
@@ -309,6 +335,7 @@ function SettingToggle({ label, store }: SettingToggleProps) {
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
   const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
+  const utils = trpc.useUtils();
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {
       setIsOpen(false);
@@ -317,6 +344,9 @@ function DeleteProfile({ username }: DeleteProfileProps) {
     },
     onError(e) {
       toast.error(`Couldn't delete your profile: ${e.message}`);
+    },
+    onSettled() {
+      utils.invalidate().catch(console.error);
     },
   });
   useTracker(loadingTracker, isLoading);

@@ -24,11 +24,14 @@ const setName = protectedProcedure
       .update(user)
       .set({ name: input })
       .where(eq(user.id, session.user.id))
+      .returning({ name: user.name })
+      .get()
       .catch((e) => throwExpectedError(e, "Failed to update your username."))
       .then((query) => {
-        if (!query.rowsAffected) {
+        if (!query) {
           throw new ExpectedError({ code: "NOT_FOUND", message: "User not found" });
         }
+        return query.name;
       });
   });
 
