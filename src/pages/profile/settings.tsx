@@ -155,14 +155,16 @@ type UserNameProps = { username: string; sync: Sync };
 function UserName({ username, sync }: UserNameProps) {
   const [value, setValue] = useState(username);
   const { mutate, isLoading } = trpc.user.setName.useMutation({
+    onSuccess: setValue,
+    onError(e) {
+      setValue(username);
+      toast.error(`Couldn't update username: ${e.message}`);
+    },
     onSettled() {
       sync((session) => {
         if (!session) return;
         setValue(session.user.name);
       });
-    },
-    onError(e) {
-      toast.error(`Couldn't update username: ${e.message}`);
     },
   });
   useTracker(loadingTracker, isLoading, 300);
