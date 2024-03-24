@@ -81,7 +81,6 @@ type UserImageProps = {
 };
 function UserImage({ user, sync }: UserImageProps) {
   const { value: optimisticImage, isUpdating, setOptimistic, reset } = useOptimistic(user.image);
-  const optimisticUser = { ...user, image: optimisticImage };
 
   function updateUserImage(image: File | null) {
     if (!image) {
@@ -119,6 +118,7 @@ function UserImage({ user, sync }: UserImageProps) {
   });
   useTracker(loadingTracker, isUpdating || isUploading || isLoading, 300);
 
+  const optimisticUser = { ...user, image: optimisticImage };
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative size-16">
@@ -335,6 +335,7 @@ function SettingToggle({ label, store }: SettingToggleProps) {
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
   const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
+  const utils = trpc.useUtils();
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {
       setIsOpen(false);
@@ -343,6 +344,9 @@ function DeleteProfile({ username }: DeleteProfileProps) {
     },
     onError(e) {
       toast.error(`Couldn't delete your profile: ${e.message}`);
+    },
+    onSettled() {
+      utils.invalidate().catch(console.error);
     },
   });
   useTracker(loadingTracker, isLoading);
