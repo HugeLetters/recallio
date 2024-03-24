@@ -1,15 +1,15 @@
+import type { ToolbarLinkProps } from "@/components/ui/toolbar";
 import { ToolbarLink } from "@/components/ui/toolbar";
 import { ImagePreview } from "@/product/components";
 import type { StrictOmit } from "@/utils/object";
-import type { LinkProps } from "next/link";
 import type { PropsWithChildren } from "react";
 import EggBasketIcon from "~icons/custom/egg-basket";
 
-type CardProps = {
+interface CardProps extends StrictOmit<ToolbarLinkProps, "className"> {
   image?: string | null;
   label: string;
   subtext: string[];
-} & StrictOmit<LinkProps, "className">;
+}
 /**
  * Has to be wrapped in `Toolbar.Root` since it uses `Toolbar.Link`
  */

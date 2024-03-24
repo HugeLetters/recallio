@@ -1,4 +1,4 @@
-import { env } from "@/env/index.mjs";
+import { env } from "@/server/env/index.mjs";
 import type { GetServerSidePropsContext } from "next";
 import type { DefaultSession, NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
@@ -17,12 +17,14 @@ import { DatabaseAdapter } from "./db-adapter";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
+type DefaultUser = NonNullable<DefaultSession["user"]>;
 declare module "next-auth" {
+  interface User extends DefaultUser {
+    id: string;
+    name: string;
+  }
   interface Session extends DefaultSession {
-    user: DefaultSession["user"] & {
-      id: string;
-      name: string;
-    };
+    user: User;
   }
 }
 

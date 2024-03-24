@@ -1,11 +1,11 @@
 import "dotenv/config";
 
-import { hasProperty } from "@/utils/object";
+import { hasProperty, isObject } from "@/utils/object";
 
 const scriptName = process.argv[2];
 async function run() {
   const script: unknown = await import(`scripts/${scriptName}.ts`);
-  if (!hasProperty(script, "default")) {
+  if (!isObject(script) || !hasProperty(script, "default")) {
     throw Error(`Script "${scriptName}" has no default export`);
   }
 

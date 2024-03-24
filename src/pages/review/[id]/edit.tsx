@@ -12,6 +12,7 @@ import { LabeledSwitch } from "@/components/ui/switch";
 import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import {
   BarcodeTitle,
@@ -43,7 +44,7 @@ import { minutesToMs } from "@/utils";
 import type { StrictOmit, TransformProperty } from "@/utils/object";
 import { merge } from "@/utils/object";
 import { isSetEqual } from "@/utils/set";
-import type { NextPageWithLayout, Nullish } from "@/utils/type";
+import type { Nullish } from "@/utils/type";
 import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
@@ -67,8 +68,8 @@ const Page: NextPageWithLayout = function () {
 
   return !!barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
 };
+Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 
-Page.getLayout = (page) => <Layout header={{ title: <BarcodeTitle /> }}>{page}</Layout>;
 export default Page;
 
 type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
@@ -85,7 +86,7 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
   );
   const isPrivate = useStore(reviewPrivateDefaultStore);
 
-  if (!reviewQuery.isSuccess) return <>Loading...</>;
+  if (!reviewQuery.isSuccess) return "Loading...";
 
   return (
     <Review
@@ -121,6 +122,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   } = useForm({ defaultValues: review });
 
   const setOptimisticReview = useSetOptimisticReview(barcode);
+  const onReviewUpdateSuccess = useRef<() => void>(() => void 0);
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
@@ -150,9 +152,8 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       const areCategoriesUnchanged = isSetEqual(new Set(newCategories), new Set(reviewCategories));
       const categories = areCategoriesUnchanged ? undefined : newCategories;
       const updatedReview = { ...optimisticReview, categories };
-      saveReview(updatedReview, {
-        onSuccess: () => onReviewSave(optimisticReview),
-      });
+      onReviewUpdateSuccess.current = () => onReviewSave(optimisticReview);
+      saveReview(updatedReview);
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
   }
 
@@ -172,6 +173,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     },
   });
   const { mutate: saveReview, isLoading } = trpc.user.review.upsert.useMutation({
+    onSuccess: () => onReviewUpdateSuccess.current(),
     onError(e) {
       toast.error(`Error while trying to save the review: ${e.message}`);
       invalidateReviewData();
@@ -259,6 +261,7 @@ function useSetOptimisticReview(barcode: string) {
       return { ...cache, ...review, image };
     });
 
+    if (location.pathname !== `/review/${barcode}/edit`) return;
     router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
   };
 }
@@ -404,7 +407,9 @@ function Private({ value, setValue }: Model<boolean>) {
 
 // null - delete, undefined - keep as is
 type FileModel = Model<Nullish<File>>;
-type AttachedImageProps = { savedImage: string | null } & FileModel;
+interface AttachedImageProps extends FileModel {
+  savedImage: string | null;
+}
 function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const base64Image = useBlobUrl(value);
   const src = value === null ? null : base64Image ?? savedImage;

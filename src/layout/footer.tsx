@@ -137,7 +137,6 @@ function getScannerIcon(scanType: ScanType) {
     case "scan":
       return ScanIcon;
     default:
-      const x: never = scanType;
-      return x;
+      return scanType satisfies never;
   }
 }

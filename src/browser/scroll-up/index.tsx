@@ -12,7 +12,9 @@ type ScrollUpProps = {
   className?: string;
 };
 
-type ScrollUpButtonProps = { show: boolean } & ScrollUpProps;
+interface ScrollUpButtonProps extends ScrollUpProps {
+  show: boolean;
+}
 export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
   show,
   threshold = 500,
@@ -72,7 +74,9 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
   );
 });
 
-type TrackedScrollUpButtonProps = { tracker: TrackerStore } & ScrollUpProps;
+interface TrackedScrollUpButtonProps extends ScrollUpProps {
+  tracker: TrackerStore;
+}
 export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButtonProps) {
   const show = useStore(tracker);
   return (

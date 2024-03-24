@@ -1,3 +1,4 @@
+import { useCachedSession } from "@/auth/session/hooks";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Card, NoResults } from "@/components/list/product";
 import { Spinner } from "@/components/loading/spinner";
@@ -5,7 +6,7 @@ import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { ButtonLike } from "@/components/ui";
 import { Star } from "@/components/ui/star";
-import { UserPicture } from "@/user/picture";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
@@ -13,21 +14,19 @@ import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
+import { UserPicture } from "@/user/picture";
 import { minutesToMs } from "@/utils";
-import type { NextPageWithLayout } from "@/utils/type";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { ReactNode } from "react";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 const Page: NextPageWithLayout = function () {
-  const { data, status } = useSession();
+  const { data } = useCachedSession();
 
-  return status === "authenticated" ? (
+  return data ? (
     <div className="flex w-full flex-col gap-6 p-4">
       <ProfileInfo user={data.user} />
       <Reviews />
@@ -37,7 +36,7 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = (page: ReactNode) => {
+Page.getLayout = ({ children }) => {
   const right = (
     <HeaderLink
       Icon={SettingsIcon}
@@ -50,7 +49,7 @@ Page.getLayout = (page: ReactNode) => {
       title="Profile"
     />
   );
-  return <Layout header={{ header }}>{page}</Layout>;
+  return <Layout header={{ header }}>{children}</Layout>;
 };
 
 export default Page;
@@ -106,8 +105,7 @@ function parseSortParam(param: SortOption): SortQuery {
     case "worst rated":
       return { by: "rating", desc: false };
     default:
-      const x: never = param;
-      return x;
+      return param satisfies never;
   }
 }
 

@@ -1,6 +1,6 @@
 import { providers } from "@/auth/provider";
 import { protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client/serverless";
 import { account } from "@/server/database/schema/user";
 import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
 import { and, eq } from "drizzle-orm";

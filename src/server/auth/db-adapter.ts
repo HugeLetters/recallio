@@ -1,4 +1,4 @@
-import { db } from "@/server/database";
+import { db } from "@/server/database/client/serverless";
 import { findFirst } from "@/server/database/query";
 import { account, session, user, verificationToken } from "@/server/database/schema/user";
 import { getFileUrl } from "@/server/uploadthing";
@@ -28,13 +28,13 @@ export function DatabaseAdapter(): Adapter {
         .then(userWithImageUrl);
     },
     getUser(id) {
-      return findFirst(user, eq(user.id, id)).then((user) => {
+      return findFirst(db, user, eq(user.id, id)).then((user) => {
         if (!user) return null;
         return userWithImageUrl(user);
       });
     },
     getUserByEmail(email) {
-      return findFirst(user, eq(user.email, email)).then((user) => {
+      return findFirst(db, user, eq(user.email, email)).then((user) => {
         if (!user) return null;
         return userWithImageUrl(user);
       });

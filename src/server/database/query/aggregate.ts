@@ -1,11 +1,15 @@
+import type { DatabaseClient } from "@/server/database/client";
 import type { SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
-import { db } from "..";
 import type { SQLLike, SQLType } from "./type";
 
-export function count<T extends SQLiteTable>(table: T, where: SQL | undefined) {
-  return db
+export function count<T extends SQLiteTable>(
+  client: DatabaseClient,
+  table: T,
+  where: SQL | undefined,
+) {
+  return client
     .select({ count: query.count() })
     .from(table)
     .where(where)

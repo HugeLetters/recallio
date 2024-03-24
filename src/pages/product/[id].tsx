@@ -3,6 +3,7 @@ import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
 import {
@@ -18,7 +19,6 @@ import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { UserPicture } from "@/user/picture";
-import type { NextPageWithLayout } from "@/utils/type";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import RightIcon from "~icons/formkit/right";
@@ -30,8 +30,8 @@ const Page: NextPageWithLayout = function () {
   return !!barcode ? <ProductPage barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (page) => {
-  return <Layout header={{ title: "Product page" }}>{page}</Layout>;
+Page.getLayout = ({ children }) => {
+  return <Layout header={{ title: "Product page" }}>{children}</Layout>;
 };
 
 type ProductPageProps = { barcode: string };
@@ -160,8 +160,7 @@ function parseSortByOption(
     case "worst rated":
       return { by: "rating", desc: false };
     default:
-      const x: never = option;
-      return x;
+      return option satisfies never;
   }
 }
 type ReviewsProps = {
@@ -197,7 +196,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
           <InfiniteScroll
             pages={reviewsQuery.data.pages}
             getPageValues={({ page }) => page}
-            getKey={(review) => review.authorId}
+            getKey={(review) => review.id}
             getNextPage={fetchNextPage(reviewsQuery)}
             spinner={reviewsQuery.isFetching ? <Spinner className="h-16" /> : null}
           >

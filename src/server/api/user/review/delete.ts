@@ -1,5 +1,5 @@
 import { protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client/serverless";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";
@@ -21,7 +21,7 @@ export const deleteReview = protectedProcedure
       .where(and(filter, isNotNull(review.imageKey)))
       .then((files) => {
         return db
-          .batch([db.delete(review).where(filter), ...createDeleteQueueQuery(files)])
+          .batch([db.delete(review).where(filter), ...createDeleteQueueQuery(db, files)])
           .then(ignore);
       })
       .catch((e) => throwExpectedError(e, `Failed to delete your review for barcode ${barcode}.`));

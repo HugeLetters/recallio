@@ -18,7 +18,9 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function _(prop
   );
 });
 
-type LabeledSwitchProps = { className?: string } & SwitchProps;
+interface LabeledSwitchProps extends SwitchProps {
+  className?: string;
+}
 export const LabeledSwitch = forwardRef<HTMLButtonElement, PropsWithChildren<LabeledSwitchProps>>(
   function _({ children, className, ...switchProps }, ref) {
     return (

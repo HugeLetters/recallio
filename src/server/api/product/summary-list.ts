@@ -1,7 +1,7 @@
 import { protectedProcedure } from "@/server/api/trpc";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import { review } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";
@@ -30,8 +30,7 @@ export const getSummaryList = protectedProcedure
         case "rating":
           return ratingCol;
         default:
-          const x: never = sort.by;
-          return x;
+          return sort.by satisfies never;
       }
     }
 

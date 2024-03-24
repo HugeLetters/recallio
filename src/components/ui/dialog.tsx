@@ -51,10 +51,11 @@ export function UrlDialogRoot({
   );
 }
 
-export const DialogOverlay = forwardRef<
-  HTMLDivElement,
-  PropsWithChildren & ComponentPropsWithRef<typeof Overlay>
->(function _({ children, className, ...props }, ref) {
+interface DialogOverlayProps extends PropsWithChildren, ComponentPropsWithRef<typeof Overlay> {}
+export const DialogOverlay = forwardRef<HTMLDivElement, DialogOverlayProps>(function _(
+  { children, className, ...props },
+  ref,
+) {
   return (
     <Overlay
       ref={ref}

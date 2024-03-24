@@ -2,7 +2,7 @@ import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
 import { toast } from "@/components/toast";
 import type { ApiRouter } from "@/server/api/router";
-import { hasProperty } from "@/utils/object";
+import { hasProperty, isObject } from "@/utils/object";
 import { QueryCache } from "@tanstack/react-query";
 import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
@@ -35,7 +35,7 @@ export const trpc = createTRPCNext<ApiRouter>({
             toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
             if (error instanceof TRPCClientError) {
               const data: unknown = error.data;
-              if (hasProperty(data, "code") && data.code === "UNAUTHORIZED") {
+              if (isObject(data) && hasProperty(data, "code") && data.code === "UNAUTHORIZED") {
                 signOut().catch(console.error);
               }
             }

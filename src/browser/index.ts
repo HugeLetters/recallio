@@ -1,4 +1,3 @@
-import { env } from "@/env/index.mjs";
 import { ignore } from "@/utils";
 import { useRef, useSyncExternalStore } from "react";
 
@@ -22,7 +21,7 @@ export function useClient() {
 export function getBaseUrl() {
   if (browser) return ""; // browser should use relative url
 
-  if (process.env.VERCEL) return env.NEXTAUTH_URL; // SSR should use vercel url
+  if (process.env.VERCEL) return `https://${process.env.NEXTAUTH_URL}`; // SSR should use vercel url
 
   return `http://localhost:${process.env.PORT ?? 1853}`; // dev SSR should use localhost
 }

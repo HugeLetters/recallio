@@ -1,5 +1,6 @@
 import { signOut } from "@/auth";
 import { providerIcons } from "@/auth/provider";
+import { useCachedSession } from "@/auth/session/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
@@ -7,6 +8,7 @@ import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
+import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import type { BooleanSettingStore } from "@/settings/boolean";
 import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
@@ -17,21 +19,39 @@ import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import { UserPicture } from "@/user/picture";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
-import type { NextPageWithLayout } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
 import type { Session } from "next-auth";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
+type Sync = (onUpdate: (session: Session) => void) => void;
 const Page: NextPageWithLayout = function () {
-  const { data } = useSession();
-  // Can't rely on status since during session refetches it reports loading
-  return !!data ? (
+  const { data, update } = useCachedSession();
+  const sync: Sync = function (callback) {
+    let session: Session | null;
+    update()
+      .then((x) => {
+        session = x;
+      })
+      .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
+      .finally(() => {
+        if (!session) return;
+        callback(session);
+      });
+  };
+
+  return data ? (
     <div className="flex w-full flex-col items-stretch gap-3 p-4">
-      <UserImage user={data.user} />
-      <UserName username={data.user.name} />
+      <UserImage
+        user={data.user}
+        sync={sync}
+      />
+      <UserName
+        username={data.user.name}
+        sync={sync}
+      />
       <LinkedAccounts />
       <AppSettings />
       <Button
@@ -50,13 +70,15 @@ const Page: NextPageWithLayout = function () {
     "Loading"
   );
 };
-Page.getLayout = (page) => <Layout header={{ title: "Settings" }}>{page}</Layout>;
+Page.getLayout = ({ children }) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
 
 export default Page;
 
-type UserImageProps = { user: Session["user"] };
-function UserImage({ user }: UserImageProps) {
-  const { update } = useSession();
+type UserImageProps = {
+  user: Session["user"];
+  sync: Sync;
+};
+function UserImage({ user, sync }: UserImageProps) {
   const { value: optimisticImage, isUpdating, setOptimistic, reset } = useOptimistic(user.image);
   const optimisticUser = { ...user, image: optimisticImage };
 
@@ -74,14 +96,12 @@ function UserImage({ user }: UserImageProps) {
   }
 
   function syncUserImage() {
-    update()
-      .catch(logToastError("Couldn't update data from the server.\nReloading the page is advised."))
-      .finally(() => {
-        if (optimisticImage) {
-          URL.revokeObjectURL(optimisticImage);
-        }
-        reset();
-      });
+    sync(() => {
+      if (optimisticImage) {
+        URL.revokeObjectURL(optimisticImage);
+      }
+      reset();
+    });
   }
 
   const { startUpload, isUploading } = useUploadThing("userImage", {
@@ -130,20 +150,15 @@ function UserImage({ user }: UserImageProps) {
   );
 }
 
-type UserNameProps = { username: string };
-function UserName({ username }: UserNameProps) {
-  const { update } = useSession();
+type UserNameProps = { username: string; sync: Sync };
+function UserName({ username, sync }: UserNameProps) {
   const [value, setValue] = useState(username);
   const { mutate, isLoading } = trpc.user.setName.useMutation({
     onSettled() {
-      update()
-        .then((session) => {
-          if (!session) return;
-          setValue(session.user.name);
-        })
-        .catch(
-          logToastError("Couldn't update data from the server.\nReloading the page is advised."),
-        );
+      sync((session) => {
+        if (!session) return;
+        setValue(session.user.name);
+      });
     },
     onError(e) {
       toast.error(`Couldn't update username: ${e.message}`);

@@ -1,5 +1,6 @@
 import { TrackedScrollUpButton } from "@/browser/scroll-up";
-import type { PropsWithChildren } from "react";
+import type { NextPage } from "next";
+import type { PropsWithChildren, ReactNode } from "react";
 import { Footer } from "./footer";
 import type { HeaderProps } from "./header";
 import { Header } from "./header";
@@ -20,3 +21,12 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
     </div>
   );
 }
+
+export type GetLayout = ({ children }: PropsWithChildren) => ReactNode;
+export type NextPageWithLayout<Props = unknown, InitialProps = Props> = NextPage<
+  Props,
+  InitialProps
+> & {
+  isPublic?: boolean;
+  getLayout?: GetLayout;
+};

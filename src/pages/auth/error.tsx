@@ -1,6 +1,6 @@
 import { getQueryParam } from "@/browser/query";
 import { Error } from "@/components/error";
-import type { NextPageWithLayout } from "@/utils/type";
+import type { NextPageWithLayout } from "@/layout";
 import { useRouter } from "next/router";
 
 const Page: NextPageWithLayout = function () {
@@ -27,6 +27,6 @@ function getErrorMessage(
       return null;
   }
 }
-Page.noAuth = true;
+Page.isPublic = true;
 
 export default Page;

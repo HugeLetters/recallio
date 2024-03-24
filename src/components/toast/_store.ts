@@ -3,7 +3,10 @@ import type { ReactNode } from "react";
 import { flushSync } from "react-dom";
 
 export type ToastOptions = { id?: string; className?: string; duration?: number };
-export type ToastData = { id: string; content: ReactNode } & ToastOptions;
+export interface ToastData extends ToastOptions {
+  id: string;
+  content: ReactNode;
+}
 
 class ToastStackStore extends Store<ToastData[]> {
   private addNewToast(toast: ToastData) {

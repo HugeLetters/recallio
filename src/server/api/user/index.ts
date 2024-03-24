@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { db } from "@/server/database";
+import { db } from "@/server/database/client/serverless";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
@@ -51,6 +51,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
       return db.batch([
         db.update(user).set({ image: null }).where(filter),
         ...createDeleteQueueQuery(
+          db,
           filterOut(images, (image, bad) => (URL.canParse(image.fileKey) ? bad : image)),
         ),
       ]);
@@ -80,7 +81,10 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
         ...(email
           ? [db.delete(verificationToken).where(eq(verificationToken.identifier, email))]
           : []),
-        ...createDeleteQueueQuery(images.map((image) => ({ fileKey: image }))),
+        ...createDeleteQueueQuery(
+          db,
+          images.map((image) => ({ fileKey: image })),
+        ),
       ]);
     })
     .then(ignore)
