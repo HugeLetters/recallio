@@ -482,82 +482,81 @@ function CategoryList({ control }: CategoryListProps) {
 
   const [isOpen, setIsOpen] = useQueryToggleState("category-modal");
   const setSearchQuery = useSetSearchQuery();
-  function close() {
-    setIsOpen(false);
-    window.clearTimeout(debouncedQuery.current);
-    setSearchQuery(null);
-  }
   const debouncedQuery = useRef<number>();
   const isAtCategoryLimit = categories.length >= categoryCountMax;
 
   return (
-    <div>
-      <Dialog.Root
-        open={isOpen}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) return close();
-          if (isAtCategoryLimit) {
-            categoryLimitErrorToast();
-            return;
-          }
-          setIsOpen(true);
-        }}
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setIsOpen(false);
+          window.clearTimeout(debouncedQuery.current);
+          setSearchQuery(null);
+          return;
+        }
+
+        if (isAtCategoryLimit) {
+          categoryLimitErrorToast();
+          return;
+        }
+
+        setIsOpen(true);
+      }}
+    >
+      <Toolbar.Root
+        className="flex flex-wrap gap-2 text-xs"
+        aria-label="Review categories"
       >
-        <Toolbar.Root
-          className="flex flex-wrap gap-2 text-xs"
-          aria-label="Review categories"
-        >
-          <CategoryCard>
-            <Toolbar.Button asChild>
-              <Dialog.Trigger
-                aria-disabled={isAtCategoryLimit}
-                className="clickable aria-disabled:opacity-60"
-              >
-                <PlusIcon className="size-6" />
-                <span className="whitespace-nowrap py-2">Add category</span>
-              </Dialog.Trigger>
+        <CategoryCard>
+          <Toolbar.Button asChild>
+            <Dialog.Trigger
+              aria-disabled={isAtCategoryLimit}
+              className="clickable aria-disabled:opacity-60"
+            >
+              <PlusIcon className="size-6" />
+              <span className="whitespace-nowrap py-2">Add category</span>
+            </Dialog.Trigger>
+          </Toolbar.Button>
+        </CategoryCard>
+        {categories.map(({ name }) => (
+          <CategoryCard key={name}>
+            <Toolbar.Button
+              className="clickable"
+              aria-label={`Delete category ${name}`}
+              onClick={(e) => {
+                remove(name);
+
+                // switch focus to next button
+                const next = e.currentTarget.nextSibling ?? e.currentTarget.previousSibling;
+                if (next instanceof HTMLElement) {
+                  next?.focus();
+                }
+              }}
+            >
+              <span>{name}</span>
+              <div className="flex h-6 items-center">
+                <DeleteIcon className="size-3" />
+              </div>
             </Toolbar.Button>
           </CategoryCard>
-          {categories.map(({ name }) => (
-            <CategoryCard key={name}>
-              <Toolbar.Button
-                className="clickable"
-                aria-label={`Delete category ${name}`}
-                onClick={(e) => {
-                  remove(name);
-
-                  // switch focus to next button
-                  const next = e.currentTarget.nextSibling ?? e.currentTarget.previousSibling;
-                  if (next instanceof HTMLElement) {
-                    next?.focus();
-                  }
-                }}
-              >
-                <span>{name}</span>
-                <div className="flex h-6 items-center">
-                  <DeleteIcon className="size-3" />
-                </div>
-              </Toolbar.Button>
-            </CategoryCard>
-          ))}
-        </Toolbar.Root>
-        <Dialog.Portal>
-          <DialogOverlay className="flex justify-center">
-            <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-in-reverse">
-              <CategorySearch
-                enabled={isOpen}
-                canAddCategories={!isAtCategoryLimit}
-                append={add}
-                remove={remove}
-                includes={(value) => categorySet.has(value.toLowerCase())}
-                close={close}
-                debounceRef={debouncedQuery}
-              />
-            </Dialog.Content>
-          </DialogOverlay>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </div>
+        ))}
+      </Toolbar.Root>
+      <Dialog.Portal>
+        <DialogOverlay className="flex justify-center">
+          <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-in-reverse">
+            <CategorySearch
+              enabled={isOpen}
+              canAddCategories={!isAtCategoryLimit}
+              append={add}
+              remove={remove}
+              includes={(value) => categorySet.has(value.toLowerCase())}
+              debounceRef={debouncedQuery}
+            />
+          </Dialog.Content>
+        </DialogOverlay>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
@@ -567,7 +566,6 @@ type CategorySearchProps = {
   append: (value: string) => void;
   remove: (value: string) => void;
   includes: (value: string) => boolean;
-  close: () => void;
   debounceRef: MutableRefObject<number | undefined>;
 };
 function CategorySearch({
@@ -576,7 +574,6 @@ function CategorySearch({
   append,
   remove,
   includes,
-  close,
   debounceRef,
 }: CategorySearchProps) {
   const searchParam: string = useSearchQuery() ?? "";
@@ -707,12 +704,14 @@ function CategorySearch({
           "Loading..."
         )}
       </Toolbar.Root>
-      <Button
-        className="primary mx-5 mb-5 shadow-around sa-o-30 sa-r-2"
-        onClick={close}
-      >
-        OK
-      </Button>
+      <Dialog.Close asChild>
+        <Button
+          className="primary mx-5 mb-5 shadow-around sa-o-30 sa-r-2"
+          aria-label="Close"
+        >
+          OK
+        </Button>
+      </Dialog.Close>
     </div>
   );
 }
