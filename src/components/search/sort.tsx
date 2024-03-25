@@ -23,7 +23,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
       target.style.transition = "";
     },
     onSwipeEnd({ target, movement: { dy } }) {
-      if (dy < 100) {
+      if (dy < 50) {
         target.style.removeProperty("--offset");
         target.style.transition = "transform 100ms";
         return;
@@ -34,6 +34,8 @@ export function SortDialog({ optionList }: SortDialogProps) {
   });
   const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
 
+  // todo - drawer indicator (bar on top)
+  // todo - should be triggered by draggin from the top, not the whole content box
   return (
     <Dialog.Root
       open={isOpen}
