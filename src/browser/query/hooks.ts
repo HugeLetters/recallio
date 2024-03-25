@@ -6,6 +6,7 @@ export function useQueryToggleState(queryKey: string) {
   const router = useRouter();
   const isOpen = getQueryParam(router.query[queryKey]);
 
+  // todo - test this again plz
   // persist query params on navigating back/forward
   useEffect(() => {
     function handler() {
