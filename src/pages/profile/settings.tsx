@@ -341,7 +341,7 @@ function SettingToggle({ label, store }: SettingToggleProps) {
 
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
-  const { isOpen, setIsOpen } = useUrlDialog("delete-dialog");
+  const [isOpen, setIsOpen] = useUrlDialog("delete-dialog");
   const utils = trpc.useUtils();
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {

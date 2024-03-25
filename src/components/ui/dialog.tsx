@@ -23,12 +23,11 @@ export function useUrlDialog(queryKey: string) {
     };
   }, [isOpen, queryKey, router]);
 
-  return {
-    isOpen: !!isOpen,
-    setIsOpen(this: void, open: boolean) {
-      setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
-    },
-  };
+  function setIsOpen(open: boolean) {
+    setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
+  }
+
+  return [!!isOpen, setIsOpen] as const;
 }
 
 type UrlDialogRootProps = { dialogQueryKey: string; onOpenChange?: (open: boolean) => void };
@@ -37,7 +36,7 @@ export function UrlDialogRoot({
   dialogQueryKey,
   onOpenChange,
 }: PropsWithChildren<UrlDialogRootProps>) {
-  const { isOpen, setIsOpen } = useUrlDialog(dialogQueryKey);
+  const [isOpen, setIsOpen] = useUrlDialog(dialogQueryKey);
   return (
     <Root
       open={isOpen}

@@ -479,7 +479,7 @@ function CategoryList({ control }: CategoryListProps) {
     replace(newCategories.sort((a, b) => (a.name > b.name ? 1 : -1)));
   }
 
-  const { isOpen, setIsOpen } = useUrlDialog("category-modal");
+  const [isOpen, setIsOpen] = useUrlDialog("category-modal");
   const setSearchQuery = useSetSearchQuery();
   function close() {
     setIsOpen(false);
