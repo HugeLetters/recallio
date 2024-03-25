@@ -1,4 +1,5 @@
 import { getQueryParam } from "@/browser/query";
+import { useQueryToggleState } from "@/browser/query/hooks";
 import { ScrollUpButton } from "@/browser/scroll-up";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { loadingTracker } from "@/components/loading/indicator";
@@ -6,7 +7,7 @@ import { Spinner } from "@/components/loading/spinner";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
 import { logToastError, toast } from "@/components/toast";
 import { AutoresizableInput, Button, ButtonLike, Input } from "@/components/ui";
-import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
+import { DialogOverlay } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { useBlobUrl } from "@/image/blob";
@@ -479,7 +480,7 @@ function CategoryList({ control }: CategoryListProps) {
     replace(newCategories.sort((a, b) => (a.name > b.name ? 1 : -1)));
   }
 
-  const [isOpen, setIsOpen] = useUrlDialog("category-modal");
+  const [isOpen, setIsOpen] = useQueryToggleState("category-modal");
   const setSearchQuery = useSetSearchQuery();
   function close() {
     setIsOpen(false);

@@ -2,10 +2,11 @@ import { signOut } from "@/auth";
 import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider";
 import { useCachedSession } from "@/auth/session/hooks";
+import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
-import { DialogOverlay, useUrlDialog } from "@/components/ui/dialog";
+import { DialogOverlay } from "@/components/ui/dialog";
 import { LabeledSwitch } from "@/components/ui/switch";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
@@ -341,7 +342,7 @@ function SettingToggle({ label, store }: SettingToggleProps) {
 
 type DeleteProfileProps = { username: string };
 function DeleteProfile({ username }: DeleteProfileProps) {
-  const [isOpen, setIsOpen] = useUrlDialog("delete-dialog");
+  const [isOpen, setIsOpen] = useQueryToggleState("delete-dialog");
   const utils = trpc.useUtils();
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
     onSuccess() {
