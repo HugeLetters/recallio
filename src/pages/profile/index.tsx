@@ -67,7 +67,7 @@ function ProfileInfo({ user }: ProfileInfoProps) {
           priority
         />
       </div>
-      <span className="text-2xl font-bold">{user.name}</span>
+      <span className="overflow-hidden text-ellipsis text-2xl font-bold">{user.name}</span>
     </div>
   );
 }
