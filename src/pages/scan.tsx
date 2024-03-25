@@ -120,6 +120,7 @@ const Page: NextPageWithLayout = function () {
         <ScanGrid className="relative z-20">
           <ScanButton active={scanType === "upload"}>
             <ImagePicker
+              ref={fileInputRef}
               aria-label="Scan from file"
               isImageSet={true}
               onChange={(e) => {
