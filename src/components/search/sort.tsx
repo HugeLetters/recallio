@@ -1,6 +1,8 @@
 import { Flipped } from "@/animation/flip";
 import { getQueryParam, setQueryParam } from "@/browser/query";
-import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
+import { useQueryToggleState } from "@/browser/query/hooks";
+import { useSwipe } from "@/browser/swipe";
+import { DialogOverlay } from "@/components/ui/dialog";
 import { includes } from "@/utils/array";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -8,13 +10,35 @@ import { useRouter } from "next/router";
 import { Flipper } from "react-flip-toolkit";
 import SwapIcon from "~icons/iconamoon/swap-light";
 
+const overDragLimit = 20;
 type SortDialogProps = { optionList: OptionList };
 export function SortDialog({ optionList }: SortDialogProps) {
   const router = useRouter();
   const sortBy = useSortQuery(optionList);
+  const swipeHandler = useSwipe({
+    onSwipe({ movement: { dy }, target }) {
+      target.style.setProperty("--offset", `${Math.max(-overDragLimit, dy)}px`);
+    },
+    onSwipeStart({ target }) {
+      target.style.transition = "";
+    },
+    onSwipeEnd({ target, movement: { dy } }) {
+      if (dy < 100) {
+        target.style.removeProperty("--offset");
+        target.style.transition = "transform 100ms";
+        return;
+      }
+
+      setIsOpen(false);
+    },
+  });
+  const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
 
   return (
-    <UrlDialogRoot dialogQueryKey="sort-drawer">
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
       <Dialog.Trigger className="flex items-center gap-1 p-1 text-sm">
         <SwapIcon className="size-6" />
         {/* keeps trigger always the same size */}
@@ -27,7 +51,11 @@ export function SortDialog({ optionList }: SortDialogProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
-          <Dialog.Content className="max-w-app grow rounded-t-xl bg-white p-5 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse">
+          <Dialog.Content
+            onPointerDown={swipeHandler}
+            style={{ "--translate": `calc(var(--offset, 0px) + ${overDragLimit}px)` }}
+            className="max-w-app grow translate-y-[var(--translate)] rounded-t-xl bg-white p-5 pb-10 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
+          >
             <Dialog.Title className="mb-6 text-xl font-semibold">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
@@ -63,7 +91,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
           </Dialog.Content>
         </DialogOverlay>
       </Dialog.Portal>
-    </UrlDialogRoot>
+    </Dialog.Root>
   );
 }
 
