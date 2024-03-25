@@ -69,7 +69,7 @@ const Page: NextPageWithLayout = function () {
       setIsSwiped(false);
       const root = draggedDivRef.current;
       if (root) {
-        draggedDivRef.current.style.removeProperty("--offset");
+        root.style.removeProperty("--offset");
       }
 
       if (Math.abs(dx) < 30) return;
