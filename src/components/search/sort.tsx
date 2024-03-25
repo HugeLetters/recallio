@@ -7,6 +7,7 @@ import { includes } from "@/utils/array";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
+import { useRef } from "react";
 import { Flipper } from "react-flip-toolkit";
 import SwapIcon from "~icons/iconamoon/swap-light";
 
@@ -15,27 +16,33 @@ type SortDialogProps = { optionList: OptionList };
 export function SortDialog({ optionList }: SortDialogProps) {
   const router = useRouter();
   const sortBy = useSortQuery(optionList);
+  const rootRef = useRef<HTMLDivElement>(null);
   const swipeHandler = useSwipe({
-    onSwipe({ movement: { dy }, target }) {
-      target.style.setProperty("--offset", `${Math.max(-overDragLimit, dy)}px`);
+    onSwipe({ movement: { dy } }) {
+      const root = rootRef.current;
+      if (!root) return;
+      root.style.setProperty("--offset", `${Math.max(-overDragLimit, dy)}px`);
     },
-    onSwipeStart({ target }) {
-      target.style.transition = "";
+    onSwipeStart() {
+      const root = rootRef.current;
+      if (!root) return;
+      root.style.transition = "";
     },
-    onSwipeEnd({ target, movement: { dy } }) {
-      if (dy < 50) {
-        target.style.removeProperty("--offset");
-        target.style.transition = "transform 100ms";
+    onSwipeEnd({ movement: { dy } }) {
+      if (dy > 75) {
+        setIsOpen(false);
         return;
       }
 
-      setIsOpen(false);
+      const root = rootRef.current;
+      if (!root) return;
+      root.style.removeProperty("--offset");
+      root.style.transition = "transform 100ms";
     },
   });
   const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
 
-  // todo - drawer indicator (bar on top)
-  // todo - should be triggered by draggin from the top, not the whole content box
+  // ? todo - recreate this zoom out effect? https://www.vaul-svelte.com/
   return (
     <Dialog.Root
       open={isOpen}
@@ -54,14 +61,21 @@ export function SortDialog({ optionList }: SortDialogProps) {
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
           <Dialog.Content
-            onPointerDown={swipeHandler}
+            ref={rootRef}
             style={{ "--translate": `calc(var(--offset, 0px) + ${overDragLimit}px)` }}
             className="max-w-app grow translate-y-[var(--translate)] rounded-t-xl bg-white p-5 pb-10 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
           >
+            <button
+              type="button"
+              aria-label="drag down to close"
+              onPointerDown={swipeHandler}
+              className="relative mx-auto block h-2 w-20 rounded-full bg-neutral-200 outline-neutral-400 after:absolute after:-inset-2"
+            />
             <Dialog.Title className="mb-6 text-xl font-semibold">Sort By</Dialog.Title>
             <Flipper
               flipKey={sortBy}
               spring={{ stiffness: 700, overshootClamping: true }}
+              className="contents"
             >
               <RadioGroup.Root
                 value={sortBy}
