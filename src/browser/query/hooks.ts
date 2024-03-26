@@ -4,13 +4,13 @@ import { getQueryParam, setQueryParam } from ".";
 
 export function useQueryToggleState(queryKey: string) {
   const router = useRouter();
-  const isOpen = getQueryParam(router.query[queryKey]);
+  const value = getQueryParam(router.query[queryKey]);
 
-  // todo - test this again plz
-  // persist query params on navigating back/forward
+  // if other query params were changed with replace instead of push will this was active - going back will reset them too.
+  // This workaround prevents that
   useEffect(() => {
     function handler() {
-      if (!isOpen) return;
+      if (!value) return;
       setQueryParam({ router, key: queryKey, value: null });
     }
 
@@ -18,11 +18,11 @@ export function useQueryToggleState(queryKey: string) {
     return () => {
       window.removeEventListener("popstate", handler);
     };
-  }, [isOpen, queryKey, router]);
+  }, [value, queryKey, router]);
 
-  function setIsOpen(open: boolean) {
+  function setValue(open: boolean) {
     setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
   }
 
-  return [!!isOpen, useCallback(setIsOpen, [router, queryKey])] as const;
+  return [!!value, useCallback(setValue, [router, queryKey])] as const;
 }
