@@ -1,11 +1,13 @@
 import { Transition } from "@/animation/transition";
 import { useClient } from "@/browser";
 import { getQueryParam, setQueryParam } from "@/browser/query";
+import { rootStore } from "@/layout/root";
+import { useStore } from "@/state/store";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, FormEvent, MutableRefObject, ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ResetIcon from "~icons/radix-icons/cross-1";
@@ -24,6 +26,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   useEffect(() => {
     setSearch(searchParam);
   }, [searchParam]);
+  const overlayTarget = useStore(rootStore);
 
   return (
     <div
@@ -35,6 +38,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
       <Overlay
         show={isOpen}
         onClick={() => setIsOpen(false)}
+        target={overlayTarget ?? undefined}
       />
       {isOpen ? (
         <>
@@ -124,7 +128,6 @@ interface OverlayProps extends ComponentPropsWithoutRef<"div"> {
 }
 function Overlay({ target, className, show, ...props }: OverlayProps) {
   const client = useClient();
-  const getTarget = useCallback(() => target ?? document.body, [target]);
 
   if (!client) return null;
   return createPortal(
@@ -139,7 +142,7 @@ function Overlay({ target, className, show, ...props }: OverlayProps) {
         />
       )}
     </Transition>,
-    getTarget(),
+    target ?? document.body,
   );
 }
 
