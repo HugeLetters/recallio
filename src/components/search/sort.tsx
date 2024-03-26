@@ -13,14 +13,11 @@ import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 import { Flipper } from "react-flip-toolkit";
 import SwapIcon from "~icons/iconamoon/swap-light";
+import style from "./sort.module.css";
 
 const overDragLimit = 20;
 const closeDragLimit = 75;
 const maxDragRatio = 1 + overDragLimit / closeDragLimit;
-const varPrefix = "--sort-drawer";
-const offsetVar = `${varPrefix}-offset`;
-const progressVar = `${varPrefix}-progress`;
-const durationVar = `${varPrefix}-duration`;
 
 type SortDialogProps = { optionList: OptionList };
 export function SortDialog({ optionList }: SortDialogProps) {
@@ -34,16 +31,16 @@ export function SortDialog({ optionList }: SortDialogProps) {
       const dialog = dialogRef.current;
       if (dialog) {
         const boundedOffset = Math.max(-overDragLimit, dy);
-        dialog.style.setProperty(offsetVar, `${boundedOffset}px`);
+        dialog.style.setProperty("--drawer-offset", `${boundedOffset}px`);
       }
 
       if (main) {
         const progress = clamp(0, 1 - dy / closeDragLimit, maxDragRatio);
-        main.style.setProperty(progressVar, `${progress}`);
+        main.style.setProperty("--drawer-progress", `${progress}`);
       }
     },
     onSwipeStart() {
-      main?.style.setProperty(durationVar, "0ms");
+      main?.style.setProperty("--drawer-duration", "0ms");
 
       const dialog = dialogRef.current;
       if (dialog) {
@@ -51,17 +48,17 @@ export function SortDialog({ optionList }: SortDialogProps) {
       }
     },
     onSwipeEnd({ movement: { dy } }) {
-      main?.style.setProperty(durationVar, "200ms");
+      main?.style.removeProperty("--drawer-duration");
 
       if (dy > closeDragLimit) {
         setIsOpen(false);
         return;
       }
 
-      main?.style.setProperty(progressVar, "1");
+      main?.style.setProperty("--drawer-progress", "1");
       const dialog = dialogRef.current;
       if (dialog) {
-        dialog.style.removeProperty(offsetVar);
+        dialog.style.removeProperty("--drawer-offset");
         dialog.style.transitionDuration = "";
       }
     },
@@ -70,33 +67,26 @@ export function SortDialog({ optionList }: SortDialogProps) {
   useEffect(() => {
     if (!main) return;
 
-    main.style.setProperty(progressVar, isOpen ? "1" : "0");
+    main.style.setProperty("--drawer-progress", isOpen ? "1" : "0");
     return () => {
-      main.style.removeProperty(progressVar);
+      main.style.removeProperty("--drawer-progress");
     };
   }, [main, isOpen]);
 
   useEffect(() => {
     if (!main) return;
 
-    const { overflow, borderRadius, scale, transition } = main.style;
-    main.style.overflow = "hidden";
-    main.style.borderRadius = `calc(var(${progressVar}, 1) * 1rem)`;
-    main.style.scale = `calc((var(${progressVar}, 1) * -0.05) + 1)`;
-    main.style.setProperty(durationVar, "200ms");
-    const addedTransition = `scale var(${durationVar}), border-radius var(${durationVar})`;
+    const { transition } = main.style;
+    const addedTransition = "scale var(--drawer-duration), border-radius var(--drawer-duration)";
     main.style.transition = transition ? `${transition}, ${addedTransition}` : addedTransition;
+    main.classList.add(style.content);
 
     return () => {
-      main.style.overflow = overflow;
-      main.style.borderRadius = borderRadius;
-      main.style.scale = scale;
-      main.style.removeProperty(durationVar);
       main.style.transition = transition;
+      main.classList.remove(style.content);
     };
   }, [main]);
 
-  // todo  only when screen width < max app width
   return (
     <Dialog.Root
       open={isOpen}
@@ -117,7 +107,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
           {/* main content zoom out idea taken from here - https://www.vaul-svelte.com/ */}
           <Dialog.Content
             ref={dialogRef}
-            style={{ "--translate": `calc(var(${offsetVar}, 0px) + ${overDragLimit}px)` }}
+            style={{ "--translate": `calc(var(--drawer-offset, 0px) + ${overDragLimit}px)` }}
             className="max-w-app grow translate-y-[var(--translate)] rounded-t-xl bg-white p-5 pb-10 transition-transform shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
           >
             <button
