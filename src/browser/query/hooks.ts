@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { getQueryParam, setQueryParam } from ".";
 
 export function useQueryToggleState(queryKey: string) {
@@ -24,5 +24,5 @@ export function useQueryToggleState(queryKey: string) {
     setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
   }
 
-  return [!!isOpen, setIsOpen] as const;
+  return [!!isOpen, useCallback(setIsOpen, [router, queryKey])] as const;
 }
