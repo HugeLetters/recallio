@@ -27,5 +27,3 @@ export function setQueryParam({ key, router, push, value }: SetQueryParamOptions
     router.replace({ query: router.query }, undefined, { shallow: true }).catch(console.error);
   }
 }
-
-
