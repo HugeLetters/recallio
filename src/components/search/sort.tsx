@@ -79,11 +79,13 @@ export function SortDialog({ optionList }: SortDialogProps) {
     const { transition } = main.style;
     const addedTransition = "scale var(--drawer-duration), border-radius var(--drawer-duration)";
     main.style.transition = transition ? `${transition}, ${addedTransition}` : addedTransition;
-    main.classList.add(style.content);
+    // css modules ts plugin only works for LSP, not when running tsc - which given an error w/o non-null assertion
+    const contentClass = style.content!;
+    main.classList.add(contentClass);
 
     return () => {
       main.style.transition = transition;
-      main.classList.remove(style.content);
+      main.classList.remove(contentClass);
     };
   }, [main]);
 
