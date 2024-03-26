@@ -54,23 +54,17 @@ const Page: NextPageWithLayout = function () {
 
   const scanType = useStore(scanTypeStore);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const draggedDivRef = useRef<HTMLDivElement>(null);
   const [isSwiped, setIsSwiped] = useState(false);
-  useSwipe(draggedDivRef, {
-    onSwipe({ dx }) {
-      const root = draggedDivRef.current;
-      if (!root) return;
-      root.style.setProperty("--offset", `${dx}px`);
+  const swipeHandler = useSwipe({
+    onSwipe({ movement: { dx }, target }) {
+      target.style.setProperty("--offset", `${dx}px`);
     },
     onSwipeStart() {
       setIsSwiped(true);
     },
-    onSwipeEnd({ dx }) {
+    onSwipeEnd({ movement: { dx }, target }) {
       setIsSwiped(false);
-      const root = draggedDivRef.current;
-      if (root) {
-        draggedDivRef.current.style.removeProperty("--offset");
-      }
+      target.style.removeProperty("--offset");
 
       if (Math.abs(dx) < 30) return;
       const delta = Math.abs(dx) < 90 ? 1 : 2;
@@ -86,7 +80,7 @@ const Page: NextPageWithLayout = function () {
   const baseOffset = useStore(scanTypeOffsetStore);
   return (
     <div
-      ref={draggedDivRef}
+      onPointerDown={swipeHandler}
       className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
     >
       <div
@@ -120,6 +114,7 @@ const Page: NextPageWithLayout = function () {
         <ScanGrid className="relative z-20">
           <ScanButton active={scanType === "upload"}>
             <ImagePicker
+              ref={fileInputRef}
               aria-label="Scan from file"
               isImageSet={true}
               onChange={(e) => {

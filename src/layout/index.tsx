@@ -4,6 +4,7 @@ import type { PropsWithChildren, ReactNode } from "react";
 import { Footer } from "./footer";
 import type { HeaderProps } from "./header";
 import { Header } from "./header";
+import { rootStore } from "./root";
 import { layoutScrollUpTracker } from "./scroll-up-tracker";
 
 type LayoutProps = {
@@ -11,7 +12,10 @@ type LayoutProps = {
 };
 export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   return (
-    <div className="flex h-dvh flex-col bg-white">
+    <div
+      ref={rootStore.setRoot}
+      className="flex h-dvh flex-col bg-white"
+    >
       <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="scrollbar-gutter flex w-full max-w-app grow self-center overflow-y-auto">
         {children}

@@ -1,0 +1,11 @@
+.content {
+  --drawer-duration: 200ms;
+}
+
+@media (max-width: theme("maxWidth.app")) {
+  .content {
+    overflow: hidden;
+    scale: calc((var(--drawer-progress, 1) * -0.05) + 1);
+    border-radius: calc(var(--drawer-progress, 1) * 1rem);
+  }
+}

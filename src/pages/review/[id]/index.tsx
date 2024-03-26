@@ -1,8 +1,9 @@
 import { getQueryParam } from "@/browser/query";
+import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
 import { toast } from "@/components/toast";
 import { Button, ButtonLike } from "@/components/ui";
-import { DialogOverlay, UrlDialogRoot } from "@/components/ui/dialog";
+import { DialogOverlay } from "@/components/ui/dialog";
 import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
 import type { NextPageWithLayout } from "@/layout";
@@ -106,8 +107,12 @@ function Review({ barcode }: ReviewProps) {
 
 type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {
+  const [isOpen, setIsOpen] = useQueryToggleState("attached-image-dialog");
   return (
-    <UrlDialogRoot dialogQueryKey="attached-image-dialog">
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
       <Dialog.Trigger
         className="rounded-full outline-app-green-500"
         aria-label={
@@ -143,7 +148,7 @@ function AttachedImage({ image }: AttachedImageProps) {
           </DialogOverlay>
         </Dialog.Portal>
       )}
-    </UrlDialogRoot>
+    </Dialog.Root>
   );
 }
 
@@ -235,11 +240,14 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   });
   const [enabled, setEnabled] = useState(false);
   const timeoutRef = useRef<number>();
+  const [isOpen, setIsOpen] = useQueryToggleState("delete-dialog");
 
   return (
-    <UrlDialogRoot
-      dialogQueryKey="delete-dialog"
+    <Dialog.Root
+      open={isOpen}
       onOpenChange={(open) => {
+        setIsOpen(open);
+
         clearTimeout(timeoutRef.current);
         if (!open) {
           setEnabled(false);
@@ -299,6 +307,6 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
           </div>
         </DialogOverlay>
       </Dialog.Portal>
-    </UrlDialogRoot>
+    </Dialog.Root>
   );
 }
