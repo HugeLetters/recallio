@@ -21,7 +21,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["unplugin-icons/types/react"]
+    "types": ["unplugin-icons/types/react"],
+    "plugins": [{ "name": "typescript-plugin-css-modules" }]
   },
   "include": [
     ".eslintrc.cjs",
