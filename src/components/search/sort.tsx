@@ -3,46 +3,100 @@ import { getQueryParam, setQueryParam } from "@/browser/query";
 import { useQueryToggleState } from "@/browser/query/hooks";
 import { useSwipe } from "@/browser/swipe";
 import { DialogOverlay } from "@/components/ui/dialog";
+import { rootStore } from "@/layout/root";
+import { useStore } from "@/state/store";
+import { clamp } from "@/utils";
 import { includes } from "@/utils/array";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useRouter } from "next/router";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Flipper } from "react-flip-toolkit";
 import SwapIcon from "~icons/iconamoon/swap-light";
 
 const overDragLimit = 20;
+const closeDragLimit = 75;
+const maxDragRatio = 1 + overDragLimit / closeDragLimit;
+const varPrefix = "--sort-drawer";
+const offsetVar = `${varPrefix}-offset`;
+const progressVar = `${varPrefix}-progress`;
+const durationVar = `${varPrefix}-duration`;
+
 type SortDialogProps = { optionList: OptionList };
 export function SortDialog({ optionList }: SortDialogProps) {
   const router = useRouter();
   const sortBy = useSortQuery(optionList);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const main = useStore(rootStore);
+  const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
   const swipeHandler = useSwipe({
     onSwipe({ movement: { dy } }) {
-      const root = rootRef.current;
-      if (!root) return;
-      root.style.setProperty("--offset", `${Math.max(-overDragLimit, dy)}px`);
+      const dialog = dialogRef.current;
+      if (dialog) {
+        const boundedOffset = Math.max(-overDragLimit, dy);
+        dialog.style.setProperty(offsetVar, `${boundedOffset}px`);
+      }
+
+      if (main) {
+        const progress = clamp(0, 1 - dy / closeDragLimit, maxDragRatio);
+        main.style.setProperty(progressVar, `${progress}`);
+      }
     },
     onSwipeStart() {
-      const root = rootRef.current;
-      if (!root) return;
-      root.style.transition = "";
+      main?.style.setProperty(durationVar, "0ms");
+
+      const dialog = dialogRef.current;
+      if (dialog) {
+        dialog.style.transitionDuration = "0ms";
+      }
     },
     onSwipeEnd({ movement: { dy } }) {
-      if (dy > 75) {
+      main?.style.setProperty(durationVar, "200ms");
+
+      if (dy > closeDragLimit) {
         setIsOpen(false);
         return;
       }
 
-      const root = rootRef.current;
-      if (!root) return;
-      root.style.removeProperty("--offset");
-      root.style.transition = "transform 100ms";
+      main?.style.setProperty(progressVar, "1");
+      const dialog = dialogRef.current;
+      if (dialog) {
+        dialog.style.removeProperty(offsetVar);
+        dialog.style.transitionDuration = "";
+      }
     },
   });
-  const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
 
-  // ? todo - recreate this zoom out effect? https://www.vaul-svelte.com/
+  useEffect(() => {
+    if (!main) return;
+
+    main.style.setProperty(progressVar, isOpen ? "1" : "0");
+    return () => {
+      main.style.removeProperty(progressVar);
+    };
+  }, [main, isOpen]);
+
+  useEffect(() => {
+    if (!main) return;
+
+    const { overflow, borderRadius, scale, transition } = main.style;
+    main.style.overflow = "hidden";
+    main.style.borderRadius = `calc(var(${progressVar}, 1) * 1rem)`;
+    main.style.scale = `calc((var(${progressVar}, 1) * -0.05) + 1)`;
+    main.style.setProperty(durationVar, "200ms");
+    const addedTransition = `scale var(${durationVar}), border-radius var(${durationVar})`;
+    main.style.transition = transition ? `${transition}, ${addedTransition}` : addedTransition;
+
+    return () => {
+      main.style.overflow = overflow;
+      main.style.borderRadius = borderRadius;
+      main.style.scale = scale;
+      main.style.removeProperty(durationVar);
+      main.style.transition = transition;
+    };
+  }, [main]);
+
+  // todo  only when screen width < max app width
   return (
     <Dialog.Root
       open={isOpen}
@@ -60,10 +114,11 @@ export function SortDialog({ optionList }: SortDialogProps) {
       </Dialog.Trigger>
       <Dialog.Portal>
         <DialogOverlay className="flex items-end justify-center">
+          {/* main content zoom out idea taken from here - https://www.vaul-svelte.com/ */}
           <Dialog.Content
-            ref={rootRef}
-            style={{ "--translate": `calc(var(--offset, 0px) + ${overDragLimit}px)` }}
-            className="max-w-app grow translate-y-[var(--translate)] rounded-t-xl bg-white p-5 pb-10 shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
+            ref={dialogRef}
+            style={{ "--translate": `calc(var(${offsetVar}, 0px) + ${overDragLimit}px)` }}
+            className="max-w-app grow translate-y-[var(--translate)] rounded-t-xl bg-white p-5 pb-10 transition-transform shadow-around sa-o-20 sa-r-2.5 motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
           >
             <button
               type="button"
