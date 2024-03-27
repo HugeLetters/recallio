@@ -26,6 +26,11 @@ export function SortDialog({ optionList }: SortDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const main = useStore(rootStore);
   const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
+  // todo - some fucking weird ass bug in Safari with shadow marks
+  // todo - performance on mobile for zoome out effect sucks
+  // #1 move computations on js from css? (this is fucking doubt and 0% this will fix it)
+  // #2 perhaps the scale of animation matters - compared to vaul I scale much more during a much smaller swipe length
+  // #3 replace effect from scale to a small scall and translate
   const swipeHandler = useSwipe({
     onSwipe({ movement: { dy } }) {
       const dialog = dialogRef.current;
@@ -77,7 +82,9 @@ export function SortDialog({ optionList }: SortDialogProps) {
     if (!main) return;
 
     const { transition } = main.style;
-    const addedTransition = "scale var(--drawer-duration), border-radius var(--drawer-duration)";
+    const addedTransition = ["scale", "border-radius"]
+      .map((property) => `${property} var(--drawer-duration)`)
+      .join(", ");
     main.style.transition = transition ? `${transition}, ${addedTransition}` : addedTransition;
     // css modules ts plugin only works for LSP, not when running tsc - which given an error w/o non-null assertion
     const contentClass = style.content!;
