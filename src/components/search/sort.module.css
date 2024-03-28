@@ -11,6 +11,7 @@
 @media (max-width: theme("maxWidth.app")) {
   .root {
     overflow: hidden;
+    will-change: scale;
     scale: calc((var(--drawer-progress, 1) * -0.05) + 1);
     border-radius: calc(var(--drawer-progress, 1) * 1rem);
   }

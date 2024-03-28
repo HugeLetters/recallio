@@ -118,7 +118,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
           <Dialog.Content
             ref={dialogRef}
             style={{ "--translate": `calc(var(--offset, 0px) + ${overDragLimit}px)` }}
-            className="max-w-app grow translate-y-[var(--translate)] transition-transform  motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
+            className="max-w-app grow translate-y-[var(--translate)] transition-transform motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
           >
             <div
               // this prevents reflow on children when css vars are changed on dialog content
