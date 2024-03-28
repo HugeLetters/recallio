@@ -123,7 +123,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
             <div
               // this prevents reflow on children when css vars are changed on dialog content
               style={{ "--translate": 1, "--offset": 1 }}
-              className="rounded-t-xl bg-white p-5 pb-10 shadow-around sa-o-20 sa-r-2.5"
+              className="rounded-t-xl bg-white p-5 pb-10"
             >
               <button
                 type="button"
