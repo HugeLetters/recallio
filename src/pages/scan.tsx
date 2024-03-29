@@ -81,7 +81,7 @@ const Page: NextPageWithLayout = function () {
   return (
     <div
       onPointerDown={swipeHandler}
-      className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
+      className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden"
     >
       <div
         id={id}
@@ -90,6 +90,8 @@ const Page: NextPageWithLayout = function () {
           // removes video interactions in firefox
           node.inert = true;
         }}
+        // prevent inheritance from reflowing this node
+        style={{ "--offset": 1 }}
         // dont remove braces - w/o them ast-grep parses this file incorrectly
         className={
           "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"

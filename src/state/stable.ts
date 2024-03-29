@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 
-export function useSyncedRef<V>(value: V) {
+export function useStableValue<V>(value: V) {
   const synced = useRef(value);
   synced.current = value;
   return useMemo(
