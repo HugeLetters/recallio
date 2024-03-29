@@ -1,3 +1,4 @@
+import { createElasticFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
 import { getQueryParam, setQueryParam } from "@/browser/query";
 import { useQueryToggleState } from "@/browser/query/hooks";
@@ -5,7 +6,6 @@ import { useSwipe } from "@/browser/swipe";
 import { DialogOverlay } from "@/components/ui/dialog";
 import { rootStore } from "@/layout/root";
 import { useStore } from "@/state/store";
-import { clamp } from "@/utils";
 import { includes } from "@/utils/array";
 import type { Nullish } from "@/utils/type";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -21,13 +21,13 @@ const rootClass = style.root!;
 
 const overDragLimit = 20;
 const closeDragLimit = 75;
-const maxDragRatio = 1 + overDragLimit / closeDragLimit;
+const elastic = createElasticFunction({ bound: overDragLimit, coefficient: 1.5, cutoff: 0 });
 
 const progressCssVar = "--drawer-progress";
 const durationCssVar = "--drawer-duration";
 
 function updateRootProgress(root: Nullish<HTMLElement>, progress: number) {
-  root?.style.setProperty(progressCssVar, `${progress}`);
+  root?.style.setProperty(progressCssVar, `${progress.toFixed(2)}`);
 }
 
 type SortDialogProps = { optionList: OptionList };
@@ -37,16 +37,16 @@ export function SortDialog({ optionList }: SortDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const root = useStore(rootStore);
   const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
-  // todo - some fucking weird ass bug in Safari with shadow marks
   const swipeHandler = useSwipe({
     onSwipe({ movement: { dy } }) {
       const dialog = dialogRef.current;
+
+      const elasticDy = -elastic(-dy);
       if (dialog) {
-        const boundedOffset = Math.max(-overDragLimit, dy);
-        dialog.style.setProperty("--offset", `${boundedOffset}px`);
+        dialog.style.setProperty("--offset", `${elasticDy.toFixed(2)}px`);
       }
 
-      const progress = clamp(0, 1 - dy / closeDragLimit, maxDragRatio);
+      const progress = Math.max(0, 1 - elasticDy / closeDragLimit);
       updateRootProgress(root, progress);
     },
     onSwipeStart() {
