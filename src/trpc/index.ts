@@ -2,6 +2,7 @@ import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
 import { toast } from "@/components/toast";
 import type { ApiRouter } from "@/server/api/router";
+import { isDev } from "@/utils";
 import { hasProperty, isObject } from "@/utils/object";
 import { QueryCache } from "@tanstack/react-query";
 import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
@@ -13,9 +14,7 @@ export const trpc = createTRPCNext<ApiRouter>({
     return {
       links: [
         loggerLink({
-          enabled: (opts) =>
-            process.env.NODE_ENV === "development" ||
-            (opts.direction === "down" && opts.result instanceof Error),
+          enabled: (opts) => isDev || (opts.direction === "down" && opts.result instanceof Error),
         }),
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
