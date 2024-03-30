@@ -1,4 +1,4 @@
-import { createElasticFunction } from "@/animation/elastic";
+import { createElasticStretchFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
 import { getQueryParam, setQueryParam } from "@/browser/query";
 import { useQueryToggleState } from "@/browser/query/hooks";
@@ -21,7 +21,11 @@ const rootClass = style.root!;
 
 const overDragLimit = 20;
 const closeDragLimit = 75;
-const elastic = createElasticFunction({ bound: overDragLimit, coefficient: 1.5, cutoff: 0 });
+const elastic = createElasticStretchFunction({
+  stretch: overDragLimit,
+  coefficient: 1.5,
+  cutoff: 0,
+});
 
 const progressCssVar = "--drawer-progress";
 const durationCssVar = "--drawer-duration";
