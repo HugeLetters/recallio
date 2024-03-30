@@ -3,6 +3,7 @@ import { ToolbarLink } from "@/components/ui/toolbar";
 import type { Icon } from "@/image/icon";
 import { DerivedStore, Store, useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
+import type { TupleIndex } from "@/utils/array";
 import { indexOf } from "@/utils/array";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import type { LinkProps } from "next/link";
@@ -113,7 +114,7 @@ class ScanTypeStore extends Store<ScanType> {
   move(by: number) {
     this.updateState((state) => {
       const currentIndex = indexOf(scanTypeList, state);
-      const fallbackIndex = by > 0 ? 2 : 0;
+      const fallbackIndex: TupleIndex<typeof scanTypeList> = by > 0 ? 2 : 0;
       return scanTypeList[(currentIndex ?? fallbackIndex) + by] ?? scanTypeList[fallbackIndex];
     });
   }
