@@ -14,6 +14,7 @@ import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
 const baseSwipeData = { elastic: (x: number) => x, width: 0 };
@@ -64,12 +65,15 @@ const Page: NextPageWithLayout = function () {
   const barcodeInputRef = useRef<HTMLFormElement>(null);
   const swipeHandler = useSwipe({
     ignore: barcodeInputRef,
-    onSwipe({ movement: { dx }, swipeTarget }) {
+    onSwipe({ movement: { dx } }) {
+      const controls = controlsRef.current;
+      if (!controls) return;
+
       const { elastic, width } = swipeDataRef.current;
       const offset = width * baseOffset;
       const absoluteDx = dx - offset;
       const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
-      swipeTarget.style.setProperty("--offset", `${elasticDx + offset}px`);
+      controls.style.setProperty("--offset", `${(elasticDx + offset).toFixed(2)}px`);
     },
     onSwipeStart() {
       setIsSwiped(true);
@@ -88,18 +92,20 @@ const Page: NextPageWithLayout = function () {
         width,
       };
     },
-    onSwipeEnd({ movement: { dx }, swipeTarget }) {
-      setIsSwiped(false);
-      swipeTarget.style.removeProperty("--offset");
-
-      if (Math.abs(dx) < 35) return;
-      const delta = Math.abs(dx) < 110 ? 1 : 2;
-      const move = (dx < 0 ? 1 : -1) * delta;
-      const oldScanType = scanType;
-      scanTypeStore.move(move);
-      const newScanType = scanTypeStore.getSnapshot();
-      if (newScanType !== "upload" || oldScanType === "upload") return;
-      fileInputRef.current?.click();
+    onSwipeEnd({ movement: { dx } }) {
+      // flush sync is required before .removeProperty because any reflows at this stage(like losing focus on <BarcodeInput/>) will screw up the animation
+      flushSync(() => {
+        setIsSwiped(false);
+        if (Math.abs(dx) < 35) return;
+        const delta = Math.abs(dx) < 110 ? 1 : 2;
+        const move = (dx < 0 ? 1 : -1) * delta;
+        const oldScanType = scanType;
+        scanTypeStore.move(move);
+        const newScanType = scanTypeStore.getSnapshot();
+        if (newScanType !== "upload" || oldScanType === "upload") return;
+        fileInputRef.current?.click();
+      });
+      controlsRef.current?.style.removeProperty("--offset");
     },
   });
 
@@ -115,14 +121,11 @@ const Page: NextPageWithLayout = function () {
           // removes video interactions in firefox
           node.inert = true;
         }}
-        // prevent inheritance from reflowing this node
-        style={{ "--offset": 1 }}
         // dont remove braces - w/o them ast-grep parses this file incorrectly
         className={
           "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
         }
       />
-      {/* todo - a bug causes controls to snap back to input for one frame when swiping FROM it on mobile */}
       {scanType === "input" && (
         <BarcodeInput
           ref={barcodeInputRef}
