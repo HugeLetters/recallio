@@ -45,7 +45,7 @@ export function Footer() {
             >
               <div
                 className="absolute grid h-full w-[300%] -translate-x-[var(--translate)] grid-cols-3 transition-transform duration-300"
-                style={{ "--translate": `${translate}%` }}
+                style={{ "--translate": `${translate * 100}%` }}
               >
                 {scanTypeList.map((scanType) => {
                   const Icon = getScannerIcon(scanType);
@@ -123,10 +123,10 @@ class ScanTypeStore extends Store<ScanType> {
 }
 
 export const scanTypeStore = new ScanTypeStore("scan");
-/** Gives current offset of scan type value from the center in the range from 0 to 100. */
+/** Gives current offset of scan type value from the center in the range from 0 to 1. */
 export const scanTypeOffsetStore = new DerivedStore(
   scanTypeStore,
-  (state) => (100 * ((indexOf(scanTypeList, state) ?? 2) - 1)) / scanTypeList.length,
+  (state) => ((indexOf(scanTypeList, state) ?? 2) - 1) / scanTypeList.length,
 );
 
 function getScannerIcon(scanType: ScanType) {
