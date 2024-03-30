@@ -33,6 +33,7 @@ export function useStore<S>(store: Store<S>) {
   return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
 }
 
+// todo - make a hook instead? hmm
 export class DerivedStore<R, V> extends Store<V> {
   constructor(store: Store<R>, derivation: (value: R) => V) {
     super(derivation(store.getSnapshot()));

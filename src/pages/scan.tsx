@@ -210,29 +210,31 @@ type BarcodeInputProps = { goToReview: (barcode: string) => void };
 function BarcodeInput({ goToReview }: BarcodeInputProps) {
   return (
     <form
-      className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green-500 focus-within:outline-4"
+      className="w-full px-10"
       onSubmit={(e) => {
         e.preventDefault();
         const barcode = String(new FormData(e.currentTarget).get("barcode"));
         goToReview(barcode);
       }}
     >
-      <input
-        className="grow outline-none"
-        placeholder="barcode"
-        name="barcode"
-        autoFocus
-        required
-        minLength={barcodeLengthMin}
-        maxLength={barcodeLengthMax}
-        autoComplete="off"
-      />
-      <button
-        aria-label="Open review page of the specified barcode"
-        className="text-app-green-500"
-      >
-        <SearchIcon className="size-7" />
-      </button>
+      <div className="flex rounded-xl bg-white p-3  outline outline-2 outline-app-green-500 focus-within:outline-4">
+        <input
+          className="min-w-0 grow outline-none"
+          placeholder="barcode"
+          name="barcode"
+          autoFocus
+          required
+          minLength={barcodeLengthMin}
+          maxLength={barcodeLengthMax}
+          autoComplete="off"
+        />
+        <button
+          aria-label="Open review page of the specified barcode"
+          className="text-app-green-500"
+        >
+          <SearchIcon className="size-7" />
+        </button>
+      </div>
     </form>
   );
 }
