@@ -1,9 +1,9 @@
-import type { PointerEventHandler } from "react";
+import type { PointerEventHandler, RefObject } from "react";
 import { useEffect, useRef } from "react";
 
 type Movement = { dx: number; dy: number };
 interface onSwipeStartData {
-  target: HTMLElement;
+  swipeTarget: HTMLElement;
 }
 interface onSwipeEndData extends onSwipeStartData {
   movement: Movement;
@@ -15,6 +15,7 @@ type UseSwipeOptions = {
   onSwipe?: (data: onSwipeData) => void;
   onSwipeStart?: (data: onSwipeStartData) => void;
   onSwipeEnd?: (data: onSwipeEndData) => void;
+  ignore?: RefObject<Element>;
 };
 /**
  * @returns handler for `pointerdown` events
@@ -23,6 +24,7 @@ export function useSwipe({
   onSwipe,
   onSwipeStart,
   onSwipeEnd,
+  ignore,
 }: UseSwipeOptions): PointerEventHandler<HTMLElement> {
   const cleanupRef = useRef<() => void>();
 
@@ -34,7 +36,8 @@ export function useSwipe({
 
   return function (e) {
     if (!e.isPrimary) return;
-    const target = e.currentTarget;
+    const { target, currentTarget: swipeTarget } = e;
+    if (ignore && target instanceof Element && ignore.current?.contains(target)) return;
 
     const origin: Movement = { dx: 0, dy: 0 };
     function onPointerMove(e: PointerEvent) {
@@ -44,7 +47,7 @@ export function useSwipe({
 
       const dx = e.clientX - origin.dx;
       const dy = e.clientY - origin.dy;
-      onSwipe({ movement: { dx, dy }, target });
+      onSwipe({ movement: { dx, dy }, swipeTarget });
     }
 
     function onPointerUp(e: PointerEvent) {
@@ -53,7 +56,7 @@ export function useSwipe({
 
       const dx = e.clientX - origin.dx;
       const dy = e.clientY - origin.dy;
-      onSwipeEnd({ movement: { dx, dy }, target });
+      onSwipeEnd({ movement: { dx, dy }, swipeTarget });
     }
     const onPointerCancel = onPointerUp;
 
@@ -71,6 +74,6 @@ export function useSwipe({
     window.addEventListener("pointerup", onPointerUp, { once: true });
     window.addEventListener("pointercancel", onPointerCancel, { once: true });
 
-    onSwipeStart?.({ target });
+    onSwipeStart?.({ swipeTarget });
   };
 }
