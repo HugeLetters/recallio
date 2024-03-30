@@ -1,3 +1,4 @@
+import { createElasticStretchFunction } from "@/animation/elastic";
 import { useSwipe } from "@/browser/swipe";
 import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
@@ -14,6 +15,8 @@ import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
+
+const baseSwipeData = { elastic: (x: number) => x, width: 0 };
 
 const Page: NextPageWithLayout = function () {
   // reset scan type when leaving page
@@ -54,13 +57,34 @@ const Page: NextPageWithLayout = function () {
 
   const scanType = useStore(scanTypeStore);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const baseOffset = useStore(scanTypeOffsetStore);
   const [isSwiped, setIsSwiped] = useState(false);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const swipeDataRef = useRef(baseSwipeData);
   const swipeHandler = useSwipe({
     onSwipe({ movement: { dx }, target }) {
-      target.style.setProperty("--offset", `${dx}px`);
+      const { elastic, width } = swipeDataRef.current;
+      const offset = width * baseOffset;
+      const absoluteDx = dx - offset;
+      const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
+      target.style.setProperty("--offset", `${elasticDx + offset}px`);
     },
     onSwipeStart() {
       setIsSwiped(true);
+
+      const controls = controlsRef.current;
+      if (!controls) return;
+
+      const width = controls.clientWidth;
+      const half = width / 2;
+      swipeDataRef.current = {
+        elastic: createElasticStretchFunction({
+          cutoff: half,
+          coefficient: 1,
+          stretch: 50,
+        }),
+        width,
+      };
     },
     onSwipeEnd({ movement: { dx }, target }) {
       setIsSwiped(false);
@@ -77,7 +101,6 @@ const Page: NextPageWithLayout = function () {
     },
   });
 
-  const baseOffset = useStore(scanTypeOffsetStore);
   return (
     <div
       onPointerDown={swipeHandler}
@@ -99,7 +122,8 @@ const Page: NextPageWithLayout = function () {
       />
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       <div
-        style={{ "--translate": `clamp(-100%, calc(var(--offset, 0px) - ${baseOffset}%), 100%)` }}
+        ref={controlsRef}
+        style={{ "--translate": `calc(var(--offset, 0px) - ${baseOffset * 100}%)` }}
         className={tw(
           "relative mb-8 translate-x-[var(--translate)] text-white",
           !isSwiped && "transition-transform",
@@ -173,7 +197,7 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
   return (
     <Slot
       className={tw(
-        "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+        "shrink-0 rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
         active && "focus-visible-within:ring-app-green-500",
       )}
     >
