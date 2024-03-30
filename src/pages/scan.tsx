@@ -13,7 +13,7 @@ import type { QrcodeSuccessCallback } from "html5-qrcode";
 import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
-import { useEffect, useId, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import SearchIcon from "~icons/iconamoon/search";
 
 const baseSwipeData = { elastic: (x: number) => x, width: 0 };
@@ -61,13 +61,15 @@ const Page: NextPageWithLayout = function () {
   const [isSwiped, setIsSwiped] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
   const swipeDataRef = useRef(baseSwipeData);
+  const barcodeInputRef = useRef<HTMLFormElement>(null);
   const swipeHandler = useSwipe({
-    onSwipe({ movement: { dx }, target }) {
+    ignore: barcodeInputRef,
+    onSwipe({ movement: { dx }, swipeTarget }) {
       const { elastic, width } = swipeDataRef.current;
       const offset = width * baseOffset;
       const absoluteDx = dx - offset;
       const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
-      target.style.setProperty("--offset", `${elasticDx + offset}px`);
+      swipeTarget.style.setProperty("--offset", `${elasticDx + offset}px`);
     },
     onSwipeStart() {
       setIsSwiped(true);
@@ -86,9 +88,9 @@ const Page: NextPageWithLayout = function () {
         width,
       };
     },
-    onSwipeEnd({ movement: { dx }, target }) {
+    onSwipeEnd({ movement: { dx }, swipeTarget }) {
       setIsSwiped(false);
-      target.style.removeProperty("--offset");
+      swipeTarget.style.removeProperty("--offset");
 
       if (Math.abs(dx) < 35) return;
       const delta = Math.abs(dx) < 110 ? 1 : 2;
@@ -121,10 +123,15 @@ const Page: NextPageWithLayout = function () {
         }
       />
       {/* todo - a bug causes controls to snap back to input for one frame when swiping FROM it on mobile */}
-      {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
+      {scanType === "input" && (
+        <BarcodeInput
+          ref={barcodeInputRef}
+          goToReview={goToReview}
+        />
+      )}
       <div
         ref={controlsRef}
-        style={{ "--translate": `calc(var(--offset, 0px) - ${baseOffset * 100}%)` }}
+        style={{ "--translate": `calc(var(--offset, 0px) - 100% * ${baseOffset})` }}
         className={tw(
           "relative mb-8 translate-x-[var(--translate)] text-white",
           !isSwiped && "transition-transform",
@@ -208,9 +215,13 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
 }
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
-function BarcodeInput({ goToReview }: BarcodeInputProps) {
+const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
+  { goToReview },
+  ref,
+) {
   return (
     <form
+      ref={ref}
       className="w-full px-10"
       onSubmit={(e) => {
         e.preventDefault();
@@ -238,7 +249,7 @@ function BarcodeInput({ goToReview }: BarcodeInputProps) {
       </div>
     </form>
   );
-}
+});
 
 type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
 /**
