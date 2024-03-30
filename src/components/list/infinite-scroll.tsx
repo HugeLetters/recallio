@@ -1,4 +1,4 @@
-import { useStableValue } from "@/state/ref";
+import { useStableValue } from "@/state/stable";
 import type { Key, ReactNode } from "react";
 import { Fragment, useEffect, useRef } from "react";
 

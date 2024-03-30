@@ -23,7 +23,7 @@ export function useSwipe({
   onSwipe,
   onSwipeStart,
   onSwipeEnd,
-}: UseSwipeOptions = {}): PointerEventHandler<HTMLElement> {
+}: UseSwipeOptions): PointerEventHandler<HTMLElement> {
   const cleanupRef = useRef<() => void>();
 
   useEffect(() => {

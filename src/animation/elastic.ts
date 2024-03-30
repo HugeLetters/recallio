@@ -5,7 +5,7 @@ type ElasticOptions = {
   coefficient: number;
   /** Below cutoff function will act as an identity function. */
   cutoff: number;
-  /** Value will never be greater than bound. Bound less than to 0 should not be used. */
+  /** Value will never be greater than bound + cutoff. Bound less than to 0 should not be used. */
   bound: number;
 };
 export function createElasticFunction({ cutoff, bound, coefficient }: ElasticOptions) {

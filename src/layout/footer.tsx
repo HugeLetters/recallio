@@ -123,6 +123,7 @@ class ScanTypeStore extends Store<ScanType> {
 }
 
 export const scanTypeStore = new ScanTypeStore("scan");
+/** Gives current offset of scan type value from the center in the range from 0 to 100. */
 export const scanTypeOffsetStore = new DerivedStore(
   scanTypeStore,
   (state) => (100 * ((indexOf(scanTypeList, state) ?? 2) - 1)) / scanTypeList.length,
