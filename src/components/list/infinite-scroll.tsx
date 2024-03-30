@@ -1,4 +1,4 @@
-import { useSyncedRef } from "@/state/ref";
+import { useStableValue } from "@/state/stable";
 import type { Key, ReactNode } from "react";
 import { Fragment, useEffect, useRef } from "react";
 
@@ -27,7 +27,7 @@ export function InfiniteScroll<P, V>({
   spinner,
 }: InfiniteScrollProps<P, V>) {
   const triggerRef = useRef<HTMLDivElement>(null);
-  const getNextPageSync = useSyncedRef(getNextPage);
+  const getNextPageSync = useStableValue(getNextPage);
   useEffect(() => {
     if (!triggerRef.current) return;
     const trigger = triggerRef.current.firstElementChild;

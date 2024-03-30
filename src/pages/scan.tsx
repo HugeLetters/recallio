@@ -1,3 +1,4 @@
+import { createElasticStretchFunction } from "@/animation/elastic";
 import { useSwipe } from "@/browser/swipe";
 import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
@@ -12,8 +13,11 @@ import type { QrcodeSuccessCallback } from "html5-qrcode";
 import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
-import { useEffect, useId, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
+
+const baseSwipeData = { elastic: (x: number) => x, width: 0 };
 
 const Page: NextPageWithLayout = function () {
   // reset scan type when leaving page
@@ -54,34 +58,61 @@ const Page: NextPageWithLayout = function () {
 
   const scanType = useStore(scanTypeStore);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const baseOffset = useStore(scanTypeOffsetStore);
   const [isSwiped, setIsSwiped] = useState(false);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const swipeDataRef = useRef(baseSwipeData);
+  const barcodeInputRef = useRef<HTMLFormElement>(null);
   const swipeHandler = useSwipe({
-    onSwipe({ movement: { dx }, target }) {
-      target.style.setProperty("--offset", `${dx}px`);
+    ignore: barcodeInputRef,
+    onSwipe({ movement: { dx } }) {
+      const controls = controlsRef.current;
+      if (!controls) return;
+
+      const { elastic, width } = swipeDataRef.current;
+      const offset = width * baseOffset;
+      const absoluteDx = dx - offset;
+      const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
+      controls.style.setProperty("--offset", `${(elasticDx + offset).toFixed(2)}px`);
     },
     onSwipeStart() {
       setIsSwiped(true);
-    },
-    onSwipeEnd({ movement: { dx }, target }) {
-      setIsSwiped(false);
-      target.style.removeProperty("--offset");
 
-      if (Math.abs(dx) < 30) return;
-      const delta = Math.abs(dx) < 90 ? 1 : 2;
-      const move = (dx < 0 ? 1 : -1) * delta;
-      const oldScanType = scanType;
-      scanTypeStore.move(move);
-      const newScanType = scanTypeStore.getSnapshot();
-      if (newScanType !== "upload" || oldScanType === "upload") return;
-      fileInputRef.current?.click();
+      const controls = controlsRef.current;
+      if (!controls) return;
+
+      const width = controls.clientWidth;
+      const half = width / 2;
+      swipeDataRef.current = {
+        elastic: createElasticStretchFunction({
+          cutoff: half,
+          coefficient: 1,
+          stretch: 50,
+        }),
+        width,
+      };
+    },
+    onSwipeEnd({ movement: { dx } }) {
+      // flush sync is required before .removeProperty because any reflows at this stage(like losing focus on <BarcodeInput/>) will screw up the animation
+      flushSync(() => {
+        setIsSwiped(false);
+        if (Math.abs(dx) < 35) return;
+        const delta = Math.abs(dx) < 110 ? 1 : 2;
+        const move = (dx < 0 ? 1 : -1) * delta;
+        const oldScanType = scanType;
+        scanTypeStore.move(move);
+        const newScanType = scanTypeStore.getSnapshot();
+        if (newScanType !== "upload" || oldScanType === "upload") return;
+        fileInputRef.current?.click();
+      });
+      controlsRef.current?.style.removeProperty("--offset");
     },
   });
 
-  const baseOffset = useStore(scanTypeOffsetStore);
   return (
     <div
       onPointerDown={swipeHandler}
-      className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden px-10"
+      className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden"
     >
       <div
         id={id}
@@ -95,9 +126,15 @@ const Page: NextPageWithLayout = function () {
           "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
         }
       />
-      {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
+      {scanType === "input" && (
+        <BarcodeInput
+          ref={barcodeInputRef}
+          goToReview={goToReview}
+        />
+      )}
       <div
-        style={{ "--translate": `clamp(-100%, calc(var(--offset, 0px) - ${baseOffset}%), 100%)` }}
+        ref={controlsRef}
+        style={{ "--translate": `calc(var(--offset, 0px) - 100% * ${baseOffset})` }}
         className={tw(
           "relative mb-8 translate-x-[var(--translate)] text-white",
           !isSwiped && "transition-transform",
@@ -171,7 +208,7 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
   return (
     <Slot
       className={tw(
-        "rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+        "shrink-0 rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
         active && "focus-visible-within:ring-app-green-500",
       )}
     >
@@ -181,35 +218,41 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
 }
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
-function BarcodeInput({ goToReview }: BarcodeInputProps) {
+const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
+  { goToReview },
+  ref,
+) {
   return (
     <form
-      className="flex w-full rounded-xl bg-white p-3 outline outline-2 outline-app-green-500 focus-within:outline-4"
+      ref={ref}
+      className="w-full px-10"
       onSubmit={(e) => {
         e.preventDefault();
         const barcode = String(new FormData(e.currentTarget).get("barcode"));
         goToReview(barcode);
       }}
     >
-      <input
-        className="grow outline-none"
-        placeholder="barcode"
-        name="barcode"
-        autoFocus
-        required
-        minLength={barcodeLengthMin}
-        maxLength={barcodeLengthMax}
-        autoComplete="off"
-      />
-      <button
-        aria-label="Open review page of the specified barcode"
-        className="text-app-green-500"
-      >
-        <SearchIcon className="size-7" />
-      </button>
+      <div className="flex rounded-xl bg-white p-3  outline outline-2 outline-app-green-500 focus-within:outline-4">
+        <input
+          className="min-w-0 grow outline-none"
+          placeholder="barcode"
+          name="barcode"
+          autoFocus
+          required
+          minLength={barcodeLengthMin}
+          maxLength={barcodeLengthMax}
+          autoComplete="off"
+        />
+        <button
+          aria-label="Open review page of the specified barcode"
+          className="text-app-green-500"
+        >
+          <SearchIcon className="size-7" />
+        </button>
+      </div>
     </form>
   );
-}
+});
 
 type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
 /**

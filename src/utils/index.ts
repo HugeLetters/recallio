@@ -22,3 +22,5 @@ export function createTimer() {
     time = t;
   };
 }
+
+export const isDev = process.env.NODE_ENV === "development";

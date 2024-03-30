@@ -1,10 +1,17 @@
-.content {
+.root {
   --drawer-duration: 200ms;
 }
 
+.root > * {
+  /* this prevents reflow on children when this variable changes on .root */
+  --drawer-progress: 1;
+  --drawer-duration: 0ms;
+}
+
 @media (max-width: theme("maxWidth.app")) {
-  .content {
+  .root {
     overflow: hidden;
+    will-change: scale;
     scale: calc((var(--drawer-progress, 1) * -0.05) + 1);
     border-radius: calc(var(--drawer-progress, 1) * 1rem);
   }
