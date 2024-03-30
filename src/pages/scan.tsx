@@ -90,8 +90,8 @@ const Page: NextPageWithLayout = function () {
       setIsSwiped(false);
       target.style.removeProperty("--offset");
 
-      if (Math.abs(dx) < 30) return;
-      const delta = Math.abs(dx) < 90 ? 1 : 2;
+      if (Math.abs(dx) < 35) return;
+      const delta = Math.abs(dx) < 110 ? 1 : 2;
       const move = (dx < 0 ? 1 : -1) * delta;
       const oldScanType = scanType;
       scanTypeStore.move(move);
@@ -120,6 +120,7 @@ const Page: NextPageWithLayout = function () {
           "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
         }
       />
+      {/* todo - a bug causes controls to snap back to input for one frame when swiping FROM it on mobile */}
       {scanType === "input" && <BarcodeInput goToReview={goToReview} />}
       <div
         ref={controlsRef}
