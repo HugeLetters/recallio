@@ -100,5 +100,3 @@ export const getServerAuthSession = (ctx: {
 }) => {
   return getServerSession(ctx.req, ctx.res, authOptions);
 };
-
-// todo - try upgrading? https://github.com/nextauthjs/next-auth/issues/10363#issuecomment-2027821446
