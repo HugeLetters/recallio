@@ -62,39 +62,41 @@ function Comment({ children, type }: CommentProps) {
   return (
     <div className="flex py-2">
       {type && <CommentIcon type={type} />}
-      {isCollapsed === null ? (
-        <div
-          ref={contentRef}
-          className={tw("max-h-28 overflow-y-scroll whitespace-pre-wrap break-words pt-1.5")}
-        >
-          {children}
-        </div>
-      ) : (
-        // ? todo - allow clicking the whole block to expand(but only arrow button to collapse)
-        // todo - some blurred whie mist at the bottom to indicate this is collapsed text!
-        <div
-          className={tw(
-            "relative grid transition-[grid-template-rows] duration-500",
-            isCollapsed ? "grid-rows-[0fr_0]" : "grid-rows-[1fr_1.75rem]",
-          )}
-        >
+      <div className="min-w-0 pt-1.5">
+        {isCollapsed === null ? (
           <div
             ref={contentRef}
-            className="min-h-28 overflow-y-hidden whitespace-pre-wrap break-words pt-1.5"
+            className="max-h-[3lh] overflow-y-scroll whitespace-pre-wrap break-words"
           >
             {children}
           </div>
-          <ArrowButton
-            type="button"
-            aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
-            onClick={() => setIsCollapsed((x) => !x)}
+        ) : (
+          // ? todo - allow clicking the whole block to expand(but only arrow button to collapse)
+          // todo - some blurred whie mist at the bottom to indicate this is collapsed text!
+          <div
             className={tw(
-              "size-7 -translate-x-2 animate-fade-in self-end justify-self-end",
-              isCollapsed ? "-translate-y-2 -rotate-180" : "",
+              "relative grid transition-[grid-template-rows] duration-500",
+              isCollapsed ? "grid-rows-[0fr_0]" : "grid-rows-[1fr_1.75rem]",
             )}
-          />
-        </div>
-      )}
+          >
+            <div
+              ref={contentRef}
+              className="min-h-[3lh] overflow-y-hidden whitespace-pre-wrap break-words"
+            >
+              {children}
+            </div>
+            <ArrowButton
+              type="button"
+              aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
+              onClick={() => setIsCollapsed((x) => !x)}
+              className={tw(
+                "size-7 -translate-x-2 animate-fade-in self-end justify-self-end",
+                isCollapsed ? "-translate-y-2 -rotate-180" : "",
+              )}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
