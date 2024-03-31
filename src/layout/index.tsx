@@ -19,7 +19,10 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
       <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="scrollbar-gutter flex w-full max-w-app grow self-center overflow-y-auto">
         {children}
-        <TrackedScrollUpButton tracker={layoutScrollUpTracker} />
+        <TrackedScrollUpButton
+          tracker={layoutScrollUpTracker}
+          className="size-10"
+        />
       </main>
       <Footer />
     </div>

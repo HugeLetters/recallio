@@ -639,7 +639,7 @@ function CategorySearch({
       >
         <ScrollUpButton
           show
-          className="z-10 -translate-y-1 scale-90"
+          className="z-10 size-9 -translate-y-1"
         />
         {!!search && (
           <label

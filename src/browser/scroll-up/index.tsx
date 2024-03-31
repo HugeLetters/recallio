@@ -52,7 +52,7 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
         outClassName="animate-slide-up-reverse"
       >
         {show && isThershold && (
-          <div className={tw("fixed z-0", className)}>
+          <div className={tw("fixed", className)}>
             <div className="-translate-x-full -translate-y-full">
               <ArrowButton
                 type="button"
@@ -62,6 +62,7 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
                   if (!container) return;
                   container.scrollTo({ top: 0, behavior: "smooth" });
                 }}
+                className="size-full"
               />
             </div>
           </div>
