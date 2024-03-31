@@ -41,6 +41,8 @@ const scrapers: Array<(barcode: string) => Promise<Nullish<string>>> = [
   Brocade,
   GoUPC,
 ];
+
+// todo - i think they reject requests from my domain, perhaps I should add a timeout here
 export function getScrapedProducts(code: string): Promise<string[]> {
   return Promise.allSettled(scrapers.map((query) => query(code))).then((results) => {
     return filterMap(

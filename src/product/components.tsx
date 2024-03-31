@@ -1,6 +1,8 @@
 import { getQueryParam } from "@/browser/query";
 import { Image } from "@/image";
+import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
+import type { RouterOutputs } from "@/trpc";
 import type { Nullish } from "@/utils/type";
 import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
@@ -11,14 +13,14 @@ import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
-type CommentSectionProps = { children: ReactNode[] };
-export function CommentSection({ children }: CommentSectionProps) {
+type CommentWrapperProps = { children: ReactNode[] };
+export function CommentWrapper({ children }: CommentWrapperProps) {
   const separator = <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />;
   const filtered = children.filter(Boolean);
   const lastIndex = filtered.length - 1;
 
   return (
-    <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green-500 focus-within:outline-2">
+    <div className="flex flex-col rounded-lg px-4 py-2 outline outline-1 outline-app-green-500 focus-within:outline-2">
       {filtered.map((element, i) => (
         <Fragment key={i}>
           {element}
@@ -29,21 +31,55 @@ export function CommentSection({ children }: CommentSectionProps) {
   );
 }
 
-type CommentProps = { children: string; className?: string };
-export function Comment({ children, className }: CommentProps) {
+type Review = NonNullable<RouterOutputs["user"]["review"]["getOne"]>;
+type CommentSectionProps = Pick<Review, "pros" | "cons" | "comment">;
+export function CommentSection({ comment, cons, pros }: CommentSectionProps) {
+  if (!pros && !cons && !comment) return null;
+
   return (
-    <div className={tw("overflow-hidden whitespace-pre-wrap break-words pt-1.5", className)}>
-      {children}
+    <CommentWrapper>
+      {!!pros && <Comment type="pros">{pros}</Comment>}
+      {!!cons && <Comment type="cons">{cons}</Comment>}
+      {!!comment && <Comment>{comment}</Comment>}
+    </CommentWrapper>
+  );
+}
+
+type CommentType = "pros" | "cons";
+type CommentProps = { children: string; className?: string; type?: CommentType };
+function Comment({ children, className, type }: CommentProps) {
+  return (
+    <div className="flex py-2">
+      {type && <CommentIcon type={type} />}
+      <div className={tw("overflow-hidden whitespace-pre-wrap break-words pt-1.5", className)}>
+        {children}
+      </div>
     </div>
   );
 }
 
-export function ProsIcon() {
-  return <PlusIcon className="h-fit w-full text-app-green-500" />;
+type CommentIconProps = { type: CommentType };
+function getIconByType(type: CommentType): Icon {
+  switch (type) {
+    case "pros":
+      return PlusIcon;
+    case "cons":
+      return MinusIcon;
+    default: {
+      return type satisfies never;
+    }
+  }
 }
-
-export function ConsIcon() {
-  return <MinusIcon className="h-fit w-full text-app-red-500" />;
+export function CommentIcon({ type }: CommentIconProps) {
+  const Icon = getIconByType(type);
+  return (
+    <Icon
+      className={tw(
+        "h-fit w-10 shrink-0",
+        type === "pros" ? "text-app-green-500" : "text-app-red-500",
+      )}
+    />
+  );
 }
 
 type Size = "md" | "sm";
