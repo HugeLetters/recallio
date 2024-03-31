@@ -1,4 +1,5 @@
 import { getQueryParam } from "@/browser/query";
+import { ArrowButton } from "@/components/ui/arrow-button";
 import { Image } from "@/image";
 import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
@@ -8,7 +9,7 @@ import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
-import { Fragment, forwardRef } from "react";
+import { Fragment, forwardRef, useEffect, useRef, useState } from "react";
 import MilkIcon from "~icons/custom/milk";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
@@ -46,14 +47,54 @@ export function CommentSection({ comment, cons, pros }: CommentSectionProps) {
 }
 
 type CommentType = "pros" | "cons";
-type CommentProps = { children: string; className?: string; type?: CommentType };
-function Comment({ children, className, type }: CommentProps) {
+type CommentProps = { children: string; type?: CommentType };
+function Comment({ children, type }: CommentProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isCollapsed, setIsCollapsed] = useState<null | boolean>(null);
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    if (content.clientHeight < content.scrollHeight) {
+      setIsCollapsed(true);
+    }
+  }, []);
+
   return (
     <div className="flex py-2">
       {type && <CommentIcon type={type} />}
-      <div className={tw("overflow-hidden whitespace-pre-wrap break-words pt-1.5", className)}>
-        {children}
-      </div>
+      {isCollapsed === null ? (
+        <div
+          ref={contentRef}
+          className={tw("max-h-28 overflow-y-scroll whitespace-pre-wrap break-words pt-1.5")}
+        >
+          {children}
+        </div>
+      ) : (
+        // ? todo - allow clicking the whole block to expand(but only arrow button to collapse)
+        // todo - some blurred whie mist at the bottom to indicate this is collapsed text!
+        <div
+          className={tw(
+            "relative grid transition-[grid-template-rows] duration-500",
+            isCollapsed ? "grid-rows-[0fr_0]" : "grid-rows-[1fr_1.75rem]",
+          )}
+        >
+          <div
+            ref={contentRef}
+            className="min-h-28 overflow-y-hidden whitespace-pre-wrap break-words pt-1.5"
+          >
+            {children}
+          </div>
+          <ArrowButton
+            type="button"
+            aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
+            onClick={() => setIsCollapsed((x) => !x)}
+            className={tw(
+              "size-7 -translate-x-2 animate-fade-in self-end justify-self-end",
+              isCollapsed ? "-translate-y-2 -rotate-180" : "",
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }
