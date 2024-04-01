@@ -1,4 +1,5 @@
 import { AuthGuard } from "@/auth/guard";
+import { ResizeProvider } from "@/browser/resize/provider";
 import { LoadingProvider } from "@/components/loading/indicator";
 import { ToastProvider } from "@/components/toast/provider";
 import type { NextPageWithLayout } from "@/layout";
@@ -42,6 +43,7 @@ function Providers({ children, session }: { children: ReactNode; session: Sessio
     <SessionProvider session={session}>
       <ToastProvider>{children}</ToastProvider>
       <LoadingProvider />
+      <ResizeProvider />
     </SessionProvider>
   );
 }
