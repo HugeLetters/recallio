@@ -1,6 +1,6 @@
-import { env } from "@/server/env/index.mjs";
 import { db } from "@/server/database/client";
 import { fileDeleteQueue } from "@/server/database/schema/file";
+import { env } from "@/server/env/index.mjs";
 import { throwExpectedError } from "@/server/error/trpc";
 import { utapi } from "@/server/uploadthing/api";
 import { ignore } from "@/utils";
@@ -15,7 +15,7 @@ function innerHandler(_: NextApiRequest, res: NextApiResponse) {
     .then(() => {
       res.status(200).json(null);
     })
-    .catch(throwExpectedError);
+    .catch(throwExpectedError(undefined));
 }
 
 function deletePendingFiles() {

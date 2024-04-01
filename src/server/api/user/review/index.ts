@@ -39,8 +39,7 @@ const getOne = protectedProcedure
       )
       .groupBy(review.barcode, review.userId)
       .limit(1)
-      .then(([data]) => data ?? null)
-      .catch(throwExpectedError);
+      .then(([data]) => data ?? null);
   });
 
 const deleteImage = protectedProcedure
@@ -71,7 +70,7 @@ const deleteImage = protectedProcedure
         ]);
       })
       .then(ignore)
-      .catch((e) => throwExpectedError(e, "Failed to delete image"));
+      .catch(throwExpectedError("Failed to delete image"));
   });
 
 export const reviewRouter = createTRPCRouter({

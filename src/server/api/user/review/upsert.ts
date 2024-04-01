@@ -72,7 +72,7 @@ export const upsert = protectedProcedure.input(upsertSchema).mutation(async ({ i
       ...getCategoriesBatch(reviewData, categories),
     ])
     .then(ignore)
-    .catch((e) => throwExpectedError(e, "Failed to post the review"));
+    .catch(throwExpectedError("Failed to post the review"));
 });
 
 function getCategoriesBatch(reviewData: ReviewInsert, categories: string[] | undefined) {

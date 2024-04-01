@@ -1,6 +1,6 @@
 import { getServerAuthSession } from "@/server/auth";
 import { env } from "@/server/env/index.mjs";
-import { ExpectedError } from "@/server/error/trpc";
+import { ExpectedError, defaultErrorMessage } from "@/server/error/trpc";
 import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { Session } from "next-auth";
@@ -27,7 +27,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
         ? `${cause.errors[0]?.message}`
         : error instanceof ExpectedError
           ? error.message
-          : error.code;
+          : defaultErrorMessage;
 
     return {
       message,
@@ -46,7 +46,7 @@ export const publicProcedure = t.procedure;
 
 const authMiddleware = t.middleware(({ ctx, next }) => {
   if (!ctx.session?.user) {
-    throw new ExpectedError({ code: "UNAUTHORIZED" });
+    throw new ExpectedError({ code: "UNAUTHORIZED", message: "User is not authenticated" });
   }
 
   return next({ ctx: { session: ctx.session } });
