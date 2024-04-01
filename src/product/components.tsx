@@ -1,4 +1,5 @@
 import { getQueryParam } from "@/browser/query";
+import { useResizeListener } from "@/browser/resize/store";
 import { Image } from "@/image";
 import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
@@ -10,6 +11,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Fragment, forwardRef, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import MilkIcon from "~icons/custom/milk";
 import ArrowIcon from "~icons/formkit/right";
 import PlusIcon from "~icons/material-symbols/add-rounded";
@@ -61,6 +63,20 @@ function Comment({ children, type }: CommentProps) {
       setOverflow(scrollHeight - clientHeight);
     }
   }, []);
+
+  useResizeListener(() => {
+    // flushSync a reset to recalculate overflow value
+    // this is just for edge cases when screen is rotated etc so a little flicker is not a problem
+    flushSync(() => setOverflow(undefined));
+
+    const content = contentRef.current;
+    if (!content) return;
+
+    const { clientHeight, scrollHeight } = content;
+    if (clientHeight < scrollHeight) {
+      setOverflow(scrollHeight - clientHeight);
+    }
+  });
 
   return (
     <div className="flex py-2">
