@@ -10,7 +10,7 @@ function Email({ token, url }: EmailProps) {
   return (
     <Tailwind config={{ theme: config.theme }}>
       <Section className="p-4">
-        <Section className="rounded-lg bg-neutral-200 p-4 text-xl text-[rgb(26_46_5)]">
+        <Section className="rounded-lg bg-neutral-200 p-4 text-xl text-app-green-900">
           <Row>{"Here's your authorization pin"}</Row>
           <Row>{token}</Row>
           <Button

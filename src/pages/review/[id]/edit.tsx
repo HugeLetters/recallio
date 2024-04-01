@@ -677,7 +677,7 @@ function CategorySearch({
                     <Checkbox.Root
                       className={tw(
                         "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
-                        "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-300 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-lime-950",
+                        "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-300 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-app-green-900",
                         "transition-colors data-[state=checked]:bg-app-green-500",
                       )}
                       aria-disabled={!canAddCategories}
