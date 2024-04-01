@@ -1,14 +1,17 @@
 import { getQueryParam } from "@/browser/query";
+import { useResizeListener } from "@/browser/resize/store";
 import { Image } from "@/image";
 import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
 import type { RouterOutputs } from "@/trpc";
+import { clamp } from "@/utils";
 import type { Nullish } from "@/utils/type";
 import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Fragment, forwardRef, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import MilkIcon from "~icons/custom/milk";
 import ArrowIcon from "~icons/formkit/right";
 import PlusIcon from "~icons/material-symbols/add-rounded";
@@ -50,20 +53,36 @@ type CommentType = "pros" | "cons";
 type CommentProps = { children: string; type?: CommentType };
 function Comment({ children, type }: CommentProps) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [isCollapsed, setIsCollapsed] = useState<null | boolean>(null);
+  const [overflow, setOverflow] = useState<number>();
   useEffect(() => {
     const content = contentRef.current;
     if (!content) return;
-    if (content.clientHeight < content.scrollHeight) {
-      setIsCollapsed(true);
+
+    const { clientHeight, scrollHeight } = content;
+    if (clientHeight < scrollHeight) {
+      setOverflow(scrollHeight - clientHeight);
     }
   }, []);
+
+  useResizeListener(() => {
+    // flushSync a reset to recalculate overflow value
+    // this is just for edge cases when screen is rotated etc so a little flicker is not a problem
+    flushSync(() => setOverflow(undefined));
+
+    const content = contentRef.current;
+    if (!content) return;
+
+    const { clientHeight, scrollHeight } = content;
+    if (clientHeight < scrollHeight) {
+      setOverflow(scrollHeight - clientHeight);
+    }
+  });
 
   return (
     <div className="flex py-2">
       {type && <CommentIcon type={type} />}
       <div className="min-w-0 pt-1.5">
-        {isCollapsed === null ? (
+        {overflow === undefined ? (
           <div
             ref={contentRef}
             className="max-h-[3lh] overflow-y-scroll whitespace-pre-wrap break-words"
@@ -71,46 +90,53 @@ function Comment({ children, type }: CommentProps) {
             {children}
           </div>
         ) : (
-          <div
-            // this is not acessible on purpose - for screen reader users there is a button below
-            onClick={() => {
-              if (!isCollapsed) return;
-              setIsCollapsed((x) => !x);
-            }}
-            className={tw(
-              "relative grid transition-[grid-template-rows] duration-500",
-              isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
-            )}
-          >
-            <div
-              ref={contentRef}
-              className="min-h-[3lh] overflow-y-hidden whitespace-pre-wrap break-words"
-            >
-              {children}
-            </div>
-            <div
-              className={tw(
-                "pointer-events-none absolute bottom-0 h-7 w-full animate-fade-in bg-gradient-to-t from-white transition-opacity duration-500",
-                !isCollapsed && "opacity-0",
-              )}
-            />
-            <button
-              type="button"
-              aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsCollapsed((x) => !x);
-              }}
-              className={tw(
-                "clickable flex size-5 origin-center translate-x-2 animate-fade-in items-center justify-center self-end justify-self-end rounded-full outline-none outline-1 outline-offset-0 outline-transparent duration-500 focus-visible-within:bg-black/10 focus-visible-within:outline-app-green-500",
-                isCollapsed && "translate-y-1 -rotate-180",
-              )}
-            >
-              <ArrowIcon className="size-full -rotate-90 text-app-green-500" />
-            </button>
-          </div>
+          <CollapsibleComment overflow={overflow}>{children}</CollapsibleComment>
         )}
       </div>
+    </div>
+  );
+}
+
+type CollapsibleCommentProps = { overflow: number };
+function CollapsibleComment({ overflow, children }: PropsWithChildren<CollapsibleCommentProps>) {
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+
+  return (
+    <div
+      // this is not acessible on purpose - for screen reader users there is a button below
+      onClick={() => {
+        if (!isCollapsed) return;
+        setIsCollapsed((x) => !x);
+      }}
+      style={{ "--duration": `${clamp(200, overflow * 2, 500)}ms` }}
+      className={tw(
+        "relative grid transition-[grid-template-rows] duration-[var(--duration)]",
+        isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
+      )}
+    >
+      <div className="min-h-[3lh] overflow-y-hidden whitespace-pre-wrap break-words">
+        {children}
+      </div>
+      <div
+        className={tw(
+          "pointer-events-none absolute bottom-0 h-7 w-full animate-fade-in bg-gradient-to-t from-white transition-opacity duration-[var(--duration)]",
+          !isCollapsed && "opacity-0",
+        )}
+      />
+      <button
+        type="button"
+        aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsCollapsed((x) => !x);
+        }}
+        className={tw(
+          "clickable flex size-5 origin-center translate-x-2 animate-fade-in items-center justify-center self-end justify-self-end rounded-full outline-none outline-1 outline-offset-0 outline-transparent duration-[var(--duration)] focus-visible-within:bg-black/10 focus-visible-within:outline-app-green-500",
+          isCollapsed && "translate-y-1 -rotate-180",
+        )}
+      >
+        <ArrowIcon className="size-full -rotate-90 text-app-green-500" />
+      </button>
     </div>
   );
 }

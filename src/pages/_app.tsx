@@ -1,4 +1,5 @@
 import { AuthGuard } from "@/auth/guard";
+import { ResizeProvider } from "@/browser/resize/provider";
 import { LoadingProvider } from "@/components/loading/indicator";
 import { ToastProvider } from "@/components/toast/provider";
 import type { NextPageWithLayout } from "@/layout";
@@ -40,9 +41,9 @@ export default trpc.withTRPC(MyApp);
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
   return (
     <SessionProvider session={session}>
-      <ToastProvider>
-        <LoadingProvider>{children}</LoadingProvider>
-      </ToastProvider>
+      <ToastProvider>{children}</ToastProvider>
+      <LoadingProvider />
+      <ResizeProvider />
     </SessionProvider>
   );
 }
