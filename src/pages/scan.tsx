@@ -122,9 +122,7 @@ const Page: NextPageWithLayout = function () {
           node.inert = true;
         }}
         // dont remove braces - w/o them ast-grep parses this file incorrectly
-        className={
-          "!absolute -z-10 flex size-full justify-center [&>video]:!w-auto [&>video]:max-w-none [&>video]:!shrink-0"
-        }
+        className={"!absolute inset-0 -z-10 [&>video]:!size-full [&>video]:object-cover"}
       />
       {scanType === "input" && (
         <BarcodeInput
