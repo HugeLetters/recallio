@@ -40,9 +40,8 @@ export default trpc.withTRPC(MyApp);
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
   return (
     <SessionProvider session={session}>
-      <ToastProvider>
-        <LoadingProvider>{children}</LoadingProvider>
-      </ToastProvider>
+      <ToastProvider>{children}</ToastProvider>
+      <LoadingProvider />
     </SessionProvider>
   );
 }
