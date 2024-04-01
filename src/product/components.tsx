@@ -72,7 +72,6 @@ function Comment({ children, type }: CommentProps) {
           </div>
         ) : (
           // ? todo - allow clicking the whole block to expand(but only arrow button to collapse)
-          // todo - some blurred whie mist at the bottom to indicate this is collapsed text!
           <div
             className={tw(
               "relative grid transition-[grid-template-rows] duration-500",
@@ -85,6 +84,12 @@ function Comment({ children, type }: CommentProps) {
             >
               {children}
             </div>
+            <div
+              className={tw(
+                "pointer-events-none absolute bottom-0 h-7 w-full bg-gradient-to-t from-white transition-opacity duration-500",
+                !isCollapsed && "opacity-0",
+              )}
+            />
             <ArrowButton
               type="button"
               aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
