@@ -1,11 +1,11 @@
 import { Transition } from "@/animation/transition";
-import { ArrowButton } from "@/components/ui/arrow-button";
 import { scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import type { TrackerStore } from "@/state/store/tracker";
 import { tw } from "@/styles/tw";
 import type { FC } from "react";
 import React, { useEffect, useRef, useState } from "react";
+import ArrowIcon from "~icons/formkit/right";
 
 type ScrollUpProps = {
   threshold?: number;
@@ -54,7 +54,7 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
         {show && isThershold && (
           <div className={tw("fixed", className)}>
             <div className="-translate-x-full -translate-y-full">
-              <ArrowButton
+              <button
                 type="button"
                 aria-label="Scroll to top of the section"
                 onClick={() => {
@@ -62,8 +62,10 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
                   if (!container) return;
                   container.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="size-full"
-              />
+                className="group clickable primary flex aspect-square size-full items-center justify-center rounded-full ring-1 ring-white shadow-around sa-o-25 sa-r-1"
+              >
+                <ArrowIcon className="size-5/6 -rotate-90 transition-transform duration-200 group-active:-translate-y-0.5" />
+              </button>
             </div>
           </div>
         )}

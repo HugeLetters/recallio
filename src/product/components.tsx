@@ -1,5 +1,4 @@
 import { getQueryParam } from "@/browser/query";
-import { ArrowButton } from "@/components/ui/arrow-button";
 import { Image } from "@/image";
 import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
@@ -11,6 +10,7 @@ import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
 import { Fragment, forwardRef, useEffect, useRef, useState } from "react";
 import MilkIcon from "~icons/custom/milk";
+import ArrowIcon from "~icons/formkit/right";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
@@ -79,7 +79,7 @@ function Comment({ children, type }: CommentProps) {
             }}
             className={tw(
               "relative grid transition-[grid-template-rows] duration-500",
-              isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.75rem]",
+              isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
             )}
           >
             <div
@@ -90,11 +90,11 @@ function Comment({ children, type }: CommentProps) {
             </div>
             <div
               className={tw(
-                "pointer-events-none absolute bottom-0 h-7 w-full bg-gradient-to-t from-white transition-opacity duration-500",
+                "pointer-events-none absolute bottom-0 h-7 w-full animate-fade-in bg-gradient-to-t from-white transition-opacity duration-500",
                 !isCollapsed && "opacity-0",
               )}
             />
-            <ArrowButton
+            <button
               type="button"
               aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
               onClick={(e) => {
@@ -102,10 +102,12 @@ function Comment({ children, type }: CommentProps) {
                 setIsCollapsed((x) => !x);
               }}
               className={tw(
-                "size-6 -translate-x-2 animate-fade-in self-end justify-self-end",
-                isCollapsed && "-translate-y-2 -rotate-180",
+                "clickable flex size-5 origin-center translate-x-2 animate-fade-in items-center justify-center self-end justify-self-end rounded-full outline-none outline-1 outline-offset-0 outline-transparent duration-500 focus-visible-within:bg-black/10 focus-visible-within:outline-app-green-500",
+                isCollapsed && "translate-y-1 -rotate-180",
               )}
-            />
+            >
+              <ArrowIcon className="size-full -rotate-90 text-app-green-500" />
+            </button>
           </div>
         )}
       </div>
