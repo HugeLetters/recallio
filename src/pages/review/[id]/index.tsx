@@ -8,15 +8,7 @@ import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
-import {
-  BarcodeTitle,
-  CategoryCard,
-  Comment,
-  CommentSection,
-  ConsIcon,
-  ImagePreview,
-  ProsIcon,
-} from "@/product/components";
+import { BarcodeTitle, CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
 import { tw } from "@/styles/tw";
@@ -81,7 +73,11 @@ function Review({ barcode }: ReviewProps) {
         </section>
       )}
       <Rating value={review.rating} />
-      <ProsConsComment review={review} />
+      <CommentSection
+        pros={review.pros}
+        cons={review.cons}
+        comment={review.comment}
+      />
       <div
         className={tw(
           "rounded-lg px-4 py-4",
@@ -185,31 +181,6 @@ function Rating({ value }: RatingProps) {
         </div>
       ))}
     </div>
-  );
-}
-
-type ProsConsCommentProps = {
-  review: Pick<ReviewData, "pros" | "cons" | "comment">;
-};
-function ProsConsComment({ review: { comment, cons, pros } }: ProsConsCommentProps) {
-  if (!pros && !cons && !comment) return null;
-
-  return (
-    <CommentSection>
-      {!!pros && (
-        <>
-          <ProsIcon />
-          <Comment>{pros}</Comment>
-        </>
-      )}
-      {!!cons && (
-        <>
-          <ConsIcon />
-          <Comment>{cons}</Comment>
-        </>
-      )}
-      {!!comment && <Comment className="col-span-2">{comment}</Comment>}
-    </CommentSection>
   );
 }
 

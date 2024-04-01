@@ -4,7 +4,6 @@ import { createPagination } from "@/server/api/utils/pagination";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import { review } from "@/server/database/schema/product";
-import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { mostCommon } from "@/utils/array";
@@ -92,6 +91,5 @@ export const getSummaryList = protectedProcedure
             sorted: sort.by === "rating" ? lastPage.averageRating : lastPage.reviewCount,
           }),
         };
-      })
-      .catch(throwExpectedError);
+      });
   });

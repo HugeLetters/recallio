@@ -5,7 +5,6 @@ import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import { review } from "@/server/database/schema/product";
 import { user } from "@/server/database/schema/user";
-import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { and, asc, desc, eq, gt, lt, or } from "drizzle-orm";
@@ -74,6 +73,5 @@ export const getReviewList = protectedProcedure
           page,
           cursor: pagination.encode({ id: lastProduct.id, sorted: lastProduct[sortBy] }),
         };
-      })
-      .catch(throwExpectedError);
+      });
   });

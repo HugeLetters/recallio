@@ -26,7 +26,7 @@ const setName = protectedProcedure
       .where(eq(user.id, session.user.id))
       .returning({ name: user.name })
       .get()
-      .catch((e) => throwExpectedError(e, "Failed to update your username."))
+      .catch(throwExpectedError("Failed to update your username."))
       .then((query) => {
         if (!query) {
           throw new ExpectedError({ code: "NOT_FOUND", message: "User not found" });
@@ -60,7 +60,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
       ]);
     })
     .then(ignore)
-    .catch((e) => throwExpectedError(e, "Failed to delete image"));
+    .catch(throwExpectedError("Failed to delete image"));
 });
 
 const deleteUser = protectedProcedure.mutation(({ ctx }) => {
@@ -91,7 +91,7 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
       ]);
     })
     .then(ignore)
-    .catch((e) => throwExpectedError(e, "Failed to delete your account"));
+    .catch(throwExpectedError("Failed to delete your account"));
 });
 
 export const userRouter = createTRPCRouter({

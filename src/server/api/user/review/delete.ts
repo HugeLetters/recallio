@@ -23,5 +23,5 @@ export const deleteReview = protectedProcedure
         return db.batch([db.delete(review).where(filter), ...createDeleteQueueQuery(db, files)]);
       })
       .then(ignore)
-      .catch((e) => throwExpectedError(e, `Failed to delete your review for barcode ${barcode}.`));
+      .catch(throwExpectedError(`Failed to delete your review for barcode ${barcode}.`));
   });

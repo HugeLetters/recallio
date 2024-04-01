@@ -18,10 +18,9 @@ import { Layout } from "@/layout";
 import {
   BarcodeTitle,
   CategoryCard,
-  CommentSection,
-  ConsIcon,
+  CommentIcon,
+  CommentWrapper,
   ImagePreview,
-  ProsIcon,
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import {
@@ -214,7 +213,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
           />
         )}
       />
-      <ProsConsComment
+      <CommentSection
         registerPros={register("pros")}
         registerCons={register("cons")}
         registerComment={register("comment")}
@@ -282,6 +281,7 @@ function useInvalidateReview(barcode: string) {
       }),
       utils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
       utils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
+      utils.product.getReviewList.invalidate({ barcode }),
     ]).catch(
       logToastError("Failed to update data from the server.\nReloading the page is advised."),
     );
@@ -356,42 +356,44 @@ type ProsConsCommentProps = {
   registerComment: UseFormRegisterReturn;
   review: Pick<ReviewForm, "pros" | "cons" | "comment">;
 };
-function ProsConsComment({
+function CommentSection({
   registerPros,
   registerCons,
   registerComment,
   review,
 }: ProsConsCommentProps) {
   return (
-    <CommentSection>
-      <>
-        <ProsIcon />
+    <CommentWrapper>
+      <label className="flex py-2">
+        <CommentIcon type="pros" />
         <AutoresizableInput
-          rootClassName="pt-1.5"
+          rootClassName="grow pt-1.5"
           initialContent={review.pros ?? ""}
           {...registerPros}
           placeholder="Pros"
           maxLength={productCommentLengthMax}
         />
-      </>
-      <>
-        <ConsIcon />
+      </label>
+      <label className="flex py-2">
+        <CommentIcon type="cons" />
         <AutoresizableInput
-          rootClassName="pt-1.5"
+          rootClassName="grow pt-1.5"
           initialContent={review.cons ?? ""}
           {...registerCons}
           placeholder="Cons"
           maxLength={productCommentLengthMax}
         />
-      </>
-      <AutoresizableInput
-        rootClassName="col-span-2 pt-1.5"
-        initialContent={review.comment ?? ""}
-        {...registerComment}
-        placeholder="Comment"
-        maxLength={productCommentLengthMax}
-      />
-    </CommentSection>
+      </label>
+      <label className="py-2">
+        <AutoresizableInput
+          rootClassName="pt-1.5"
+          initialContent={review.comment ?? ""}
+          {...registerComment}
+          placeholder="Comment"
+          maxLength={productCommentLengthMax}
+        />
+      </label>
+    </CommentWrapper>
   );
 }
 
@@ -637,7 +639,7 @@ function CategorySearch({
       >
         <ScrollUpButton
           show
-          className="z-10 -translate-y-1 scale-90"
+          className="z-10 size-9 -translate-y-1"
         />
         {!!search && (
           <label

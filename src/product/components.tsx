@@ -1,24 +1,27 @@
 import { getQueryParam } from "@/browser/query";
 import { Image } from "@/image";
+import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
+import type { RouterOutputs } from "@/trpc";
 import type { Nullish } from "@/utils/type";
 import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
-import { Fragment, forwardRef } from "react";
+import { Fragment, forwardRef, useEffect, useRef, useState } from "react";
 import MilkIcon from "~icons/custom/milk";
+import ArrowIcon from "~icons/formkit/right";
 import PlusIcon from "~icons/material-symbols/add-rounded";
 import MinusIcon from "~icons/material-symbols/remove-rounded";
 
-type CommentSectionProps = { children: ReactNode[] };
-export function CommentSection({ children }: CommentSectionProps) {
+type CommentWrapperProps = { children: ReactNode[] };
+export function CommentWrapper({ children }: CommentWrapperProps) {
   const separator = <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />;
   const filtered = children.filter(Boolean);
   const lastIndex = filtered.length - 1;
 
   return (
-    <div className="grid grid-cols-[2.5rem_auto] gap-y-2 rounded-lg p-4 outline outline-1 outline-app-green-500 focus-within:outline-2">
+    <div className="flex flex-col rounded-lg px-4 py-2 outline outline-1 outline-app-green-500 focus-within:outline-2">
       {filtered.map((element, i) => (
         <Fragment key={i}>
           {element}
@@ -29,21 +32,111 @@ export function CommentSection({ children }: CommentSectionProps) {
   );
 }
 
-type CommentProps = { children: string; className?: string };
-export function Comment({ children, className }: CommentProps) {
+type Review = NonNullable<RouterOutputs["user"]["review"]["getOne"]>;
+type CommentSectionProps = Pick<Review, "pros" | "cons" | "comment">;
+export function CommentSection({ comment, cons, pros }: CommentSectionProps) {
+  if (!pros && !cons && !comment) return null;
+
   return (
-    <div className={tw("overflow-hidden whitespace-pre-wrap break-words pt-1.5", className)}>
-      {children}
+    <CommentWrapper>
+      {!!pros && <Comment type="pros">{pros}</Comment>}
+      {!!cons && <Comment type="cons">{cons}</Comment>}
+      {!!comment && <Comment>{comment}</Comment>}
+    </CommentWrapper>
+  );
+}
+
+type CommentType = "pros" | "cons";
+type CommentProps = { children: string; type?: CommentType };
+function Comment({ children, type }: CommentProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isCollapsed, setIsCollapsed] = useState<null | boolean>(null);
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    if (content.clientHeight < content.scrollHeight) {
+      setIsCollapsed(true);
+    }
+  }, []);
+
+  return (
+    <div className="flex py-2">
+      {type && <CommentIcon type={type} />}
+      <div className="min-w-0 pt-1.5">
+        {isCollapsed === null ? (
+          <div
+            ref={contentRef}
+            className="max-h-[3lh] overflow-y-scroll whitespace-pre-wrap break-words"
+          >
+            {children}
+          </div>
+        ) : (
+          <div
+            // this is not acessible on purpose - for screen reader users there is a button below
+            onClick={() => {
+              if (!isCollapsed) return;
+              setIsCollapsed((x) => !x);
+            }}
+            className={tw(
+              "relative grid transition-[grid-template-rows] duration-500",
+              isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
+            )}
+          >
+            <div
+              ref={contentRef}
+              className="min-h-[3lh] overflow-y-hidden whitespace-pre-wrap break-words"
+            >
+              {children}
+            </div>
+            <div
+              className={tw(
+                "pointer-events-none absolute bottom-0 h-7 w-full animate-fade-in bg-gradient-to-t from-white transition-opacity duration-500",
+                !isCollapsed && "opacity-0",
+              )}
+            />
+            <button
+              type="button"
+              aria-label={isCollapsed ? "Expand comment" : "Collapse comment"}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCollapsed((x) => !x);
+              }}
+              className={tw(
+                "clickable flex size-5 origin-center translate-x-2 animate-fade-in items-center justify-center self-end justify-self-end rounded-full outline-none outline-1 outline-offset-0 outline-transparent duration-500 focus-visible-within:bg-black/10 focus-visible-within:outline-app-green-500",
+                isCollapsed && "translate-y-1 -rotate-180",
+              )}
+            >
+              <ArrowIcon className="size-full -rotate-90 text-app-green-500" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-export function ProsIcon() {
-  return <PlusIcon className="h-fit w-full text-app-green-500" />;
+type CommentIconProps = { type: CommentType };
+function getIconByType(type: CommentType): Icon {
+  switch (type) {
+    case "pros":
+      return PlusIcon;
+    case "cons":
+      return MinusIcon;
+    default: {
+      return type satisfies never;
+    }
+  }
 }
-
-export function ConsIcon() {
-  return <MinusIcon className="h-fit w-full text-app-red-500" />;
+export function CommentIcon({ type }: CommentIconProps) {
+  const Icon = getIconByType(type);
+  return (
+    <Icon
+      className={tw(
+        "h-fit w-10 shrink-0",
+        type === "pros" ? "text-app-green-500" : "text-app-red-500",
+      )}
+    />
+  );
 }
 
 type Size = "md" | "sm";

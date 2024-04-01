@@ -55,8 +55,7 @@ const getSummary = protectedProcedure
       .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
       .groupBy(review.barcode)
       .limit(1)
-      .then(([x]) => x ?? null)
-      .catch(throwExpectedError);
+      .then(([x]) => x ?? null);
   });
 
 export const productRouter = createTRPCRouter({
@@ -75,7 +74,7 @@ export const productRouter = createTRPCRouter({
             return products;
           });
         })
-        .catch(throwExpectedError);
+        .catch(throwExpectedError("Failed to retrieve suggested product names."));
     }),
   getCategoryList: protectedProcedure
     .input(
@@ -94,7 +93,6 @@ export const productRouter = createTRPCRouter({
         )
         .limit(limit)
         .orderBy(category.name)
-        .then((data) => data.map((x) => x.name))
-        .catch(throwExpectedError);
+        .then((data) => data.map((x) => x.name));
     }),
 });

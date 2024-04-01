@@ -6,14 +6,7 @@ import { Star } from "@/components/ui/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
-import {
-  CategoryCard,
-  Comment,
-  CommentSection,
-  ConsIcon,
-  ImagePreview,
-  ProsIcon,
-} from "@/product/components";
+import { CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
@@ -211,9 +204,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
 }
 
 type Review = RouterOutputs["product"]["getReviewList"]["page"][number];
-type ReviewCardProps = {
-  review: Review;
-};
+type ReviewCardProps = { review: Review };
 const dateFormatter = new Intl.DateTimeFormat("en", {
   day: "2-digit",
   month: "short",
@@ -232,7 +223,7 @@ function ReviewCard({
         <span className="ml-auto">{dateFormatter.format(new Date(updatedAt))}</span>
       </div>
       <Rating value={rating} />
-      <ProsConsComment
+      <CommentSection
         comment={comment}
         pros={pros}
         cons={cons}
@@ -252,28 +243,5 @@ function Rating({ value }: RatingProps) {
         </div>
       ))}
     </div>
-  );
-}
-
-type ProsConsCommentProps = Pick<Review, "pros" | "cons" | "comment">;
-function ProsConsComment({ comment, cons, pros }: ProsConsCommentProps) {
-  if (!pros && !cons && !comment) return null;
-
-  return (
-    <CommentSection>
-      {!!pros && (
-        <>
-          <ProsIcon />
-          <Comment>{pros}</Comment>
-        </>
-      )}
-      {!!cons && (
-        <>
-          <ConsIcon />
-          <Comment>{cons}</Comment>
-        </>
-      )}
-      {!!comment && <Comment className="col-span-2">{comment}</Comment>}
-    </CommentSection>
   );
 }

@@ -20,7 +20,7 @@ export const deleteAccount = protectedProcedure
       .where(and(eq(account.userId, session.user.id), eq(account.provider, provider)))
       .returning({ provider: account.provider })
       .get()
-      .catch((e) => throwExpectedError(e, `Failed to unlink ${provider} account.`))
+      .catch(throwExpectedError(`Failed to unlink ${provider} account.`))
       .then((query) => {
         if (!query) {
           throw new ExpectedError({
