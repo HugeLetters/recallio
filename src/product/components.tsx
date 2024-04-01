@@ -78,6 +78,7 @@ function Comment({ children, type }: CommentProps) {
               setIsCollapsed((x) => !x);
             }}
             className={tw(
+              // todo - i kinda could determine duration based on height difference
               "relative grid transition-[grid-template-rows] duration-500",
               isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
             )}
