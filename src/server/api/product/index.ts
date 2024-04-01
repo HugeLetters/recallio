@@ -2,6 +2,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import { throwExpectedError } from "@/server/error/trpc";
 import { cacheProductNames, getProductNames } from "@/server/product/cache";
 import { getScrapedProducts } from "@/server/product/scrapers";
 import { createBarcodeSchema } from "@/server/product/validation";
@@ -63,15 +64,17 @@ export const productRouter = createTRPCRouter({
   getSummary,
   getNames: protectedProcedure
     .input(z.object({ barcode: createBarcodeSchema() }))
-    .query(({ input: { barcode } }): Promise<string[]> => {
-      return getProductNames(barcode).then((cached) => {
-        if (cached) return cached;
+    .query(({ input: { barcode } }) => {
+      return getProductNames(barcode)
+        .then((cached) => {
+          if (cached) return cached;
 
-        return getScrapedProducts(barcode).then((products) => {
-          cacheProductNames(barcode, products).catch(console.error);
-          return products;
-        });
-      });
+          return getScrapedProducts(barcode).then((products) => {
+            cacheProductNames(barcode, products).catch(console.error);
+            return products;
+          });
+        })
+        .catch(throwExpectedError("Failed to retrieve suggested product names."));
     }),
   getCategoryList: protectedProcedure
     .input(

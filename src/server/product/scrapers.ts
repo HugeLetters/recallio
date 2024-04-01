@@ -42,14 +42,22 @@ const scrapers: Array<(barcode: string) => Promise<Nullish<string>>> = [
   GoUPC,
 ];
 
-// todo - i think they reject requests from my domain, perhaps I should add a timeout here
 export function getScrapedProducts(code: string): Promise<string[]> {
-  return Promise.allSettled(scrapers.map((query) => query(code))).then((results) => {
-    return filterMap(
-      results,
-      (result, bad) =>
-        result.status === "fulfilled" && hasTruthyProperty(result, "value") ? result : bad,
-      (result) => result.value,
-    );
+  return Promise.allSettled(scrapers.map((query) => timedPromise(query(code), 5000))).then(
+    (results) => {
+      return filterMap(
+        results,
+        (result, bad) =>
+          result.status === "fulfilled" && hasTruthyProperty(result, "value") ? result : bad,
+        (result) => result.value,
+      );
+    },
+  );
+}
+
+function timedPromise<T>(promise: Promise<T>, timeout: number) {
+  return new Promise<T>((resolve, reject) => {
+    promise.then(resolve).catch(reject);
+    setTimeout(() => reject("Promise timed out"), timeout);
   });
 }
