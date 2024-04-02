@@ -43,24 +43,18 @@ dependencies:
   '@react-email/button':
     specifier: ^0.0.10
     version: 0.0.10
-  '@react-email/column':
+  '@react-email/container':
+    specifier: ^0.0.11
+    version: 0.0.11(react@18.2.0)
+  '@react-email/preview':
     specifier: ^0.0.8
     version: 0.0.8(react@18.2.0)
-  '@react-email/head':
-    specifier: ^0.0.6
-    version: 0.0.6(react@18.2.0)
-  '@react-email/html':
-    specifier: ^0.0.4
-    version: 0.0.4
   '@react-email/render':
     specifier: ^0.0.7
     version: 0.0.7
   '@react-email/row':
     specifier: ^0.0.6
     version: 0.0.6(react@18.2.0)
-  '@react-email/section':
-    specifier: ^0.0.10
-    version: 0.0.10(react@18.2.0)
   '@react-email/tailwind':
     specifier: ^0.0.8
     version: 0.0.8
@@ -2379,8 +2373,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@react-email/column@0.0.8(react@18.2.0):
-    resolution: {integrity: sha512-blChqGU8e/L6KZiB5EPww8bkZfdyHDuS0vKIvU+iS14uK+xfAw+5P5CU9BYXccEuJh2Gftfngu1bWMFp2Sc6ag==}
+  /@react-email/container@0.0.11(react@18.2.0):
+    resolution: {integrity: sha512-jzl/EHs0ClXIRFamfH+NR/cqv4GsJJscqRhdYtnWYuRAsWpKBM1muycrrPqIVhWvWi6sFHInWTt07jX+bDc3SQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: 18.2.0
@@ -2388,18 +2382,13 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@react-email/head@0.0.6(react@18.2.0):
-    resolution: {integrity: sha512-9BrBDalb34nBOmmQVQc7/pjJotcuAeC3rhBl4G88Ohiipuv15vPIKqwy8vPJcFNi4l7yGlitfG3EESIjkLkoIw==}
+  /@react-email/preview@0.0.8(react@18.2.0):
+    resolution: {integrity: sha512-Jm0KUYBZQd2w0s2QRMQy0zfHdo3Ns+9bYSE1OybjknlvhANirjuZw9E5KfWgdzO7PyrRtB1OBOQD8//Obc4uIQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: 18.2.0
     dependencies:
       react: 18.2.0
-    dev: false
-
-  /@react-email/html@0.0.4:
-    resolution: {integrity: sha512-7tRYSnudYAWez+NkPWOM8yLZH7EuYFtYdiLPnzpD+pf4cdk16Gz4up531DaIX6dNBbfbyEFpQxhXZxGeJ5ZkfQ==}
-    engines: {node: '>=16.0.0'}
     dev: false
 
   /@react-email/render@0.0.7:
@@ -2414,15 +2403,6 @@ packages:
 
   /@react-email/row@0.0.6(react@18.2.0):
     resolution: {integrity: sha512-msJ2TnDJNwpgDfDzUO63CvhusJHeaGLMM+8Zz86VPvxzwe/DkT7N48QKRWRCkt8urxVz5U+EgivORA9Dum9p3Q==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: 18.2.0
-    dependencies:
-      react: 18.2.0
-    dev: false
-
-  /@react-email/section@0.0.10(react@18.2.0):
-    resolution: {integrity: sha512-x9B2KYFqj+d8I1fK9bgeVm/3mLE4Qgn4mm/GbDtcJeSzKU/G7bTb7/3+BMDk9SARPGkg5XAuZm1XgcqQQutt2A==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: 18.2.0

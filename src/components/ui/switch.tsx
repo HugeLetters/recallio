@@ -10,7 +10,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function _(prop
     <BaseSwitch.Root
       {...props}
       ref={ref}
-      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition focus-visible:outline-app-green-500 aria-disabled:opacity-50 data-[state=checked]:bg-app-green-500 data-[state=checked]:focus-visible:outline-lime-950"
+      className="group flex w-14 rounded-full bg-zinc-500/20 p-1 transition focus-visible:outline-app-green-500 aria-disabled:opacity-50 data-[state=checked]:bg-app-green-500 data-[state=checked]:focus-visible:outline-app-green-900"
     >
       <div className="transition-[flex-grow] group-data-[state=checked]:grow" />
       <BaseSwitch.Thumb className="block aspect-square h-7 rounded-full bg-white drop-shadow-md" />
