@@ -27,8 +27,8 @@ function Email({ token, url }: EmailProps) {
         </Text>
         <Row className="w-fit">
           <Text
-            style={{ color: "#4EB151" }}
-            className="w-[10rem] rounded-lg bg-white text-center font-mono text-3xl font-bold leading-[2lh] tracking-widest"
+            style={{ color: "#4EB151", background: "#FFFFFF" }}
+            className="w-[10rem] rounded-lg text-center font-mono text-3xl font-bold leading-[2lh] tracking-widest"
           >
             {token}
           </Text>
