@@ -62,7 +62,6 @@
     "postcss": "^8.4.34",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-email": "^2.1.1",
     "react-flip-toolkit": "^7.1.0",
     "react-hook-form": "^7.50.1",
     "sharp": "^0.33.2",
