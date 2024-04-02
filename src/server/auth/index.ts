@@ -57,8 +57,8 @@ export const authOptions: NextAuthOptions = {
       generateVerificationToken() {
         return crypto.randomUUID().slice(0, 6).toUpperCase();
       },
-      sendVerificationRequest({ provider, identifier, token, url }) {
-        createTransport(provider.server)
+      async sendVerificationRequest({ provider, identifier, token, url }) {
+        await createTransport(provider.server)
           .sendMail({
             to: identifier,
             from: provider.from,
