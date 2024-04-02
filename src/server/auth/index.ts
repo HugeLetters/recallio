@@ -58,6 +58,8 @@ export const authOptions: NextAuthOptions = {
         return crypto.randomUUID().slice(0, 6).toUpperCase();
       },
       async sendVerificationRequest({ provider, identifier, token, url }) {
+        // do not remove this await or you WILL be executed
+        // this prevents vercel from finishin handling the request before an email is sent
         await createTransport(provider.server)
           .sendMail({
             to: identifier,
