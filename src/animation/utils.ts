@@ -1,4 +1,4 @@
-export function onSelfAnimationEnd(element: Element, listener: (event: Event) => void) {
+export function onSelfAnimationDone(element: Element, listener: (event: Event) => void) {
   function cleanup(event: Event) {
     if (event.target !== element) return;
     listener(event);
@@ -10,7 +10,7 @@ export function onSelfAnimationEnd(element: Element, listener: (event: Event) =>
   element.addEventListener("animationcancel", cleanup);
 }
 
-export function onSelfTransitionEnd(element: HTMLElement, listener: (event: Event) => void) {
+export function onSelfTransitionDone(element: HTMLElement, listener: (event: Event) => void) {
   function cleanup(event: Event) {
     if (event.target !== element) return;
     listener(event);

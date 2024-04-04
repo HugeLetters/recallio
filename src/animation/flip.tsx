@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { Flipped as NativeFlipped } from "react-flip-toolkit";
-import { getClassList, onSelfAnimationEnd } from "./utils";
+import { getClassList, onSelfAnimationDone } from "./utils";
 
 const dataTransitionName = "data-transition";
 export interface FlippedProps extends ComponentPropsWithoutRef<typeof NativeFlipped> {
@@ -24,7 +24,7 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
         element.classList.add(...classList);
         element.setAttribute(dataTransitionName, "in");
 
-        onSelfAnimationEnd(element, () => {
+        onSelfAnimationDone(element, () => {
           element.classList.remove(...classList);
           element.removeAttribute(dataTransitionName);
         });
@@ -35,7 +35,7 @@ export function Flipped({ children, className, onAppear, onExit, ...props }: Fli
 
         element.classList.add(...classList, "animate-reverse");
         element.setAttribute(dataTransitionName, "out");
-        onSelfAnimationEnd(element, remove);
+        onSelfAnimationDone(element, remove);
         element.style.pointerEvents = "none";
       }}
       {...props}

@@ -1,5 +1,5 @@
 import { Flipped } from "@/animation/flip";
-import { onSelfTransitionEnd } from "@/animation/utils";
+import { onSelfTransitionDone } from "@/animation/utils";
 import { useHasMouse } from "@/browser";
 import { hasFocusWithin } from "@/browser/focus";
 import { useStore } from "@/state/store";
@@ -90,7 +90,7 @@ function ToastSlot({
     currentTarget.style.setProperty("--opacity", null);
 
     currentTarget.classList.add("data-[swipe=cancel]:transition");
-    onSelfTransitionEnd(currentTarget, () => {
+    onSelfTransitionDone(currentTarget, () => {
       currentTarget.classList.remove("data-[swipe=cancel]:transition");
     });
   }
