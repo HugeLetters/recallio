@@ -43,7 +43,7 @@ export const getReviewList = protectedProcedure
     const cursorClause = cursor
       ? or(
           (sort.desc ? lt : gt)(sortByCol, cursor.sorted),
-          and(gt(review.userId, cursor.id), eq(sortByCol, cursor.sorted)),
+          and(gt(review.id, cursor.id), eq(sortByCol, cursor.sorted)),
         )
       : undefined;
 
