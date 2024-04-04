@@ -2,21 +2,24 @@ import { blobToFile } from "@/image/blob";
 import { productNameLengthMax, productNameLengthMin, productRatingMax } from "@/product/validation";
 import { db } from "@/server/database/client/serverless";
 import type { ReviewInsert } from "@/server/database/schema/product";
-import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import {
+  category,
+  productMeta,
+  review,
+  reviewsToCategories,
+} from "@/server/database/schema/product";
 import { user } from "@/server/database/schema/user";
 import { utapi } from "@/server/uploadthing/api";
 import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array/filter";
 import { faker } from "@faker-js/faker";
 import type { SQL } from "drizzle-orm";
-import { and, asc, like, lt } from "drizzle-orm";
+import { and, asc, like, lt, sql } from "drizzle-orm";
 import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-core";
 import type { Task } from "tasuku";
 import task from "tasuku";
 
 export default async function seed() {
-  // just awaiting for all root declaration to initialize
-  await Promise.resolve();
   await seedReviews({
     reviewCount: 30000,
     reviewsPerUser: 150,
@@ -76,7 +79,27 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   const values = barcodes.map((barcodeData) => createReviewValue(user, barcodeData, files));
 
   const reviews: ReviewInsert[] = values.map(({ review }) => review);
-  await db.insert(review).values(reviews);
+  await db.batch([
+    db.insert(review).values(reviews),
+    db
+      .insert(productMeta)
+      .values(
+        reviews
+          .filter((review) => !review.isPrivate)
+          .map(({ barcode, rating }) => ({
+            barcode,
+            publicTotalRating: rating,
+            publicReviewCount: 1,
+          })),
+      )
+      .onConflictDoUpdate({
+        target: productMeta.barcode,
+        set: {
+          publicReviewCount: sql`${productMeta.publicReviewCount} + 1`,
+          publicTotalRating: sql`${productMeta.publicTotalRating} + ${sql.raw(`excluded.${productMeta.publicTotalRating.name}`)}`,
+        },
+      }),
+  ]);
 
   const categories: Array<typeof category.$inferInsert> = values.flatMap(
     ({ categories }) => categories?.map((name) => ({ name })) ?? [],
@@ -176,8 +199,17 @@ async function cleanDatabase(rowLimitPerOperation: number) {
   await task("Cleaning database", async ({ task }) => {
     await cleanTable({
       task,
-      taskName: "Cleaning reviews-to-categories",
-      table: reviewsToCategories,
+      taskName: "Cleaning test users",
+      table: user,
+      primaryKey: "id",
+      rowLimitPerOperation,
+      where: like(user.id, `${TEST_USER_ID_PREFIX}%`),
+    });
+
+    await cleanTable({
+      task,
+      taskName: "Cleaning reviews",
+      table: review,
       primaryKey: "barcode",
       rowLimitPerOperation,
     });
@@ -192,19 +224,18 @@ async function cleanDatabase(rowLimitPerOperation: number) {
 
     await cleanTable({
       task,
-      taskName: "Cleaning reviews",
-      table: review,
+      taskName: "Cleaning reviews-to-categories",
+      table: reviewsToCategories,
       primaryKey: "barcode",
       rowLimitPerOperation,
     });
 
     await cleanTable({
       task,
-      taskName: "Cleaning test users",
-      table: user,
-      primaryKey: "id",
+      taskName: "Cleaning product-meta",
+      table: productMeta,
+      primaryKey: "barcode",
       rowLimitPerOperation,
-      where: like(user.id, `${TEST_USER_ID_PREFIX}%`),
     });
   });
 }
