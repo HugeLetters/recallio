@@ -14,7 +14,7 @@ export const review = sqliteTable(
     id: text("id", { length: 10 })
       .notNull()
       .unique()
-      .$defaultFn(() => crypto.randomUUID().slice(0, 10)),
+      .$defaultFn(() => crypto.randomUUID().slice(0, 11)),
     userId: text("user_id", { length: userIdLength })
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),
@@ -30,11 +30,16 @@ export const review = sqliteTable(
   },
   (table) => ({
     compoundKey: primaryKey({ columns: [table.userId, table.barcode] }),
-    barcodeIndex: index("review_barcode_index").on(table.barcode),
-    nameIndex: index("review_name_index").on(table.name),
-    ratingIndex: index("review_rating_index").on(table.rating),
-    updatedAtIndex: index("review_updated_at_index").on(table.updatedAt),
-    isPrivateIndex: index("review_is_private_index").on(table.isPrivate),
+    productReviewListByUpdatedIndex: index("review_product_review_list_by_updated_index").on(
+      table.barcode,
+      table.isPrivate,
+      table.updatedAt,
+    ),
+    productReviewListByRatingIndex: index("review_product_review_list_by_rating_index").on(
+      table.barcode,
+      table.isPrivate,
+      table.rating,
+    ),
   }),
 );
 export type ReviewInsert = typeof review.$inferInsert;
@@ -61,6 +66,5 @@ export const reviewsToCategories = sqliteTable(
       .onDelete("cascade")
       .onUpdate("restrict"),
     barcodeIndex: index("reviews_to_categories_barcode_index").on(table.barcode),
-    categoryIndex: index("reviews_to_categories_category_index").on(table.category),
   }),
 );
