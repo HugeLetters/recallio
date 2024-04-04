@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useEffect, useId, useRef } from "react";
-import { getClassList, onSelfAnimationEnd } from "./utils";
+import { getClassList, onSelfAnimationDone } from "./utils";
 
 const markerAttributeName = "data-temp-animate-out";
 type TransitionProps = {
@@ -32,7 +32,7 @@ export function Transition({
         if (!isExternalElement(node)) continue;
 
         node.classList.add(...inClassList);
-        onSelfAnimationEnd(node, () => {
+        onSelfAnimationDone(node, () => {
           node.classList.remove(...inClassList);
         });
       }
@@ -48,7 +48,7 @@ export function Transition({
         node.setAttribute(markerAttributeName, id);
 
         target.insertBefore(node, nextSibling);
-        onSelfAnimationEnd(node, () => node.remove());
+        onSelfAnimationDone(node, () => node.remove());
       }
     }
 
