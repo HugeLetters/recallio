@@ -1,7 +1,4 @@
 export type NonEmptyArray<T> = [T, ...Array<T>];
-export type Entries<O, $Keys extends keyof O = keyof O> = NonEmptyArray<
-  $Keys extends $Keys ? [$Keys, O[$Keys]] : never
->;
 export type TupleIndex<T extends ReadonlyArray<unknown>> = keyof T &
   `${number}` extends `${infer N extends number}`
   ? N

@@ -1,4 +1,4 @@
-import { providerIcons } from "@/auth/provider";
+import { providerIcons } from "@/auth/provider/icon";
 import { getQueryParam } from "@/browser/query";
 import { Button, Input, WithLabel } from "@/components/ui";
 import type { NextPageWithLayout } from "@/layout";
