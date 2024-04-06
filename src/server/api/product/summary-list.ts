@@ -38,10 +38,10 @@ export const getSummaryList = protectedProcedure
       sql<number>`CAST(${productMeta.publicTotalRating} AS FLOAT) / ${reviewCol.sql}`.as(
         "average-rating",
       );
-    const direction = sort.desc ? desc : asc;
+    const sortOrder = sort.desc ? desc : asc;
     const sortBy = getSortByColumn();
 
-    const sq = db
+    const matchedSq = db
       .select({
         barcode: review.barcode,
         name: query.min(review.name).as("matched-name"),
@@ -61,7 +61,7 @@ export const getSummaryList = protectedProcedure
     return db
       .select({
         barcode: productMeta.barcode,
-        matchedName: sq.name,
+        matchedName: matchedSq.name,
         names: query.aggregate(review.name, mostCommon(4)),
         averageRating: ratingCol,
         reviewCount: reviewCol,
@@ -70,9 +70,9 @@ export const getSummaryList = protectedProcedure
       .from(productMeta)
       .where(cursorClause)
       .innerJoin(review, and(eq(productMeta.barcode, review.barcode), eq(review.isPrivate, false)))
-      .innerJoin(sq, and(eq(productMeta.barcode, sq.barcode)))
+      .innerJoin(matchedSq, and(eq(productMeta.barcode, matchedSq.barcode)))
       .groupBy(productMeta.barcode)
-      .orderBy(direction(sortBy), asc(productMeta.barcode))
+      .orderBy(sortOrder(sortBy), asc(productMeta.barcode))
       .limit(limit)
       .then((page): Paginated<typeof page> => {
         if (!page.length) return { page };
