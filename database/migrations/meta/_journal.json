@@ -12,15 +12,8 @@
     {
       "idx": 1,
       "version": "5",
-      "when": 1710783253941,
-      "tag": "0001_famous_ego",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1710955590680,
-      "tag": "0002_rapid_doctor_doom",
+      "when": 1712423841730,
+      "tag": "0001_fine_stark_industries",
       "breakpoints": true
     }
   ]
