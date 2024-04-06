@@ -6,15 +6,7 @@ import {
 } from "@/product/validation";
 import { user, userIdLength } from "@/server/database/schema/user";
 import { timestampColumn } from "@/server/database/schema/utils";
-import {
-  foreignKey,
-  index,
-  int,
-  primaryKey,
-  real,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const review = sqliteTable(
   "review",
@@ -38,6 +30,7 @@ export const review = sqliteTable(
   },
   (table) => ({
     compoundKey: primaryKey({ columns: [table.userId, table.barcode] }),
+    isPrivateIndex: index("review_is_private_idx").on(table.isPrivate),
     productReviewListByUpdatedIndex: index("review_product_review_list_by_updated_index").on(
       table.barcode,
       table.isPrivate,
@@ -80,5 +73,5 @@ export const reviewsToCategories = sqliteTable(
 export const productMeta = sqliteTable("product_meta", {
   barcode: text("barcode", { length: barcodeLengthMax }).primaryKey(),
   publicReviewCount: int("public_review_count").default(0).notNull(),
-  publicTotalRating: real("public_total_rating").default(0).notNull(),
+  publicTotalRating: int("public_total_rating").default(0).notNull(),
 });
