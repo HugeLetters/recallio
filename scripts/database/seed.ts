@@ -14,7 +14,7 @@ import { clamp } from "@/utils";
 import { filterMap } from "@/utils/array/filter";
 import { faker } from "@faker-js/faker";
 import type { SQL } from "drizzle-orm";
-import { and, asc, like, lt, sql } from "drizzle-orm";
+import { and, asc, like, lt } from "drizzle-orm";
 import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-core";
 import type { Task } from "tasuku";
 import task from "tasuku";
@@ -80,27 +80,7 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   const values = barcodes.map((barcodeData) => createReviewValue(user, barcodeData, files));
 
   const reviews: ReviewInsert[] = values.map(({ review }) => review);
-  await db.batch([
-    db.insert(review).values(reviews),
-    db
-      .insert(productMeta)
-      .values(
-        reviews
-          .filter((review) => !review.isPrivate)
-          .map(({ barcode, rating }) => ({
-            barcode,
-            publicTotalRating: rating,
-            publicReviewCount: 1,
-          })),
-      )
-      .onConflictDoUpdate({
-        target: productMeta.barcode,
-        set: {
-          publicReviewCount: sql`${productMeta.publicReviewCount} + 1`,
-          publicTotalRating: sql`${productMeta.publicTotalRating} + ${sql.raw(`excluded.${productMeta.publicTotalRating.name}`)}`,
-        },
-      }),
-  ]);
+  await db.insert(review).values(reviews);
 
   const categories: Array<typeof category.$inferInsert> = values.flatMap(
     ({ categories }) => categories?.map((name) => ({ name })) ?? [],
