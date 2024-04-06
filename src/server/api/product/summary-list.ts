@@ -34,9 +34,10 @@ export const getSummaryList = protectedProcedure
     }
 
     const reviewCol = sql<number>`${productMeta.publicReviewCount}`.as("review-count");
-    const ratingCol = sql<number>`${productMeta.publicTotalRating} / ${reviewCol.sql}`.as(
-      "average-rating",
-    );
+    const ratingCol =
+      sql<number>`CAST(${productMeta.publicTotalRating} AS FLOAT) / ${reviewCol.sql}`.as(
+        "average-rating",
+      );
     const direction = sort.desc ? desc : asc;
     const sortBy = getSortByColumn();
 
