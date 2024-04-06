@@ -19,12 +19,12 @@ export function indexOf(array: readonly unknown[], value: unknown) {
   return index;
 }
 
+function baseSortFn<T>(a: NonNullable<T>, b: NonNullable<T>) {
+  return a.toString() > b.toString() ? 1 : -1;
+}
+
 export function mostCommon(count: number) {
-  return function <T>(
-    arr: T[],
-    sortFn = (a: NonNullable<T>, b: NonNullable<T>): number =>
-      a.toString() > b.toString() ? 1 : -1,
-  ): NonNullable<T>[] {
+  return function <T>(arr: T[], sortFn = baseSortFn<T>): NonNullable<T>[] {
     const counter = new Map<NonNullable<T>, number>();
     for (const element of arr) {
       if (element == null) continue;
