@@ -28,6 +28,7 @@ export const review = sqliteTable(
     updatedAt: timestampColumn("updated_at").notNull(),
     isPrivate: int("is_private", { mode: "boolean" }).notNull().default(true),
   },
+  // todo - check what indices do I need
   (table) => ({
     compoundKey: primaryKey({ columns: [table.userId, table.barcode] }),
     isPrivateIndex: index("review_is_private_idx").on(table.isPrivate),
@@ -59,6 +60,7 @@ export const reviewsToCategories = sqliteTable(
       .references(() => category.name, { onDelete: "restrict", onUpdate: "restrict" }),
   },
   (table) => ({
+    // todo - check if I could just switch userId and barcode order and remove barcode index
     compoundKey: primaryKey({ columns: [table.userId, table.barcode, table.category] }),
     reviewReference: foreignKey({
       columns: [table.barcode, table.userId],
