@@ -3,12 +3,12 @@ import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
-import { review } from "@/server/database/schema/product";
+import { productMeta, review } from "@/server/database/schema/product";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { mostCommon } from "@/utils/array";
 import type { SQL } from "drizzle-orm";
-import { and, asc, desc, eq, gt, like, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, like, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 const pagination = createPagination({
@@ -33,51 +33,45 @@ export const getSummaryList = protectedProcedure
       }
     }
 
-    const reviewCol = query.count().as("review-count");
-    const ratingCol = query.avg(review.rating).as("average-rating");
+    const reviewCol = sql<number>`${productMeta.publicReviewCount}`.as("review-count");
+    const ratingCol = sql<number>`${productMeta.publicTotalRating} / ${reviewCol.sql}`.as(
+      "average-rating",
+    );
     const direction = sort.desc ? desc : asc;
-
     const sortBy = getSortByColumn();
+
     const sq = db
       .select({
         barcode: review.barcode,
-        names: query.aggregate(review.name, mostCommon(4)).as("names"),
-        averageRating: ratingCol,
-        reviewCount: reviewCol,
-        image: query.min(review.imageKey).as("image"),
+        name: query.min(review.name).as("matched-name"),
       })
       .from(review)
-      .where(eq(review.isPrivate, false))
+      .where(and(eq(review.isPrivate, false), filter ? like(review.name, `${filter}%`) : undefined))
       .groupBy(review.barcode)
-      .as("names-subquery");
+      .as("matched");
 
     const cursorClause = cursor
       ? or(
           (sort.desc ? lt : gt)(sortBy, cursor.sorted),
-          and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.sorted)),
+          and(gt(productMeta.barcode, cursor.barcode), eq(sortBy, cursor.sorted)),
         )
       : undefined;
 
     return db
       .select({
-        barcode: review.barcode,
-        matchedName: query.min(review.name),
-        names: sq.names,
-        averageRating: sq.averageRating,
-        reviewCount: sq.reviewCount,
-        image: query.map(sq.image, getFileUrl),
+        barcode: productMeta.barcode,
+        matchedName: sq.name,
+        names: query.aggregate(review.name, mostCommon(4)),
+        averageRating: ratingCol,
+        reviewCount: reviewCol,
+        image: query.map(query.min(review.imageKey), getFileUrl),
       })
-      .from(review)
-      .where(
-        and(
-          eq(review.isPrivate, false),
-          filter ? like(review.name, `${filter}%`) : undefined,
-          cursorClause,
-        ),
-      )
-      .leftJoin(sq, eq(review.barcode, sq.barcode))
-      .groupBy(review.barcode)
-      .orderBy(direction(sortBy), asc(review.barcode))
+      .from(productMeta)
+      .where(cursorClause)
+      .innerJoin(review, and(eq(productMeta.barcode, review.barcode), eq(review.isPrivate, false)))
+      .innerJoin(sq, and(eq(productMeta.barcode, sq.barcode)))
+      .groupBy(productMeta.barcode)
+      .orderBy(direction(sortBy), asc(productMeta.barcode))
       .limit(limit)
       .then((page): Paginated<typeof page> => {
         if (!page.length) return { page };
