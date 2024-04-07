@@ -1,8 +1,10 @@
+import type { NonEmptyArray } from "@/utils/array";
 import type { StrictExclude, StrictExtract } from "@/utils/type";
-import type { Query, SQLChunk } from "drizzle-orm";
+import type { Query, SQLWrapper } from "drizzle-orm";
 import { eq, ne, sql } from "drizzle-orm";
 import type { SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-core";
 import { SQLiteSyncDialect, alias } from "drizzle-orm/sqlite-core";
+import { caseWhen, space } from "./utils";
 
 type TableConfigColumn<TConfig extends TableConfig> = TConfig["columns"][keyof TConfig["columns"]];
 
@@ -21,9 +23,9 @@ type BaseTriggerData<TType extends TriggerType, TConfig extends TableConfig> = {
   /** On which tables should trigger activate */
   on: SQLiteTableWithColumns<TConfig>;
   /** Condition when trigger should activate */
-  when?: (row: TriggerRowData<TType, TConfig>) => SQLChunk;
+  when?: (row: TriggerRowData<TType, TConfig>) => SQLWrapper;
   /** WHat operation to perform when trigger activates */
-  do: (row: TriggerRowData<TType, TConfig>) => SQLChunk;
+  do: (row: TriggerRowData<TType, TConfig>) => SQLWrapper;
 };
 
 interface UpdateTriggerData<TConfig extends TableConfig>
@@ -42,46 +44,60 @@ type TriggerData<
 
 const sqlite = new SQLiteSyncDialect();
 const endLine = sql`;`;
+const breakpoint = sql`--> statement-breakpoint\n`;
 
 // todo - builder pattern!
 
 export function createTrigger<TType extends TriggerType, TConfig extends TableConfig>(
   data: TriggerData<TType, TConfig>,
 ) {
-  return sqlite.sqlToQuery(
-    sql
-      .join(
-        [createDropTriggerStatement(data.name), createTriggerStatement(data)],
-        sql`${endLine}--> statement-breakpoint\n`,
-      )
-      .append(endLine),
+  return sql.join(
+    [createDropTriggerStatement(data.name), createTriggerStatement(data)],
+    breakpoint,
   );
 }
 
+export function createMigration(...queryList: NonEmptyArray<SQLWrapper>) {
+  return sqlite.sqlToQuery(sql.join(queryList, breakpoint));
+}
+
 function createDropTriggerStatement(name: string) {
-  return sql`DROP TRIGGER IF EXISTS ${sql.identifier(name)}`;
+  return sql.join([sql`DROP TRIGGER IF EXISTS`, sql.identifier(name)], space).append(endLine);
 }
 
 function createTriggerStatement(data: TriggerData) {
   const newTable = alias(data.on, "new");
   const oldTable = alias(data.on, "old");
 
-  return sql.join(
-    [
-      sql`CREATE TRIGGER ${sql.identifier(data.name)}`,
-      sql`AFTER ${sql.raw(data.type)}`,
-      data.type === "UPDATE" ? sql` OF ${data.of}` : undefined,
-      sql`ON ${data.on}`,
-      data.when
-        ? sql`FOR EACH ROW WHEN ${data.when({ newRow: newTable, oldRow: oldTable })}`
-        : undefined,
-      sql`BEGIN ${data.do({ newRow: newTable, oldRow: oldTable })}; END`,
-    ],
-    sql` `,
-  );
+  return sql
+    .join(
+      [
+        sql`CREATE TRIGGER`,
+        sql.identifier(data.name),
+        sql`AFTER`,
+        sql.raw(data.type),
+        data.type === "UPDATE" && data.of
+          ? sql.join([sql`OF`, sql.identifier(data.of.name)], space)
+          : undefined,
+        sql`ON`,
+        data.on,
+        data.when
+          ? sql.join(
+              [sql`FOR EACH ROW WHEN`, data.when({ newRow: newTable, oldRow: oldTable }).getSQL()],
+              space,
+            )
+          : undefined,
+        sql`BEGIN`,
+        data.do({ newRow: newTable, oldRow: oldTable }).getSQL(),
+        endLine,
+        sql`END`,
+      ].filter(Boolean),
+      space,
+    )
+    .append(endLine);
 }
 
-function stringifyQuery(query: Query) {
+function serializeQuery(query: Query) {
   return `${query.sql
     .split("?")
     .map((chunk, i) => {
