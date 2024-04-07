@@ -1,1 +1,27 @@
-{"version":"5","dialect":"mysql","entries":[{"idx":0,"version":"5","when":1710689382291,"tag":"0000_clever_ghost_rider","breakpoints":true},{"idx":1,"version":"5","when":1712423841730,"tag":"0001_fine_stark_industries","breakpoints":true}]}
+{
+  "version": "5",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1710689382291,
+      "tag": "0000_clever_ghost_rider",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1712423841730,
+      "tag": "0001_fine_stark_industries",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1712527813090,
+      "tag": "0002_clumsy_paladin",
+      "breakpoints": true
+    }
+  ]
+}
