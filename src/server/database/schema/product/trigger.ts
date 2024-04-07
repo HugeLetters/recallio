@@ -1,11 +1,11 @@
 import { db } from "@/server/database/client";
-import { createTrigger } from "@/server/database/schema/trigger";
+import { Trigger } from "@/server/database/schema/trigger";
 import { caseWhen } from "@/server/database/schema/utils";
 import { eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { productMeta, review } from ".";
 
-export const insertTrigger = createTrigger({
+export const insertTrigger = new Trigger({
   name: "update_product_meta_on_new_review",
   type: "INSERT",
   on: review,
@@ -27,7 +27,7 @@ export const insertTrigger = createTrigger({
       }),
 });
 
-export const deleteTrigger = createTrigger({
+export const deleteTrigger = new Trigger({
   name: "update_product_meta_on_delete_review",
   type: "DELETE",
   on: review,
@@ -42,7 +42,7 @@ export const deleteTrigger = createTrigger({
       .where(eq(productMeta.barcode, oldRow.barcode)),
 });
 
-export const updateTrigger = createTrigger({
+export const updateTrigger = new Trigger({
   name: "update_product_meta_on_update_review",
   type: "UPDATE",
   on: review,

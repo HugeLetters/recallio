@@ -53,7 +53,10 @@ const breakpoint = sql`--> statement-breakpoint`.append(newLine);
 // #1 - scan all migration files for trigger creations and then drop all of them
 // #2 - regenerate all triggers
 
-class Trigger<TType extends TriggerType = TriggerType, TTable extends SQLiteTable = SQLiteTable> {
+export class Trigger<
+  TType extends TriggerType = TriggerType,
+  TTable extends SQLiteTable = SQLiteTable,
+> {
   statement: SQL;
 
   constructor(data: TriggerData<TType, TTable>) {
@@ -101,12 +104,6 @@ class Trigger<TType extends TriggerType = TriggerType, TTable extends SQLiteTabl
 
     this.statement = join([dropStatement, createStatement], breakpoint);
   }
-}
-
-export function createTrigger<TType extends TriggerType, TTable extends SQLiteTable>(
-  data: TriggerData<TType, TTable>,
-) {
-  return new Trigger(data);
 }
 
 function createMigration(...queryList: Array<Trigger>) {
