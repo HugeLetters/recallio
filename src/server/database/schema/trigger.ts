@@ -1,8 +1,8 @@
 import type { StrictExclude, StrictExtract } from "@/utils/type";
-import type { Query, SQL, SQLWrapper } from "drizzle-orm";
+import type { SQL, SQLWrapper } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import type { BuildAliasTable, SQLiteTable } from "drizzle-orm/sqlite-core";
-import { SQLiteSyncDialect, alias } from "drizzle-orm/sqlite-core";
+import { alias } from "drizzle-orm/sqlite-core";
 import { space } from "./utils";
 
 type TableColumn<TTable extends SQLiteTable> = TTable["_"]["columns"][keyof TTable["_"]["columns"]];
@@ -43,15 +43,10 @@ type TriggerData<
     ? UpdateTriggerData<TTable>
     : BaseTriggerData<TType, TTable>;
 
-const sqlite = new SQLiteSyncDialect();
 const endLine = sql`;`;
 const newLine = sql`\n`;
 const tab = sql`\t`;
-const breakpoint = sql`--> statement-breakpoint`.append(newLine);
-
-// todo - script to generate trigger migrations
-// #1 - scan all migration files for trigger creations and then drop all of them
-// #2 - regenerate all triggers
+export const breakpoint = sql`--> statement-breakpoint`.append(newLine);
 
 export class Trigger<
   TType extends TriggerType = TriggerType,
@@ -60,11 +55,6 @@ export class Trigger<
   statement: SQL;
 
   constructor(data: TriggerData<TType, TTable>) {
-    const dropStatement = join(
-      [sql`DROP TRIGGER IF EXISTS`, sql.identifier(data.name)],
-      space,
-    ).append(endLine);
-
     const triggerTable = join(
       [
         sql`AFTER`,
@@ -102,32 +92,12 @@ export class Trigger<
       newLine,
     ).append(endLine);
 
-    this.statement = join([dropStatement, createStatement], breakpoint);
+    this.statement = join([createDropTriggerStatement(data.name), createStatement], breakpoint);
   }
 }
 
-function createMigration(...queryList: Array<Trigger>) {
-  return sqlite.sqlToQuery(
-    join(
-      queryList.map((trigger) => trigger.statement),
-      breakpoint,
-    ),
-  );
-}
-
-function serializeQuery(query: Query) {
-  return `${query.sql
-    .split("?")
-    .map((chunk, i) => {
-      if (!chunk) return "";
-
-      if (!(i in query.params)) return chunk;
-      const param = query.params[i];
-
-      const stringified = typeof param === "string" ? `"${param}"` : param;
-      return `${chunk}${String(stringified)}`;
-    })
-    .join("")}`;
+export function createDropTriggerStatement(name: string) {
+  return join([sql`DROP TRIGGER IF EXISTS`, sql.identifier(name)], space).append(endLine);
 }
 
 const join: typeof sql.join = function (chunks, separator) {

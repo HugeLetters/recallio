@@ -48,7 +48,7 @@ const routeInfo = new Map();
 async function handleFileEvent(filename, directory) {
   if (!pageExtensionList.some((extension) => filename.endsWith(`.${extension}`))) return;
 
-  const filepath = resolve(`${directory}/${filename}`);
+  const filepath = resolve(directory, filename);
   const pathname = getPathname(filepath);
   if (ignoredRouteList.includes(pathname)) return;
 
