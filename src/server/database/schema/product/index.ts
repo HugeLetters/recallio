@@ -59,15 +59,13 @@ export const reviewsToCategories = sqliteTable(
       .references(() => category.name, { onDelete: "restrict", onUpdate: "restrict" }),
   },
   (table) => ({
-    // todo - check if I could just switch userId and barcode order and remove barcode index
-    compoundKey: primaryKey({ columns: [table.userId, table.barcode, table.category] }),
+    compoundKey: primaryKey({ columns: [table.barcode, table.userId, table.category] }),
     reviewReference: foreignKey({
       columns: [table.barcode, table.userId],
       foreignColumns: [review.barcode, review.userId],
     })
       .onDelete("cascade")
       .onUpdate("restrict"),
-    barcodeIndex: index("reviews_to_categories_barcode_index").on(table.barcode),
   }),
 );
 

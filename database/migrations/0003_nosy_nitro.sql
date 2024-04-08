@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS `reviews_to_categories_barcode_index`;
