@@ -26,7 +26,7 @@ type BaseTriggerData<TType extends TriggerType, TTable extends SQLiteTable> = {
   on: TTable;
   /** Condition when trigger should activate */
   when?: (row: TriggerRow<TType, TTable>) => SQLWrapper;
-  /** WHat operation to perform when trigger activates */
+  /** What operation to perform when trigger activates */
   do: (row: TriggerRow<TType, TTable>) => SQLWrapper;
 };
 
