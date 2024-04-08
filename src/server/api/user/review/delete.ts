@@ -4,7 +4,7 @@ import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
-import { fileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
+import { fileDeleteQueueInsert } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
@@ -21,7 +21,7 @@ export const deleteReview = protectedProcedure
       .where(and(filter, isNotNull(review.imageKey)))
       .then<unknown>((files) => {
         const deleteReview = db.delete(review).where(filter);
-        const deleteFiles = fileDeleteQueueQuery(db, files);
+        const deleteFiles = fileDeleteQueueInsert(db, files);
 
         if (!deleteFiles) return deleteReview;
 
