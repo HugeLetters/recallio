@@ -4,7 +4,7 @@ import { user } from "@/server/database/schema/user";
 import { eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { uploadthing } from "./api";
-import { createFileDeleteQueueQuery } from "./delete-queue";
+import { fileDeleteQueueInsert } from "./delete-queue";
 
 export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .middleware(async ({ req, res }) => {
@@ -28,19 +28,19 @@ export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", ma
     };
   })
   .onUploadError(({ error }) => console.error(error))
-  .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
-    return db
-      .batch([
-        db.update(user).set({ image: file.key }).where(eq(user.id, userId)),
-        ...(userImageKey ? createFileDeleteQueueQuery(db, [{ fileKey: userImageKey }]) : []),
-      ])
+  .onUploadComplete(({ file, metadata: { userId, userImageKey } }): Promise<boolean> => {
+    return Promise.resolve()
+      .then<unknown>(() => {
+        const updateUser = db.update(user).set({ image: file.key }).where(eq(user.id, userId));
+        if (!userImageKey) return updateUser;
+        const deleteImage = fileDeleteQueueInsert(db, [{ fileKey: userImageKey }]);
+        return db.batch([updateUser, deleteImage]);
+      })
       .then(() => true)
       .catch((e) => {
         console.error(e);
-        return (
-          createFileDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
-            ?.catch(console.error)
-            .then(() => false) ?? false
-        );
+        return fileDeleteQueueInsert(db, [{ fileKey: file.key }])
+          .catch(console.error)
+          .then(() => false);
       });
   });

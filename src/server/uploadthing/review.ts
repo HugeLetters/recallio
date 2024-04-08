@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
 import { uploadthing } from "./api";
-import { createFileDeleteQueueQuery } from "./delete-queue";
+import { fileDeleteQueueInsert } from "./delete-queue";
 
 export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .input(z.object({ barcode: z.string() }))
@@ -34,22 +34,23 @@ export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", 
   .onUploadError(({ error }) => {
     console.error(error);
   })
-  .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
-    return db
-      .batch([
-        db
+  .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }): Promise<boolean> => {
+    return Promise.resolve()
+      .then<unknown>(() => {
+        const updateReview = db
           .update(review)
           .set({ imageKey: file.key, updatedAt: new Date() })
-          .where(and(eq(review.userId, userId), eq(review.barcode, barcode))),
-        ...(oldImageKey ? createFileDeleteQueueQuery(db, [{ fileKey: oldImageKey }]) : []),
-      ])
+          .where(and(eq(review.userId, userId), eq(review.barcode, barcode)));
+        if (!oldImageKey) return updateReview;
+
+        const imageDelete = fileDeleteQueueInsert(db, [{ fileKey: oldImageKey }]);
+        return db.batch([updateReview, imageDelete]);
+      })
       .then(() => true)
       .catch((e) => {
         console.error(e);
-        return (
-          createFileDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
-            ?.catch(console.error)
-            .then(() => false) ?? false
-        );
+        return fileDeleteQueueInsert(db, [{ fileKey: file.key }])
+          .catch(console.error)
+          .then(() => false);
       });
   });
