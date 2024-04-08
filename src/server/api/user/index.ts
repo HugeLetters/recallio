@@ -4,12 +4,13 @@ import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
 import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
-import { createFileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
+import { fileDeleteQueueInsert } from "@/server/uploadthing/delete-queue";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
-import { filterOut } from "@/utils/array/filter";
+import type { NonEmptyArray } from "@/utils/array";
 import { and, eq, isNotNull } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import { accountRouter } from "./account";
 import { reviewRouter } from "./review";
 
@@ -27,11 +28,11 @@ const setName = protectedProcedure
       .returning({ name: user.name })
       .get()
       .catch(throwExpectedError("Failed to update your username."))
-      .then((query) => {
-        if (!query) {
+      .then((result) => {
+        if (!result) {
           throw new ExpectedError({ code: "NOT_FOUND", message: "User not found" });
         }
-        return query.name;
+        return result.name;
       });
   });
 
@@ -43,7 +44,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
     .select({ fileKey: nonNullableSQL(user.image) })
     .from(user)
     .where(filter)
-    .then((images) => {
+    .then<unknown>((images) => {
       if (!images.length) {
         throw new ExpectedError({
           code: "PRECONDITION_FAILED",
@@ -51,13 +52,14 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
         });
       }
 
-      return db.batch([
-        db.update(user).set({ image: null }).where(filter),
-        ...createFileDeleteQueueQuery(
-          db,
-          filterOut(images, (image, bad) => (URL.canParse(image.fileKey) ? bad : image)),
-        ),
-      ]);
+      const imageDelete = fileDeleteQueueInsert(
+        db,
+        images.filter(({ fileKey }) => !URL.canParse(fileKey)),
+      );
+      const userUpdate = db.update(user).set({ image: null }).where(filter);
+      if (!imageDelete) return userUpdate;
+
+      return db.batch([userUpdate, imageDelete]);
     })
     .then(ignore)
     .catch(throwExpectedError("Failed to delete image"));
@@ -77,18 +79,24 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
         .where(and(eq(user.id, userId), isNotNull(user.image))),
     ])
     .then(([reviewImages, userImages]) => {
-      reviewImages.push(...userImages.filter(({ image }) => !URL.canParse(image)));
-      const images = [...new Set(reviewImages.map(({ image }) => image))];
-      return db.batch([
+      const batch: NonEmptyArray<BatchItem<"sqlite">> = [
         db.delete(user).where(eq(user.id, userId)),
-        ...(email
-          ? [db.delete(verificationToken).where(eq(verificationToken.identifier, email))]
-          : []),
-        ...createFileDeleteQueueQuery(
-          db,
-          images.map((image) => ({ fileKey: image })),
-        ),
-      ]);
+      ];
+
+      if (email) {
+        batch.push(db.delete(verificationToken).where(eq(verificationToken.identifier, email)));
+      }
+
+      reviewImages.push(...userImages.filter(({ image }) => !URL.canParse(image)));
+      const imagesDelete = fileDeleteQueueInsert(
+        db,
+        reviewImages.map(({ image }) => ({ fileKey: image })),
+      );
+      if (imagesDelete) {
+        batch.push(imagesDelete);
+      }
+
+      return db.batch(batch);
     })
     .then(ignore)
     .catch(throwExpectedError("Failed to delete your account"));
