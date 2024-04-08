@@ -28,7 +28,6 @@ export const review = sqliteTable(
     updatedAt: timestampColumn("updated_at").notNull(),
     isPrivate: int("is_private", { mode: "boolean" }).notNull().default(true),
   },
-  // todo - check what indices do I need
   (table) => ({
     compoundKey: primaryKey({ columns: [table.userId, table.barcode] }),
     isPrivateIndex: index("review_is_private_idx").on(table.isPrivate),

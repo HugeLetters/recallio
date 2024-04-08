@@ -6,7 +6,7 @@ import { query } from "@/server/database/query/aggregate";
 import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
-import { and, asc, desc, eq, gt, inArray, like, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, like, lt, or } from "drizzle-orm";
 import { z } from "zod";
 
 const pagination = createPagination({
@@ -49,13 +49,13 @@ export const getSummaryList = protectedProcedure
     const filterClause = filter
       ? or(
           like(review.name, `${filter}%`),
-          inArray(
-            review.barcode,
+          exists(
             db
               .select({ barcode: reviewsToCategories.barcode })
               .from(reviewsToCategories)
               .where(
                 and(
+                  eq(reviewsToCategories.barcode, review.barcode),
                   eq(reviewsToCategories.userId, session.user.id),
                   like(reviewsToCategories.category, `${filter}%`),
                 ),
