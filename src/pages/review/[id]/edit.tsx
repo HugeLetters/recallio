@@ -73,8 +73,8 @@ Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>
 export default Page;
 
 type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
-function transformReview(data: ReviewData | null): ReviewForm | null {
-  if (!data) return data;
+function transformReview(data: ReviewData | undefined): ReviewForm | null {
+  if (!data) return null;
   return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
 }
 

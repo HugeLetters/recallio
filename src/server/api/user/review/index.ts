@@ -39,7 +39,7 @@ const getOne = protectedProcedure
       )
       .groupBy(review.barcode, review.userId)
       .limit(1)
-      .then(([data]) => data ?? null);
+      .get();
   });
 
 const deleteImage = protectedProcedure
