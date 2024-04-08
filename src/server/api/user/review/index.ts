@@ -6,7 +6,7 @@ import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
-import { createFileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
+import { fileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
@@ -57,17 +57,15 @@ const deleteImage = protectedProcedure
       .from(review)
       .where(and(filter, isNotNull(review.imageKey)))
       .then((fileKeys) => {
-        if (!fileKeys.length) {
+        const deleteFiles = fileDeleteQueueQuery(db, fileKeys);
+        if (!deleteFiles) {
           throw new ExpectedError({
             code: "PRECONDITION_FAILED",
             message: `No image attached to your review for barcode ${barcode}.`,
           });
         }
 
-        return db.batch([
-          db.update(review).set({ imageKey: null }).where(filter),
-          ...createFileDeleteQueueQuery(db, fileKeys),
-        ]);
+        return db.batch([db.update(review).set({ imageKey: null }).where(filter), deleteFiles]);
       })
       .then(ignore)
       .catch(throwExpectedError("Failed to delete image"));
