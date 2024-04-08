@@ -4,7 +4,7 @@ import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { user, verificationToken } from "@/server/database/schema/user";
 import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
-import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
+import { createFileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
 import { usernameMaxLength, usernameMinLength } from "@/user/validation";
 import { ignore } from "@/utils";
@@ -53,7 +53,7 @@ const deleteImage = protectedProcedure.mutation(({ ctx: { session } }) => {
 
       return db.batch([
         db.update(user).set({ image: null }).where(filter),
-        ...createDeleteQueueQuery(
+        ...createFileDeleteQueueQuery(
           db,
           filterOut(images, (image, bad) => (URL.canParse(image.fileKey) ? bad : image)),
         ),
@@ -84,7 +84,7 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
         ...(email
           ? [db.delete(verificationToken).where(eq(verificationToken.identifier, email))]
           : []),
-        ...createDeleteQueueQuery(
+        ...createFileDeleteQueueQuery(
           db,
           images.map((image) => ({ fileKey: image })),
         ),

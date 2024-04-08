@@ -4,7 +4,7 @@ import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
 import { throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
-import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
+import { createFileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
@@ -20,7 +20,10 @@ export const deleteReview = protectedProcedure
       .from(review)
       .where(and(filter, isNotNull(review.imageKey)))
       .then((files) => {
-        return db.batch([db.delete(review).where(filter), ...createDeleteQueueQuery(db, files)]);
+        return db.batch([
+          db.delete(review).where(filter),
+          ...createFileDeleteQueueQuery(db, files),
+        ]);
       })
       .then(ignore)
       .catch(throwExpectedError(`Failed to delete your review for barcode ${barcode}.`));

@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { z } from "zod";
 import { uploadthing } from "./api";
-import { createDeleteQueueQuery } from "./delete-queue";
+import { createFileDeleteQueueQuery } from "./delete-queue";
 
 export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .input(z.object({ barcode: z.string() }))
@@ -41,13 +41,13 @@ export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", 
           .update(review)
           .set({ imageKey: file.key, updatedAt: new Date() })
           .where(and(eq(review.userId, userId), eq(review.barcode, barcode))),
-        ...(oldImageKey ? createDeleteQueueQuery(db, [{ fileKey: oldImageKey }]) : []),
+        ...(oldImageKey ? createFileDeleteQueueQuery(db, [{ fileKey: oldImageKey }]) : []),
       ])
       .then(() => true)
       .catch((e) => {
         console.error(e);
         return (
-          createDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
+          createFileDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
             ?.catch(console.error)
             .then(() => false) ?? false
         );

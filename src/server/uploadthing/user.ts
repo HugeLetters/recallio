@@ -4,7 +4,7 @@ import { user } from "@/server/database/schema/user";
 import { eq } from "drizzle-orm";
 import { UploadThingError } from "uploadthing/server";
 import { uploadthing } from "./api";
-import { createDeleteQueueQuery } from "./delete-queue";
+import { createFileDeleteQueueQuery } from "./delete-queue";
 
 export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .middleware(async ({ req, res }) => {
@@ -32,13 +32,13 @@ export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", ma
     return db
       .batch([
         db.update(user).set({ image: file.key }).where(eq(user.id, userId)),
-        ...(userImageKey ? createDeleteQueueQuery(db, [{ fileKey: userImageKey }]) : []),
+        ...(userImageKey ? createFileDeleteQueueQuery(db, [{ fileKey: userImageKey }]) : []),
       ])
       .then(() => true)
       .catch((e) => {
         console.error(e);
         return (
-          createDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
+          createFileDeleteQueueQuery(db, [{ fileKey: file.key }])[0]
             ?.catch(console.error)
             .then(() => false) ?? false
         );

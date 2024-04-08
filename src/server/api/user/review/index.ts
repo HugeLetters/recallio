@@ -6,7 +6,7 @@ import { review, reviewsToCategories } from "@/server/database/schema/product";
 import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
-import { createDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
+import { createFileDeleteQueueQuery } from "@/server/uploadthing/delete-queue";
 import { ignore } from "@/utils";
 import { and, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
@@ -66,7 +66,7 @@ const deleteImage = protectedProcedure
 
         return db.batch([
           db.update(review).set({ imageKey: null }).where(filter),
-          ...createDeleteQueueQuery(db, fileKeys),
+          ...createFileDeleteQueueQuery(db, fileKeys),
         ]);
       })
       .then(ignore)
