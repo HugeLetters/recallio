@@ -10,7 +10,7 @@ import * as Separator from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
-import { Fragment, forwardRef, useEffect, useRef, useState } from "react";
+import { Fragment, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import MilkIcon from "~icons/custom/milk";
 import ArrowIcon from "~icons/formkit/right";
@@ -54,17 +54,8 @@ type CommentProps = { children: string; type?: CommentType };
 function Comment({ children, type }: CommentProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [overflow, setOverflow] = useState<number>();
-  useEffect(() => {
-    const content = contentRef.current;
-    if (!content) return;
 
-    const { clientHeight, scrollHeight } = content;
-    if (clientHeight < scrollHeight) {
-      setOverflow(scrollHeight - clientHeight);
-    }
-  }, []);
-
-  useResizeListener(() => {
+  const forceOverflowCheck = useCallback(() => {
     // flushSync a reset to recalculate overflow value
     // this is just for edge cases when screen is rotated etc so a little flicker is not a problem
     flushSync(() => setOverflow(undefined));
@@ -76,12 +67,15 @@ function Comment({ children, type }: CommentProps) {
     if (clientHeight < scrollHeight) {
       setOverflow(scrollHeight - clientHeight);
     }
-  });
+  }, []);
+
+  useEffect(forceOverflowCheck, [forceOverflowCheck, children]);
+  useResizeListener(forceOverflowCheck);
 
   return (
     <div className="flex py-2">
       {type && <CommentIcon type={type} />}
-      <div className="min-w-0 pt-1.5">
+      <div className="min-w-0 grow pt-1.5">
         {overflow === undefined ? (
           <div
             ref={contentRef}
