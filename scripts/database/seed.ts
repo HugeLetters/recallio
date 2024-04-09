@@ -270,21 +270,23 @@ async function seedUtImages(count: number): Promise<string[]> {
       splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
     );
 
-  await utapi.deleteFiles(removed.map((file) => file.key));
-
+  if (removed.length) {
+    await utapi.deleteFiles(removed.map((file) => file.key));
+  }
   const remaining = count - uploaded.length;
   return Promise.all(
     faker.helpers
       .uniqueArray(randomImage, remaining)
       .map((url) => fetch(url).then((r) => r.blob())),
   )
-    .then((blobs) =>
-      utapi.uploadFiles(
+    .then((blobs) => {
+      if (!blobs.length) return [];
+      return utapi.uploadFiles(
         blobs.map((blob) =>
           blobToFile(blob, `${faker.location.country()}-${faker.location.city()}`),
         ),
-      ),
-    )
+      );
+    })
     .then((responses) =>
       filterMap(
         responses,
