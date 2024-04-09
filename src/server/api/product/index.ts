@@ -40,7 +40,7 @@ const getSummary = protectedProcedure
         ),
       )
       .groupBy(reviewsToCategories.barcode)
-      .as("category-subquery");
+      .as("category_subquery");
 
     return db
       .select({
@@ -55,7 +55,8 @@ const getSummary = protectedProcedure
       .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
       .groupBy(review.barcode)
       .limit(1)
-      .then(([x]) => x ?? null);
+      .get()
+      .then((x) => x ?? null);
   });
 
 export const productRouter = createTRPCRouter({
@@ -93,6 +94,6 @@ export const productRouter = createTRPCRouter({
         )
         .limit(limit)
         .orderBy(category.name)
-        .then((data) => data.map((x) => x.name));
+        .then((data) => data.map(({ name }) => name));
     }),
 });

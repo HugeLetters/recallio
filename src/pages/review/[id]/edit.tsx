@@ -282,6 +282,8 @@ function useInvalidateReview(barcode: string) {
       utils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
       utils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
       utils.product.getReviewList.invalidate({ barcode }),
+      utils.product.getSummary.invalidate({ barcode }),
+      utils.product.getSummaryList.invalidate(undefined),
     ]).catch(
       logToastError("Failed to update data from the server.\nReloading the page is advised."),
     );

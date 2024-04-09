@@ -1,11 +1,11 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "fbfc9700-5492-4d05-a398-bcd7577ef0f7",
+  "id": "ae827a7a-dd42-4c10-92b5-2f47f542ce4f",
   "prevId": "50e19d75-e246-4472-a53a-c7f14a92ed18",
   "tables": {
-    "file-delete-queue": {
-      "name": "file-delete-queue",
+    "file_delete_queue": {
+      "name": "file_delete_queue",
       "columns": {
         "file_key": {
           "name": "file_key",
@@ -44,9 +44,48 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "product_meta": {
+      "name": "product_meta",
+      "columns": {
+        "barcode": {
+          "name": "barcode",
+          "type": "text(55)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "public_review_count": {
+          "name": "public_review_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "public_total_rating": {
+          "name": "public_total_rating",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "review": {
       "name": "review",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text(11)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "user_id": {
           "name": "user_id",
           "type": "text(255)",
@@ -121,38 +160,35 @@
         }
       },
       "indexes": {
-        "review_barcode_index": {
-          "name": "review_barcode_index",
+        "review_id_unique": {
+          "name": "review_id_unique",
           "columns": [
-            "barcode"
+            "id"
+          ],
+          "isUnique": true
+        },
+        "review_is_private_idx": {
+          "name": "review_is_private_idx",
+          "columns": [
+            "is_private"
           ],
           "isUnique": false
         },
-        "review_name_index": {
-          "name": "review_name_index",
+        "review_product_review_list_by_updated_index": {
+          "name": "review_product_review_list_by_updated_index",
           "columns": [
-            "name"
-          ],
-          "isUnique": false
-        },
-        "review_rating_index": {
-          "name": "review_rating_index",
-          "columns": [
-            "rating"
-          ],
-          "isUnique": false
-        },
-        "review_updated_at_index": {
-          "name": "review_updated_at_index",
-          "columns": [
+            "barcode",
+            "is_private",
             "updated_at"
           ],
           "isUnique": false
         },
-        "review_is_private_index": {
-          "name": "review_is_private_index",
+        "review_product_review_list_by_rating_index": {
+          "name": "review_product_review_list_by_rating_index",
           "columns": [
-            "is_private"
+            "barcode",
+            "is_private",
+            "rating"
           ],
           "isUnique": false
         }
@@ -208,22 +244,7 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "reviews_to_categories_barcode_index": {
-          "name": "reviews_to_categories_barcode_index",
-          "columns": [
-            "barcode"
-          ],
-          "isUnique": false
-        },
-        "reviews_to_categories_category_index": {
-          "name": "reviews_to_categories_category_index",
-          "columns": [
-            "category"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "reviews_to_categories_category_category_name_fk": {
           "name": "reviews_to_categories_category_category_name_fk",
@@ -255,13 +276,13 @@
         }
       },
       "compositePrimaryKeys": {
-        "reviews_to_categories_user_id_barcode_category_pk": {
+        "reviews_to_categories_barcode_user_id_category_pk": {
           "columns": [
             "barcode",
             "category",
             "user_id"
           ],
-          "name": "reviews_to_categories_user_id_barcode_category_pk"
+          "name": "reviews_to_categories_barcode_user_id_category_pk"
         }
       },
       "uniqueConstraints": {}

@@ -1,6 +1,6 @@
 import { signOut } from "@/auth";
 import type { Provider } from "@/auth/provider";
-import { providerIcons } from "@/auth/provider";
+import { providerIcons } from "@/auth/provider/icon";
 import { useCachedSession } from "@/auth/session/hooks";
 import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";

@@ -21,7 +21,7 @@ CREATE TABLE `reviews_to_categories` (
 	`user_id` text(255) NOT NULL,
 	`barcode` text(55) NOT NULL,
 	`category` text(25) NOT NULL,
-	PRIMARY KEY(`user_id`, `barcode`, `category`),
+	PRIMARY KEY(`barcode`, `user_id`, `category`),
 	FOREIGN KEY (`category`) REFERENCES `category`(`name`) ON UPDATE restrict ON DELETE restrict,
 	FOREIGN KEY (`barcode`,`user_id`) REFERENCES `review`(`barcode`,`user_id`) ON UPDATE restrict ON DELETE cascade
 );

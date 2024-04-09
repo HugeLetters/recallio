@@ -1,5 +1,4 @@
 import { db } from "@/server/database/client/serverless";
-import { findFirst } from "@/server/database/query";
 import { account, session, user, verificationToken } from "@/server/database/schema/user";
 import { getFileUrl } from "@/server/uploadthing";
 import { and, eq, lt, or } from "drizzle-orm";
@@ -28,16 +27,28 @@ export function DatabaseAdapter(): Adapter {
         .then(userWithImageUrl);
     },
     getUser(id) {
-      return findFirst(db, user, eq(user.id, id)).then((user) => {
-        if (!user) return null;
-        return userWithImageUrl(user);
-      });
+      return db
+        .select()
+        .from(user)
+        .where(eq(user.id, id))
+        .limit(1)
+        .get()
+        .then((user) => {
+          if (!user) return null;
+          return userWithImageUrl(user);
+        });
     },
     getUserByEmail(email) {
-      return findFirst(db, user, eq(user.email, email)).then((user) => {
-        if (!user) return null;
-        return userWithImageUrl(user);
-      });
+      return db
+        .select()
+        .from(user)
+        .where(eq(user.email, email))
+        .limit(1)
+        .get()
+        .then((user) => {
+          if (!user) return null;
+          return userWithImageUrl(user);
+        });
     },
     createSession(data) {
       return db.insert(session).values(data).returning().get();

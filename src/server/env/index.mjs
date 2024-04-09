@@ -1,6 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+const DATABASE_URL = !isDev ? process.env.DATABASE_URL : "file:./database/db.sqlite";
+
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
@@ -57,8 +60,8 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    DATABASE_HTTPS_URL: process.env.DATABASE_URL,
+    DATABASE_URL: DATABASE_URL,
+    DATABASE_HTTPS_URL: DATABASE_URL,
     DATABASE_TOKEN: process.env.DATABASE_TOKEN,
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,

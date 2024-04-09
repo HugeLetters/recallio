@@ -36,3 +36,5 @@ next-env.d.ts
 
 @types
 /src/router/matcher.ts
+/database/db.sqlite
+/database/db.sqlite-journal

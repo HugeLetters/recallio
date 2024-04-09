@@ -11,10 +11,10 @@ import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-o
 export const review = sqliteTable(
   "review",
   {
-    id: text("id", { length: 10 })
+    id: text("id", { length: 11 })
       .notNull()
       .unique()
-      .$defaultFn(() => crypto.randomUUID().slice(0, 10)),
+      .$defaultFn(() => crypto.randomUUID().slice(0, 11)),
     userId: text("user_id", { length: userIdLength })
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "restrict" }),
@@ -30,11 +30,17 @@ export const review = sqliteTable(
   },
   (table) => ({
     compoundKey: primaryKey({ columns: [table.userId, table.barcode] }),
-    barcodeIndex: index("review_barcode_index").on(table.barcode),
-    nameIndex: index("review_name_index").on(table.name),
-    ratingIndex: index("review_rating_index").on(table.rating),
-    updatedAtIndex: index("review_updated_at_index").on(table.updatedAt),
-    isPrivateIndex: index("review_is_private_index").on(table.isPrivate),
+    isPrivateIndex: index("review_is_private_idx").on(table.isPrivate),
+    productReviewListByUpdatedIndex: index("review_product_review_list_by_updated_index").on(
+      table.barcode,
+      table.isPrivate,
+      table.updatedAt,
+    ),
+    productReviewListByRatingIndex: index("review_product_review_list_by_rating_index").on(
+      table.barcode,
+      table.isPrivate,
+      table.rating,
+    ),
   }),
 );
 export type ReviewInsert = typeof review.$inferInsert;
@@ -53,14 +59,18 @@ export const reviewsToCategories = sqliteTable(
       .references(() => category.name, { onDelete: "restrict", onUpdate: "restrict" }),
   },
   (table) => ({
-    compoundKey: primaryKey({ columns: [table.userId, table.barcode, table.category] }),
+    compoundKey: primaryKey({ columns: [table.barcode, table.userId, table.category] }),
     reviewReference: foreignKey({
       columns: [table.barcode, table.userId],
       foreignColumns: [review.barcode, review.userId],
     })
       .onDelete("cascade")
       .onUpdate("restrict"),
-    barcodeIndex: index("reviews_to_categories_barcode_index").on(table.barcode),
-    categoryIndex: index("reviews_to_categories_category_index").on(table.category),
   }),
 );
+
+export const productMeta = sqliteTable("product_meta", {
+  barcode: text("barcode", { length: barcodeLengthMax }).primaryKey(),
+  publicReviewCount: int("public_review_count").default(0).notNull(),
+  publicTotalRating: int("public_total_rating").default(0).notNull(),
+});

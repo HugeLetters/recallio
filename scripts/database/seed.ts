@@ -2,7 +2,12 @@ import { blobToFile } from "@/image/blob";
 import { productNameLengthMax, productNameLengthMin, productRatingMax } from "@/product/validation";
 import { db } from "@/server/database/client/serverless";
 import type { ReviewInsert } from "@/server/database/schema/product";
-import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import {
+  category,
+  productMeta,
+  review,
+  reviewsToCategories,
+} from "@/server/database/schema/product";
 import { user } from "@/server/database/schema/user";
 import { utapi } from "@/server/uploadthing/api";
 import { clamp } from "@/utils";
@@ -15,12 +20,10 @@ import type { Task } from "tasuku";
 import task from "tasuku";
 
 export default async function seed() {
-  // just awaiting for all root declaration to initialize
-  await Promise.resolve();
   await seedReviews({
-    reviewCount: 30000,
-    reviewsPerUser: 150,
-    uniqueReviewsPerUser: 10,
+    reviewCount: 300000,
+    reviewsPerUser: 400,
+    uniqueReviewsPerUser: 30,
   }).catch(console.error);
 }
 
@@ -45,9 +48,10 @@ async function seedReviews({
     .all()
     .then((users) => users.map(({ id }) => id));
 
+  const namePool = faker.helpers.uniqueArray(randomName, Math.min(users.length, 4000));
   const commonBarcodes = faker.helpers
     .uniqueArray(randomBarcode, users.length)
-    .map((barcode) => createBarcodeData(barcode, users.length / 10));
+    .map((barcode) => createBarcodeData(barcode, namePool, users.length / 10));
 
   await task("User reviews", async ({ setStatus: setOuterStatus, task }) => {
     let usersProcessed = 0;
@@ -64,7 +68,7 @@ async function seedReviews({
 
         const unqieBarcodes = faker.helpers
           .uniqueArray(randomBarcode, Math.max(reviewsPerUser - barcodes.length, 1))
-          .map((barcode) => createBarcodeData(barcode, 1));
+          .map((barcode) => createBarcodeData(barcode, namePool, 1));
         await createReviews(user, unqieBarcodes, files).catch(console.error);
         setOuterStatus(`${((100 * ++usersProcessed) / users.length).toFixed(2)}%`);
       }
@@ -131,27 +135,30 @@ function randomParagraph() {
   return faker.lorem.paragraph({ min: 1, max: 5 });
 }
 
+const randomBarcodeOptions = { min: 10_000_000_000_000, max: 99_999_999_999_999 };
 function randomBarcode() {
-  return faker.number.int({ min: 10_000_000_000_000, max: 99_999_999_999_999 }).toString();
+  return faker.number.int(randomBarcodeOptions).toString();
 }
 
+const randomNameOptions = { length: { min: productNameLengthMin, max: productNameLengthMax } };
 function randomName() {
-  return faker.word.noun({ length: { min: productNameLengthMin, max: productNameLengthMax } });
+  return faker.word.noun(randomNameOptions);
 }
 
+const randomBaseStringOptions = { min: 0, max: productRatingMax };
 function randomBaseRating() {
-  return faker.number.int({ min: 0, max: productRatingMax });
+  return faker.number.int(randomBaseStringOptions);
 }
 
 function randomImage() {
   return faker.image.url();
 }
 
-function createBarcodeData(barcode: string, namecount: number): BarcodeData {
+function createBarcodeData(barcode: string, namepool: string[], namecount: number): BarcodeData {
   return {
     barcode,
     rating: randomBaseRating(),
-    names: faker.helpers.uniqueArray(randomName, Math.max(namecount, 3)),
+    names: faker.helpers.arrayElements(namepool, Math.max(namecount, 3)),
   };
 }
 
@@ -176,8 +183,17 @@ async function cleanDatabase(rowLimitPerOperation: number) {
   await task("Cleaning database", async ({ task }) => {
     await cleanTable({
       task,
-      taskName: "Cleaning reviews-to-categories",
-      table: reviewsToCategories,
+      taskName: "Cleaning test users",
+      table: user,
+      primaryKey: "id",
+      rowLimitPerOperation,
+      where: like(user.id, `${TEST_USER_ID_PREFIX}%`),
+    });
+
+    await cleanTable({
+      task,
+      taskName: "Cleaning reviews",
+      table: review,
       primaryKey: "barcode",
       rowLimitPerOperation,
     });
@@ -192,19 +208,18 @@ async function cleanDatabase(rowLimitPerOperation: number) {
 
     await cleanTable({
       task,
-      taskName: "Cleaning reviews",
-      table: review,
+      taskName: "Cleaning reviews-to-categories",
+      table: reviewsToCategories,
       primaryKey: "barcode",
       rowLimitPerOperation,
     });
 
     await cleanTable({
       task,
-      taskName: "Cleaning test users",
-      table: user,
-      primaryKey: "id",
+      taskName: "Cleaning product-meta",
+      table: productMeta,
+      primaryKey: "barcode",
       rowLimitPerOperation,
-      where: like(user.id, `${TEST_USER_ID_PREFIX}%`),
     });
   });
 }

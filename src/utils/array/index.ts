@@ -1,7 +1,4 @@
 export type NonEmptyArray<T> = [T, ...Array<T>];
-export type Entries<O, $Keys extends keyof O = keyof O> = NonEmptyArray<
-  $Keys extends $Keys ? [$Keys, O[$Keys]] : never
->;
 export type TupleIndex<T extends ReadonlyArray<unknown>> = keyof T &
   `${number}` extends `${infer N extends number}`
   ? N
@@ -22,8 +19,12 @@ export function indexOf(array: readonly unknown[], value: unknown) {
   return index;
 }
 
+function baseSortFn<T>(a: NonNullable<T>, b: NonNullable<T>) {
+  return a.toString() > b.toString() ? 1 : -1;
+}
+
 export function mostCommon(count: number) {
-  return function <T>(arr: T[]): NonNullable<T>[] {
+  return function <T>(arr: T[], sortFn = baseSortFn<T>): NonNullable<T>[] {
     const counter = new Map<NonNullable<T>, number>();
     for (const element of arr) {
       if (element == null) continue;
@@ -33,7 +34,10 @@ export function mostCommon(count: number) {
     }
 
     return Array.from(counter)
-      .sort(([, a], [, b]) => b - a)
+      .sort(([x, a], [y, b]) => {
+        if (a === b) return sortFn(x, y);
+        return b - a;
+      })
       .slice(0, count)
       .map(([v]) => v);
   };

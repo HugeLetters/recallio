@@ -19,7 +19,8 @@
     "db-studio": "drizzle-kit studio",
     "db-seed": "pnpm rscript database/seed",
     "db-generate": "pnpm rscript database/migration/generate",
-    "db-migrate": "pnpm rscript database/migration/apply"
+    "db-migrate": "pnpm rscript database/migration/apply",
+    "db-trigger": "pnpm rscript database/migration/trigger"
   },
   "dependencies": {
     "@libsql/client": "^0.5.3",
@@ -49,7 +50,7 @@
     "@uploadthing/react": "^6.4.0",
     "@upstash/qstash": "^2.3.1",
     "@upstash/redis": "^1.28.3",
-    "drizzle-orm": "^0.30.1",
+    "drizzle-orm": "^0.30.7",
     "html5-qrcode": "^2.3.8",
     "libsql-stateless-easy": "^1.5.4",
     "next": "13.4.2",
