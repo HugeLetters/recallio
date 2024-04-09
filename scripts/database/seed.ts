@@ -64,12 +64,11 @@ async function seedReviews({
           Math.max(reviewsPerUser - uniqueReviewsPerUser, 1),
         );
 
-        await createReviews(user, barcodes, files).catch(console.error);
-
         const unqieBarcodes = faker.helpers
           .uniqueArray(randomBarcode, Math.max(reviewsPerUser - barcodes.length, 1))
           .map((barcode) => createBarcodeData(barcode, namePool, 1));
-        await createReviews(user, unqieBarcodes, files).catch(console.error);
+        await createReviews(user, barcodes.concat(unqieBarcodes), files).catch(console.error);
+
         setOuterStatus(`${((100 * ++usersProcessed) / users.length).toFixed(2)}%`);
       }
     });
@@ -80,14 +79,15 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   const values = barcodes.map((barcodeData) => createReviewValue(user, barcodeData, files));
 
   const reviews: ReviewInsert[] = values.map(({ review }) => review);
-  await db.insert(review).values(reviews);
+  const reviewInsert = db.insert(review).values(reviews);
 
   const categories: Array<typeof category.$inferInsert> = values.flatMap(
     ({ categories }) => categories?.map((name) => ({ name })) ?? [],
   );
-  if (!categories.length) return;
-
-  await db.insert(category).values(categories).onConflictDoNothing();
+  if (!categories.length) {
+    await reviewInsert;
+    return;
+  }
 
   const reviewsCategories: Array<typeof reviewsToCategories.$inferInsert> = values.flatMap(
     ({ review, categories }) =>
@@ -97,7 +97,11 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
         category,
       })) ?? [],
   );
-  await db.insert(reviewsToCategories).values(reviewsCategories);
+  await db.batch([
+    reviewInsert,
+    db.insert(category).values(categories).onConflictDoNothing(),
+    db.insert(reviewsToCategories).values(reviewsCategories),
+  ]);
 }
 
 function createReviewValue(
@@ -270,21 +274,23 @@ async function seedUtImages(count: number): Promise<string[]> {
       splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
     );
 
-  await utapi.deleteFiles(removed.map((file) => file.key));
-
+  if (removed.length) {
+    await utapi.deleteFiles(removed.map((file) => file.key));
+  }
   const remaining = count - uploaded.length;
   return Promise.all(
     faker.helpers
       .uniqueArray(randomImage, remaining)
       .map((url) => fetch(url).then((r) => r.blob())),
   )
-    .then((blobs) =>
-      utapi.uploadFiles(
+    .then((blobs) => {
+      if (!blobs.length) return [];
+      return utapi.uploadFiles(
         blobs.map((blob) =>
           blobToFile(blob, `${faker.location.country()}-${faker.location.city()}`),
         ),
-      ),
-    )
+      );
+    })
     .then((responses) =>
       filterMap(
         responses,

@@ -56,17 +56,19 @@ function Comment({ children, type }: CommentProps) {
   const [overflow, setOverflow] = useState<number>();
 
   const forceOverflowCheck = useCallback(() => {
-    // flushSync a reset to recalculate overflow value
-    // this is just for edge cases when screen is rotated etc so a little flicker is not a problem
-    flushSync(() => setOverflow(undefined));
+    queueMicrotask(() => {
+      // flushSync a reset to recalculate overflow value
+      // this is just for edge cases when screen is rotated etc so a little flicker is not a problem
+      flushSync(() => setOverflow(undefined));
 
-    const content = contentRef.current;
-    if (!content) return;
+      const content = contentRef.current;
+      if (!content) return;
 
-    const { clientHeight, scrollHeight } = content;
-    if (clientHeight < scrollHeight) {
-      setOverflow(scrollHeight - clientHeight);
-    }
+      const { clientHeight, scrollHeight } = content;
+      if (clientHeight < scrollHeight) {
+        setOverflow(scrollHeight - clientHeight);
+      }
+    });
   }, []);
 
   useEffect(forceOverflowCheck, [forceOverflowCheck, children]);

@@ -16,9 +16,9 @@ export function ignore() {
 
 export function createTimer() {
   let time = performance.now();
-  return function () {
+  return function (label?: string) {
     const t = performance.now();
-    console.log(t - time);
+    console.log(`${label ?? "TIMER"}: ${t - time}`);
     time = t;
   };
 }
