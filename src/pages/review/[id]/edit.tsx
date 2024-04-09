@@ -275,12 +275,12 @@ function useInvalidateReview(barcode: string) {
   return function () {
     const optimisticImage = utils.user.review.getOne.getData({ barcode })?.image;
     Promise.all([
-      utils.user.review.getOne.invalidate({ barcode }, { refetchType: "all" }).finally(() => {
+      utils.user.review.getOne.invalidate({ barcode }).finally(() => {
         if (!optimisticImage) return;
         URL.revokeObjectURL(optimisticImage);
       }),
-      utils.user.review.getSummaryList.invalidate(undefined, { refetchType: "all" }),
-      utils.user.review.getCount.invalidate(undefined, { refetchType: "all" }),
+      utils.user.review.getSummaryList.invalidate(undefined),
+      utils.user.review.getCount.invalidate(undefined),
       utils.product.getReviewList.invalidate({ barcode }),
       utils.product.getSummary.invalidate({ barcode }),
       utils.product.getSummaryList.invalidate(undefined),

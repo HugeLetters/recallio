@@ -23,7 +23,6 @@ export const trpc = createTRPCNext<ApiRouter>({
       queryClientConfig: {
         defaultOptions: {
           queries: {
-            refetchOnMount: false,
             retry: 1,
           },
         },
