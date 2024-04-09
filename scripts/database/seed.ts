@@ -80,14 +80,15 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
   const values = barcodes.map((barcodeData) => createReviewValue(user, barcodeData, files));
 
   const reviews: ReviewInsert[] = values.map(({ review }) => review);
-  await db.insert(review).values(reviews);
+  const reviewInsert = db.insert(review).values(reviews);
 
   const categories: Array<typeof category.$inferInsert> = values.flatMap(
     ({ categories }) => categories?.map((name) => ({ name })) ?? [],
   );
-  if (!categories.length) return;
-
-  await db.insert(category).values(categories).onConflictDoNothing();
+  if (!categories.length) {
+    await reviewInsert;
+    return;
+  }
 
   const reviewsCategories: Array<typeof reviewsToCategories.$inferInsert> = values.flatMap(
     ({ review, categories }) =>
@@ -97,7 +98,11 @@ async function createReviews(user: string, barcodes: BarcodeData[], files: strin
         category,
       })) ?? [],
   );
-  await db.insert(reviewsToCategories).values(reviewsCategories);
+  await db.batch([
+    reviewInsert,
+    db.insert(category).values(categories).onConflictDoNothing(),
+    db.insert(reviewsToCategories).values(reviewsCategories),
+  ]);
 }
 
 function createReviewValue(
