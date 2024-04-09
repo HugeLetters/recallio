@@ -11,7 +11,7 @@ import { foreignKey, index, int, primaryKey, sqliteTable, text } from "drizzle-o
 export const review = sqliteTable(
   "review",
   {
-    id: text("id", { length: 10 })
+    id: text("id", { length: 11 })
       .notNull()
       .unique()
       .$defaultFn(() => crypto.randomUUID().slice(0, 11)),

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "132cee71-605b-4879-a637-fccf724f369b",
+  "id": "ae827a7a-dd42-4c10-92b5-2f47f542ce4f",
   "prevId": "50e19d75-e246-4472-a53a-c7f14a92ed18",
   "tables": {
     "file_delete_queue": {
@@ -81,7 +81,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text(10)",
+          "type": "text(11)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -244,15 +244,7 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "reviews_to_categories_barcode_index": {
-          "name": "reviews_to_categories_barcode_index",
-          "columns": [
-            "barcode"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "reviews_to_categories_category_category_name_fk": {
           "name": "reviews_to_categories_category_category_name_fk",
@@ -284,13 +276,13 @@
         }
       },
       "compositePrimaryKeys": {
-        "reviews_to_categories_user_id_barcode_category_pk": {
+        "reviews_to_categories_barcode_user_id_category_pk": {
           "columns": [
             "barcode",
             "category",
             "user_id"
           ],
-          "name": "reviews_to_categories_user_id_barcode_category_pk"
+          "name": "reviews_to_categories_barcode_user_id_category_pk"
         }
       },
       "uniqueConstraints": {}

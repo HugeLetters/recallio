@@ -14,8 +14,9 @@ DROP INDEX IF EXISTS `review_name_index`;--> statement-breakpoint
 DROP INDEX IF EXISTS `review_rating_index`;--> statement-breakpoint
 DROP INDEX IF EXISTS `review_updated_at_index`;--> statement-breakpoint
 DROP INDEX IF EXISTS `review_is_private_index`;--> statement-breakpoint
+DROP INDEX IF EXISTS `reviews_to_categories_barcode_index`;--> statement-breakpoint
 DROP INDEX IF EXISTS `reviews_to_categories_category_index`;--> statement-breakpoint
-ALTER TABLE review ADD `id` text(10) NOT NULL;--> statement-breakpoint
+ALTER TABLE review ADD `id` text(11) NOT NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX `review_id_unique` ON `review` (`id`);--> statement-breakpoint
 CREATE INDEX `review_is_private_idx` ON `review` (`is_private`);--> statement-breakpoint
 CREATE INDEX `review_product_review_list_by_updated_index` ON `review` (`barcode`,`is_private`,`updated_at`);--> statement-breakpoint
