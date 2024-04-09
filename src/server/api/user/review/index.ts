@@ -38,7 +38,8 @@ const getOne = protectedProcedure
         ),
       )
       .limit(1)
-      .get();
+      .get()
+      .then((x) => x ?? null);
   });
 
 const deleteImage = protectedProcedure

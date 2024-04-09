@@ -55,8 +55,8 @@ const getSummary = protectedProcedure
       .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
       .groupBy(review.barcode)
       .limit(1)
-      .get();
-    // todo - test the returning undefined doesn't break anything
+      .get()
+      .then((x) => x ?? null);
   });
 
 export const productRouter = createTRPCRouter({
