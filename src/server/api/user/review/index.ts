@@ -37,6 +37,7 @@ const getOne = protectedProcedure
           eq(review.barcode, reviewsToCategories.barcode),
         ),
       )
+      .groupBy(review.barcode, review.userId)
       .limit(1)
       .get()
       .then((x) => x ?? null);
