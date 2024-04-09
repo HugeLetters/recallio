@@ -11,6 +11,7 @@ import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
+import { minutesToMs } from "@/utils";
 import { Toolbar } from "@radix-ui/react-toolbar";
 import { useRouter } from "next/router";
 
@@ -23,7 +24,11 @@ const Page: NextPageWithLayout = function () {
 
   const productListQuery = trpc.product.getSummaryList.useInfiniteQuery(
     { limit: 20, sort, filter },
-    { getNextPageParam: (lastPage) => lastPage.cursor, enabled: isReady },
+    {
+      getNextPageParam: (lastPage) => lastPage.cursor,
+      enabled: isReady,
+      staleTime: minutesToMs(15),
+    },
   );
 
   return (

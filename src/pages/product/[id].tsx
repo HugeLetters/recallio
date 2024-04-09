@@ -12,6 +12,7 @@ import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { UserPicture } from "@/user/picture";
+import { minutesToMs } from "@/utils";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import RightIcon from "~icons/formkit/right";
@@ -34,6 +35,7 @@ function ProductPage({ barcode }: ProductPageProps) {
   const summaryQuery = trpc.product.getSummary.useQuery(
     { barcode },
     {
+      staleTime: minutesToMs(5),
       select(data) {
         if (!data) {
           router.replace({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
@@ -108,7 +110,10 @@ function Summary({
 
 type ProductNameProps = { barcode: string; name: string; reviewCount: number; rating: number };
 function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
-  const { data, isSuccess } = trpc.user.review.getOne.useQuery({ barcode });
+  const { data, isSuccess } = trpc.user.review.getOne.useQuery(
+    { barcode },
+    { staleTime: Infinity },
+  );
 
   return (
     <Link
@@ -169,6 +174,7 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
       sort: parseSortByOption(sortParam),
     },
     {
+      staleTime: minutesToMs(5),
       getNextPageParam(page) {
         return page.cursor;
       },
