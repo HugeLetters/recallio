@@ -13,6 +13,8 @@ import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
+import { useInvalidateReviewAdjacentData } from "@/user/review";
+import { minutesToMs } from "@/utils";
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -45,6 +47,7 @@ function Review({ barcode }: ReviewProps) {
 
         return data;
       },
+      staleTime: minutesToMs(5),
     },
   );
 
@@ -150,7 +153,7 @@ function AttachedImage({ image }: AttachedImageProps) {
 
 type NameProps = { barcode: string; name: string };
 function Name({ barcode, name }: NameProps) {
-  const { data } = trpc.product.getSummary.useQuery({ barcode });
+  const { data } = trpc.product.getSummary.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
   const nameDiv = (
     <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xl">{name}</div>
@@ -188,7 +191,8 @@ type DeleteButtonProps = { barcode: string };
 const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
-  const apiUtils = trpc.useUtils();
+  const utils = trpc.useUtils();
+  const invalidateReviewData = useInvalidateReviewAdjacentData(barcode);
   const loading = useTrackerController(loadingTracker);
   const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {
@@ -199,11 +203,8 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
       toast.error(`Couldn't delete the review: ${e.message}`);
     },
     onSuccess() {
-      apiUtils.user.review.getOne.setData({ barcode }, null);
-      apiUtils.user.review.getOne.invalidate({ barcode }).catch(console.error);
-      apiUtils.user.review.getSummaryList.invalidate().catch(console.error);
-      apiUtils.user.review.getCount.invalidate().catch(console.error);
-      apiUtils.product.getSummaryList.invalidate().catch(console.error);
+      utils.user.review.getOne.setData({ barcode }, null);
+      invalidateReviewData();
     },
     onSettled() {
       loading.disable();

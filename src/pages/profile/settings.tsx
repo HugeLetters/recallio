@@ -209,7 +209,9 @@ function UserName({ username, sync }: UserNameProps) {
 }
 
 function LinkedAccounts() {
-  const { data: accounts } = trpc.user.account.getProviders.useQuery();
+  const { data: accounts } = trpc.user.account.getProviders.useQuery(undefined, {
+    staleTime: Infinity,
+  });
 
   const utils = trpc.useUtils();
   const { mutate: addAccount, isLoading: isAdding } = useMutation({
@@ -238,12 +240,12 @@ function LinkedAccounts() {
       onMutate({ provider }) {
         const current = accounts;
 
-        utils.user.account.getProviders.setData(undefined, (providers) =>
-          providers?.filter((name) => name !== provider),
-        );
+        utils.user.account.getProviders.setData(undefined, (providers) => {
+          return providers?.filter((name) => name !== provider);
+        });
         return current;
       },
-      onError(e, __, prev) {
+      onError(e, _, prev) {
         toast.error(`Failed to unlink account: ${e.message}`);
         utils.user.account.getProviders.setData(undefined, prev);
         utils.user.account.getProviders.invalidate().catch(console.error);

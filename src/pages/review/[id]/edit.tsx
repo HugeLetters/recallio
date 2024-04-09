@@ -40,7 +40,7 @@ import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { useUploadThing } from "@/uploadthing";
-import { minutesToMs } from "@/utils";
+import { useInvalidateReviewAdjacentData } from "@/user/review";
 import type { StrictOmit, TransformProperty } from "@/utils/object";
 import { merge } from "@/utils/object";
 import { isSetEqual } from "@/utils/set";
@@ -272,21 +272,21 @@ function useSetOptimisticReview(barcode: string) {
 
 function useInvalidateReview(barcode: string) {
   const utils = trpc.useUtils();
+  const invalidateReviewData = useInvalidateReviewAdjacentData(barcode);
+
   return function () {
     const optimisticImage = utils.user.review.getOne.getData({ barcode })?.image;
-    Promise.all([
-      utils.user.review.getOne.invalidate({ barcode }).finally(() => {
+    utils.user.review.getOne
+      .invalidate({ barcode })
+      .catch(
+        logToastError("Failed to update data from the server.\nReloading the page is advised."),
+      )
+      .finally(() => {
         if (!optimisticImage) return;
         URL.revokeObjectURL(optimisticImage);
-      }),
-      utils.user.review.getSummaryList.invalidate(undefined),
-      utils.user.review.getCount.invalidate(undefined),
-      utils.product.getReviewList.invalidate({ barcode }),
-      utils.product.getSummary.invalidate({ barcode }),
-      utils.product.getSummaryList.invalidate(undefined),
-    ]).catch(
-      logToastError("Failed to update data from the server.\nReloading the page is advised."),
-    );
+      });
+
+    invalidateReviewData();
   };
 }
 
@@ -586,11 +586,11 @@ function CategorySearch({
   const categoriesQuery = trpc.product.getCategoryList.useInfiniteQuery(
     { filter: searchParam, limit: 30 },
     {
-      enabled,
       getNextPageParam(page) {
         return page.at(-1);
       },
-      staleTime: minutesToMs(5),
+      enabled,
+      staleTime: Infinity,
     },
   );
 
