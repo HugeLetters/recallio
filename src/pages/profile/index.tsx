@@ -136,16 +136,18 @@ function ReviewCards() {
       className="flex grow flex-col gap-2"
     >
       {reviewCardsQuery.isSuccess ? (
-        <InfiniteScroll
-          pages={reviewCardsQuery.data.pages}
-          getPageValues={(page) => page.page}
-          getKey={(value) => value.barcode}
-          getNextPage={fetchNextPage(reviewCardsQuery)}
-          fallback={<NoResults />}
-          spinner={reviewCardsQuery.isFetching ? <Spinner className="h-16" /> : null}
-        >
-          {(value) => <ReviewCard review={value} />}
-        </InfiniteScroll>
+        <>
+          <InfiniteScroll
+            pages={reviewCardsQuery.data.pages}
+            getPageValues={(page) => page.page}
+            getKey={(value) => value.barcode}
+            getNextPage={fetchNextPage(reviewCardsQuery)}
+            fallback={<NoResults />}
+          >
+            {(value) => <ReviewCard review={value} />}
+          </InfiniteScroll>
+          {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
+        </>
       ) : (
         "Loading..."
       )}
