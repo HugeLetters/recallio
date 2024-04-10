@@ -192,15 +192,17 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
       </div>
       <div className="flex flex-col gap-5">
         {reviewsQuery.isSuccess ? (
-          <InfiniteScroll
-            pages={reviewsQuery.data.pages}
-            getPageValues={({ page }) => page}
-            getKey={(review) => review.id}
-            getNextPage={fetchNextPage(reviewsQuery)}
-            spinner={reviewsQuery.isFetching ? <Spinner className="h-16" /> : null}
-          >
-            {(review) => <ReviewCard review={review} />}
-          </InfiniteScroll>
+          <>
+            <InfiniteScroll
+              pages={reviewsQuery.data.pages}
+              getPageValues={({ page }) => page}
+              getKey={(review) => review.id}
+              getNextPage={fetchNextPage(reviewsQuery)}
+            >
+              {(review) => <ReviewCard review={review} />}
+            </InfiniteScroll>
+            {reviewsQuery.isFetching ? <Spinner className="h-8" /> : null}
+          </>
         ) : (
           "Loading..."
         )}
