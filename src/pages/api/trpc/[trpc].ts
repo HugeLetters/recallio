@@ -1,9 +1,9 @@
-import { env } from "@/server/env/index.mjs";
 import { apiRouter } from "@/server/api/router";
 import { createTRPCContext } from "@/server/api/trpc";
+import { mergeCacheControl } from "@/server/api/utils/cache";
+import { env } from "@/server/env/index.mjs";
 import { createNextApiHandler } from "@trpc/server/adapters/next";
 
-// export API handler
 export default createNextApiHandler({
   router: apiRouter,
   createContext: createTRPCContext,
@@ -15,4 +15,11 @@ export default createNextApiHandler({
           );
         }
       : undefined,
+  responseMeta({ data }) {
+    return {
+      headers: {
+        "Cache-Control": mergeCacheControl(data) ?? undefined,
+      },
+    };
+  },
 });
