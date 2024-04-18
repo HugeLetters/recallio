@@ -59,7 +59,7 @@ const getSummary = protectedProcedure
       .from(review)
       .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))
       .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
-      .leftJoin(productMeta, eq(review.barcode, productMeta.barcode))
+      .innerJoin(productMeta, eq(review.barcode, productMeta.barcode))
       .groupBy(review.barcode)
       .limit(1)
       .get()
