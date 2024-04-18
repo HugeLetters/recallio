@@ -1,4 +1,5 @@
 import { protectedProcedure } from "@/server/api/trpc";
+import { cachify } from "@/server/api/utils/cache";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
 import { db } from "@/server/database/client/serverless";
@@ -86,5 +87,12 @@ export const getSummaryList = protectedProcedure
             sorted: sort.by === "rating" ? lastPage.averageRating : lastPage.reviewCount,
           }),
         };
-      });
+      })
+      .then(cacheControl);
   });
+
+const cacheControl = cachify({
+  type: "public",
+  maxAge: 60,
+  swr: 60 * 60 * 6, // 6 hours
+});
