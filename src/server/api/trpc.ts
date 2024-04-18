@@ -3,20 +3,11 @@ import { env } from "@/server/env/index.mjs";
 import { ExpectedError, defaultErrorMessage } from "@/server/error/trpc";
 import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
-import type { Session } from "next-auth";
 import { ZodError } from "zod";
-
-interface CreateContextOptions {
-  session: Session | null;
-}
-
-function createInnerTRPCContext({ session }: CreateContextOptions) {
-  return { session };
-}
 
 export async function createTRPCContext({ req, res }: CreateNextContextOptions) {
   const session = await getServerAuthSession({ req, res });
-  return createInnerTRPCContext({ session });
+  return { session };
 }
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
