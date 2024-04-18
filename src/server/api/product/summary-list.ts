@@ -1,9 +1,11 @@
 import { protectedProcedure } from "@/server/api/trpc";
+import { cachify } from "@/server/api/utils/cache";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import { productMeta, review } from "@/server/database/schema/product";
+import { averageProductRating } from "@/server/database/schema/product/sql";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
 import { mostCommon } from "@/utils/array";
@@ -22,10 +24,10 @@ const pagination = createPagination({
 export const getSummaryList = protectedProcedure
   .input(z.object({ filter: z.string().optional() }).merge(pagination.schema))
   .query(({ input: { limit, cursor, sort, filter } }) => {
-    function getSortByColumn(): SQL.Aliased<number> {
+    function getSortByColumn(): SQL<number> {
       switch (sort.by) {
         case "reviews":
-          return reviewCol;
+          return sql`${reviewCol}`;
         case "rating":
           return ratingCol;
         default:
@@ -33,11 +35,8 @@ export const getSummaryList = protectedProcedure
       }
     }
 
-    const reviewCol = sql<number>`${productMeta.publicReviewCount}`.as("review-count");
-    const ratingCol =
-      sql<number>`CAST(${productMeta.publicTotalRating} AS FLOAT) / ${reviewCol.sql}`.as(
-        "average-rating",
-      );
+    const reviewCol = productMeta.publicReviewCount;
+    const ratingCol = averageProductRating;
     const sortOrder = sort.desc ? desc : asc;
     const sortBy = getSortByColumn();
 
@@ -86,5 +85,12 @@ export const getSummaryList = protectedProcedure
             sorted: sort.by === "rating" ? lastPage.averageRating : lastPage.reviewCount,
           }),
         };
-      });
+      })
+      .then(cacheControl);
   });
+
+const cacheControl = cachify({
+  type: "public",
+  maxAge: 60,
+  swr: 60 * 60 * 6, // 6 hours
+});

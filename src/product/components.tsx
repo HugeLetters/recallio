@@ -110,7 +110,7 @@ function CollapsibleComment({ overflow, children }: PropsWithChildren<Collapsibl
         isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
       )}
     >
-      <div className="min-h-[3lh] overflow-y-hidden whitespace-pre-wrap break-words">
+      <div className="scrollbar-gutter min-h-[3lh] overflow-y-hidden whitespace-pre-wrap break-words">
         {children}
       </div>
       <div

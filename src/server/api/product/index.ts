@@ -1,7 +1,13 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
-import { category, review, reviewsToCategories } from "@/server/database/schema/product";
+import {
+  category,
+  productMeta,
+  review,
+  reviewsToCategories,
+} from "@/server/database/schema/product";
+import { averageProductRating } from "@/server/database/schema/product/sql";
 import { throwExpectedError } from "@/server/error/trpc";
 import { cacheProductNames, getProductNames } from "@/server/product/cache";
 import { getScrapedProducts } from "@/server/product/scrapers";
@@ -45,14 +51,15 @@ const getSummary = protectedProcedure
     return db
       .select({
         name: query.aggregate(review.name, (x) => mostCommon(1)(x)[0]!),
-        rating: query.avg(review.rating),
-        reviewCount: query.count(),
         image: query.map(query.min(review.imageKey), getFileUrl),
         categories: categorySq.categories,
+        reviewCount: productMeta.publicReviewCount,
+        rating: averageProductRating,
       })
       .from(review)
       .where(and(eq(review.barcode, barcode), eq(review.isPrivate, false)))
       .leftJoin(categorySq, eq(review.barcode, categorySq.barcode))
+      .leftJoin(productMeta, eq(review.barcode, productMeta.barcode))
       .groupBy(review.barcode)
       .limit(1)
       .get()
