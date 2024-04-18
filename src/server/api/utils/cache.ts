@@ -12,6 +12,12 @@ type CacheControl = {
 };
 
 const cacheControlSymbol = Symbol("cache-control");
+/** This function tags the value with cache control value.
+ *
+ *  It will convert primitive values to the their respectful boxed values(eg: `number` to `Number`).
+ *
+ *  `undefined` or `null` will **NOT** be tagged.
+ */
 export function cachify(options: CacheControl) {
   return function <T>(value: T): T {
     if (value == null) return value;
