@@ -25,7 +25,7 @@ const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
 
-  return !!barcode ? <Review barcode={barcode} /> : "Loading...";
+  return barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
 Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;

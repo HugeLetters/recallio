@@ -8,7 +8,7 @@ import { useState } from "react";
 import EmailIcon from "~icons/carbon/email";
 
 const PIN_LENGTH = 6;
-const SLOTS = Array.from({ length: PIN_LENGTH });
+const SLOTS = Array.from({ length: PIN_LENGTH }, (_, i) => i);
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const callbackUrl = getQueryParam(router.query.callbackUrl) ?? "/profile";
@@ -51,13 +51,13 @@ const Page: NextPageWithLayout = function () {
       >
         <label className="group/input my-6 w-full cursor-text">
           <div className="grid w-full grid-cols-6 justify-center gap-2.5 uppercase">
-            {SLOTS.map((_, i) => (
+            {SLOTS.map((slot) => (
               <div
-                key={i}
+                key={slot}
                 className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-400/50 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green-500"
               >
-                {pin[i]}
-                {i === pin.length && (
+                {pin[slot]}
+                {slot === pin.length && (
                   <span className="invisible animate-ping text-app-green-500 group-focus-within/input:visible">
                     |
                   </span>
@@ -74,6 +74,7 @@ const Page: NextPageWithLayout = function () {
             minLength={PIN_LENGTH}
             maxLength={PIN_LENGTH}
             aria-label="Your authentication pin"
+            autoFocus
             autoComplete="off"
             className="sr-only"
           />

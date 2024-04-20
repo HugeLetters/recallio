@@ -153,7 +153,7 @@ function UserImage({ user, sync }: UserImageProps) {
           updateUserImage(file);
         }}
       >
-        {!!optimisticUser.image ? "Change avatar" : "Upload avatar"}
+        {optimisticUser.image ? "Change avatar" : "Upload avatar"}
       </ImagePickerButton>
     </div>
   );

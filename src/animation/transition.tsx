@@ -18,9 +18,18 @@ export function Transition({
 
   useEffect(() => {
     if (!divRef.current) return;
+    const observer = new MutationObserver((events) => {
+      // we do it in reverse cause... uhm... cause if several elements are removed at the same time in normal order your reference to the nextSibling will be out of date actually cause it also got removed.
+      for (const { addedNodes, removedNodes, target, nextSibling } of events.reverse()) {
+        handleAdded(addedNodes);
+        handleRemoved(removedNodes, target, nextSibling);
+      }
+    });
+
+    observer.observe(divRef.current, { childList: true });
+
     const inClassList = getClassList(inClassName);
     const outClassList = getClassList(outClassName);
-
     function isExternalElement<N extends Node>(node: N): node is Element & N {
       return node instanceof Element && node.getAttribute(markerAttributeName) !== id;
     }
@@ -51,16 +60,6 @@ export function Transition({
         onSelfAnimationDone(node, () => node.remove());
       }
     }
-
-    const observer = new MutationObserver((events) => {
-      // we do it in reverse cause... uhm... cause if several elements are removed at the same time in normal order your reference to the nextSibling will be out of date actually cause it also got removed.
-      for (const { addedNodes, removedNodes, target, nextSibling } of events.reverse()) {
-        handleAdded(addedNodes);
-        handleRemoved(removedNodes, target, nextSibling);
-      }
-    });
-
-    observer.observe(divRef.current, { childList: true });
 
     return () => {
       observer.disconnect();

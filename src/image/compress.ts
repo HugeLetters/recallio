@@ -4,22 +4,7 @@ import { blobToFile } from "./blob";
 export async function compressImage(file: File, targetBytes: number): Promise<File | null> {
   if (!browser) throw Error("This function is browser-only");
 
-  const bitmap = await createImageBitmap(file);
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw Error("Couldn't get canvas 2D context");
-
-  const drawImage = function (scale: number) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.width = bitmap.width * scale;
-    canvas.height = bitmap.height * scale;
-
-    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    return new Promise<Blob | null>((resolve) => {
-      canvas.toBlob((blob) => resolve(blob), "image/webp");
-    });
-  };
-
+  const drawImage = await createImageDrawer(file);
   const webpImage = await drawImage(1);
   if (!webpImage) return null;
   if (webpImage.size <= targetBytes) {
@@ -31,21 +16,42 @@ export async function compressImage(file: File, targetBytes: number): Promise<Fi
     const image = await drawImage(scale);
     if (!image) break;
 
-    if (image.size <= targetBytes) {
-      const isBetterFit = !bestFit || image.size > bestFit.size;
-      if (isBetterFit) {
-        bestFit = image;
-
-        const isAcceptable = bestFit.size <= targetBytes && bestFit.size >= targetBytes * 0.95;
-        if (isAcceptable) break;
-      }
-
-      scale += 1 / 2 ** i;
-    } else {
-      scale -= 1 / 2 ** i;
+    const step = 0.5 ** i;
+    if (image.size > targetBytes) {
+      scale -= step;
+      continue;
     }
+    scale += step;
+
+    if (!bestFit) {
+      bestFit = image;
+      continue;
+    }
+
+    if (image.size <= bestFit.size) continue;
+
+    bestFit = image;
+    if (bestFit.size >= targetBytes * 0.95) break;
   }
 
   if (!bestFit) return null;
   return blobToFile(bestFit, file.name);
+}
+
+async function createImageDrawer(file: File) {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw Error("Couldn't get canvas 2D context");
+
+  return function (scale: number) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = bitmap.width * scale;
+    canvas.height = bitmap.height * scale;
+
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), "image/webp");
+    });
+  };
 }

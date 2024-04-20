@@ -4,13 +4,13 @@ import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { forwardRef } from "react";
 
 export const ButtonLike = forwardRef<HTMLElement, PropsWithChildren<ButtonProps>>(function _(
-  { children, ...props },
+  { children, className, ...props },
   ref,
 ) {
   return (
     <Slot
       ref={ref}
-      className="clickable rounded-xl px-2.5 py-3.5"
+      className={tw("clickable rounded-xl px-2.5 py-3.5", className)}
       {...props}
     >
       {children}

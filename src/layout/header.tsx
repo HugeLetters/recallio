@@ -2,9 +2,7 @@ import type { Icon } from "@/image/icon";
 import { tw } from "@/styles/tw";
 import type { DiscriminatedUnion } from "@/utils/object";
 import Link from "next/link";
-import router from "next/router";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import LeftArrowIcon from "~icons/uil/arrow-left";
 
 export type HeaderProps = DiscriminatedUnion<
   { title: ReactNode; left?: ReactNode; right?: ReactNode },
@@ -18,18 +16,7 @@ export function Header({ header, left, right, title }: HeaderProps) {
           header
         ) : (
           <div className="grid size-full grid-cols-[1fr_auto_1fr] items-center">
-            <div className="justify-self-start">
-              {left !== undefined ? (
-                left
-              ) : (
-                <HeaderButton
-                  Icon={LeftArrowIcon}
-                  onClick={router.back}
-                  role="navigation"
-                  aria-label="go back"
-                />
-              )}
-            </div>
+            <div className="justify-self-start">{left}</div>
             <div className="col-start-2 justify-self-center text-xl">
               {typeof title === "string" ? <h1>{title}</h1> : title}
             </div>

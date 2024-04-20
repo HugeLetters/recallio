@@ -85,16 +85,15 @@ async function updateRouteInfo(pathname, value) {
   cancelTrieUpdate();
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      createRouteTrie()
-        .then((trie) => {
-          const stringified = stringifyRouteTrie(trie);
-          const fileContents = createRouteFile(stringified);
-          return format(fileContents, { ...prettierConfig, parser: "typescript" });
-        })
+      const trie = createRouteTrie();
+      const stringified = stringifyRouteTrie(trie);
+      const fileContents = createRouteFile(stringified);
+      format(fileContents, { ...prettierConfig, parser: "typescript" })
         .then((contents) => writeFile("src/router/matcher.ts", contents))
         .then(resolve)
         .catch(reject);
     }, 1000);
+
     cancelTrieUpdate = () => {
       clearTimeout(timeout);
       resolve();
@@ -117,7 +116,7 @@ function isPublicPage(contents) {
   return tsx.parseAsync(contents).then((sg) => {
     const tree = sg.root();
     const defaultExport = tree.find("export default $A;")?.getMatch("A")?.text();
-    if (!defaultExport) return Promise.reject("Page has no default export");
+    if (!defaultExport) throw Error("Page has no default export");
     return !!tree.find(`${defaultExport}.isPublic=true`);
   });
 }
@@ -131,7 +130,7 @@ function getPathname(filepath) {
   return pathname;
 }
 
-async function createRouteTrie() {
+function createRouteTrie() {
   /** @type {import("./auth-routes.types").RouteMatcherTrie} */
   const trie = {};
   for (const [route, isPublic] of routeInfo) {
@@ -144,7 +143,7 @@ async function createRouteTrie() {
       node[chunkName] ??= {};
       const child = node[chunkName];
       if (typeof child !== "object") {
-        return Promise.reject(`Path ${route} has invalid segment ${chunk}`);
+        throw Error(`Path ${route} has invalid segment ${chunk}`);
       }
       node = child;
     }

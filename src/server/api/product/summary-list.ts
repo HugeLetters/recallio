@@ -35,11 +35,6 @@ export const getSummaryList = protectedProcedure
       }
     }
 
-    const reviewCol = productMeta.publicReviewCount;
-    const ratingCol = averageProductRating;
-    const sortOrder = sort.desc ? desc : asc;
-    const sortBy = getSortByColumn();
-
     const matchedSq = db
       .select({
         barcode: review.barcode,
@@ -50,9 +45,15 @@ export const getSummaryList = protectedProcedure
       .groupBy(review.barcode)
       .as("matched");
 
+    const reviewCol = productMeta.publicReviewCount;
+    const ratingCol = averageProductRating;
+    const sortBy = getSortByColumn();
+
+    const direction = sort.desc ? desc : asc;
+    const compare = sort.desc ? lt : gt;
     const cursorClause = cursor
       ? or(
-          (sort.desc ? lt : gt)(sortBy, cursor.sorted),
+          compare(sortBy, cursor.sorted),
           and(gt(productMeta.barcode, cursor.barcode), eq(sortBy, cursor.sorted)),
         )
       : undefined;
@@ -71,7 +72,7 @@ export const getSummaryList = protectedProcedure
       .innerJoin(review, and(eq(productMeta.barcode, review.barcode), eq(review.isPrivate, false)))
       .innerJoin(matchedSq, and(eq(productMeta.barcode, matchedSq.barcode)))
       .groupBy(productMeta.barcode)
-      .orderBy(sortOrder(sortBy), asc(productMeta.barcode))
+      .orderBy(direction(sortBy), asc(productMeta.barcode))
       .limit(limit)
       .then((page): Paginated<typeof page> => {
         if (!page.length) return { page };

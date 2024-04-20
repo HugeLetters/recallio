@@ -1,10 +1,9 @@
-import { useRouter } from "next/router";
+import Link from "next/link";
 import BrokenEggshellIcon from "~icons/custom/broken-eggshell";
-import { Button } from "./ui";
+import { ButtonLike } from "./ui";
 
 type ErrorProps = { message?: string };
 export function Error({ message: error }: ErrorProps) {
-  const router = useRouter();
   const splitError = error ? splitSentence(error) : null;
 
   return (
@@ -19,14 +18,14 @@ export function Error({ message: error }: ErrorProps) {
         )}
         <p className="text-sm">Please try again</p>
       </div>
-      <Button
-        onClick={router.back}
-        role="navigation"
-        aria-label="go back"
-        className="primary mt-3 w-2/5"
-      >
-        Go back
-      </Button>
+      <ButtonLike>
+        <Link
+          href="/profile"
+          className="primary mt-3 w-2/5"
+        >
+          Go to homepage
+        </Link>
+      </ButtonLike>
     </div>
   );
 }

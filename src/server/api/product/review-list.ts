@@ -7,6 +7,7 @@ import { review } from "@/server/database/schema/product";
 import { user } from "@/server/database/schema/user";
 import { createBarcodeSchema } from "@/server/product/validation";
 import { getFileUrl } from "@/server/uploadthing";
+import type { StrictExtract } from "@/utils/type";
 import { and, asc, desc, eq, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
 
@@ -18,6 +19,7 @@ const pagination = createPagination({
   sortBy: ["date", "rating"],
 });
 
+type SortColumns = StrictExtract<keyof typeof review._.columns, "updatedAt" | "rating">;
 export const getReviewList = protectedProcedure
   .input(
     z
@@ -27,7 +29,7 @@ export const getReviewList = protectedProcedure
       .merge(pagination.schema),
   )
   .query(({ input: { barcode, limit, sort, cursor } }) => {
-    function getSortByKey() {
+    function getSortByKey(): SortColumns {
       switch (sort.by) {
         case "date":
           return "updatedAt";
@@ -37,12 +39,15 @@ export const getReviewList = protectedProcedure
           return sort.by satisfies never;
       }
     }
-    const direction = sort.desc ? desc : asc;
+
     const sortBy = getSortByKey();
     const sortByCol = review[sortBy];
+
+    const direction = sort.desc ? desc : asc;
+    const compare = sort.desc ? lt : gt;
     const cursorClause = cursor
       ? or(
-          (sort.desc ? lt : gt)(sortByCol, cursor.sorted),
+          compare(sortByCol, cursor.sorted),
           and(gt(review.id, cursor.id), eq(sortByCol, cursor.sorted)),
         )
       : undefined;

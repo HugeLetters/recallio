@@ -38,11 +38,13 @@ export const getSummaryList = protectedProcedure
       }
     }
 
-    const direction = sort.desc ? desc : asc;
     const sortBy = getSortByColumn();
+
+    const direction = sort.desc ? desc : asc;
+    const compare = sort.desc ? lt : gt;
     const cursorClause = cursor
       ? or(
-          (sort.desc ? lt : gt)(sortBy, cursor.sorted),
+          compare(sortBy, cursor.sorted),
           and(gt(review.barcode, cursor.barcode), eq(sortBy, cursor.sorted)),
         )
       : undefined;

@@ -59,7 +59,7 @@ function getPreviousTriggers() {
         mapFilter(
           [...migration.matchAll(triggerNameRegExp)],
           (match) => match[1],
-          (match, b) => (match ? match : b),
+          (match, b) => match ?? b,
         ),
       ),
     );

@@ -15,7 +15,7 @@ export function getCookies() {
 
       return [key, isSome(data) ? data.value : decoded] as const;
     },
-    (v, bad) => (v ? v : bad),
+    (v, bad) => v ?? bad,
   );
 
   return Object.fromEntries(cookieEntries);

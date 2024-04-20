@@ -2,19 +2,19 @@ import type { PointerEventHandler, RefObject } from "react";
 import { useEffect, useRef } from "react";
 
 type Movement = { dx: number; dy: number };
-interface onSwipeStartData {
+interface OnSwipeStartData {
   swipeTarget: HTMLElement;
 }
-interface onSwipeEndData extends onSwipeStartData {
+interface OnSwipeEndData extends OnSwipeStartData {
   movement: Movement;
 }
-interface onSwipeData extends onSwipeStartData {
+interface OnSwipeData extends OnSwipeStartData {
   movement: Movement;
 }
 type UseSwipeOptions = {
-  onSwipe?: (data: onSwipeData) => void;
-  onSwipeStart?: (data: onSwipeStartData) => void;
-  onSwipeEnd?: (data: onSwipeEndData) => void;
+  onSwipe?: (data: OnSwipeData) => void;
+  onSwipeStart?: (data: OnSwipeStartData) => void;
+  onSwipeEnd?: (data: OnSwipeEndData) => void;
   ignore?: RefObject<Element>;
 };
 /**
