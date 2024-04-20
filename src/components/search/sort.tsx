@@ -131,9 +131,10 @@ export function SortDialog({ optionList }: SortDialogProps) {
             >
               <button
                 type="button"
-                aria-label="drag down to close"
+                tabIndex={-1}
+                aria-hidden
                 onPointerDown={swipeHandler}
-                className="relative mx-auto block h-2 w-20 rounded-full bg-neutral-200 outline-neutral-400 after:absolute after:-inset-2"
+                className="relative mx-auto block h-2 w-20 rounded-full bg-neutral-200 after:absolute after:-inset-2"
               />
               <Dialog.Title className="mb-6 text-xl font-semibold">Sort By</Dialog.Title>
               <Flipper
