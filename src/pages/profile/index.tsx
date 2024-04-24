@@ -36,7 +36,7 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = ({ children }) => {
+Page.getLayout = (children)=> {
   const right = (
     <HeaderLink
       Icon={SettingsIcon}

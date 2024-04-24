@@ -28,7 +28,7 @@ const Page: NextPageWithLayout = function () {
   return barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children)=> <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 export default Page;
 
 type ReviewProps = { barcode: string };

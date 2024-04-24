@@ -190,7 +190,7 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = function useLayout({ children }) {
+Page.getLayout = (children) => {
   return <Layout header={{ title: "Scanner" }}>{children}</Layout>;
 };
 

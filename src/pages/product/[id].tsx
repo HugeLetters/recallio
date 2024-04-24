@@ -24,7 +24,7 @@ const Page: NextPageWithLayout = function () {
   return barcode ? <ProductPage barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = ({ children }) => {
+Page.getLayout = (children)=> {
   return <Layout header={{ title: "Product page" }}>{children}</Layout>;
 };
 

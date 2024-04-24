@@ -29,7 +29,7 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
   );
 }
 
-export type GetLayout = ({ children }: PropsWithChildren) => ReactNode;
+export type GetLayout = (page: ReactNode) => ReactNode;
 export type NextPageWithLayout<Props = unknown, InitialProps = Props> = NextPage<
   Props,
   InitialProps

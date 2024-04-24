@@ -74,7 +74,7 @@ const Page: NextPageWithLayout = function () {
     "Loading"
   );
 };
-Page.getLayout = ({ children }) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
+Page.getLayout = (children)=> <Layout header={{ title: "Settings" }}>{children}</Layout>;
 
 export default Page;
 

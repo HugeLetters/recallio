@@ -3,7 +3,7 @@ import { ResizeProvider } from "@/browser/resize/provider";
 import { LoadingProvider } from "@/components/loading/indicator";
 import { ToastProvider } from "@/components/toast/provider";
 import type { NextPageWithLayout } from "@/layout";
-import { BasicLayout } from "@/layout/basic";
+import { getBasicLayout } from "@/layout/basic";
 import { lato } from "@/styles/font";
 import "@/styles/globals.css";
 import { tw } from "@/styles/tw";
@@ -18,7 +18,7 @@ interface AppPropsWithLayout extends AppProps<{ session: Session | null }> {
   Component: NextPageWithLayout;
 }
 const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
-  const Layout = Component.getLayout ?? BasicLayout;
+  const { getLayout = getBasicLayout } = Component;
   const Page = <Component {...pageProps} />;
 
   return (
@@ -35,7 +35,7 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             href="/manifest.webmanifest"
           />
         </Head>
-        <Layout>{!Component.isPublic ? <AuthGuard>{Page}</AuthGuard> : Page}</Layout>
+        {getLayout(!Component.isPublic ? <AuthGuard>{Page}</AuthGuard> : Page)}
       </Providers>
     </div>
   );

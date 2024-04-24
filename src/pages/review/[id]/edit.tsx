@@ -68,7 +68,7 @@ const Page: NextPageWithLayout = function () {
 
   return barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
 };
-Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children)=> <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 
 export default Page;
 
