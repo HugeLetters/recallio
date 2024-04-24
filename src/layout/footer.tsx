@@ -26,6 +26,7 @@ export function Footer() {
         role={undefined}
       >
         <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
+          {/* todo - broken again */}
           <Flipper
             flipKey={pathname}
             spring={{ stiffness: 350, damping: 25 }}

@@ -30,6 +30,10 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             rel="icon"
             href="/favicon.ico"
           />
+          <link
+            rel="manifest"
+            href="/manifest.webmanifest"
+          />
         </Head>
         <Layout>{!Component.isPublic ? <AuthGuard>{Page}</AuthGuard> : Page}</Layout>
       </Providers>
