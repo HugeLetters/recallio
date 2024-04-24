@@ -4,13 +4,19 @@
  */
 await import("./src/server/env/index.mjs");
 
-import BundleAnalyzer from "@next/bundle-analyzer";
-import nextRoutes from "nextjs-routes/config";
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import setupSerwist from "@serwist/next";
+import setupNextRoutes from "nextjs-routes/config";
 import { FileSystemIconLoader } from "unplugin-icons/loaders";
 import unpluginIcons from "unplugin-icons/webpack";
 import { authRoutesPlugin } from "./webpack/auth-routes.mjs";
 
-const withRoutes = nextRoutes();
+const withRoutes = setupNextRoutes();
+const withSerwistInit = setupSerwist({
+  swDest: "public/recallio-sw.js",
+  swUrl: "recallio-sw.js",
+  swSrc: "./src/sw/index.ts",
+});
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -71,5 +77,7 @@ const config = {
 };
 
 export default function NextConfig() {
-  return withRoutes(BundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(config));
+  return withSerwistInit(
+    withRoutes(withBundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(config)),
+  );
 }
