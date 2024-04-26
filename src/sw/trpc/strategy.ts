@@ -34,23 +34,16 @@ export class TrpcStrategy extends Strategy {
       return this.handleBatchRequest(resource, route, inputOption.value, handler);
     }
 
-    // todo - parse non-batch response
-    return resource
-      .then((res) => {
-        return res;
-      })
-      .catch(() => {
-        return Response.error();
-      });
+    return this.handleRegularRequest(resource, route, inputOption.value, handler);
   }
 
   private handleBatchRequest(
     resource: Promise<Response>,
-    pathname: string,
+    route: string,
     input: unknown,
     handler: StrategyHandler,
   ) {
-    const batchKeys = this.getBatchKeys(pathname, input);
+    const batchKeys = this.getBatchKeys(route, input);
     return resource
       .then((res) => {
         const resData = res.clone().json();
@@ -91,18 +84,35 @@ export class TrpcStrategy extends Strategy {
       });
   }
 
-  private getBatchKeys(route: string, input: unknown) {
+  private getBatchKeys(route: string, rawInput: unknown) {
     const procedureNames = route.split(",");
-    const verifiedInput = isObject(input) ? input : null;
+    const batchInput = isObject(rawInput) ? rawInput : null;
     return procedureNames.map((name, i) => {
       if (!includes(this.paths, name)) return null;
 
-      if (!verifiedInput || !hasProperty(verifiedInput, i)) {
+      if (!batchInput || !hasProperty(batchInput, i)) {
         return name;
       }
 
-      return `${name}-${serialize(verifiedInput[i])}`;
+      return createKey(name, batchInput[i]);
     });
+  }
+
+  handleRegularRequest(
+    resource: Promise<Response>,
+    route: string,
+    input: unknown,
+    handler: StrategyHandler,
+  ) {
+    const key = createKey(route, input);
+    return resource
+      .then((res) => {
+        handler.waitUntil(handler.cachePut(key, res.clone())).catch(console.error);
+        return res;
+      })
+      .catch(() => {
+        return handler.cacheMatch(key).then((res) => res ?? Response.error());
+      });
   }
 }
 
@@ -134,6 +144,11 @@ function parseInput(url: URL): Option<unknown> {
   } catch {
     return { ok: false };
   }
+}
+
+function createKey(procedure: string, input: unknown) {
+  if (input === undefined) return procedure;
+  return `${procedure}-${serialize(input)}`;
 }
 
 function isSuccessfulResponse(value: unknown): value is Record<"result", unknown> {
