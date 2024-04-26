@@ -6,7 +6,7 @@ import { user, verificationToken } from "@/server/database/schema/user";
 import { ExpectedError, throwExpectedError } from "@/server/error/trpc";
 import { fileDeleteQueueInsert } from "@/server/uploadthing/delete-queue";
 import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/validation/string";
-import { usernameMaxLength, usernameMinLength } from "@/user/validation";
+import { USERNAME_LENGTH_MAX, USERNAME_LENGTH_MIN } from "@/user/validation";
 import { ignore } from "@/utils";
 import type { NonEmptyArray } from "@/utils/array";
 import { and, eq, isNotNull } from "drizzle-orm";
@@ -17,8 +17,8 @@ import { reviewRouter } from "./review";
 const setName = protectedProcedure
   .input(
     stringLikeSchema({ required_error: "Username was not provided" })
-      .min(usernameMinLength, createMinMessage("Username", usernameMinLength))
-      .max(usernameMaxLength, createMaxMessage("Username", usernameMaxLength)),
+      .min(USERNAME_LENGTH_MIN, createMinMessage("Username", USERNAME_LENGTH_MIN))
+      .max(USERNAME_LENGTH_MAX, createMaxMessage("Username", USERNAME_LENGTH_MAX)),
   )
   .mutation(({ input, ctx: { session } }) => {
     return db

@@ -1,2 +1,2 @@
-export const usernameMinLength = 4;
-export const usernameMaxLength = 31;
+export const USERNAME_LENGTH_MIN = 4;
+export const USERNAME_LENGTH_MAX = 31;

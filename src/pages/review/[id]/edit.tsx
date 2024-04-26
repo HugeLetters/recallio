@@ -24,13 +24,13 @@ import {
 } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import {
-  categoryCountMax,
-  categoryLengthMax,
-  categoryLengthMin,
-  productCommentLengthMax,
-  productNameLengthMax,
-  productNameLengthMin,
-  productRatingMax,
+  CATEGORY_COUNT_MAX,
+  CATEGORY_LENGTH_MAX,
+  CATEGORY_LENGTH_MIN,
+  PRODUCT_COMMENT_LENGTH_MAX,
+  PRODUCT_NAME_LENGTH_MAX,
+  PRODUCT_NAME_LENGTH_MIN,
+  PRODUCT_RATING_MAX,
 } from "@/product/validation";
 import { reviewPrivateDefaultStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
@@ -68,7 +68,7 @@ const Page: NextPageWithLayout = function () {
 
   return barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
 };
-Page.getLayout = (children)=> <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 
 export default Page;
 
@@ -303,8 +303,8 @@ function Name({ barcode, register }: NameProps) {
       <Input
         {...register}
         required
-        minLength={productNameLengthMin}
-        maxLength={productNameLengthMax}
+        minLength={PRODUCT_NAME_LENGTH_MIN}
+        maxLength={PRODUCT_NAME_LENGTH_MAX}
         placeholder={data?.[0] ?? "Name"}
         autoComplete="off"
         aria-label="Product name"
@@ -315,7 +315,7 @@ function Name({ barcode, register }: NameProps) {
   );
 }
 
-const ratingList = Array.from({ length: productRatingMax }, (_, i) => i + 1);
+const ratingList = Array.from({ length: PRODUCT_RATING_MAX }, (_, i) => i + 1);
 function Rating({ value, setValue }: Model<number>) {
   return (
     <Radio.Root
@@ -373,7 +373,7 @@ function CommentSection({
           initialContent={review.pros ?? ""}
           {...registerPros}
           placeholder="Pros"
-          maxLength={productCommentLengthMax}
+          maxLength={PRODUCT_COMMENT_LENGTH_MAX}
         />
       </label>
       <label className="flex py-2">
@@ -383,7 +383,7 @@ function CommentSection({
           initialContent={review.cons ?? ""}
           {...registerCons}
           placeholder="Cons"
-          maxLength={productCommentLengthMax}
+          maxLength={PRODUCT_COMMENT_LENGTH_MAX}
         />
       </label>
       <label className="py-2">
@@ -392,7 +392,7 @@ function CommentSection({
           initialContent={review.comment ?? ""}
           {...registerComment}
           placeholder="Comment"
-          maxLength={productCommentLengthMax}
+          maxLength={PRODUCT_COMMENT_LENGTH_MAX}
         />
       </label>
     </CommentWrapper>
@@ -460,7 +460,7 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
 }
 
 function categoryLimitErrorToast() {
-  return toast.error(`You can't add more than ${categoryCountMax} categories.`, {
+  return toast.error(`You can't add more than ${CATEGORY_COUNT_MAX} categories.`, {
     id: "review-edit-category-limit",
   });
 }
@@ -487,7 +487,7 @@ function CategoryList({ control }: CategoryListProps) {
   const [isOpen, setIsOpen] = useQueryToggleState("category-modal");
   const setSearchQuery = useSetSearchQuery();
   const debouncedQuery = useRef<number>();
-  const isAtCategoryLimit = categories.length >= categoryCountMax;
+  const isAtCategoryLimit = categories.length >= CATEGORY_COUNT_MAX;
 
   return (
     <Dialog.Root
@@ -594,7 +594,8 @@ function CategorySearch({
     },
   );
 
-  const isSearchValid = search.length >= categoryLengthMin && search.length <= categoryLengthMax;
+  const isSearchValid =
+    search.length >= CATEGORY_LENGTH_MIN && search.length <= CATEGORY_LENGTH_MAX;
   // since it's displayed only at the top anyway it's enough to check only the first page for that match
   const isSearchAdded = includes(lowercaseSearch);
   const canAddSearch = canAddCategories && isSearchValid && !isSearchAdded;
@@ -602,7 +603,7 @@ function CategorySearch({
   function addCustomCategory() {
     if (!isSearchValid) {
       return toast.error(
-        `Category must be between ${categoryLengthMin} and ${categoryLengthMax} characters long.`,
+        `Category must be between ${CATEGORY_LENGTH_MIN} and ${CATEGORY_LENGTH_MAX} characters long.`,
         { id: "review-edit-category-length" },
       );
     }

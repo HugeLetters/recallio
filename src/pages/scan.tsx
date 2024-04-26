@@ -5,7 +5,7 @@ import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
-import { barcodeLengthMax, barcodeLengthMin } from "@/product/validation";
+import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import { Slot } from "@radix-ui/react-slot";
@@ -237,8 +237,8 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
           name="barcode"
           autoFocus
           required
-          minLength={barcodeLengthMin}
-          maxLength={barcodeLengthMax}
+          minLength={BARCODE_LENGTH_MIN}
+          maxLength={BARCODE_LENGTH_MAX}
           autoComplete="off"
         />
         <button
