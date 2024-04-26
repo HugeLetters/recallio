@@ -2,7 +2,7 @@
   "name": "recallio",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@8.15.4",
+  "packageManager": "pnpm@9.0.6",
   "scripts": {
     "dev": "pnpm cleanup && next dev -p 1853",
     "build": "pnpm rscript prebuild && next build",
