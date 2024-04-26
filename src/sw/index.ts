@@ -1,6 +1,6 @@
-import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
+import { TrpcCache } from "./trpc";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -10,12 +10,14 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// todo - check defaultCache strategies
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache,
+  runtimeCaching: [new TrpcCache(["user.review.getOne"])],
 });
 
 serwist.addEventListeners();
