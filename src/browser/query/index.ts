@@ -1,9 +1,10 @@
+import { isArray } from "@/utils/array";
 import type { NextRouter } from "next/router";
 import type { Query } from "nextjs-routes";
 
 export function getQueryParam(query: Query[string]) {
   if (query === undefined) return undefined;
-  return Array.isArray(query) ? query.at(-1) : query;
+  return isArray(query) ? query.at(-1) : query;
 }
 
 type SetQueryParamOptions = {
