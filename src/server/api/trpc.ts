@@ -1,7 +1,6 @@
 import { getServerAuthSession } from "@/server/auth";
-import { env } from "@/server/env/index.mjs";
 import { ExpectedError, defaultErrorMessage } from "@/server/error/trpc";
-import type { DefaultErrorShape, TRPCError } from "@trpc/server";
+import type { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { ZodError } from "zod";
@@ -11,15 +10,10 @@ export async function createTRPCContext({ req, res }: CreateNextContextOptions) 
   return { session };
 }
 
-const defaultErrorData: Partial<DefaultErrorShape["data"]> = {};
 const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {
     const message = getErrorMessage(error);
-    return {
-      message,
-      data: env.NEXT_PUBLIC_NODE_ENV === "development" ? shape.data : defaultErrorData,
-      code: shape.code,
-    };
+    return { message, data: shape.data, code: shape.code };
   },
 });
 
