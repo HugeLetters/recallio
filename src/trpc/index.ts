@@ -1,6 +1,7 @@
 import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
 import { toast } from "@/components/toast";
+import { FAILED_TO_FETCH_MESSAGE } from "@/error";
 import type { ApiRouter } from "@/server/api/router";
 import type { ExpectedError } from "@/server/error/trpc";
 import { isDev } from "@/utils";
@@ -31,6 +32,8 @@ export const trpc = createTRPCNext<ApiRouter>({
           onError(error) {
             console.error(error);
             const message = error instanceof Error ? error.message : String(error);
+            if (message === FAILED_TO_FETCH_MESSAGE) return;
+
             toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
             signOutOnUnauthorizedError(error);
           },
