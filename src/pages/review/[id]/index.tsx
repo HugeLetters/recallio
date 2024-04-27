@@ -197,7 +197,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {
       loading.enable();
-      router.push("/profile").catch(console.error);
+      return router.push("/profile").catch(console.error);
     },
     onError(e) {
       toast.error(`Couldn't delete the review: ${e.message}`);
