@@ -28,7 +28,7 @@ const Page: NextPageWithLayout = function () {
   return barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = (children)=> <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 export default Page;
 
 type ReviewProps = { barcode: string };
@@ -107,6 +107,7 @@ function Review({ barcode }: ReviewProps) {
 type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {
   const [isOpen, setIsOpen] = useQueryToggleState("attached-image-dialog");
+  // todo - transition to full view
   return (
     <Dialog.Root
       open={isOpen}
