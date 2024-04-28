@@ -8,36 +8,28 @@ import { isSome } from "@/utils/option";
 import type { AnyProcedure, AnyQueryProcedure, AnyRouterDef, Router } from "@trpc/server";
 import type { TRPCErrorResponse } from "@trpc/server/rpc";
 import serialize from "fast-json-stable-stringify";
-import type {
-  RouteHandler,
-  RouteMatchCallback,
-  RuntimeCaching,
-  SerwistPlugin,
-  StrategyHandler,
-} from "serwist";
+import type { RuntimeCaching, SerwistPlugin, StrategyHandler } from "serwist";
 import { Strategy } from "serwist";
 
 export class TrpcCache implements RuntimeCaching {
   constructor(private paths: NonEmptyArray<QueryPath>) {}
-
-  matcher: RouteMatchCallback = ({ url }) => {
+  matcher: RuntimeCaching["matcher"] = ({ url }) => {
     const { pathname } = url;
     if (!pathname.startsWith("/api/trpc/")) return false;
     return this.paths.some((path) => pathname.includes(path));
   };
-
-  handler: RouteHandler = new TrpcStrategy(this.paths);
+  handler = new TrpcStrategy(this.paths);
 }
 
 class TrpcStrategy extends Strategy {
   constructor(private paths: NonEmptyArray<QueryPath>) {
     super({
-      cacheName: `trpc-cache:${paths.join(",")}`,
+      cacheName: `trpc:${paths.join(",")}`,
       plugins: [trpcStrategyPlugin],
     });
   }
 
-  protected _handle(request: Request, handler: StrategyHandler): Promise<Response | undefined> {
+  protected _handle: Strategy["_handle"] = (request, handler) => {
     const { url } = handler;
     const resource = handler.fetch(request);
     if (!url) return resource;
@@ -53,7 +45,7 @@ class TrpcStrategy extends Strategy {
     }
 
     return this.handleRegularRequest(resource, route, inputOption.value, handler);
-  }
+  };
 
   private handleBatchRequest(
     resource: Promise<Response>,
@@ -116,7 +108,7 @@ class TrpcStrategy extends Strategy {
     });
   }
 
-  handleRegularRequest(
+  private handleRegularRequest(
     resource: Promise<Response>,
     route: string,
     input: unknown,

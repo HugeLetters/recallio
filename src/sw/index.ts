@@ -1,10 +1,11 @@
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
+import { SessionCache } from "./session";
 import { TrpcCache } from "./trpc";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
-    __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
+    __SW_MANIFEST?: Array<PrecacheEntry | string>;
   }
 }
 
@@ -17,7 +18,11 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: [new TrpcCache(["user.review.getOne"])],
+  // todo - page caching is a must
+  runtimeCaching: [
+    new SessionCache(),
+    new TrpcCache(["user.review.getOne"]),
+  ],
 });
 
 serwist.addEventListeners();
