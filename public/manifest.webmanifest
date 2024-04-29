@@ -32,6 +32,14 @@
       ]
     }
   ],
+  "share_target": {
+    "action": "/api/test",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [{ "name": "shared_file", "accept": "image/*" }]
+    }
+  },
   "icons": [
     {
       "src": "/icon/any-512.png",
