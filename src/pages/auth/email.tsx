@@ -4,7 +4,7 @@ import type { NextPageWithLayout } from "@/layout";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import type { Route } from "nextjs-routes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EmailIcon from "~icons/carbon/email";
 
 const PIN_LENGTH = 6;
@@ -13,10 +13,11 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const callbackUrl = getQueryParam(router.query.callbackUrl) ?? "/profile";
   const { status } = useSession();
-
-  if (status === "authenticated") {
-    router.replace(callbackUrl as Extract<Route, string>).catch(console.error);
-  }
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace(callbackUrl as Extract<Route, string>).catch(console.error);
+    }
+  }, [router, callbackUrl, status]);
 
   const [pin, setPin] = useState("");
   return (

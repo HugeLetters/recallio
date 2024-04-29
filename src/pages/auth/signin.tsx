@@ -5,6 +5,7 @@ import type { NextPageWithLayout } from "@/layout";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import type { Route } from "nextjs-routes";
+import { useEffect } from "react";
 import Logo from "~icons/custom/logo";
 import AlertIcon from "~icons/jam/alert-f";
 
@@ -12,9 +13,12 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
   const callbackUrl = getQueryParam(router.query.callbackUrl) ?? "/profile";
-  if (status === "authenticated") {
-    router.replace(callbackUrl as Extract<Route, string>).catch(console.error);
-  }
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace(callbackUrl as Extract<Route, string>).catch(console.error);
+    }
+  }, [router, callbackUrl, status]);
+
   const error = getErrorMessage(getQueryParam(router.query.error));
 
   return (
