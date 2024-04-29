@@ -9,8 +9,9 @@ import type { AnyProcedure, AnyQueryProcedure, AnyRouterDef, Router } from "@trp
 import type { TRPCErrorResponse } from "@trpc/server/rpc";
 import serialize from "fast-json-stable-stringify";
 import type { RuntimeCaching, SerwistPlugin, StrategyHandler } from "serwist";
-import { Strategy } from "serwist";
+import { ExpirationPlugin, Strategy } from "serwist";
 
+// todo - cache review list
 export class TrpcCache implements RuntimeCaching {
   constructor(private paths: NonEmptyArray<QueryPath>) {}
   matcher: RuntimeCaching["matcher"] = ({ url }) => {
@@ -25,7 +26,7 @@ class TrpcStrategy extends Strategy {
   constructor(private paths: NonEmptyArray<QueryPath>) {
     super({
       cacheName: `trpc:${paths.join(",")}`,
-      plugins: [trpcStrategyPlugin],
+      plugins: [trpcStrategyPlugin, new ExpirationPlugin({ maxEntries: 500 })],
     });
   }
 
@@ -87,9 +88,7 @@ class TrpcStrategy extends Strategy {
         return Promise.all(cacheData).then((data) => {
           const isWholeBatch = data.every(isSuccessfulResponse);
 
-          return Response.json(data, {
-            status: isWholeBatch ? 200 : 207,
-          });
+          return Response.json(data, { status: isWholeBatch ? 200 : 207 });
         });
       });
   }
@@ -126,9 +125,10 @@ class TrpcStrategy extends Strategy {
   }
 }
 
+const allowedStatus = [200, 207];
 const trpcStrategyPlugin: SerwistPlugin = {
   cacheWillUpdate({ response }) {
-    if (response.status !== 200 && response.status !== 207) {
+    if (!allowedStatus.includes(response.status)) {
       return null;
     }
     return response;

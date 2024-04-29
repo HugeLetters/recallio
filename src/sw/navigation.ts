@@ -22,7 +22,8 @@ class NavigationStrategy extends Strategy {
     if (url.pathname === OFFLINE_PATHNAME) {
       return resource
         .then((res) => {
-          handler.waitUntil(handler.cachePut(OFFLINE_PATHNAME, res.clone())).catch(console.error);
+          const cacheUpdate = handler.cachePut(OFFLINE_PATHNAME, res.clone());
+          handler.waitUntil(cacheUpdate).catch(console.error);
           return res;
         })
         .catch(() => handler.cacheMatch(OFFLINE_PATHNAME));
