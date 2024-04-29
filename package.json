@@ -86,6 +86,7 @@
     "@iconify-json/logos": "^1.1.42",
     "@iconify-json/material-symbols": "^1.1.72",
     "@iconify-json/mdi": "^1.1.64",
+    "@iconify-json/octicon": "^1.1.54",
     "@iconify-json/radix-icons": "^1.1.14",
     "@iconify-json/solar": "^1.1.9",
     "@iconify-json/typcn": "^1.1.9",

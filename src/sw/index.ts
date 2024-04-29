@@ -1,5 +1,6 @@
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
+import { NavigationCache } from "./navigation";
 import { SessionCache } from "./session";
 import { TrpcCache } from "./trpc";
 
@@ -18,10 +19,10 @@ const serwist = new Serwist({
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  // todo - page caching is a must
   runtimeCaching: [
     new SessionCache(),
     new TrpcCache(["user.review.getOne"]),
+    new NavigationCache(),
   ],
 });
 

@@ -139,8 +139,9 @@ function isBatchRequest(url: URL) {
   return url.searchParams.has("batch");
 }
 
+const ROUTE_RX = /(?<=\/api\/trpc\/).+/;
 function getRoute(url: URL) {
-  const match = url.pathname.match(/(?<=\/api\/trpc\/).+/);
+  const match = url.pathname.match(ROUTE_RX);
   if (!match) return null;
   return match[0];
 }
