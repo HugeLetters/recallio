@@ -3,8 +3,7 @@ import type { ApiRouter } from "@/server/api/router";
 import type { NonEmptyArray } from "@/utils/array";
 import { includes, isArray } from "@/utils/array";
 import { hasProperty, isObject } from "@/utils/object";
-import type { Option } from "@/utils/option";
-import { isSome } from "@/utils/option";
+import * as Option from "@/utils/option";
 import type { AnyProcedure, AnyQueryProcedure, AnyRouterDef, Router } from "@trpc/server";
 import type { TRPCErrorResponse } from "@trpc/server/rpc";
 import serialize from "fast-json-stable-stringify";
@@ -39,7 +38,7 @@ class TrpcStrategy extends Strategy {
     if (!route) return resource;
 
     const inputOption = parseInput(url);
-    if (!isSome(inputOption)) return resource;
+    if (!Option.isSome(inputOption)) return resource;
 
     if (isBatchRequest(url)) {
       return this.handleBatchRequest(resource, route, inputOption.value, handler);
@@ -76,19 +75,18 @@ class TrpcStrategy extends Strategy {
       })
       .catch(() => {
         const cacheData = batchKeys.map((key) => {
-          if (!key) return offlineErrorResponse;
+          if (!key) return trpcOfflineErrorResponse;
 
           return handler.cacheMatch(key).then((res) => {
-            if (!res) return offlineErrorResponse;
+            if (!res) return trpcOfflineErrorResponse;
 
             return res.json();
           });
         });
 
-        return Promise.all(cacheData).then((data) => {
-          const isWholeBatch = data.every(isSuccessfulResponse);
-
-          return Response.json(data, { status: isWholeBatch ? 200 : 207 });
+        return Promise.all(cacheData).then((batch) => {
+          const status = this.getBatchStatus(batch);
+          return Response.json(batch, { status });
         });
       });
   }
@@ -105,6 +103,18 @@ class TrpcStrategy extends Strategy {
 
       return createKey(name, batchInput[i]);
     });
+  }
+
+  private getBatchStatus(batch: unknown[]) {
+    let firstStatus: boolean | null = null;
+    for (const value of batch) {
+      const status = isSuccessfulResponse(value);
+      firstStatus ??= status;
+      if (firstStatus !== null && firstStatus !== status) {
+        return 207;
+      }
+    }
+    return firstStatus ? 200 : 408;
   }
 
   private handleRegularRequest(
@@ -146,14 +156,13 @@ function getRoute(url: URL) {
   return match[0];
 }
 
-function parseInput(url: URL): Option<unknown> {
+function parseInput(url: URL): Option.Option<unknown> {
   const input = url.searchParams.get("input");
-  if (!input) return { ok: true, value: undefined };
+  if (!input) return Option.some(undefined);
   try {
-    const value: unknown = JSON.parse(input);
-    return { ok: true, value };
+    return Option.some(JSON.parse(input));
   } catch {
-    return { ok: false };
+    return Option.none;
   }
 }
 
@@ -166,8 +175,10 @@ function isSuccessfulResponse(value: unknown): value is Record<"result", unknown
   return isObject(value) && hasProperty(value, "result");
 }
 
-type OfflineErrorResponse = TRPCErrorResponse<ApiRouter["_def"]["_config"]["$types"]["errorShape"]>;
-const offlineErrorResponse: OfflineErrorResponse = {
+type TrpcOfflineErrorResponse = TRPCErrorResponse<
+  ApiRouter["_def"]["_config"]["$types"]["errorShape"]
+>;
+const trpcOfflineErrorResponse: TrpcOfflineErrorResponse = {
   error: {
     code: -32008,
     message: FAILED_TO_FETCH_MESSAGE,
