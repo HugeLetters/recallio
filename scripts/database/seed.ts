@@ -276,7 +276,7 @@ async function cleanTable<T extends TableConfig>({
 async function seedUtImages(count: number): Promise<string[]> {
   const { removed = [], uploaded = [] } = await utapi
     .listFiles()
-    .then((files) =>
+    .then(({ files }) =>
       splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
     );
 
@@ -306,7 +306,7 @@ async function seedUtImages(count: number): Promise<string[]> {
     );
 }
 
-function splitBy<T, R extends string>(array: T[], getBucket: (value: T) => R) {
+function splitBy<T, R extends string>(array: ReadonlyArray<T>, getBucket: (value: T) => R) {
   return array.reduce<Partial<Record<R, T[]>>>((acc, el) => {
     const bucket = getBucket(el);
     acc[bucket] ??= [];
