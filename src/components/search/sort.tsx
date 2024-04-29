@@ -111,7 +111,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
         {/* keeps trigger always the same size */}
         <div className="relative">
           <span className="invisible whitespace-nowrap capitalize">
-            {optionList.toSorted((a, b) => b.length - a.length)[0]}
+            {[...optionList].sort((a, b) => b.length - a.length)[0]}
           </span>
           <span className="absolute left-0 w-full text-left capitalize">{sortBy}</span>
         </div>
