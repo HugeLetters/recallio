@@ -1,28 +1,22 @@
 import { providerIcons } from "@/auth/provider/icon";
 import { getQueryParam } from "@/browser/query";
+import { Redirect, asRoute } from "@/components/redirect";
 import { Button, Input, WithLabel } from "@/components/ui";
 import type { NextPageWithLayout } from "@/layout";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import type { Route } from "nextjs-routes";
-import { useEffect } from "react";
 import Logo from "~icons/custom/logo";
 import AlertIcon from "~icons/jam/alert-f";
 
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
-  const callbackUrl = getQueryParam(router.query.callbackUrl) ?? "/profile";
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.replace(callbackUrl as Extract<Route, string>).catch(console.error);
-    }
-  }, [router, callbackUrl, status]);
-
+  const callbackUrl = asRoute(getQueryParam(router.query.callbackUrl)) ?? "/profile";
   const error = getErrorMessage(getQueryParam(router.query.error));
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col p-4">
+      {status === "authenticated" && <Redirect to={callbackUrl} />}
       {!!error && (
         <div className="flex w-fit items-center gap-2 self-center rounded-lg bg-red-800/10 px-2.5 py-4 text-red-800/80">
           <AlertIcon className="size-8 shrink-0" />

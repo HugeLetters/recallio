@@ -1,6 +1,7 @@
 import { getQueryParam } from "@/browser/query";
 import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
+import { Redirect } from "@/components/redirect";
 import { toast } from "@/components/toast";
 import { Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay } from "@/components/ui/dialog";
@@ -33,27 +34,12 @@ export default Page;
 
 type ReviewProps = { barcode: string };
 function Review({ barcode }: ReviewProps) {
-  const router = useRouter();
-  const reviewQuery = trpc.user.review.getOne.useQuery(
-    { barcode },
-    {
-      select(data) {
-        if (!data) {
-          router
-            .replace({ pathname: "/review/[id]/edit", query: { id: barcode } })
-            .catch(console.error);
-          throw Error("No review found");
-        }
-
-        return data;
-      },
-      staleTime: minutesToMs(5),
-    },
-  );
+  const reviewQuery = trpc.user.review.getOne.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
   if (!reviewQuery.isSuccess) return "Loading...";
-
   const review = reviewQuery.data;
+
+  if (!review) return <Redirect to={{ pathname: "/review/[id]/edit", query: { id: barcode } }} />;
   return (
     <div className="flex w-full flex-col gap-4 p-4">
       <div className="flex items-stretch gap-4">

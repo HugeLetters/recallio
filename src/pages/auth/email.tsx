@@ -1,27 +1,23 @@
 import { getQueryParam } from "@/browser/query";
+import { Redirect, asRoute } from "@/components/redirect";
 import { Button } from "@/components/ui";
 import type { NextPageWithLayout } from "@/layout";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
-import type { Route } from "nextjs-routes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import EmailIcon from "~icons/carbon/email";
 
 const PIN_LENGTH = 6;
 const SLOTS = Array.from({ length: PIN_LENGTH }, (_, i) => i);
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
-  const callbackUrl = getQueryParam(router.query.callbackUrl) ?? "/profile";
+  const callbackUrl = asRoute(getQueryParam(router.query.callbackUrl)) ?? "/profile";
   const { status } = useSession();
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.replace(callbackUrl as Extract<Route, string>).catch(console.error);
-    }
-  }, [router, callbackUrl, status]);
 
   const [pin, setPin] = useState("");
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center p-4 text-center text-app-green-900">
+      {status === "authenticated" && <Redirect to={callbackUrl} />}
       <EmailIcon className="size-10" />
       <p className="text-2xl font-semibold">Authentication PIN code</p>
       <div className="mt-2 text-balance text-xl font-medium text-neutral-400">
