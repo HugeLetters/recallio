@@ -10,7 +10,6 @@ import serialize from "fast-json-stable-stringify";
 import type { RuntimeCaching, SerwistPlugin, StrategyHandler } from "serwist";
 import { ExpirationPlugin, Strategy } from "serwist";
 
-// todo - cache review list
 export class TrpcCache implements RuntimeCaching {
   constructor(private paths: NonEmptyArray<QueryPath>) {}
   matcher: RuntimeCaching["matcher"] = ({ url }) => {

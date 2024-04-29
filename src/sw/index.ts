@@ -13,9 +13,11 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 // todo - check defaultCache strategies
-
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
+  precacheEntries: self.__SW_MANIFEST?.filter((entry) => {
+    const name = typeof entry === "string" ? entry : entry.url;
+    return !name.startsWith("/screenshot");
+  }),
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
