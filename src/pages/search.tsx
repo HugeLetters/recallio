@@ -83,7 +83,7 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = (children)=> {
+Page.getLayout = (children) => {
   return <Layout header={{ header: <HeaderSearchBar title="Search" /> }}>{children}</Layout>;
 };
 export default Page;
