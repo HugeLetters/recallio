@@ -4,23 +4,23 @@ import type { NonEmptyArray } from "@/utils/array";
 import { includes, isArray } from "@/utils/array";
 import { hasProperty, isObject } from "@/utils/object";
 import * as Option from "@/utils/option";
-import type { AnyProcedure, AnyQueryProcedure, AnyRouterDef, Router } from "@trpc/server";
 import type { TRPCErrorResponse } from "@trpc/server/rpc";
 import serialize from "fast-json-stable-stringify";
 import type { RuntimeCaching, SerwistPlugin, StrategyHandler } from "serwist";
 import { ExpirationPlugin, Strategy } from "serwist";
+import type { QueryPath } from "./type";
 
-export class TrpcCache implements RuntimeCaching {
+export class TrpcQueryCache implements RuntimeCaching {
   constructor(private paths: NonEmptyArray<QueryPath>) {}
   matcher: RuntimeCaching["matcher"] = ({ url }) => {
     const { pathname } = url;
     if (!pathname.startsWith("/api/trpc/")) return false;
     return this.paths.some((path) => pathname.includes(path));
   };
-  handler = new TrpcStrategy(this.paths);
+  handler = new TrpcQueryStrategy(this.paths);
 }
 
-class TrpcStrategy extends Strategy {
+class TrpcQueryStrategy extends Strategy {
   constructor(private paths: NonEmptyArray<QueryPath>) {
     super({
       cacheName: `trpc:${paths.join(",")}`,
@@ -184,22 +184,3 @@ const trpcOfflineErrorResponse: TrpcOfflineErrorResponse = {
     data: { code: "TIMEOUT", httpStatus: 408 },
   },
 };
-
-type innerRouterProcedurePath<
-  TRouter,
-  Filter extends AnyProcedure,
-  Name extends Extract<keyof TRouter, string> = Extract<keyof TRouter, string>,
-> = Name extends Name
-  ? TRouter[Name] extends Router<AnyRouterDef>
-    ? `${Name}.${innerRouterProcedurePath<TRouter[Name], Filter>}`
-    : TRouter[Name] extends Filter
-      ? Name
-      : never
-  : never;
-
-type RouterProcedurePath<
-  TRouter extends Router<AnyRouterDef>,
-  Filter extends AnyProcedure,
-> = innerRouterProcedurePath<TRouter["_def"]["procedures"], Filter>;
-
-type QueryPath = RouterProcedurePath<ApiRouter, AnyQueryProcedure>;

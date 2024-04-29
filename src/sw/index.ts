@@ -2,7 +2,7 @@ import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
 import { NavigationCache } from "./navigation";
 import { SessionCache } from "./session";
-import { TrpcCache } from "./trpc";
+import { TrpcQueryCache } from "./trpc/query";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -23,7 +23,7 @@ const serwist = new Serwist({
   navigationPreload: true,
   runtimeCaching: [
     new SessionCache(),
-    new TrpcCache(["user.review.getOne"]),
+    new TrpcQueryCache(["user.review.getOne"]),
     new NavigationCache(),
   ],
 });
