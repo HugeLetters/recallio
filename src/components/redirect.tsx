@@ -11,7 +11,7 @@ export function Redirect({ to }: RedirectProps) {
     if (!router.isReady) return;
 
     router.replace(to).catch(console.error);
-  }, [router, to]);
+  }, [router.isReady, router, to]);
 
   return null;
 }
