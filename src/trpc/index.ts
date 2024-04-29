@@ -26,6 +26,7 @@ export const trpc = createTRPCNext<ApiRouter>({
         defaultOptions: {
           queries: {
             retry: 1,
+            networkMode: "offlineFirst",
           },
         },
         queryCache: new QueryCache({
