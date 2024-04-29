@@ -16,6 +16,7 @@ const withSerwistInit = setupSerwist({
   swDest: "public/recallio-sw.js",
   swUrl: "recallio-sw.js",
   swSrc: "./src/sw/index.ts",
+  reloadOnOnline: false,
 });
 
 /** @type {import("next").NextConfig} */
