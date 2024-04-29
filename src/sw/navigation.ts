@@ -6,7 +6,9 @@ const OFFLINE_PATHNAME = "/~offline";
 const CACHE_NAME = "navigation";
 
 export class NavigationCache implements RuntimeCaching {
-  matcher: RuntimeCaching["matcher"] = ({ request }) => request.mode === "navigate";
+  matcher: RuntimeCaching["matcher"] = ({ request, sameOrigin }) => {
+    return sameOrigin && request.mode === "navigate";
+  };
   handler = new NavigationStrategy({
     cacheName: CACHE_NAME,
     matchOptions: { ignoreSearch: true },
@@ -16,8 +18,9 @@ export class NavigationCache implements RuntimeCaching {
 class NavigationStrategy extends Strategy {
   protected _handle: Strategy["_handle"] = (request, handler) => {
     const { url } = handler;
+
     const resource = handler.fetch(request);
-    if (!url) return resource;
+    if (!url || url.pathname.startsWith("/api/")) return resource;
 
     if (url.pathname === OFFLINE_PATHNAME) {
       return resource
