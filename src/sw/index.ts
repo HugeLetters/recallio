@@ -2,6 +2,7 @@ import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
 import { NavigationCache } from "./navigation";
 import { SessionCache } from "./session";
+import { ShareTargetInterceptpr } from "./share";
 import { TrpcQueryCache } from "./trpc/query";
 
 declare global {
@@ -25,6 +26,7 @@ const serwist = new Serwist({
     new SessionCache(),
     new TrpcQueryCache(["user.review.getOne"]),
     new NavigationCache(),
+    new ShareTargetInterceptpr(),
   ],
 });
 
