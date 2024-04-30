@@ -4,20 +4,21 @@ import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
-import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
+import { useBarcodeScanner } from "@/scan/hook";
+import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import { Slot } from "@radix-ui/react-slot";
-import type { QrcodeSuccessCallback } from "html5-qrcode";
-import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
 import { useRouter } from "next/router";
 import type { PropsWithChildren } from "react";
-import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
 const baseSwipeData = { elastic: (x: number) => x, width: 0 };
+
+// todo - try https://www.npmjs.com/package/react-zxing
 
 const Page: NextPageWithLayout = function () {
   // reset scan type when leaving page
@@ -251,86 +252,3 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
     </form>
   );
 });
-
-type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
-/**
- * Scanner cleans-up on being unmounted automatically.
- */
-function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
-  const id = useId();
-  const [state, setState] = useState<ScannerState>("not mounted");
-  const scanner = useRef<Scanner>();
-
-  useEffect(() => {
-    scanner.current = createScanner(id);
-    setState("stopped");
-
-    return () => {
-      stop().catch(
-        logToastError("Failed to stop scanner.\nReloading the page is advised to avoid stutters."),
-      );
-      scanner.current = undefined;
-      setState("not mounted");
-    };
-  }, [id]);
-
-  if (state === "not mounted" || !scanner.current) {
-    return {
-      ready: false as const,
-      state,
-      /** Attach this id to element where camera feed should be projected to */
-      id,
-    };
-  }
-
-  function getScanner() {
-    scanner.current ??= createScanner(id);
-    return scanner.current;
-  }
-
-  async function start() {
-    if (state === "starting") return;
-    setState("starting");
-
-    const scanner = getScanner();
-    await stop();
-    return scanner
-      .start({ facingMode: "environment" }, { fps: 2 }, onScan, undefined)
-      .then(() => setState("scanning"))
-      .catch((e) => {
-        setState("stopped");
-        throw e;
-      });
-  }
-
-  async function stop(updateState?: boolean) {
-    if (scanner.current?.getState() !== Html5QrcodeScannerState.SCANNING) return;
-
-    return scanner.current.stop().then(() => {
-      if (!updateState) return;
-      setState("stopped");
-    });
-  }
-
-  return {
-    ready: true as const,
-    state,
-    id,
-    /** Does not have referential equality on rerenders */
-    start,
-    /** Does not have referential equality on rerenders */
-    stop: () => stop(true),
-    /** Stops the scanner before reading the file */
-    scanFile: async (image: File) => {
-      await stop(true);
-      return getScanner().scanFileV2(image, false);
-    },
-  };
-}
-
-function createScanner(id: string) {
-  return new Scanner(id, {
-    useBarCodeDetectorIfSupported: true,
-    verbose: false,
-  });
-}
