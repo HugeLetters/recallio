@@ -89,8 +89,8 @@ importers:
         specifier: ^10.45.2
         version: 10.45.2
       '@uploadthing/react':
-        specifier: ^6.5.0
-        version: 6.5.0(@uploadthing/mime-types@0.2.8)(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(react@18.2.0)(uploadthing@6.10.0(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3))
+        specifier: '=6.4.4'
+        version: 6.4.4(@uploadthing/mime-types@0.2.7)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(react@18.2.0)(uploadthing@6.9.0(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3))
       '@upstash/qstash':
         specifier: ^2.5.0
         version: 2.5.0
@@ -155,8 +155,8 @@ importers:
         specifier: ^0.17.4
         version: 0.17.4(@svgr/core@8.1.0(typescript@5.4.5))
       uploadthing:
-        specifier: ^6.10.0
-        version: 6.10.0(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3)
+        specifier: '=6.9.0'
+        version: 6.9.0(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3)
       zod:
         specifier: ^3.23.5
         version: 3.23.5
@@ -453,12 +453,6 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
-
-  '@effect/schema@0.66.10':
-    resolution: {integrity: sha512-5lZTPRbncsqAhqQx3cCd3emR/q/CtvFFJZNvwNF66sUD1SjbMsLPbRkEzIaG9k2X8M71YD9GDbUE0lRWG1J+mA==}
-    peerDependencies:
-      effect: ^3.0.7
-      fast-check: ^3.13.2
 
   '@emnapi/runtime@1.1.1':
     resolution: {integrity: sha512-3bfqkzuR1KLx57nZfjr2NLnFOobvyS0aTszaEGCGqmYMVDRaGvgIZbjGSV/MHSSmLgQ/b9JFHQ5xm5WRZYd+XQ==}
@@ -1861,13 +1855,12 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@uploadthing/dropzone@0.4.0':
-    resolution: {integrity: sha512-IZmmUu3vSSmUoToSf6CTprSlMJuQ2n75u7XcXrNjPG4TgyQpSiYPKqkdHV2/JPzsXfzITM+i3SPW5Ez3fdGQnA==}
+  '@uploadthing/dropzone@0.3.1':
+    resolution: {integrity: sha512-SbDoRz8t/m8VtB+vRelduApWwfNZayMvLOn+Q4A8gSIrRAEPDur+s8uPf9On/+I0bGj2Ez/UDoDx3E3UGujT2g==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
       solid-js: ^1.7.11
       svelte: ^4.2.12
-      vue: ^3.4.0
     peerDependenciesMeta:
       react:
         optional: true
@@ -1875,26 +1868,24 @@ packages:
         optional: true
       svelte:
         optional: true
-      vue:
-        optional: true
 
-  '@uploadthing/mime-types@0.2.8':
-    resolution: {integrity: sha512-x+OhjdgC+FXzIScuVDzWxUpPKRjq/WiXNh6bUz1pNAHsb7ecKhxHUfhdWg8+YkO32kDs8TCuMN1bVWTyJYDMQA==}
+  '@uploadthing/mime-types@0.2.7':
+    resolution: {integrity: sha512-HfQpL1GSyLOOnIT4WqVv8aW3HotEpFKuuCnK+dUZThMzeiFs09s9J0wk5/VBwupXvIXQwMiB//bp9aUE2p/mFg==}
 
-  '@uploadthing/react@6.5.0':
-    resolution: {integrity: sha512-Mapjyl897k93b7SRi5A+Ez4hOpBrgu0vgRFbM2Ni/2GIul1jdJVebcOJ0LDB9TAZmQ4G4sMgL7h1QlfDUBSvlg==}
+  '@uploadthing/react@6.4.4':
+    resolution: {integrity: sha512-/sE1BbtMNhL9YuIppI2eieMdvjWBCtP+zxjtwGD13kpTJcW7E8GytWTQcdXamURVHUgFH2n1Gsfxf0OWC9rdhA==}
     peerDependencies:
       next: '*'
       react: ^17.0.2 || ^18.0.0
-      uploadthing: 6.10.0
+      uploadthing: 6.9.0
     peerDependenciesMeta:
       next:
         optional: true
 
-  '@uploadthing/shared@6.7.0':
-    resolution: {integrity: sha512-+5xBa3gdCoCI2R2HkIOAu0DRiZqEt3MtOHefNsuVlYjpEngeg04AHlNaTvAIFuBz6Wz43SFOiqpeQcpqGBUc5w==}
+  '@uploadthing/shared@6.6.0':
+    resolution: {integrity: sha512-3mERSbD9/i83dF4rK6M/K3zcPo70mfo33VvrTE4U2Tf2HS8vjUvu8BmJjNZkZOSIoXenEnKmCxDf9vNPsdO65w==}
     peerDependencies:
-      '@uploadthing/mime-types': 0.2.8
+      '@uploadthing/mime-types': 0.2.7
     peerDependenciesMeta:
       '@uploadthing/mime-types':
         optional: true
@@ -2583,9 +2574,6 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  effect@3.0.7:
-    resolution: {integrity: sha512-VlEpWUc3IBc7k9NUdsdbh7cnGFNIdMpIoUFbbiVkt304d40pSr6Zadnr5Tk8m1cniqOLo4SXSZLw0M6f7N17Hg==}
-
   electron-to-chromium@1.4.751:
     resolution: {integrity: sha512-2DEPi++qa89SMGRhufWTiLmzqyuGmNF3SK4+PQetW1JKiZdEpF4XQonJXJCzyuYSA6mauiMhbyVhqYAP45Hvfw==}
 
@@ -2836,10 +2824,6 @@ packages:
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
-
-  fast-check@3.18.0:
-    resolution: {integrity: sha512-/951xaT0kA40w0GXRsZXEwSTE7LugjZtSA/8vPgFkiPQ8wNp8tRvqWuNDHBgLxJYXtsK11e/7Q4ObkKW5BdTFQ==}
-    engines: {node: '>=8.0.0'}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -4078,9 +4062,6 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
-  pure-rand@6.1.0:
-    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
-
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -4662,8 +4643,8 @@ packages:
     peerDependencies:
       browserslist: '>= 4.21.0'
 
-  uploadthing@6.10.0:
-    resolution: {integrity: sha512-4wuvfzg7mG0ffO2WfkoFdr5L4EHPXy55vN7Ju7/IJzddqTHWyH1p1ucE0Jsoniybn/tXB7hUsNQjVxJyvP41nQ==}
+  uploadthing@6.9.0:
+    resolution: {integrity: sha512-I985NeMkUHFK+ixfu6ztBGCzkAVYiLP8H3bIcYz+Oh13uFsqQAKrrG34ivdUk8mCjssGCOn8eN+skMPA6bNCoQ==}
     engines: {node: '>=18.13.0'}
     peerDependencies:
       express: '*'
@@ -5051,11 +5032,6 @@ snapshots:
 
   '@colors/colors@1.5.0':
     optional: true
-
-  '@effect/schema@0.66.10(effect@3.0.7)(fast-check@3.18.0)':
-    dependencies:
-      effect: 3.0.7
-      fast-check: 3.18.0
 
   '@emnapi/runtime@1.1.1':
     dependencies:
@@ -6337,40 +6313,34 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@uploadthing/dropzone@0.4.0(react@18.2.0)':
+  '@uploadthing/dropzone@0.3.1(react@18.2.0)':
     dependencies:
       file-selector: 0.6.0
     optionalDependencies:
       react: 18.2.0
 
-  '@uploadthing/mime-types@0.2.8': {}
+  '@uploadthing/mime-types@0.2.7': {}
 
-  '@uploadthing/react@6.5.0(@uploadthing/mime-types@0.2.8)(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(react@18.2.0)(uploadthing@6.10.0(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3))':
+  '@uploadthing/react@6.4.4(@uploadthing/mime-types@0.2.7)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(react@18.2.0)(uploadthing@6.9.0(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3))':
     dependencies:
-      '@uploadthing/dropzone': 0.4.0(react@18.2.0)
-      '@uploadthing/shared': 6.7.0(@uploadthing/mime-types@0.2.8)(fast-check@3.18.0)
+      '@uploadthing/dropzone': 0.3.1(react@18.2.0)
+      '@uploadthing/shared': 6.6.0(@uploadthing/mime-types@0.2.7)
       file-selector: 0.6.0
       react: 18.2.0
       tailwind-merge: 2.3.0
-      uploadthing: 6.10.0(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3)
+      uploadthing: 6.9.0(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3)
     optionalDependencies:
       next: 13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0)
     transitivePeerDependencies:
       - '@uploadthing/mime-types'
-      - fast-check
       - solid-js
       - svelte
-      - vue
 
-  '@uploadthing/shared@6.7.0(@uploadthing/mime-types@0.2.8)(fast-check@3.18.0)':
+  '@uploadthing/shared@6.6.0(@uploadthing/mime-types@0.2.7)':
     dependencies:
-      '@effect/schema': 0.66.10(effect@3.0.7)(fast-check@3.18.0)
-      effect: 3.0.7
       std-env: 3.7.0
     optionalDependencies:
-      '@uploadthing/mime-types': 0.2.8
-    transitivePeerDependencies:
-      - fast-check
+      '@uploadthing/mime-types': 0.2.7
 
   '@upstash/qstash@2.5.0':
     dependencies:
@@ -7038,8 +7008,6 @@ snapshots:
       minimatch: 9.0.1
       semver: 7.6.0
 
-  effect@3.0.7: {}
-
   electron-to-chromium@1.4.751: {}
 
   emoji-regex@8.0.0: {}
@@ -7504,10 +7472,6 @@ snapshots:
       is-extendable: 0.1.1
 
   extend@3.0.2: {}
-
-  fast-check@3.18.0:
-    dependencies:
-      pure-rand: 6.1.0
 
   fast-deep-equal@3.1.3: {}
 
@@ -8747,8 +8711,6 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  pure-rand@6.1.0: {}
-
   queue-microtask@1.2.3: {}
 
   quick-lru@5.1.1: {}
@@ -9471,19 +9433,15 @@ snapshots:
       escalade: 3.1.2
       picocolors: 1.0.0
 
-  uploadthing@6.10.0(fast-check@3.18.0)(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3):
+  uploadthing@6.9.0(next@13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0))(tailwindcss@3.4.3):
     dependencies:
-      '@effect/schema': 0.66.10(effect@3.0.7)(fast-check@3.18.0)
-      '@uploadthing/mime-types': 0.2.8
-      '@uploadthing/shared': 6.7.0(@uploadthing/mime-types@0.2.8)(fast-check@3.18.0)
+      '@uploadthing/mime-types': 0.2.7
+      '@uploadthing/shared': 6.6.0(@uploadthing/mime-types@0.2.7)
       consola: 3.2.3
-      effect: 3.0.7
       std-env: 3.7.0
     optionalDependencies:
       next: 13.4.2(@babel/core@7.24.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.75.0)
       tailwindcss: 3.4.3
-    transitivePeerDependencies:
-      - fast-check
 
   uri-js@4.4.1:
     dependencies:

@@ -276,7 +276,7 @@ async function cleanTable<T extends TableConfig>({
 async function seedUtImages(count: number): Promise<string[]> {
   const { removed = [], uploaded = [] } = await utapi
     .listFiles()
-    .then(({ files }) =>
+    .then((files) =>
       splitBy(files, (file) => (file.status === "Uploaded" ? "uploaded" : "removed")),
     );
 
