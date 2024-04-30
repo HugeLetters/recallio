@@ -6,17 +6,16 @@ import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
 import { useBarcodeScanner } from "@/scan/hook";
+import type { ScanType } from "@/scan/store";
 import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren, RefObject } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
-
-const baseSwipeData = { elastic: (x: number) => x, width: 0 };
 
 // todo - try https://www.npmjs.com/package/react-zxing
 
@@ -62,51 +61,23 @@ const Page: NextPageWithLayout = function () {
   const baseOffset = useStore(scanTypeOffsetStore);
   const [isSwiped, setIsSwiped] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
-  const swipeDataRef = useRef(baseSwipeData);
   const barcodeInputRef = useRef<HTMLFormElement>(null);
-  const swipeHandler = useSwipe({
+  const swipeHandler = useScanTypeSwipe({
+    target: controlsRef,
     ignore: barcodeInputRef,
-    onSwipe({ movement: { dx } }) {
-      const controls = controlsRef.current;
-      if (!controls) return;
-
-      const { elastic, width } = swipeDataRef.current;
-      const offset = width * baseOffset;
-      const absoluteDx = dx - offset;
-      const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
-      controls.style.setProperty("--offset", `${(elasticDx + offset).toFixed(2)}px`);
+    onScanTypeChange(scanType) {
+      if (scanType !== "upload") return;
+      fileInputRef.current?.click();
     },
-    onSwipeStart() {
-      setIsSwiped(true);
-
-      const controls = controlsRef.current;
-      if (!controls) return;
-
-      const width = controls.clientWidth;
-      const half = width / 2;
-      swipeDataRef.current = {
-        elastic: createElasticStretchFunction({
-          cutoff: half,
-          coefficient: 1,
-          stretch: 50,
-        }),
-        width,
-      };
-    },
-    onSwipeEnd({ movement: { dx } }) {
-      // flush sync is required before .removeProperty because any reflows at this stage(like losing focus on <BarcodeInput/>) will screw up the animation
-      flushSync(() => {
-        setIsSwiped(false);
-        if (Math.abs(dx) < 35) return;
-        const delta = Math.abs(dx) < 110 ? 1 : 2;
-        const move = (dx < 0 ? 1 : -1) * delta;
-        const oldScanType = scanType;
-        scanTypeStore.move(move);
-        const newScanType = scanTypeStore.getSnapshot();
-        if (newScanType !== "upload" || oldScanType === "upload") return;
-        fileInputRef.current?.click();
-      });
-      controlsRef.current?.style.removeProperty("--offset");
+    onSwipeStateChange(isSwiped) {
+      if (isSwiped) {
+        setIsSwiped(true);
+      } else {
+        // flush sync is required because any reflows at this stage(like losing focus on <BarcodeInput/>) will screw up the animation
+        flushSync(() => {
+          setIsSwiped(false);
+        });
+      }
     },
   });
 
@@ -252,3 +223,64 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
     </form>
   );
 });
+
+const baseSwipeData = { elastic: (x: number) => x, width: 0 };
+type UseScanTypeSwipeOptions = {
+  target: RefObject<HTMLElement>;
+  ignore?: RefObject<HTMLElement>;
+  onScanTypeChange?: (scanType: ScanType) => void;
+  onSwipeStateChange?: (isSwiping: boolean) => void;
+};
+function useScanTypeSwipe({
+  target,
+  ignore,
+  onScanTypeChange,
+  onSwipeStateChange,
+}: UseScanTypeSwipeOptions) {
+  const baseOffset = useStore(scanTypeOffsetStore);
+  const swipeDataRef = useRef(baseSwipeData);
+
+  return useSwipe({
+    ignore,
+    onSwipe({ movement: { dx } }) {
+      const targetEl = target.current;
+      if (!targetEl) return;
+
+      const { elastic, width } = swipeDataRef.current;
+      const offset = width * baseOffset;
+      const absoluteDx = dx - offset;
+      const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
+      targetEl.style.setProperty("--offset", `${(elasticDx + offset).toFixed(2)}px`);
+    },
+    onSwipeStart() {
+      onSwipeStateChange?.(true);
+      const targetEl = target.current;
+      if (!targetEl) return;
+
+      const width = targetEl.clientWidth;
+      const half = width / 2;
+      swipeDataRef.current = {
+        elastic: createElasticStretchFunction({
+          cutoff: half,
+          coefficient: 1,
+          stretch: 50,
+        }),
+        width,
+      };
+    },
+    onSwipeEnd({ movement: { dx } }) {
+      onSwipeStateChange?.(false);
+      if (Math.abs(dx) < 35) return;
+      const delta = Math.abs(dx) < 110 ? 1 : 2;
+      const move = (dx < 0 ? 1 : -1) * delta;
+
+      const oldScanType = scanTypeStore.getSnapshot();
+      scanTypeStore.move(move);
+      const newScanType = scanTypeStore.getSnapshot();
+      if (newScanType !== oldScanType) {
+        onScanTypeChange?.(newScanType);
+      }
+      target.current?.style.removeProperty("--offset");
+    },
+  });
+}
