@@ -46,9 +46,9 @@ export const toast = {
   },
 };
 
-export function logToastError(message: ReactNode) {
+export function logToastError(message: ReactNode, options?: PublicToastOptions) {
   return function (error: unknown) {
     console.error(error);
-    toast.error(message);
+    toast.error(message, options);
   };
 }
