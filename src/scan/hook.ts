@@ -1,10 +1,10 @@
 import { logToastError } from "@/components/toast";
 import { useStableValue } from "@/state/stable";
-import type { Result } from "@zxing/library";
 import { useEffect, useRef, useState } from "react";
+import type { BarcodeScanResult } from ".";
 import { createReader } from ".";
 
-type UseBarcodeScannerOptions = { onScan: (result: Result) => void };
+type UseBarcodeScannerOptions = { onScan: (result: BarcodeScanResult) => void };
 export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const [videoReader] = useState(createReader);
   const onScanStable = useStableValue(onScan);

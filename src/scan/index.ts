@@ -1,5 +1,7 @@
 import { BrowserMultiFormatReader } from "@zxing/library";
+import type { Result } from "@zxing/library";
 
+export type BarcodeScanResult = Result;
 export function createReader() {
   // todo - check hints
   const reader = new BrowserMultiFormatReader(undefined);

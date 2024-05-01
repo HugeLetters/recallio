@@ -27,6 +27,6 @@ class ShareTargetStrategy extends Strategy {
 }
 
 function redirectToScan(success: boolean) {
-  const url = `/scan?=${SHARE_TARGET_PARAM}${!success ? `&${SHARE_TARGET_ERROR_PARAM}` : ""}`;
+  const url = `/scan?${SHARE_TARGET_PARAM}${!success ? `&${SHARE_TARGET_ERROR_PARAM}` : ""}`;
   return Response.redirect(url);
 }
