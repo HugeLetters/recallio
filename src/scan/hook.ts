@@ -1,87 +1,68 @@
 import { logToastError } from "@/components/toast";
-import type { QrcodeSuccessCallback } from "html5-qrcode";
-import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
-import { useEffect, useId, useRef, useState } from "react";
+import { useStableValue } from "@/state/stable";
+import type { Result } from "@zxing/library";
+import { BrowserMultiFormatReader } from "@zxing/library";
+import { useEffect, useRef, useState } from "react";
 
-type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
-/**
- * Scanner cleans-up on being unmounted automatically.
- */
-export function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
-  const id = useId();
-  const [state, setState] = useState<ScannerState>("not mounted");
-  const scanner = useRef<Scanner>();
+function createReader() {
+  // todo - check hints
+  const reader = new BrowserMultiFormatReader(undefined);
+  reader.timeBetweenDecodingAttempts = 1000;
+  return reader;
+}
+
+type UseBarcodeScannerOptions = { onScan: (result: Result) => void };
+export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
+  const [videoReader] = useState(createReader);
+  const onScanStable = useStableValue(onScan);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    scanner.current = createScanner(id);
-    setState("stopped");
+    const video = videoRef.current;
+    if (!video) return;
+
+    videoReader
+      .decodeFromConstraints(
+        { video: { facingMode: "environment" }, audio: false },
+        video,
+        (result) => {
+          if (result) {
+            onScanStable.current(result);
+          }
+        },
+      )
+      .catch(
+        logToastError(
+          "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
+          { id: "scanner start error" },
+        ),
+      );
 
     return () => {
-      stop().catch(
-        logToastError("Failed to stop scanner.\nReloading the page is advised to avoid stutters."),
-      );
-      scanner.current = undefined;
-      setState("not mounted");
+      videoReader.reset();
     };
-  }, [id]);
+  }, [videoReader, onScanStable]);
 
-  if (state === "not mounted" || !scanner.current) {
-    return {
-      ready: false as const,
-      state,
-      /** Attach this id to element where camera feed should be projected to */
-      id,
-    };
+  function scanFromUrl(url: string) {
+    const reader = createReader();
+    return (
+      reader
+        .decodeFromImageUrl(url)
+        // we decode a second time on fail because xzing alternates between 2 scan modes on each decode
+        .catch(() => reader.decodeFromImageUrl(url))
+    );
   }
-
-  function getScanner() {
-    scanner.current ??= createScanner(id);
-    return scanner.current;
-  }
-
-  async function start() {
-    if (state === "starting") return;
-    setState("starting");
-
-    const scanner = getScanner();
-    await stop();
-    return scanner
-      .start({ facingMode: "environment" }, { fps: 2 }, onScan, undefined)
-      .then(() => setState("scanning"))
-      .catch((e) => {
-        setState("stopped");
-        throw e;
-      });
-  }
-
-  async function stop(updateState?: boolean) {
-    if (scanner.current?.getState() !== Html5QrcodeScannerState.SCANNING) return;
-
-    return scanner.current.stop().then(() => {
-      if (!updateState) return;
-      setState("stopped");
+  function scanFile(image: File) {
+    const url = URL.createObjectURL(image);
+    return scanFromUrl(url).finally(() => {
+      URL.revokeObjectURL(url);
     });
   }
 
   return {
-    ready: true as const,
-    state,
-    id,
-    /** Does not have referential equality on rerenders */
-    start,
-    /** Does not have referential equality on rerenders */
-    stop: () => stop(true),
-    /** Stops the scanner before reading the file */
-    scanFile: async (image: File) => {
-      await stop(true);
-      return getScanner().scanFileV2(image, false);
-    },
+    /** Attach this ref to an {@link HTMLVideoElement} */
+    ref: videoRef,
+    scanFromUrl,
+    scanFile,
   };
-}
-
-function createScanner(id: string) {
-  return new Scanner(id, {
-    useBarCodeDetectorIfSupported: true,
-    verbose: false,
-  });
 }

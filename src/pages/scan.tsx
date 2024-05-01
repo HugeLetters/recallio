@@ -1,6 +1,6 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { useSwipe } from "@/browser/swipe";
-import { logToastError, toast } from "@/components/toast";
+import { logToastError } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
@@ -17,48 +17,26 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
-// todo - try https://www.npmjs.com/package/react-zxing
-
 const Page: NextPageWithLayout = function () {
-  // reset scan type when leaving page
-  useEffect(() => {
-    return () => scanTypeStore.reset();
-  }, []);
+  const { ref, scanFromUrl, scanFile } = useBarcodeScanner({
+    onScan(result) {
+      goToReview(result.getText());
+    },
+  });
 
-  const { id, ready, start, scanFile } = useBarcodeScanner(goToReview);
-  function startScanner() {
-    if (!ready) return;
-    start().catch(
-      logToastError(
-        "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
-      ),
-    );
+  function scanImage(image: File) {
+    scanFile(image)
+      .then((x) => {
+        goToReview(x.getText());
+      })
+      .catch(logToastError("Couldn't detect barcode"));
   }
-  // start scanner on page mount
-  useEffect(() => {
-    startScanner();
-    // it should run only once on mount once scanner gave a signal it's ready to go
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
-
   const router = useRouter();
   function goToReview(id: string) {
     router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
   }
-  function scanImage(image: File) {
-    if (!ready) return;
-    scanFile(image)
-      .then((result) => goToReview(result.decodedText))
-      .catch((e) => {
-        startScanner();
-        toast.error("Couldn't detect barcode");
-        console.error(e);
-      });
-  }
 
-  const scanType = useStore(scanTypeStore);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const baseOffset = useStore(scanTypeOffsetStore);
   const [isSwiped, setIsSwiped] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
   const barcodeInputRef = useRef<HTMLFormElement>(null);
@@ -81,20 +59,22 @@ const Page: NextPageWithLayout = function () {
     },
   });
 
+  const scanType = useStore(scanTypeStore);
+  const baseOffset = useStore(scanTypeOffsetStore);
+  // reset scan type when leaving page
+  useEffect(() => {
+    return () => scanTypeStore.reset();
+  }, []);
+
   return (
     <div
       onPointerDown={swipeHandler}
       className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden"
     >
-      <div
-        id={id}
-        ref={(node) => {
-          if (!node) return;
-          // removes video interactions in firefox
-          node.inert = true;
-        }}
-        // dont remove braces - w/o them ast-grep parses this file incorrectly
-        className={"!absolute inset-0 -z-10 [&>video]:!size-full [&>video]:object-cover"}
+      <video
+        ref={ref}
+        inert={"true" as never as true}
+        className="absolute inset-0 -z-10 size-full object-cover"
       />
       {scanType === "input" && (
         <BarcodeInput
@@ -128,6 +108,7 @@ const Page: NextPageWithLayout = function () {
                 const image = e.target.files?.item(0);
                 if (!image) return;
                 scanImage(image);
+                e.target.value = "";
               }}
               onClick={() => scanTypeStore.select("upload")}
             >
