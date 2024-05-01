@@ -1,6 +1,7 @@
 import { browser } from "@/browser";
 import { Store } from "@/state/store";
 
+// todo - track other tabs
 class BooleanSettingStore extends Store<boolean> {
   private static initialize(key: string, initial: boolean): boolean {
     if (!browser) return initial;

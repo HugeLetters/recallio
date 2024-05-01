@@ -4,6 +4,7 @@ import { LoadingProvider } from "@/components/loading/indicator";
 import { ToastProvider } from "@/components/toast/provider";
 import type { NextPageWithLayout } from "@/layout";
 import { getBasicLayout } from "@/layout/basic";
+import { useQueryTabSync } from "@/state/tab-sync";
 import { lato } from "@/styles/font";
 import "@/styles/globals.css";
 import { tw } from "@/styles/tw";
@@ -43,6 +44,8 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
 export default trpc.withTRPC(MyApp);
 
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
+  useQueryTabSync();
+
   return (
     <SessionProvider session={session}>
       <ToastProvider>{children}</ToastProvider>
