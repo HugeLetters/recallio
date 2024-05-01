@@ -5,6 +5,7 @@ import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
+import { scanFile, scanFromUrl } from "@/scan";
 import { useBarcodeScanner } from "@/scan/hook";
 import type { ScanType } from "@/scan/store";
 import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
@@ -18,7 +19,7 @@ import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {
-  const { ref, scanFromUrl, scanFile } = useBarcodeScanner({
+  const { ref } = useBarcodeScanner({
     onScan(result) {
       goToReview(result.getText());
     },
