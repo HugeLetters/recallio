@@ -2,7 +2,7 @@ import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
 import { NavigationCache } from "./navigation";
 import { SessionCache } from "./session";
-import { ShareTargetInterceptpr } from "./share";
+import { ShareTargetInterceptpr } from "./share/interceptor";
 import { TrpcQueryCache } from "./trpc/query";
 
 declare global {

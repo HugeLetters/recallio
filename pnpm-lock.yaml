@@ -106,6 +106,9 @@ importers:
       html5-qrcode:
         specifier: ^2.3.8
         version: 2.3.8
+      idb:
+        specifier: ^8.0.0
+        version: 8.0.0
       libsql-stateless-easy:
         specifier: ^1.6.8
         version: 1.6.8
