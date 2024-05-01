@@ -1,17 +1,22 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
+import { getQueryParam, setQueryParam } from "@/browser/query";
 import { useSwipe } from "@/browser/swipe";
-import { logToastError } from "@/components/toast";
+import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
-import { scanFile, scanFromUrl, type BarcodeScanResult } from "@/scan";
+import type { BarcodeScanResult } from "@/scan";
+import { scanFile, scanFromUrl } from "@/scan";
 import { useBarcodeScanner } from "@/scan/hook";
 import type { ScanType } from "@/scan/store";
 import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
+import { consumeShareTarget } from "@/sw/share/db";
+import { SHARE_TARGET_ERROR_PARAM, SHARE_TARGET_PARAM } from "@/sw/share/url";
 import { Slot } from "@radix-ui/react-slot";
+import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import type { PropsWithChildren, RefObject } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
@@ -19,18 +24,53 @@ import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {
+  const router = useRouter();
+  const goToReview = createGoToReview(router);
+  const goToReviewFromResult = createGoToReviewFromResult(router);
+
   const { ref } = useBarcodeScanner({ onScan: goToReviewFromResult });
   function scanImage(image: File) {
     scanFile(image).then(goToReviewFromResult).catch(logToastError("Couldn't detect barcode"));
   }
 
-  const router = useRouter();
-  function goToReviewFromResult(result: BarcodeScanResult) {
-    return goToReview(result.getText());
-  }
-  function goToReview(id: string) {
-    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
-  }
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const isShareTarget = getQueryParam(router.query[SHARE_TARGET_PARAM]) !== undefined;
+    const didShareTargetError = getQueryParam(router.query[SHARE_TARGET_ERROR_PARAM]) !== undefined;
+    const shareTarget = consumeShareTarget();
+    if (!isShareTarget) return;
+
+    function handleError(message: string) {
+      toast.error(message);
+      setQueryParam({ key: SHARE_TARGET_PARAM, router });
+      setQueryParam({ key: SHARE_TARGET_ERROR_PARAM, router });
+    }
+
+    if (didShareTargetError) {
+      handleError("Invalid image was attached");
+      return;
+    }
+
+    shareTarget
+      .then((url) => {
+        if (!url) {
+          handleError("No image was attached");
+          return;
+        }
+
+        scanFromUrl(url)
+          .then(createGoToReviewFromResult(router))
+          .catch((e) => {
+            console.error(e);
+            handleError("Couldn't detect barcode");
+          });
+      })
+      .catch((e) => {
+        console.error(e);
+        handleError("Unexpected while handling shared image");
+      });
+  }, [router]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSwiped, setIsSwiped] = useState(false);
@@ -260,4 +300,17 @@ function useScanTypeSwipe({
       target.current?.style.removeProperty("--offset");
     },
   });
+}
+
+function createGoToReview(router: NextRouter) {
+  return function (id: string) {
+    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
+  };
+}
+
+function createGoToReviewFromResult(router: NextRouter) {
+  const goToReview = createGoToReview(router);
+  return function (result: BarcodeScanResult) {
+    return goToReview(result.getText());
+  };
 }
