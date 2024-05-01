@@ -93,7 +93,6 @@ function Review({ barcode }: ReviewProps) {
 type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {
   const [isOpen, setIsOpen] = useQueryToggleState("attached-image-dialog");
-  // todo - transition to full view
   return (
     <Dialog.Root
       open={isOpen}

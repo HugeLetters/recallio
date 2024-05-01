@@ -1,7 +1,7 @@
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
+import { ImageCache, PageDataCache, SessionCache } from "./misc";
 import { NavigationCache } from "./navigation";
-import { SessionCache } from "./session";
 import { ShareTargetInterceptpr } from "./share/interceptor";
 import { TrpcQueryCache } from "./trpc/query";
 
@@ -13,7 +13,6 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-// todo - check defaultCache strategies
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST?.filter((entry) => {
     const name = typeof entry === "string" ? entry : entry.url;
@@ -24,8 +23,10 @@ const serwist = new Serwist({
   navigationPreload: true,
   runtimeCaching: [
     new SessionCache(),
+    new ImageCache(),
     new TrpcQueryCache(["user.review.getOne"]),
     new NavigationCache(),
+    new PageDataCache(),
     new ShareTargetInterceptpr(),
   ],
 });
