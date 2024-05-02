@@ -1,0 +1,30 @@
+@use "sass:math";
+
+$length: 20rem;
+$deg: 135deg;
+$skewedLength: $length / math.cos($deg);
+
+@function breakpoint($p) {
+  @return $length * $p / 100;
+}
+
+.root {
+  background: repeating-linear-gradient(
+    $deg,
+    theme("colors.neutral.200") breakpoint(0) breakpoint(20),
+    theme("colors.neutral.100") breakpoint(45) breakpoint(55),
+    theme("colors.neutral.200") breakpoint(70) breakpoint(100)
+  );
+  background-size: -2 * $skewedLength;
+  animation: moving-background 2s infinite linear;
+}
+
+@keyframes moving-background {
+  from {
+    background-position-x: 0rem;
+  }
+
+  to {
+    background-position-x: $skewedLength;
+  }
+}
