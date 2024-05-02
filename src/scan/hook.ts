@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import type { BarcodeScanResult } from ".";
 import { createReader } from ".";
 
+// todo - add native barcode reader support
+// todo - try using "barcode-detector" or "zxing-wasm"
 type UseBarcodeScannerOptions = { onScan: (result: BarcodeScanResult) => void };
 export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const [videoReader] = useState(createReader);
