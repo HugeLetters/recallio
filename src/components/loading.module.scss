@@ -1,3 +1,4 @@
+// todo - clean up
 @use "sass:math";
 
 $length: 20rem;
@@ -17,6 +18,16 @@ $skewedLength: $length / math.cos($deg);
   );
   background-size: -2 * $skewedLength;
   animation: moving-background 2s infinite linear;
+}
+
+.error {
+  background: repeating-linear-gradient(
+    $deg,
+    theme("colors.app.red.100") breakpoint(0) breakpoint(20),
+    theme("colors.app.red.50") breakpoint(45) breakpoint(55),
+    theme("colors.app.red.100") breakpoint(70) breakpoint(100)
+  );
+  background-size: -2 * $skewedLength;
 }
 
 @keyframes moving-background {
