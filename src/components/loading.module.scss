@@ -9,25 +9,26 @@ $skewedLength: $length / math.cos($deg);
   @return $length * $p / 100;
 }
 
+// todo - transition for gradient color, should fallback basic behavior if unsupported!
 .root {
-  background: repeating-linear-gradient(
+  background-image: repeating-linear-gradient(
     $deg,
     theme("colors.neutral.200") breakpoint(0) breakpoint(20),
     theme("colors.neutral.100") breakpoint(45) breakpoint(55),
     theme("colors.neutral.200") breakpoint(70) breakpoint(100)
   );
   background-size: -2 * $skewedLength;
-  animation: moving-background 2s infinite linear;
+  animation: moving-background 1.5s infinite linear;
 }
 
 .error {
-  background: repeating-linear-gradient(
+  background-image: repeating-linear-gradient(
     $deg,
     theme("colors.app.red.100") breakpoint(0) breakpoint(20),
     theme("colors.app.red.50") breakpoint(45) breakpoint(55),
     theme("colors.app.red.100") breakpoint(70) breakpoint(100)
   );
-  background-size: -2 * $skewedLength;
+  animation-duration: 5s;
 }
 
 @keyframes moving-background {
