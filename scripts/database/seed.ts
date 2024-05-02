@@ -1,5 +1,9 @@
 import { blobToFile } from "@/image/blob";
-import { productNameLengthMax, productNameLengthMin, productRatingMax } from "@/product/validation";
+import {
+  PRODUCT_NAME_LENGTH_MAX,
+  PRODUCT_NAME_LENGTH_MIN,
+  PRODUCT_RATING_MAX,
+} from "@/product/validation";
 import { db } from "@/server/database/client/serverless";
 import type { ReviewInsert } from "@/server/database/schema/product";
 import {
@@ -144,12 +148,14 @@ function randomBarcode() {
   return faker.number.int(randomBarcodeOptions).toString();
 }
 
-const randomNameOptions = { length: { min: productNameLengthMin, max: productNameLengthMax } };
+const randomNameOptions = {
+  length: { min: PRODUCT_NAME_LENGTH_MIN, max: PRODUCT_NAME_LENGTH_MAX },
+};
 function randomName() {
   return faker.word.noun(randomNameOptions);
 }
 
-const randomBaseStringOptions = { min: 0, max: productRatingMax };
+const randomBaseStringOptions = { min: 0, max: PRODUCT_RATING_MAX };
 function randomBaseRating() {
   return faker.number.int(randomBaseStringOptions);
 }
@@ -300,7 +306,7 @@ async function seedUtImages(count: number): Promise<string[]> {
     );
 }
 
-function splitBy<T, R extends string>(array: T[], getBucket: (value: T) => R) {
+function splitBy<T, R extends string>(array: ReadonlyArray<T>, getBucket: (value: T) => R) {
   return array.reduce<Partial<Record<R, T[]>>>((acc, el) => {
     const bucket = getBucket(el);
     acc[bucket] ??= [];

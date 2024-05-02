@@ -1,7 +1,7 @@
 import { Transition } from "@/animation/transition";
 import { useClient } from "@/browser";
-import { getQueryParam, setQueryParam } from "@/browser/query";
 import { rootStore } from "@/layout/root";
+import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { useStore } from "@/state/store";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";

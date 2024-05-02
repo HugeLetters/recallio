@@ -1,10 +1,10 @@
 import { Flipped } from "@/animation/flip";
 import { ToolbarLink } from "@/components/ui/toolbar";
 import type { Icon } from "@/image/icon";
-import { DerivedStore, Store, useStore } from "@/state/store";
+import type { ScanType } from "@/scan/store";
+import { scanTypeList, scanTypeOffsetStore } from "@/scan/store";
+import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
-import type { TupleIndex } from "@/utils/array";
-import { indexOf } from "@/utils/array";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import type { LinkProps } from "next/link";
 import { useRouter } from "next/router";
@@ -52,7 +52,7 @@ export function Footer() {
                 style={{ "--translate": `${translate * 100}%` }}
               >
                 {scanTypeList.map((scanType) => {
-                  const Icon = getScannerIcon(scanType);
+                  const Icon = SCANNER_TYPE_ICON_MAP[scanType];
                   return (
                     <Icon
                       key={scanType}
@@ -108,40 +108,8 @@ function FooterLink({ active, Icon, label, href }: FooterItemProps) {
   );
 }
 
-const scanTypeList = ["upload", "scan", "input"] as const;
-type ScanType = (typeof scanTypeList)[number];
-class ScanTypeStore extends Store<ScanType> {
-  select(scanType: ScanType) {
-    this.setState(scanType);
-  }
-  move(by: number) {
-    this.updateState((state) => {
-      const currentIndex = indexOf(scanTypeList, state);
-      const fallbackIndex: TupleIndex<typeof scanTypeList> = by > 0 ? 2 : 0;
-      return scanTypeList[(currentIndex ?? fallbackIndex) + by] ?? scanTypeList[fallbackIndex];
-    });
-  }
-  reset() {
-    this.setState("scan");
-  }
-}
-
-export const scanTypeStore = new ScanTypeStore("scan");
-/** Gives current offset of scan type value from the center in the range from 0 to 1. */
-export const scanTypeOffsetStore = new DerivedStore(
-  scanTypeStore,
-  (state) => ((indexOf(scanTypeList, state) ?? 2) - 1) / scanTypeList.length,
-);
-
-function getScannerIcon(scanType: ScanType) {
-  switch (scanType) {
-    case "upload":
-      return UploadIcon;
-    case "input":
-      return LucidePen;
-    case "scan":
-      return ScanIcon;
-    default:
-      return scanType satisfies never;
-  }
-}
+const SCANNER_TYPE_ICON_MAP: Record<ScanType, Icon> = {
+  upload: UploadIcon,
+  input: LucidePen,
+  scan: ScanIcon,
+};

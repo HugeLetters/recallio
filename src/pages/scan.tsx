@@ -4,125 +4,113 @@ import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
-import { scanTypeOffsetStore, scanTypeStore } from "@/layout/footer";
-import { barcodeLengthMax, barcodeLengthMin } from "@/product/validation";
+import { getQueryParam, setQueryParam } from "@/navigation/query";
+import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
+import type { BarcodeScanResult } from "@/scan";
+import { scanFile, scanFromUrl } from "@/scan";
+import { useBarcodeScanner } from "@/scan/hook";
+import type { ScanType } from "@/scan/store";
+import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
+import { consumeShareTarget } from "@/sw/share/db";
+import { SHARE_TARGET_ERROR_PARAM, SHARE_TARGET_PARAM } from "@/sw/share/url";
 import { Slot } from "@radix-ui/react-slot";
-import type { QrcodeSuccessCallback } from "html5-qrcode";
-import { Html5QrcodeScannerState, Html5Qrcode as Scanner } from "html5-qrcode";
+import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
-import type { PropsWithChildren } from "react";
-import { forwardRef, useEffect, useId, useRef, useState } from "react";
+import type { PropsWithChildren, RefObject } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
-const baseSwipeData = { elastic: (x: number) => x, width: 0 };
-
 const Page: NextPageWithLayout = function () {
+  const router = useRouter();
+  const goToReview = createGoToReview(router);
+  const goToReviewFromResult = createGoToReviewFromResult(router);
+
+  const { ref } = useBarcodeScanner({ onScan: goToReviewFromResult });
+  function scanImage(image: File) {
+    scanFile(image).then(goToReviewFromResult).catch(logToastError("Couldn't detect barcode"));
+  }
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const isShareTarget = getQueryParam(router.query[SHARE_TARGET_PARAM]) !== undefined;
+    const didShareTargetError = getQueryParam(router.query[SHARE_TARGET_ERROR_PARAM]) !== undefined;
+    const shareTarget = consumeShareTarget();
+    if (!isShareTarget) return;
+
+    function handleError(message: string) {
+      toast.error(message);
+      setQueryParam({ key: SHARE_TARGET_PARAM, router });
+      setQueryParam({ key: SHARE_TARGET_ERROR_PARAM, router });
+    }
+
+    if (didShareTargetError) {
+      handleError("Invalid image was attached");
+      return;
+    }
+
+    shareTarget
+      .then((url) => {
+        if (!url) {
+          handleError("No image was attached");
+          return;
+        }
+
+        scanFromUrl(url)
+          .then(createGoToReviewFromResult(router))
+          .catch((e) => {
+            console.error(e);
+            handleError("Couldn't detect barcode");
+          });
+      })
+      .catch((e) => {
+        console.error(e);
+        handleError("Unexpected while handling shared image");
+      });
+  }, [router]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isSwiped, setIsSwiped] = useState(false);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const barcodeInputRef = useRef<HTMLFormElement>(null);
+  const swipeHandler = useScanTypeSwipe({
+    target: controlsRef,
+    ignore: barcodeInputRef,
+    onScanTypeChange(scanType) {
+      if (scanType !== "upload") return;
+      fileInputRef.current?.click();
+    },
+    onSwipeStateChange(isSwiped) {
+      if (isSwiped) {
+        setIsSwiped(true);
+      } else {
+        // flush sync is required because any reflows at this stage(like losing focus on <BarcodeInput/>) will screw up the animation
+        flushSync(() => {
+          setIsSwiped(false);
+        });
+      }
+    },
+  });
+
+  const scanType = useStore(scanTypeStore);
+  const baseOffset = useStore(scanTypeOffsetStore);
   // reset scan type when leaving page
   useEffect(() => {
     return () => scanTypeStore.reset();
   }, []);
-
-  const { id, ready, start, scanFile } = useBarcodeScanner(goToReview);
-  function startScanner() {
-    if (!ready) return;
-    start().catch(
-      logToastError(
-        "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
-      ),
-    );
-  }
-  // start scanner on page mount
-  useEffect(() => {
-    startScanner();
-    // it should run only once on mount once scanner gave a signal it's ready to go
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
-
-  const router = useRouter();
-  function goToReview(id: string) {
-    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
-  }
-  function scanImage(image: File) {
-    if (!ready) return;
-    scanFile(image)
-      .then((result) => goToReview(result.decodedText))
-      .catch((e) => {
-        startScanner();
-        toast.error("Couldn't detect barcode");
-        console.error(e);
-      });
-  }
-
-  const scanType = useStore(scanTypeStore);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const baseOffset = useStore(scanTypeOffsetStore);
-  const [isSwiped, setIsSwiped] = useState(false);
-  const controlsRef = useRef<HTMLDivElement>(null);
-  const swipeDataRef = useRef(baseSwipeData);
-  const barcodeInputRef = useRef<HTMLFormElement>(null);
-  const swipeHandler = useSwipe({
-    ignore: barcodeInputRef,
-    onSwipe({ movement: { dx } }) {
-      const controls = controlsRef.current;
-      if (!controls) return;
-
-      const { elastic, width } = swipeDataRef.current;
-      const offset = width * baseOffset;
-      const absoluteDx = dx - offset;
-      const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
-      controls.style.setProperty("--offset", `${(elasticDx + offset).toFixed(2)}px`);
-    },
-    onSwipeStart() {
-      setIsSwiped(true);
-
-      const controls = controlsRef.current;
-      if (!controls) return;
-
-      const width = controls.clientWidth;
-      const half = width / 2;
-      swipeDataRef.current = {
-        elastic: createElasticStretchFunction({
-          cutoff: half,
-          coefficient: 1,
-          stretch: 50,
-        }),
-        width,
-      };
-    },
-    onSwipeEnd({ movement: { dx } }) {
-      // flush sync is required before .removeProperty because any reflows at this stage(like losing focus on <BarcodeInput/>) will screw up the animation
-      flushSync(() => {
-        setIsSwiped(false);
-        if (Math.abs(dx) < 35) return;
-        const delta = Math.abs(dx) < 110 ? 1 : 2;
-        const move = (dx < 0 ? 1 : -1) * delta;
-        const oldScanType = scanType;
-        scanTypeStore.move(move);
-        const newScanType = scanTypeStore.getSnapshot();
-        if (newScanType !== "upload" || oldScanType === "upload") return;
-        fileInputRef.current?.click();
-      });
-      controlsRef.current?.style.removeProperty("--offset");
-    },
-  });
 
   return (
     <div
       onPointerDown={swipeHandler}
       className="relative isolate flex w-full touch-pan-y touch-pinch-zoom flex-col items-center justify-end gap-6 overflow-x-hidden"
     >
-      <div
-        id={id}
-        ref={(node) => {
-          if (!node) return;
-          // removes video interactions in firefox
-          node.inert = true;
-        }}
-        // dont remove braces - w/o them ast-grep parses this file incorrectly
-        className={"!absolute inset-0 -z-10 [&>video]:!size-full [&>video]:object-cover"}
+      <video
+        ref={ref}
+        inert={"true" as never as true}
+        className="absolute inset-0 -z-10 size-full object-cover"
       />
       {scanType === "input" && (
         <BarcodeInput
@@ -156,6 +144,7 @@ const Page: NextPageWithLayout = function () {
                 const image = e.target.files?.item(0);
                 if (!image) return;
                 scanImage(image);
+                e.target.value = "";
               }}
               onClick={() => scanTypeStore.select("upload")}
             >
@@ -190,7 +179,7 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = function useLayout({ children }) {
+Page.getLayout = (children) => {
   return <Layout header={{ title: "Scanner" }}>{children}</Layout>;
 };
 
@@ -237,8 +226,8 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
           name="barcode"
           autoFocus
           required
-          minLength={barcodeLengthMin}
-          maxLength={barcodeLengthMax}
+          minLength={BARCODE_LENGTH_MIN}
+          maxLength={BARCODE_LENGTH_MAX}
           autoComplete="off"
         />
         <button
@@ -252,85 +241,76 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
   );
 });
 
-type ScannerState = "not mounted" | "stopped" | "scanning" | "starting";
-/**
- * Scanner cleans-up on being unmounted automatically.
- */
-function useBarcodeScanner(onScan: QrcodeSuccessCallback) {
-  const id = useId();
-  const [state, setState] = useState<ScannerState>("not mounted");
-  const scanner = useRef<Scanner>();
+const baseSwipeData = { elastic: (x: number) => x, width: 0 };
+type UseScanTypeSwipeOptions = {
+  target: RefObject<HTMLElement>;
+  ignore?: RefObject<HTMLElement>;
+  onScanTypeChange?: (scanType: ScanType) => void;
+  onSwipeStateChange?: (isSwiping: boolean) => void;
+};
+function useScanTypeSwipe({
+  target,
+  ignore,
+  onScanTypeChange,
+  onSwipeStateChange,
+}: UseScanTypeSwipeOptions) {
+  const baseOffset = useStore(scanTypeOffsetStore);
+  const swipeDataRef = useRef(baseSwipeData);
 
-  useEffect(() => {
-    scanner.current = createScanner(id);
-    setState("stopped");
+  return useSwipe({
+    ignore,
+    onSwipe({ movement: { dx } }) {
+      const targetEl = target.current;
+      if (!targetEl) return;
 
-    return () => {
-      stop().catch(
-        logToastError("Failed to stop scanner.\nReloading the page is advised to avoid stutters."),
-      );
-      scanner.current = undefined;
-      setState("not mounted");
-    };
-  }, [id]);
-
-  if (state === "not mounted" || !scanner.current) {
-    return {
-      ready: false as const,
-      state,
-      /** Attach this id to element where camera feed should be projected to */
-      id,
-    };
-  }
-
-  function getScanner() {
-    scanner.current ??= createScanner(id);
-    return scanner.current;
-  }
-
-  async function start() {
-    if (state === "starting") return;
-    setState("starting");
-
-    const scanner = getScanner();
-    await stop();
-    return scanner
-      .start({ facingMode: "environment" }, { fps: 2 }, onScan, undefined)
-      .then(() => setState("scanning"))
-      .catch((e) => {
-        setState("stopped");
-        throw e;
-      });
-  }
-
-  async function stop(updateState?: boolean) {
-    if (scanner.current?.getState() !== Html5QrcodeScannerState.SCANNING) return;
-
-    return scanner.current.stop().then(() => {
-      if (!updateState) return;
-      setState("stopped");
-    });
-  }
-
-  return {
-    ready: true as const,
-    state,
-    id,
-    /** Does not have referential equality on rerenders */
-    start,
-    /** Does not have referential equality on rerenders */
-    stop: () => stop(true),
-    /** Stops the scanner before reading the file */
-    scanFile: async (image: File) => {
-      await stop(true);
-      return getScanner().scanFileV2(image, false);
+      const { elastic, width } = swipeDataRef.current;
+      const offset = width * baseOffset;
+      const absoluteDx = dx - offset;
+      const elasticDx = absoluteDx >= 0 ? elastic(absoluteDx) : -elastic(-absoluteDx);
+      targetEl.style.setProperty("--offset", `${(elasticDx + offset).toFixed(2)}px`);
     },
+    onSwipeStart() {
+      onSwipeStateChange?.(true);
+      const targetEl = target.current;
+      if (!targetEl) return;
+
+      const width = targetEl.clientWidth;
+      const half = width / 2;
+      swipeDataRef.current = {
+        elastic: createElasticStretchFunction({
+          cutoff: half,
+          coefficient: 1,
+          stretch: 50,
+        }),
+        width,
+      };
+    },
+    onSwipeEnd({ movement: { dx } }) {
+      onSwipeStateChange?.(false);
+      if (Math.abs(dx) < 35) return;
+      const delta = Math.abs(dx) < 110 ? 1 : 2;
+      const move = (dx < 0 ? 1 : -1) * delta;
+
+      const oldScanType = scanTypeStore.getSnapshot();
+      scanTypeStore.move(move);
+      const newScanType = scanTypeStore.getSnapshot();
+      if (newScanType !== oldScanType) {
+        onScanTypeChange?.(newScanType);
+      }
+      target.current?.style.removeProperty("--offset");
+    },
+  });
+}
+
+function createGoToReview(router: NextRouter) {
+  return function (id: string) {
+    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
   };
 }
 
-function createScanner(id: string) {
-  return new Scanner(id, {
-    useBarCodeDetectorIfSupported: true,
-    verbose: false,
-  });
+function createGoToReviewFromResult(router: NextRouter) {
+  const goToReview = createGoToReview(router);
+  return function (result: BarcodeScanResult) {
+    return goToReview(result.getText());
+  };
 }

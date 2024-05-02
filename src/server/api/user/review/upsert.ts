@@ -1,11 +1,11 @@
 import {
-  categoryCountMax,
-  categoryLengthMax,
-  categoryLengthMin,
-  productCommentLengthMax,
-  productNameLengthMax,
-  productNameLengthMin,
-  productRatingMax,
+  CATEGORY_COUNT_MAX,
+  CATEGORY_LENGTH_MAX,
+  CATEGORY_LENGTH_MIN,
+  PRODUCT_COMMENT_LENGTH_MAX,
+  PRODUCT_NAME_LENGTH_MAX,
+  PRODUCT_NAME_LENGTH_MIN,
+  PRODUCT_RATING_MAX,
 } from "@/product/validation";
 import { protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client/serverless";
@@ -30,25 +30,25 @@ const upsertSchema = z
     name: stringLikeSchema({
       required_error: "Product name is required to create a review",
     })
-      .min(productNameLengthMin, createMinMessage("Product name", productNameLengthMin))
-      .max(productNameLengthMax, createMaxMessage("Product name", productNameLengthMax)),
+      .min(PRODUCT_NAME_LENGTH_MIN, createMinMessage("Product name", PRODUCT_NAME_LENGTH_MIN))
+      .max(PRODUCT_NAME_LENGTH_MAX, createMaxMessage("Product name", PRODUCT_NAME_LENGTH_MAX)),
     rating: z
       .number()
       .int("Rating has to be an integer")
       .min(0, "Rating can't be less than 0")
-      .max(productRatingMax, `Rating can't be greater than ${productRatingMax}`),
-    pros: createLongTextSchema("Pros", productCommentLengthMax).nullish(),
-    cons: createLongTextSchema("Cons", productCommentLengthMax).nullish(),
-    comment: createLongTextSchema("Comment", productCommentLengthMax).nullish(),
+      .max(PRODUCT_RATING_MAX, `Rating can't be greater than ${PRODUCT_RATING_MAX}`),
+    pros: createLongTextSchema("Pros", PRODUCT_COMMENT_LENGTH_MAX).nullish(),
+    cons: createLongTextSchema("Cons", PRODUCT_COMMENT_LENGTH_MAX).nullish(),
+    comment: createLongTextSchema("Comment", PRODUCT_COMMENT_LENGTH_MAX).nullish(),
     isPrivate: z.boolean(),
     categories: z
       .array(
         z
           .string()
-          .min(categoryLengthMin, createMinMessage("A single category", categoryLengthMin))
-          .max(categoryLengthMax, createMaxMessage("A single category", categoryLengthMax)),
+          .min(CATEGORY_LENGTH_MIN, createMinMessage("A single category", CATEGORY_LENGTH_MIN))
+          .max(CATEGORY_LENGTH_MAX, createMaxMessage("A single category", CATEGORY_LENGTH_MAX)),
       )
-      .max(categoryCountMax, `Review can't have more than ${categoryCountMax} categories`)
+      .max(CATEGORY_COUNT_MAX, `Review can't have more than ${CATEGORY_COUNT_MAX} categories`)
       .optional(),
   })
   // enforce default behaviour - we don't wanna update imageKey here

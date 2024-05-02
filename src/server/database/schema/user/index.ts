@@ -1,12 +1,12 @@
 import { timestampColumn } from "@/server/database/schema/utils";
-import { usernameMaxLength } from "@/user/validation";
+import { USERNAME_LENGTH_MAX } from "@/user/validation";
 import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { AdapterAccount } from "next-auth/adapters";
 
 export const userIdLength = 255;
 export const user = sqliteTable("user", {
   id: text("id", { length: userIdLength }).notNull().primaryKey(),
-  name: text("name", { length: usernameMaxLength }).notNull(),
+  name: text("name", { length: USERNAME_LENGTH_MAX }).notNull(),
   email: text("email", { length: 255 }).notNull().unique(),
   emailVerified: timestampColumn("email_verified"),
   /** Stored either as URL or an UploadThing key */

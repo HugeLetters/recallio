@@ -1,5 +1,3 @@
-import { getQueryParam } from "@/browser/query";
-import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
 import { toast } from "@/components/toast";
 import { Button, ButtonLike } from "@/components/ui";
@@ -8,6 +6,9 @@ import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { getQueryParam } from "@/navigation/query";
+import { useQueryToggleState } from "@/navigation/query/hooks";
+import { Redirect } from "@/navigation/redirect";
 import { BarcodeTitle, CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
@@ -28,32 +29,17 @@ const Page: NextPageWithLayout = function () {
   return barcode ? <Review barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = ({ children }) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
 export default Page;
 
 type ReviewProps = { barcode: string };
 function Review({ barcode }: ReviewProps) {
-  const router = useRouter();
-  const reviewQuery = trpc.user.review.getOne.useQuery(
-    { barcode },
-    {
-      select(data) {
-        if (!data) {
-          router
-            .replace({ pathname: "/review/[id]/edit", query: { id: barcode } })
-            .catch(console.error);
-          throw Error("No review found");
-        }
-
-        return data;
-      },
-      staleTime: minutesToMs(5),
-    },
-  );
+  const reviewQuery = trpc.user.review.getOne.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
   if (!reviewQuery.isSuccess) return "Loading...";
-
   const review = reviewQuery.data;
+
+  if (!review) return <Redirect to={{ pathname: "/review/[id]/edit", query: { id: barcode } }} />;
   return (
     <div className="flex w-full flex-col gap-4 p-4">
       <div className="flex items-stretch gap-4">
@@ -197,7 +183,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {
       loading.enable();
-      router.push("/profile").catch(console.error);
+      return router.push("/profile").catch(console.error);
     },
     onError(e) {
       toast.error(`Couldn't delete the review: ${e.message}`);

@@ -58,6 +58,6 @@ export function getScrapedProducts(code: string): Promise<string[]> {
 function timedPromise<T>(promise: Promise<T>, timeout: number) {
   return new Promise<T>((resolve, reject) => {
     promise.then(resolve).catch(reject);
-    setTimeout(() => reject("Promise timed out"), timeout);
+    setTimeout(() => reject(Error("Promise timed out")), timeout);
   });
 }

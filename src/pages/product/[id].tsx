@@ -1,4 +1,3 @@
-import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
@@ -6,6 +5,8 @@ import { Star } from "@/components/ui/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
+import { getQueryParam } from "@/navigation/query";
+import { Redirect } from "@/navigation/redirect";
 import { CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
@@ -24,35 +25,25 @@ const Page: NextPageWithLayout = function () {
   return barcode ? <ProductPage barcode={barcode} /> : "Loading...";
 };
 
-Page.getLayout = ({ children }) => {
+Page.getLayout = (children) => {
   return <Layout header={{ title: "Product page" }}>{children}</Layout>;
 };
 
 type ProductPageProps = { barcode: string };
 function ProductPage({ barcode }: ProductPageProps) {
-  const router = useRouter();
-
-  const summaryQuery = trpc.product.getSummary.useQuery(
-    { barcode },
-    {
-      staleTime: minutesToMs(5),
-      select(data) {
-        if (!data) {
-          router.replace({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
-          throw Error(`No public reviews for product with barcode ${barcode} exist.`);
-        }
-        return data;
-      },
-    },
-  );
+  const summaryQuery = trpc.product.getSummary.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
   return (
     <div className="w-full p-4 pb-5">
       {summaryQuery.isSuccess ? (
-        <Summary
-          barcode={barcode}
-          summary={summaryQuery.data}
-        />
+        summaryQuery.data ? (
+          <Summary
+            barcode={barcode}
+            summary={summaryQuery.data}
+          />
+        ) : (
+          <Redirect to={{ pathname: "/review/[id]", query: { id: barcode } }} />
+        )
       ) : (
         "Loading..."
       )}

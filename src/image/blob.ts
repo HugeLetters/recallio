@@ -22,3 +22,22 @@ export function useBlobUrl<B extends Blob | null | undefined>(blob: B) {
 
   return url;
 }
+
+export function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+
+    reader.addEventListener("load", () => {
+      const { result } = reader;
+      if (typeof result !== "string") {
+        return reject(new Error("Reader result is not a data url"));
+      }
+      resolve(result);
+    });
+
+    reader.addEventListener("error", () => {
+      reject(new Error("Couldn't read blob"));
+    });
+  });
+}

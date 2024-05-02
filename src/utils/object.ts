@@ -32,3 +32,6 @@ export type ExtendPropety<O, K extends keyof O, E> = TransformProperty<O, K, O[K
 export type DiscriminatedUnion<V, U> =
   | Prettify<V & { [K in Exclude<keyof U, keyof V>]?: never }>
   | Prettify<U & { [K in Exclude<keyof V, keyof U>]?: never }>;
+export type OverridePropeties<Base, Override extends Partial<Base>> = Base extends Base
+  ? Omit<Base, keyof Override> & Override
+  : never;

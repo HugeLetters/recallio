@@ -1,7 +1,7 @@
-import { getQueryParam } from "@/browser/query";
 import { useResizeListener } from "@/browser/resize/store";
 import { Image } from "@/image";
 import type { Icon } from "@/image/icon";
+import { getQueryParam } from "@/navigation/query";
 import { tw } from "@/styles/tw";
 import type { RouterOutputs } from "@/trpc";
 import { clamp } from "@/utils";

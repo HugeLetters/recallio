@@ -7,7 +7,7 @@ export function Error({ message: error }: ErrorProps) {
   const splitError = error ? splitSentence(error) : null;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center gap-3 p-4 text-center text-app-green-900">
+    <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center gap-3 p-4 text-center">
       <BrokenEggshellIcon className="size-full px-10" />
       <div className="space-y-2 py-4">
         {!!splitError && (

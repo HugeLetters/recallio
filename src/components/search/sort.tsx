@@ -1,10 +1,10 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
-import { getQueryParam, setQueryParam } from "@/browser/query";
-import { useQueryToggleState } from "@/browser/query/hooks";
 import { useSwipe } from "@/browser/swipe";
 import { DialogOverlay } from "@/components/ui/dialog";
 import { rootStore } from "@/layout/root";
+import { getQueryParam, setQueryParam } from "@/navigation/query";
+import { useQueryToggleState } from "@/navigation/query/hooks";
 import { useStore } from "@/state/store";
 import { includes } from "@/utils/array";
 import type { Nullish } from "@/utils/type";
@@ -111,7 +111,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
         {/* keeps trigger always the same size */}
         <div className="relative">
           <span className="invisible whitespace-nowrap capitalize">
-            {optionList.toSorted((a, b) => b.length - a.length)[0]}
+            {[...optionList].sort((a, b) => b.length - a.length)[0]}
           </span>
           <span className="absolute left-0 w-full text-left capitalize">{sortBy}</span>
         </div>

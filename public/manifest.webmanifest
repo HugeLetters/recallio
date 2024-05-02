@@ -1,0 +1,105 @@
+{
+  "name": "Recallio",
+  "description": "Your Ultimate Grocery Companion.\nScan barcodes, leave reviews, and effortlessly track your shopping essentials!",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "hsl(122 39% 50%)",
+  "start_url": "/",
+  "shortcuts": [
+    {
+      "name": "Profile",
+      "url": "/profile",
+      "description": "Open your profile page",
+      "icons": [
+        {
+          "src": "/shortcut/profile.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "url": "/profile/settings",
+      "description": "Open your profile settings page",
+      "icons": [
+        {
+          "src": "/shortcut/settings.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/api/sw/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [{ "name": "shared_file", "accept": "image/*" }]
+    }
+  },
+  "icons": [
+    {
+      "src": "/icon/any-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon/any-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon/monochrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "monochrome"
+    },
+    {
+      "src": "/icon/monochrome-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "monochrome"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot/composite.webp",
+      "sizes": "1320x920",
+      "type": "image/webp",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot/profile.webp",
+      "sizes": "440x920",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot/search.webp",
+      "sizes": "440x920",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot/settings.webp",
+      "sizes": "440x920",
+      "type": "image/webp",
+      "form_factor": "narrow"
+    }
+  ]
+}

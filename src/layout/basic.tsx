@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react";
+import type { GetLayout } from ".";
 
-export function BasicLayout({ children }: PropsWithChildren) {
-  return <div className="bg-white">{children}</div>;
-}
+export const getBasicLayout: GetLayout = function (page) {
+  return <div className="bg-white">{page}</div>;
+};

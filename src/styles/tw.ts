@@ -1,3 +1,4 @@
+import { isArray } from "@/utils/array";
 import { filterMap } from "@/utils/array/filter";
 
 type Falsy = undefined | null | false;
@@ -6,6 +7,6 @@ export function tw(...classGroup: ClassGroup[]): string {
   return filterMap(
     classGroup,
     (x, bad) => (x ? x : bad),
-    (classGroup) => (Array.isArray(classGroup) ? tw(...classGroup) : classGroup),
+    (classGroup) => (isArray(classGroup) ? tw(...classGroup) : classGroup),
   ).join(" ");
 }

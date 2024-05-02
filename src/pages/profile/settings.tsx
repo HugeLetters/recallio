@@ -2,7 +2,6 @@ import { signOut } from "@/auth";
 import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider/icon";
 import { useCachedSession } from "@/auth/session/hooks";
-import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
 import { logToastError, toast } from "@/components/toast";
 import { Button, Input, WithLabel } from "@/components/ui";
@@ -12,6 +11,7 @@ import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { useQueryToggleState } from "@/navigation/query/hooks";
 import type { BooleanSettingStore } from "@/settings/boolean";
 import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useOptimistic } from "@/state/optimistic";
@@ -20,7 +20,7 @@ import { useTracker } from "@/state/store/tracker/hooks";
 import { trpc } from "@/trpc";
 import { useUploadThing } from "@/uploadthing";
 import { UserPicture } from "@/user/picture";
-import { usernameMaxLength, usernameMinLength } from "@/user/validation";
+import { USERNAME_LENGTH_MAX, USERNAME_LENGTH_MIN } from "@/user/validation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
 import { useMutation } from "@tanstack/react-query";
@@ -74,7 +74,7 @@ const Page: NextPageWithLayout = function () {
     "Loading"
   );
 };
-Page.getLayout = ({ children }) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
+Page.getLayout = (children) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
 
 export default Page;
 
@@ -178,7 +178,7 @@ function UserName({ username, sync }: UserNameProps) {
   useTracker(loadingTracker, isLoading, 300);
 
   function saveName(value: string) {
-    if (value === username || value.length < usernameMinLength) return;
+    if (value === username || value.length < USERNAME_LENGTH_MIN) return;
     mutate(value);
   }
 
@@ -194,8 +194,8 @@ function UserName({ username, sync }: UserNameProps) {
           value={value}
           name="username"
           required
-          minLength={usernameMinLength}
-          maxLength={usernameMaxLength}
+          minLength={USERNAME_LENGTH_MIN}
+          maxLength={USERNAME_LENGTH_MAX}
           autoComplete="off"
           onChange={(e) => {
             setValue(e.target.value);

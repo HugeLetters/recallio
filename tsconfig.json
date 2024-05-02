@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["unplugin-icons/types/react"],
+    "types": ["unplugin-icons/types/react", "@serwist/next/typings"],
     "plugins": [{ "name": "typescript-plugin-css-modules" }]
   },
   "include": [
@@ -33,5 +33,5 @@
     "**/*.mjs",
     "**/*.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "./public/recallio-sw.js"]
 }

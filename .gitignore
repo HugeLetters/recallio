@@ -38,3 +38,4 @@ next-env.d.ts
 /src/router/matcher.ts
 /database/db.sqlite
 /database/db.sqlite-journal
+/public/recallio-sw.js

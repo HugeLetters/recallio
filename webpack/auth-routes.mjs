@@ -74,13 +74,14 @@ let cancelTrieUpdate = () => void 0;
  * @returns {Promise<void>}
  */
 async function updateRouteInfo(pathname, value) {
-  const prevValue = routeInfo.get(pathname) ?? null;
+  const current = routeInfo.get(pathname) ?? null;
+  if (value === current) return;
+
   if (value === null) {
     routeInfo.delete(pathname);
   } else {
     routeInfo.set(pathname, value);
   }
-  if (routeInfo.get(pathname) === prevValue) return;
 
   cancelTrieUpdate();
   return new Promise((resolve, reject) => {
