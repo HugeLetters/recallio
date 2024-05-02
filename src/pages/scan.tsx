@@ -1,10 +1,10 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
-import { getQueryParam, setQueryParam } from "@/browser/query";
 import { useSwipe } from "@/browser/swipe";
 import { logToastError, toast } from "@/components/toast";
 import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
 import type { BarcodeScanResult } from "@/scan";
 import { scanFile, scanFromUrl } from "@/scan";

@@ -1,8 +1,8 @@
 import { providerIcons } from "@/auth/provider/icon";
-import { getQueryParam } from "@/browser/query";
-import { Redirect, asRoute } from "@/components/redirect";
 import { Button, Input, WithLabel } from "@/components/ui";
 import type { NextPageWithLayout } from "@/layout";
+import { getQueryParam } from "@/navigation/query";
+import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import Logo from "~icons/custom/logo";
@@ -11,7 +11,7 @@ import AlertIcon from "~icons/jam/alert-f";
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const { status } = useSession();
-  const callbackUrl = asRoute(getQueryParam(router.query.callbackUrl)) ?? "/profile";
+  const callbackUrl = useRedirectQuery("callbackUrl", "/profile");
   const error = getErrorMessage(getQueryParam(router.query.error));
 
   return (

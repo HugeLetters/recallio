@@ -1,14 +1,11 @@
-import { getQueryParam } from "@/browser/query";
-import { Redirect, asRoute } from "@/components/redirect";
 import { ButtonLike } from "@/components/ui";
 import type { NextPageWithLayout } from "@/layout";
+import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import OfflineIcon from "~icons/carbon/cloud-offline";
 
 const Page: NextPageWithLayout = function () {
-  const router = useRouter();
-  const redirect = asRoute(getQueryParam(router.query.redirect)) ?? "/scan";
+  const redirect = useRedirectQuery("redirect", "/scan");
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center gap-3 p-4 text-center">

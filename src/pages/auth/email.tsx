@@ -1,7 +1,6 @@
-import { getQueryParam } from "@/browser/query";
-import { Redirect, asRoute } from "@/components/redirect";
 import { Button } from "@/components/ui";
 import type { NextPageWithLayout } from "@/layout";
+import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -11,7 +10,7 @@ const PIN_LENGTH = 6;
 const SLOTS = Array.from({ length: PIN_LENGTH }, (_, i) => i);
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
-  const callbackUrl = asRoute(getQueryParam(router.query.callbackUrl)) ?? "/profile";
+  const callbackUrl = useRedirectQuery("callbackUrl", "/profile");
   const { status } = useSession();
 
   const [pin, setPin] = useState("");

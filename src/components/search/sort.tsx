@@ -1,10 +1,10 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
-import { getQueryParam, setQueryParam } from "@/browser/query";
-import { useQueryToggleState } from "@/browser/query/hooks";
 import { useSwipe } from "@/browser/swipe";
 import { DialogOverlay } from "@/components/ui/dialog";
 import { rootStore } from "@/layout/root";
+import { getQueryParam, setQueryParam } from "@/navigation/query";
+import { useQueryToggleState } from "@/navigation/query/hooks";
 import { useStore } from "@/state/store";
 import { includes } from "@/utils/array";
 import type { Nullish } from "@/utils/type";

@@ -1,7 +1,4 @@
-import { getQueryParam } from "@/browser/query";
-import { useQueryToggleState } from "@/browser/query/hooks";
 import { loadingTracker } from "@/components/loading/indicator";
-import { Redirect } from "@/components/redirect";
 import { toast } from "@/components/toast";
 import { Button, ButtonLike } from "@/components/ui";
 import { DialogOverlay } from "@/components/ui/dialog";
@@ -9,6 +6,9 @@ import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { getQueryParam } from "@/navigation/query";
+import { useQueryToggleState } from "@/navigation/query/hooks";
+import { Redirect } from "@/navigation/redirect";
 import { BarcodeTitle, CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";

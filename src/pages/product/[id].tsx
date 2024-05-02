@@ -1,12 +1,12 @@
-import { getQueryParam } from "@/browser/query";
 import { InfiniteScroll } from "@/components/list/infinite-scroll";
 import { Spinner } from "@/components/loading/spinner";
-import { Redirect } from "@/components/redirect";
 import { SortDialog, useSortQuery } from "@/components/search/sort";
 import { Star } from "@/components/ui/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
+import { getQueryParam } from "@/navigation/query";
+import { Redirect } from "@/navigation/redirect";
 import { CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
