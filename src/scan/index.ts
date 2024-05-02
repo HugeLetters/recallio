@@ -1,9 +1,8 @@
-import { BrowserMultiFormatReader } from "@zxing/library";
 import type { Result } from "@zxing/library";
+import { BrowserMultiFormatReader } from "@zxing/library";
 
 export type BarcodeScanResult = Result;
 export function createReader() {
-  // todo - check hints
   const reader = new BrowserMultiFormatReader(undefined);
   reader.timeBetweenDecodingAttempts = 1000;
   return reader;

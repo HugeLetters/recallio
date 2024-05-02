@@ -14,6 +14,7 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
     const video = videoRef.current;
     if (!video) return;
 
+    // todo - try zoom levels
     videoReader
       .decodeFromConstraints(
         { video: { facingMode: "environment" }, audio: false },

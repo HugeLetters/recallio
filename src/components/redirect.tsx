@@ -3,6 +3,7 @@ import type { LinkProps } from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+// todo - dont redirect to the same page!
 type RedirectProps = { to: LinkProps["href"] };
 export function Redirect({ to }: RedirectProps) {
   const router = useRouter();
