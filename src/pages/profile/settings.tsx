@@ -2,6 +2,7 @@ import { signOut } from "@/auth";
 import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider/icon";
 import { useCachedSession } from "@/auth/session/hooks";
+import { placeholderSession } from "@/auth/session/placeholder";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Button } from "@/interface/button";
@@ -48,36 +49,21 @@ const Page: NextPageWithLayout = function () {
       });
   };
 
+  const session = data ?? placeholderSession;
   return (
     <div className="flex grow flex-col gap-3">
-      {data ? (
+      <Skeleton isLoading={!data}>
         <div className="space-y-3">
           <UserImage
-            user={data.user}
+            user={session.user}
             sync={sync}
           />
           <UserName
-            username={data.user.name}
+            username={session.user.name}
             sync={sync}
           />
         </div>
-      ) : (
-        // div prevents skeleton from growing
-        <div>
-          <Skeleton>
-            <div className="space-y-3">
-              <div className="space-y-3">
-                <div className="h-16"></div>
-                <div className="h-6"></div>
-              </div>
-              <div>
-                <div className="h-9"></div>
-                <div className="h-12"></div>
-              </div>
-            </div>
-          </Skeleton>
-        </div>
-      )}
+      </Skeleton>
       <LinkedAccounts />
       <AppSettings />
       <Button

@@ -38,7 +38,10 @@ const Page: NextPageWithLayout = function () {
         <span className="text-lg">Goods</span>
         <SortDialog optionList={sortOptionList} />
       </div>
-      <QueryView query={productListQuery}>
+      <QueryView
+        query={productListQuery}
+        className="size-full"
+      >
         {productListQuery.isSuccess && (
           <Toolbar
             loop={false}

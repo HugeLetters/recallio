@@ -1,4 +1,5 @@
 import { useCachedSession } from "@/auth/session/hooks";
+import { placeholderSession } from "@/auth/session/placeholder";
 import { ButtonLike } from "@/interface/button";
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
 import { Card, NoResults } from "@/interface/list/product";
@@ -54,22 +55,21 @@ export default Page;
 function ProfileInfo() {
   const { data } = useCachedSession();
 
+  const session = data ?? placeholderSession;
   return (
-    <div className="flex h-16 w-full items-center gap-3">
-      {data ? (
-        <>
-          <div className="h-full">
-            <UserPicture
-              user={data.user}
-              priority
-            />
-          </div>
-          <span className="overflow-hidden text-ellipsis text-2xl font-bold">{data.user.name}</span>
-        </>
-      ) : (
-        <Skeleton />
-      )}
-    </div>
+    <Skeleton isLoading={!data}>
+      <div className="flex h-16 w-full items-center gap-3">
+        <div className="h-full">
+          <UserPicture
+            user={session.user}
+            priority
+          />
+        </div>
+        <span className="overflow-hidden text-ellipsis text-2xl font-bold">
+          {session.user.name}
+        </span>
+      </div>
+    </Skeleton>
   );
 }
 
@@ -131,7 +131,10 @@ function ReviewCards() {
   );
 
   return (
-    <QueryView query={reviewCardsQuery}>
+    <QueryView
+      query={reviewCardsQuery}
+      className="size-full"
+    >
       {reviewCardsQuery.isSuccess && (
         <Toolbar
           loop={false}
