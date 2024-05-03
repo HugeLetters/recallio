@@ -25,7 +25,7 @@ import SettingsIcon from "~icons/solar/settings-linear";
 
 const Page: NextPageWithLayout = function () {
   return (
-    <div className="flex w-full flex-col gap-6 p-4">
+    <div className="flex grow flex-col gap-6">
       <ProfileInfo />
       <Reviews />
     </div>
@@ -80,7 +80,7 @@ function Reviews() {
   });
 
   return (
-    <div className="flex grow flex-col gap-3 pb-3">
+    <div className="flex grow flex-col gap-3">
       <div className="flex items-center justify-between gap-2 px-2">
         <h1 className="text-lg font-semibold">
           My reviews
@@ -131,28 +131,26 @@ function ReviewCards() {
   );
 
   return (
-    <Toolbar
-      loop={false}
-      orientation="vertical"
-      className="flex grow flex-col gap-2"
-    >
-      <QueryView query={reviewCardsQuery}>
-        {reviewCardsQuery.isSuccess && (
-          <>
-            <InfiniteScroll
-              pages={reviewCardsQuery.data.pages}
-              getPageValues={(page) => page.page}
-              getKey={(value) => value.barcode}
-              getNextPage={fetchNextPage(reviewCardsQuery)}
-              fallback={<NoResults />}
-            >
-              {(value) => <ReviewCard review={value} />}
-            </InfiniteScroll>
-            {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
-          </>
-        )}
-      </QueryView>
-    </Toolbar>
+    <QueryView query={reviewCardsQuery}>
+      {reviewCardsQuery.isSuccess && (
+        <Toolbar
+          loop={false}
+          orientation="vertical"
+          className="flex grow flex-col gap-2"
+        >
+          <InfiniteScroll
+            pages={reviewCardsQuery.data.pages}
+            getPageValues={(page) => page.page}
+            getKey={(value) => value.barcode}
+            getNextPage={fetchNextPage(reviewCardsQuery)}
+            fallback={<NoResults />}
+          >
+            {(value) => <ReviewCard review={value} />}
+          </InfiniteScroll>
+          {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
+        </Toolbar>
+      )}
+    </QueryView>
   );
 }
 

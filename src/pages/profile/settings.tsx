@@ -62,18 +62,21 @@ const Page: NextPageWithLayout = function () {
           />
         </div>
       ) : (
-        <Skeleton>
-          <div className="space-y-3">
+        // div prevents skeleton from growing
+        <div>
+          <Skeleton>
             <div className="space-y-3">
-              <div className="h-16"></div>
-              <div className="h-6"></div>
+              <div className="space-y-3">
+                <div className="h-16"></div>
+                <div className="h-6"></div>
+              </div>
+              <div>
+                <div className="h-9"></div>
+                <div className="h-12"></div>
+              </div>
             </div>
-            <div>
-              <div className="h-9"></div>
-              <div className="h-12"></div>
-            </div>
-          </div>
-        </Skeleton>
+          </Skeleton>
+        </div>
       )}
       <LinkedAccounts />
       <AppSettings />

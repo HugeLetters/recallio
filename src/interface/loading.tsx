@@ -6,7 +6,6 @@ import style from "./loading.module.scss";
 const rootStyle = style.root!;
 const errorStyle = style.error!;
 
-// todo - transition out?
 type SkeletonProps = { error?: boolean };
 export function Skeleton({ error, children }: PropsWithChildren<SkeletonProps>) {
   return (
