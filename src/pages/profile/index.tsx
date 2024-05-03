@@ -147,7 +147,7 @@ function ReviewCards() {
           >
             {(value) => <ReviewCard review={value} />}
           </InfiniteScroll>
-          {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
+          {reviewCardsQuery.isFetching && <Spinner className="h-8" />}
         </Toolbar>
       )}
     </QueryView>

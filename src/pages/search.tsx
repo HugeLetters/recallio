@@ -1,5 +1,6 @@
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
 import { Card, NoResults } from "@/interface/list/product";
+import { QueryView } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
@@ -32,18 +33,18 @@ const Page: NextPageWithLayout = function () {
   );
 
   return (
-    <div className="flex w-full flex-col gap-4 p-4">
+    <div className="flex grow flex-col gap-4">
       <div className="flex items-center justify-between px-2">
         <span className="text-lg">Goods</span>
         <SortDialog optionList={sortOptionList} />
       </div>
-      <Toolbar
-        loop={false}
-        orientation="vertical"
-        className="flex grow flex-col gap-2 pb-4"
-      >
-        {productListQuery.isSuccess ? (
-          <>
+      <QueryView query={productListQuery}>
+        {productListQuery.isSuccess && (
+          <Toolbar
+            loop={false}
+            orientation="vertical"
+            className="flex grow flex-col gap-2"
+          >
             <InfiniteScroll
               pages={productListQuery.data.pages}
               getPageValues={(page) => page.page}
@@ -73,12 +74,10 @@ const Page: NextPageWithLayout = function () {
                 );
               }}
             </InfiniteScroll>
-            {productListQuery.isFetching ? <Spinner className="h-8" /> : null}
-          </>
-        ) : (
-          "Loading..."
+            {productListQuery.isFetching && <Spinner className="h-8" />}
+          </Toolbar>
         )}
-      </Toolbar>
+      </QueryView>
     </div>
   );
 };
