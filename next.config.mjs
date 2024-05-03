@@ -12,6 +12,7 @@ import unpluginIcons from "unplugin-icons/webpack";
 import { authRoutesPlugin } from "./webpack/auth-routes.mjs";
 
 const withRoutes = setupNextRoutes();
+// todo - add manual SW registration maybe??
 const withSerwistInit = setupSerwist({
   swDest: "public/recallio-sw.js",
   swUrl: "recallio-sw.js",

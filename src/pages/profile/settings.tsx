@@ -7,6 +7,7 @@ import { ImagePickerButton } from "@/image/image-picker";
 import { Button } from "@/interface/button";
 import { DialogOverlay } from "@/interface/dialog";
 import { Input, WithLabel } from "@/interface/input";
+import { Skeleton } from "@/interface/loading";
 import { loadingTracker } from "@/interface/loading/indicator";
 import { LabeledSwitch } from "@/interface/switch";
 import { logToastError, toast } from "@/interface/toast";
@@ -47,16 +48,33 @@ const Page: NextPageWithLayout = function () {
       });
   };
 
-  return data ? (
-    <div className="flex w-full flex-col items-stretch gap-3 p-4">
-      <UserImage
-        user={data.user}
-        sync={sync}
-      />
-      <UserName
-        username={data.user.name}
-        sync={sync}
-      />
+  return (
+    <div className="flex grow flex-col gap-3">
+      {data ? (
+        <div className="space-y-3">
+          <UserImage
+            user={data.user}
+            sync={sync}
+          />
+          <UserName
+            username={data.user.name}
+            sync={sync}
+          />
+        </div>
+      ) : (
+        <Skeleton>
+          <div className="space-y-3">
+            <div className="space-y-3">
+              <div className="h-16"></div>
+              <div className="h-6"></div>
+            </div>
+            <div>
+              <div className="h-9"></div>
+              <div className="h-12"></div>
+            </div>
+          </div>
+        </Skeleton>
+      )}
       <LinkedAccounts />
       <AppSettings />
       <Button
@@ -67,12 +85,8 @@ const Page: NextPageWithLayout = function () {
       >
         Sign Out
       </Button>
-      <DeleteProfile username={data.user.name} />
-      {/* forces a padding at the bottom */}
-      <div className="pb-2" />
+      <DeleteProfile />
     </div>
-  ) : (
-    "Loading"
   );
 };
 Page.getLayout = (children) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
@@ -272,7 +286,10 @@ function LinkedAccounts() {
           const isLinked = accounts?.includes(provider);
           return (
             // extra div prevents dividers from being rounded
-            <div key={provider}>
+            <div
+              key={provider}
+              className="min-w-0"
+            >
               <ToolbarButton asChild>
                 <LabeledSwitch
                   className="capitalize"
@@ -289,9 +306,9 @@ function LinkedAccounts() {
                     }
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-full w-7" />
-                    <span>{provider}</span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Icon className="h-full w-7 shrink-0" />
+                    <span className="overflow-hidden overflow-ellipsis">{provider}</span>
                   </div>
                 </LabeledSwitch>
               </ToolbarButton>
@@ -343,8 +360,9 @@ function SettingToggle({ label, store }: SettingToggleProps) {
   );
 }
 
-type DeleteProfileProps = { username: string };
-function DeleteProfile({ username }: DeleteProfileProps) {
+function DeleteProfile() {
+  const { data } = useCachedSession();
+  const username = data?.user.name;
   const [isOpen, setIsOpen] = useQueryToggleState("delete-dialog");
   const utils = trpc.useUtils();
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
@@ -360,8 +378,8 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       utils.invalidate().catch(console.error);
     },
   });
-  useTracker(loadingTracker, isLoading);
 
+  useTracker(loadingTracker, isLoading);
   const confirmationPromp = `delete ${username}`;
 
   return (
@@ -382,7 +400,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (isLoading) return;
+                  if (isLoading || username === undefined) return;
                   mutate();
                 }}
                 className="group"
