@@ -2,6 +2,7 @@ import { useCachedSession } from "@/auth/session/hooks";
 import { ButtonLike } from "@/interface/button";
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
 import { Card, NoResults } from "@/interface/list/product";
+import { QueryView, Skeleton } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
@@ -17,22 +18,17 @@ import { fetchNextPage } from "@/trpc/infinite-query";
 import { UserPicture } from "@/user/picture";
 import { minutesToMs } from "@/utils";
 import { Toolbar } from "@radix-ui/react-toolbar";
-import type { Session } from "next-auth";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 const Page: NextPageWithLayout = function () {
-  const { data } = useCachedSession();
-
-  return data ? (
+  return (
     <div className="flex w-full flex-col gap-6 p-4">
-      <ProfileInfo user={data.user} />
+      <ProfileInfo />
       <Reviews />
     </div>
-  ) : (
-    "Loading"
   );
 };
 
@@ -55,19 +51,24 @@ Page.getLayout = (children) => {
 
 export default Page;
 
-type ProfileInfoProps = {
-  user: Session["user"];
-};
-function ProfileInfo({ user }: ProfileInfoProps) {
+function ProfileInfo() {
+  const { data } = useCachedSession();
+
   return (
-    <div className="flex w-full items-center gap-3">
-      <div className="size-16">
-        <UserPicture
-          user={user}
-          priority
-        />
-      </div>
-      <span className="overflow-hidden text-ellipsis text-2xl font-bold">{user.name}</span>
+    <div className="flex h-16 w-full items-center gap-3">
+      {data ? (
+        <>
+          <div className="h-full">
+            <UserPicture
+              user={data.user}
+              priority
+            />
+          </div>
+          <span className="overflow-hidden text-ellipsis text-2xl font-bold">{data.user.name}</span>
+        </>
+      ) : (
+        <Skeleton />
+      )}
     </div>
   );
 }
@@ -135,22 +136,22 @@ function ReviewCards() {
       orientation="vertical"
       className="flex grow flex-col gap-2"
     >
-      {reviewCardsQuery.isSuccess ? (
-        <>
-          <InfiniteScroll
-            pages={reviewCardsQuery.data.pages}
-            getPageValues={(page) => page.page}
-            getKey={(value) => value.barcode}
-            getNextPage={fetchNextPage(reviewCardsQuery)}
-            fallback={<NoResults />}
-          >
-            {(value) => <ReviewCard review={value} />}
-          </InfiniteScroll>
-          {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
-        </>
-      ) : (
-        "Loading..."
-      )}
+      <QueryView query={reviewCardsQuery}>
+        {reviewCardsQuery.isSuccess && (
+          <>
+            <InfiniteScroll
+              pages={reviewCardsQuery.data.pages}
+              getPageValues={(page) => page.page}
+              getKey={(value) => value.barcode}
+              getNextPage={fetchNextPage(reviewCardsQuery)}
+              fallback={<NoResults />}
+            >
+              {(value) => <ReviewCard review={value} />}
+            </InfiniteScroll>
+            {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
+          </>
+        )}
+      </QueryView>
     </Toolbar>
   );
 }

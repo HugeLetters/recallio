@@ -1,14 +1,20 @@
 import { tw } from "@/styles/tw";
+import type { UseQueryResult } from "@tanstack/react-query";
 import style from "./loading.module.scss";
+import type { PropsWithChildren } from "react";
 
-const root = style.root!;
-const error = style.error!;
+const rootStyle = style.root!;
+const errorStyle = style.error!;
 
-export function Skeleton() {
-  return (
-    <div className="flex size-full flex-col gap-1">
-      <div className={tw("size-full rounded-xl blur-sm", root)} />
-      <div className={tw("size-full rounded-xl blur-sm", root, error)} />
-    </div>
-  );
+// todo - transition out?
+type SkeletonProps = { error?: boolean };
+export function Skeleton({ error }: SkeletonProps) {
+  return <div className={tw("size-full rounded-xl blur-sm", rootStyle, error && errorStyle)} />;
+}
+
+type QueryViewProps = { query: Pick<UseQueryResult, "isLoading" | "isError"> };
+export function QueryView({ query, children }: PropsWithChildren<QueryViewProps>) {
+  if (query.isLoading) return <Skeleton />;
+  if (query.isError) return <Skeleton error />;
+  return children;
 }
