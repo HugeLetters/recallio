@@ -1,4 +1,4 @@
-import { logToastError } from "@/components/toast";
+import { logToastError } from "@/interface/toast";
 import { trpc } from "@/trpc";
 
 export function useInvalidateReviewAdjacentData(barcode: string) {

@@ -1,6 +1,6 @@
 import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
-import { toast } from "@/components/toast";
+import { toast } from "@/interface/toast";
 import { FAILED_TO_FETCH_MESSAGE } from "@/error";
 import type { ApiRouter } from "@/server/api/router";
 import type { ExpectedError } from "@/server/error/trpc";

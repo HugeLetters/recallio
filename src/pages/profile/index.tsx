@@ -1,11 +1,11 @@
 import { useCachedSession } from "@/auth/session/hooks";
-import { InfiniteScroll } from "@/components/list/infinite-scroll";
-import { Card, NoResults } from "@/components/list/product";
-import { Spinner } from "@/components/loading/spinner";
-import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
-import { SortDialog, useSortQuery } from "@/components/search/sort";
-import { ButtonLike } from "@/components/ui";
-import { Star } from "@/components/ui/star";
+import { ButtonLike } from "@/interface/button";
+import { InfiniteScroll } from "@/interface/list/infinite-scroll";
+import { Card, NoResults } from "@/interface/list/product";
+import { Spinner } from "@/interface/loading/spinner";
+import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
+import { SortDialog, useSortQuery } from "@/interface/search/sort";
+import { Star } from "@/interface/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";

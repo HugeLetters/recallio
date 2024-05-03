@@ -1,6 +1,6 @@
 import { signIn } from "@/auth";
 import { browser, useClient } from "@/browser";
-import { logToastError } from "@/components/toast";
+import { logToastError } from "@/interface/toast";
 import { useSession } from "next-auth/react";
 import { getCookieSession } from "./cookie";
 

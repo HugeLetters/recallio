@@ -1,9 +1,9 @@
-import { InfiniteScroll } from "@/components/list/infinite-scroll";
-import { Card, NoResults } from "@/components/list/product";
-import { Spinner } from "@/components/loading/spinner";
-import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
-import { SortDialog, useSortQuery } from "@/components/search/sort";
-import { Star } from "@/components/ui/star";
+import { InfiniteScroll } from "@/interface/list/infinite-scroll";
+import { Card, NoResults } from "@/interface/list/product";
+import { Spinner } from "@/interface/loading/spinner";
+import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
+import { SortDialog, useSortQuery } from "@/interface/search/sort";
+import { Star } from "@/interface/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";

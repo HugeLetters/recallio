@@ -1,4 +1,4 @@
-import { Error } from "@/components/error";
+import { Error } from "@/interface/error";
 import type { NextPageWithLayout } from "@/layout";
 
 const Page: NextPageWithLayout = function () {

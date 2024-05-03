@@ -1,9 +1,9 @@
-import { loadingTracker } from "@/components/loading/indicator";
-import { toast } from "@/components/toast";
-import { Button, ButtonLike } from "@/components/ui";
-import { DialogOverlay } from "@/components/ui/dialog";
-import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
+import { Button, ButtonLike } from "@/interface/button";
+import { DialogOverlay } from "@/interface/dialog";
+import { loadingTracker } from "@/interface/loading/indicator";
+import { Star } from "@/interface/star";
+import { toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { getQueryParam } from "@/navigation/query";

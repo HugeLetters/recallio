@@ -1,6 +1,6 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { useSwipe } from "@/browser/swipe";
-import { logToastError, toast } from "@/components/toast";
+import { logToastError, toast } from "@/interface/toast";
 import { ImagePicker } from "@/image/image-picker";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";

@@ -10,6 +10,7 @@ type ImageProps = ExtendPropety<NextImageProps, "src", Nullish>;
 /**
  * `children` props acts as a fallback when image couldn't be loaded
  */
+// todo - check fallback on where its used
 export function Image({ children, onLoad, onError, ...props }: ImageProps) {
   const [forceFallback, setForceFallback] = useState(false);
 

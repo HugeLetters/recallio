@@ -1,6 +1,6 @@
 import { Flipped } from "@/animation/flip";
-import { ToolbarLink } from "@/components/ui/toolbar";
 import type { Icon } from "@/image/icon";
+import { ToolbarLink } from "@/interface/toolbar";
 import type { ScanType } from "@/scan/store";
 import { scanTypeList, scanTypeOffsetStore } from "@/scan/store";
 import { useStore } from "@/state/store";

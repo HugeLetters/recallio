@@ -1,4 +1,4 @@
-import { logToastError } from "@/components/toast";
+import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
 import { useEffect, useRef, useState } from "react";
 import type { BarcodeScanResult } from ".";

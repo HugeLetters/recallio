@@ -1,6 +1,6 @@
 import Link from "next/link";
 import BrokenEggshellIcon from "~icons/custom/broken-eggshell";
-import { ButtonLike } from "./ui";
+import { ButtonLike } from "./button";
 
 type ErrorProps = { message?: string };
 export function Error({ message: error }: ErrorProps) {
