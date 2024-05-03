@@ -1,4 +1,5 @@
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
+import { QueryView } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
 import { Star } from "@/interface/star";
@@ -22,11 +23,20 @@ const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
 
-  return barcode ? <ProductPage barcode={barcode} /> : "Loading...";
+  return barcode ? <ProductPage barcode={barcode} /> : null;
 };
 
 Page.getLayout = (children) => {
   return <Layout header={{ title: "Product page" }}>{children}</Layout>;
+};
+
+type SummaryData = NonNullable<RouterOutputs["product"]["getSummary"]>;
+const placeholderSummary: SummaryData = {
+  name: "",
+  rating: 5,
+  image: null,
+  reviewCount: 1,
+  categories: [""],
 };
 
 type ProductPageProps = { barcode: string };
@@ -34,19 +44,24 @@ function ProductPage({ barcode }: ProductPageProps) {
   const summaryQuery = trpc.product.getSummary.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
   return (
-    <div className="w-full p-4 pb-5">
-      {summaryQuery.isSuccess ? (
-        summaryQuery.data ? (
+    <div className="flex w-full flex-col">
+      <QueryView query={summaryQuery}>
+        {summaryQuery.isSuccess ? (
+          summaryQuery.data ? (
+            <Summary
+              barcode={barcode}
+              summary={summaryQuery.data}
+            />
+          ) : (
+            <Redirect to={{ pathname: "/review/[id]", query: { id: barcode } }} />
+          )
+        ) : (
           <Summary
             barcode={barcode}
-            summary={summaryQuery.data}
+            summary={placeholderSummary}
           />
-        ) : (
-          <Redirect to={{ pathname: "/review/[id]", query: { id: barcode } }} />
-        )
-      ) : (
-        "Loading..."
-      )}
+        )}
+      </QueryView>
       <Reviews
         barcode={barcode}
         reviewCount={summaryQuery.data?.reviewCount}
@@ -59,12 +74,11 @@ export default Page;
 
 type SummaryProps = {
   barcode: string;
-  summary: NonNullable<RouterOutputs["product"]["getSummary"]>;
+  summary: SummaryData;
 };
-function Summary({
-  barcode,
-  summary: { categories, image, name, rating, reviewCount },
-}: SummaryProps) {
+function Summary({ barcode, summary }: SummaryProps) {
+  const { categories, image, name, rating, reviewCount } = summary;
+
   return (
     <div className="flex flex-col gap-7">
       <div className="flex gap-3">
@@ -174,16 +188,19 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
   useTracker(layoutScrollUpTracker, true);
 
   return (
-    <div className="pb-6">
+    <>
       <div className="flex justify-between py-4">
         <span className="font-semibold">
           Reviews {reviewCount !== undefined ? `(${reviewCount})` : ""}
         </span>
         <SortDialog optionList={sortByOptions} />
       </div>
-      <div className="flex flex-col gap-5">
-        {reviewsQuery.isSuccess ? (
-          <>
+      <QueryView
+        query={reviewsQuery}
+        className="size-full"
+      >
+        {reviewsQuery.isSuccess && (
+          <div className="flex flex-col gap-5">
             <InfiniteScroll
               pages={reviewsQuery.data.pages}
               getPageValues={({ page }) => page}
@@ -193,12 +210,10 @@ function Reviews({ barcode, reviewCount }: ReviewsProps) {
               {(review) => <ReviewCard review={review} />}
             </InfiniteScroll>
             {reviewsQuery.isFetching ? <Spinner className="h-8" /> : null}
-          </>
-        ) : (
-          "Loading..."
+          </div>
         )}
-      </div>
-    </div>
+      </QueryView>
+    </>
   );
 }
 
