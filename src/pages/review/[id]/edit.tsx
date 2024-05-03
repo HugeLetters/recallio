@@ -6,6 +6,7 @@ import { Button, ButtonLike } from "@/interface/button";
 import { DialogOverlay } from "@/interface/dialog";
 import { AutoresizableInput, Input } from "@/interface/input";
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
+import { QueryView } from "@/interface/loading";
 import { loadingTracker } from "@/interface/loading/indicator";
 import { Spinner } from "@/interface/loading/spinner";
 import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/interface/search/search";
@@ -66,28 +67,23 @@ import PlusIcon from "~icons/material-symbols/add-rounded";
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
-
-  return barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
-};
-Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
-
-export default Page;
-
-type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
-function transformReview(data: ReviewData | null): ReviewForm | null {
-  if (!data) return data;
-  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
-}
-
-type ReviewWrapperProps = { barcode: string };
-function ReviewWrapper({ barcode }: ReviewWrapperProps) {
   const reviewQuery = trpc.user.review.getOne.useQuery(
-    { barcode },
-    { staleTime: Infinity, select: transformReview },
+    { barcode: barcode ?? "_" },
+    {
+      enabled: !!barcode,
+      staleTime: Infinity,
+      select: transformReview,
+    },
   );
   const isPrivate = useStore(reviewPrivateDefaultStore);
-
-  if (!reviewQuery.isSuccess) return "Loading...";
+  if (!barcode || !reviewQuery.isSuccess) {
+    return (
+      <QueryView
+        query={reviewQuery}
+        className="grow"
+      />
+    );
+  }
 
   return (
     <Review
@@ -107,6 +103,15 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
       hasReview={!!reviewQuery.data}
     />
   );
+};
+Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+
+export default Page;
+
+type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
+function transformReview(data: ReviewData | null): ReviewForm | null {
+  if (!data) return data;
+  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
 }
 
 type ReviewProps = {
@@ -188,7 +193,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
 
   return (
     <form
-      className="flex w-full flex-col gap-4 p-4"
+      className="flex grow flex-col gap-4"
       onSubmit={submitReview}
     >
       <AttachedImage
@@ -246,8 +251,6 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
           </Link>
         </ButtonLike>
       )}
-      {/* forces extra gap at the bottom */}
-      <div className="pb-2" />
     </form>
   );
 }

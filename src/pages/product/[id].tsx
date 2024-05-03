@@ -32,11 +32,11 @@ Page.getLayout = (children) => {
 
 type SummaryData = NonNullable<RouterOutputs["product"]["getSummary"]>;
 const placeholderSummary: SummaryData = {
-  name: "",
+  name: "_",
   rating: 5,
   image: null,
   reviewCount: 1,
-  categories: [""],
+  categories: ["_"],
 };
 
 type ProductPageProps = { barcode: string };
@@ -44,7 +44,7 @@ function ProductPage({ barcode }: ProductPageProps) {
   const summaryQuery = trpc.product.getSummary.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex grow flex-col">
       <QueryView query={summaryQuery}>
         {summaryQuery.isSuccess ? (
           summaryQuery.data ? (
