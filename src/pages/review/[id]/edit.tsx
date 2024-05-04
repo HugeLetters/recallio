@@ -642,7 +642,7 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="scrollbar-gutter flex grow flex-col gap-6 overflow-y-auto px-7 py-5"
+        className="scrollbar-gutter flex grow flex-col gap-4 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
           show
@@ -667,54 +667,56 @@ function CategorySearch({
             </Toolbar.Button>
           </label>
         )}
-        {categoriesQuery.isSuccess ? (
-          <>
-            <InfiniteScroll
-              pages={categoriesQuery.data.pages}
-              getPageValues={(page) => page}
-              getKey={(category) => category}
-              getNextPage={fetchNextPage(categoriesQuery)}
-            >
-              {(category) => {
-                if (category === lowercaseSearch) return;
-                return (
-                  <label className="flex w-full cursor-pointer justify-between capitalize">
-                    <span className="overflow-hidden text-ellipsis">{category}</span>
-                    <Toolbar.Button asChild>
-                      <Checkbox.Root
-                        className={tw(
-                          "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
-                          "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-300 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-app-green-900",
-                          "transition-colors data-[state=checked]:bg-app-green-500",
-                        )}
-                        aria-disabled={!canAddCategories}
-                        checked={includes(category)}
-                        onCheckedChange={(checked) => {
-                          if (checked !== true) return remove(category);
-                          if (!canAddCategories) {
-                            return categoryLimitErrorToast();
-                          }
-                          append(category);
-                        }}
-                      >
-                        <Checkbox.Indicator
-                          forceMount
-                          className="p-1 text-white group-data-[state=unchecked]:scale-0 group-data-[state=checked]:transition-transform"
+        <QueryView
+          query={categoriesQuery}
+          className="grow"
+        >
+          {categoriesQuery.isSuccess && (
+            <>
+              <InfiniteScroll
+                pages={categoriesQuery.data.pages}
+                getPageValues={(page) => page}
+                getKey={(category) => category}
+                getNextPage={fetchNextPage(categoriesQuery)}
+              >
+                {(category) => {
+                  if (category === lowercaseSearch) return;
+                  return (
+                    <label className="flex w-full cursor-pointer justify-between capitalize">
+                      <span className="overflow-hidden text-ellipsis">{category}</span>
+                      <Toolbar.Button asChild>
+                        <Checkbox.Root
+                          className={tw(
+                            "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
+                            "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-300 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-app-green-900",
+                            "transition-colors data-[state=checked]:bg-app-green-500",
+                          )}
+                          aria-disabled={!canAddCategories}
+                          checked={includes(category)}
+                          onCheckedChange={(checked) => {
+                            if (checked !== true) return remove(category);
+                            if (!canAddCategories) {
+                              return categoryLimitErrorToast();
+                            }
+                            append(category);
+                          }}
                         >
-                          <Checkmark className="size-full" />
-                        </Checkbox.Indicator>
-                      </Checkbox.Root>
-                    </Toolbar.Button>
-                  </label>
-                );
-              }}
-            </InfiniteScroll>
-            {categoriesQuery.isFetching ? <Spinner className="h-8" /> : null}
-          </>
-        ) : (
-          // todo - skeleton here!
-          "Loading..."
-        )}
+                          <Checkbox.Indicator
+                            forceMount
+                            className="p-1 text-white group-data-[state=unchecked]:scale-0 group-data-[state=checked]:transition-transform"
+                          >
+                            <Checkmark className="size-full" />
+                          </Checkbox.Indicator>
+                        </Checkbox.Root>
+                      </Toolbar.Button>
+                    </label>
+                  );
+                }}
+              </InfiniteScroll>
+              {categoriesQuery.isFetching ? <Spinner className="h-8 shrink-0" /> : null}
+            </>
+          )}
+        </QueryView>
       </Toolbar.Root>
       <Dialog.Close asChild>
         <Button
