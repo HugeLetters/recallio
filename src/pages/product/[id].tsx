@@ -43,6 +43,7 @@ type ProductPageProps = { barcode: string };
 function ProductPage({ barcode }: ProductPageProps) {
   const summaryQuery = trpc.product.getSummary.useQuery({ barcode }, { staleTime: minutesToMs(5) });
 
+  // todo - wanna display both skeletons by default
   return (
     <div className="flex grow flex-col">
       <QueryView query={summaryQuery}>
