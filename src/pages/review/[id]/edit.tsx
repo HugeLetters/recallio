@@ -68,7 +68,7 @@ const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
   const reviewQuery = trpc.user.review.getOne.useQuery(
-    { barcode: barcode ?? "_" },
+    { barcode: barcode ?? "" },
     {
       enabled: !!barcode,
       staleTime: Infinity,

@@ -19,17 +19,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import RightIcon from "~icons/formkit/right";
 
-const Page: NextPageWithLayout = function () {
-  const { query } = useRouter();
-  const barcode = getQueryParam(query.id);
-
-  return barcode ? <ProductPage barcode={barcode} /> : null;
-};
-
-Page.getLayout = (children) => {
-  return <Layout header={{ title: "Product page" }}>{children}</Layout>;
-};
-
 type SummaryData = NonNullable<RouterOutputs["product"]["getSummary"]>;
 const placeholderSummary: SummaryData = {
   name: "_",
@@ -39,46 +28,48 @@ const placeholderSummary: SummaryData = {
   categories: ["_"],
 };
 
-type ProductPageProps = { barcode: string };
-function ProductPage({ barcode }: ProductPageProps) {
-  const summaryQuery = trpc.product.getSummary.useQuery({ barcode }, { staleTime: minutesToMs(5) });
+const Page: NextPageWithLayout = function () {
+  const barcode = useBarcode();
+  const summaryQuery = trpc.product.getSummary.useQuery(
+    { barcode: barcode ?? "" },
+    { enabled: !!barcode, staleTime: minutesToMs(5) },
+  );
 
-  // todo - wanna display both skeletons by default
   return (
     <div className="flex grow flex-col">
       <QueryView query={summaryQuery}>
-        {summaryQuery.isSuccess ? (
+        {summaryQuery.isSuccess && barcode ? (
           summaryQuery.data ? (
-            <Summary
-              barcode={barcode}
-              summary={summaryQuery.data}
-            />
+            <Summary summary={summaryQuery.data} />
           ) : (
             <Redirect to={{ pathname: "/review/[id]", query: { id: barcode } }} />
           )
         ) : (
-          <Summary
-            barcode={barcode}
-            summary={placeholderSummary}
-          />
+          <Summary summary={placeholderSummary} />
         )}
       </QueryView>
-      <Reviews
-        barcode={barcode}
-        reviewCount={summaryQuery.data?.reviewCount}
-      />
+      <Reviews reviewCount={summaryQuery.data?.reviewCount} />
     </div>
   );
-}
+};
+
+Page.getLayout = (children) => {
+  return <Layout header={{ title: "Product page" }}>{children}</Layout>;
+};
 
 export default Page;
 
 type SummaryProps = {
-  barcode: string;
   summary: SummaryData;
 };
-function Summary({ barcode, summary }: SummaryProps) {
+function Summary({ summary }: SummaryProps) {
   const { categories, image, name, rating, reviewCount } = summary;
+
+  const barcode = useBarcode();
+  const reviewQuery = trpc.user.review.getOne.useQuery(
+    { barcode: barcode ?? "" },
+    { enabled: !!barcode, staleTime: Infinity },
+  );
 
   return (
     <div className="flex flex-col gap-7">
@@ -87,16 +78,35 @@ function Summary({ barcode, summary }: SummaryProps) {
           src={image}
           size="md"
         />
-        <ProductName
-          barcode={barcode}
-          name={name}
-          rating={rating}
-          reviewCount={reviewCount}
-        />
+        <Link
+          href={{
+            pathname:
+              reviewQuery.isSuccess && !reviewQuery.data ? "/review/[id]/edit" : "/review/[id]",
+            query: { id: barcode },
+          }}
+          aria-label={
+            reviewQuery.data
+              ? `Open personal review page for barcode ${barcode}`
+              : `Create a review for barcode ${barcode}`
+          }
+          className="flex min-w-0 grow justify-between"
+        >
+          <div className="flex min-w-0 flex-col items-start justify-between py-0.5">
+            <h2 className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
+              {name}
+            </h2>
+            <div className="flex h-6 items-center gap-0.5">
+              <Star highlight />
+              <span>{rating.toFixed(1)}</span>
+              <span className="text-sm text-neutral-400">({reviewCount})</span>
+            </div>
+          </div>
+          <RightIcon className="size-7 shrink-0 self-center text-neutral-400" />
+        </Link>
       </div>
       <div className="flex flex-col gap-1">
         <span className="text-xs">Barcode</span>
-        <span className="text-neutral-400">{barcode}</span>
+        <span className="h-6 text-neutral-400">{barcode}</span>
       </div>
       {!!categories?.length && (
         <section className="flex flex-col gap-2 text-xs">
@@ -111,41 +121,6 @@ function Summary({ barcode, summary }: SummaryProps) {
         </section>
       )}
     </div>
-  );
-}
-
-type ProductNameProps = { barcode: string; name: string; reviewCount: number; rating: number };
-function ProductName({ barcode, name, rating, reviewCount }: ProductNameProps) {
-  const { data, isSuccess } = trpc.user.review.getOne.useQuery(
-    { barcode },
-    { staleTime: Infinity },
-  );
-
-  return (
-    <Link
-      href={{
-        pathname: isSuccess && !data ? "/review/[id]/edit" : "/review/[id]",
-        query: { id: barcode },
-      }}
-      aria-label={
-        data
-          ? `Open personal review page for barcode ${barcode}`
-          : `Create a review for barcode ${barcode}`
-      }
-      className="flex min-w-0 grow justify-between"
-    >
-      <div className="flex min-w-0 flex-col items-start justify-between py-0.5">
-        <h2 className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap pl-1.5 text-xl capitalize">
-          {name}
-        </h2>
-        <div className="flex h-6 items-center gap-0.5">
-          <Star highlight />
-          <span>{rating.toFixed(1)}</span>
-          <span className="text-sm text-neutral-400">({reviewCount})</span>
-        </div>
-      </div>
-      <RightIcon className="size-7 shrink-0 self-center text-neutral-400" />
-    </Link>
   );
 }
 
@@ -168,18 +143,19 @@ function parseSortByOption(
   }
 }
 type ReviewsProps = {
-  barcode: string;
   reviewCount: number | undefined;
 };
-function Reviews({ barcode, reviewCount }: ReviewsProps) {
+function Reviews({ reviewCount }: ReviewsProps) {
+  const barcode = useBarcode();
   const sortParam = useSortQuery(sortByOptions);
   const reviewsQuery = trpc.product.getReviewList.useInfiniteQuery(
     {
-      barcode,
+      barcode: barcode ?? "",
       limit: 10,
       sort: parseSortByOption(sortParam),
     },
     {
+      enabled: !!barcode,
       staleTime: minutesToMs(5),
       getNextPageParam(page) {
         return page.cursor;
@@ -259,4 +235,9 @@ function Rating({ value }: RatingProps) {
       ))}
     </div>
   );
+}
+
+function useBarcode() {
+  const { query } = useRouter();
+  return getQueryParam(query.id);
 }
