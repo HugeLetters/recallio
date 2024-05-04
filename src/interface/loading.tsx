@@ -20,7 +20,7 @@ export function Skeleton({
   if (!isLoading) return children;
 
   return (
-    <div className={tw("rounded-xl blur-sm", className, rootStyle, error && errorStyle)}>
+    <div className={tw("rounded-xl", className, rootStyle, error && errorStyle)}>
       <div className="invisible">{children}</div>
     </div>
   );
