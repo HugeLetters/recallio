@@ -2,10 +2,9 @@
  * Some function which may be useful during development
  * @module utils/dev
  */
-import { env } from "@/server/env/index.mjs";
 import { useEffect, useState } from "react";
 
-if (env.NEXT_PUBLIC_NODE_ENV !== "development") {
+if (process.env.NODE_ENV !== "development") {
   throw Error("Do not use this module outside of development");
 }
 
