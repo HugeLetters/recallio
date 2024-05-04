@@ -18,7 +18,7 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
     >
       <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="scrollbar-gutter w-full max-w-app grow self-center overflow-y-auto">
-        <div className="flex min-h-full p-4 pb-5">{children}</div>
+        <div className="flex min-h-full p-4 pb-5 *:min-w-0">{children}</div>
         <TrackedScrollUpButton
           tracker={layoutScrollUpTracker}
           className="size-10"

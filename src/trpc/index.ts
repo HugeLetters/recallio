@@ -33,9 +33,10 @@ export const trpc = createTRPCNext<ApiRouter>({
           onError(error) {
             console.error(error);
             const message = error instanceof Error ? error.message : String(error);
-            if (message === FAILED_TO_FETCH_MESSAGE) return;
+            if (message !== FAILED_TO_FETCH_MESSAGE) {
+              toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
+            }
 
-            toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
             signOutOnUnauthorizedError(error);
           },
         }),
