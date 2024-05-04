@@ -712,6 +712,7 @@ function CategorySearch({
             {categoriesQuery.isFetching ? <Spinner className="h-8" /> : null}
           </>
         ) : (
+          // todo - skeleton here!
           "Loading..."
         )}
       </Toolbar.Root>

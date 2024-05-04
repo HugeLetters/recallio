@@ -21,7 +21,7 @@ export function Skeleton({
 
   return (
     <div className={tw("rounded-xl blur-sm", className, rootStyle, error && errorStyle)}>
-      <div className="opacity-0">{children}</div>
+      <div className="invisible">{children}</div>
     </div>
   );
 }
@@ -31,6 +31,7 @@ type QueryViewProps = {
   className?: string;
 };
 export function QueryView({ query, className, children }: PropsWithChildren<QueryViewProps>) {
+  // todo - display error message :thinking:
   return (
     <Skeleton
       isLoading={query.isLoading || query.isLoading}
