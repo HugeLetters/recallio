@@ -1,5 +1,5 @@
 import { tw } from "@/styles/tw";
-import type { UseQueryResult } from "@tanstack/react-query";
+import type { UseInfiniteQueryResult, UseQueryResult } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import style from "./loading.module.scss";
 
@@ -34,11 +34,42 @@ export function QueryView({ query, className, children }: PropsWithChildren<Quer
   // todo - display error message :thinking:
   return (
     <Skeleton
-      isLoading={query.isLoading || query.isLoading}
+      isLoading={query.isLoading || query.isError}
       error={query.isError}
       className={className}
     >
       {children}
     </Skeleton>
+  );
+}
+
+type InfiniteQueryViewProps = {
+  query: Pick<UseInfiniteQueryResult, "isLoading" | "isError" | "data">;
+  className?: string;
+};
+export function InfiniteQueryView({
+  query,
+  className,
+  children,
+}: PropsWithChildren<InfiniteQueryViewProps>) {
+  if (!query.data) {
+    return (
+      <QueryView
+        query={query}
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <>
+      {children}
+      {query.isError && (
+        <Skeleton
+          isLoading
+          error
+        />
+      )}
+    </>
   );
 }

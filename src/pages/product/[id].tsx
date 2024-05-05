@@ -1,5 +1,5 @@
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
-import { QueryView } from "@/interface/loading";
+import { InfiniteQueryView, QueryView } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
 import { Star } from "@/interface/star";
@@ -172,12 +172,12 @@ function Reviews({ reviewCount }: ReviewsProps) {
         </span>
         <SortDialog optionList={sortByOptions} />
       </div>
-      <QueryView
-        query={reviewsQuery}
-        className="size-full"
-      >
-        {reviewsQuery.isSuccess && (
-          <div className="flex flex-col gap-5">
+      <div className="flex grow flex-col gap-5">
+        <InfiniteQueryView
+          query={reviewsQuery}
+          className="size-full"
+        >
+          {reviewsQuery.data && (
             <InfiniteScroll
               pages={reviewsQuery.data.pages}
               getPageValues={({ page }) => page}
@@ -186,10 +186,10 @@ function Reviews({ reviewCount }: ReviewsProps) {
             >
               {(review) => <ReviewCard review={review} />}
             </InfiniteScroll>
-            {reviewsQuery.isFetching ? <Spinner className="h-8" /> : null}
-          </div>
-        )}
-      </QueryView>
+          )}
+          {reviewsQuery.isFetching ? <Spinner className="h-8" /> : null}
+        </InfiniteQueryView>
+      </div>
     </>
   );
 }

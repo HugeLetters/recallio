@@ -15,7 +15,7 @@ export function count<T extends SQLiteTable>(
     .where(where)
     .limit(1)
     .get()
-    .then((x) => x?.count);
+    .then((x) => x?.count ?? 0);
 }
 
 export const query = {

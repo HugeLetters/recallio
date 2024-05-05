@@ -1,6 +1,6 @@
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
 import { Card, NoResults } from "@/interface/list/product";
-import { QueryView } from "@/interface/loading";
+import { InfiniteQueryView } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
@@ -38,11 +38,11 @@ const Page: NextPageWithLayout = function () {
         <span className="text-lg">Goods</span>
         <SortDialog optionList={sortOptionList} />
       </div>
-      <QueryView
+      <InfiniteQueryView
         query={productListQuery}
         className="size-full"
       >
-        {productListQuery.isSuccess && (
+        {productListQuery.data && (
           <Toolbar
             loop={false}
             orientation="vertical"
@@ -80,7 +80,7 @@ const Page: NextPageWithLayout = function () {
             {productListQuery.isFetching && <Spinner className="h-8" />}
           </Toolbar>
         )}
-      </QueryView>
+      </InfiniteQueryView>
     </div>
   );
 };

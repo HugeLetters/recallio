@@ -3,7 +3,7 @@ import { placeholderSession } from "@/auth/session/placeholder";
 import { ButtonLike } from "@/interface/button";
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
 import { Card, NoResults } from "@/interface/list/product";
-import { QueryView, Skeleton } from "@/interface/loading";
+import { InfiniteQueryView, Skeleton } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
@@ -130,13 +130,12 @@ function ReviewCards() {
     },
   );
 
-  // todo - doesnt work if errored after first page, it shouldnt block view of previous entries
   return (
-    <QueryView
+    <InfiniteQueryView
       query={reviewCardsQuery}
       className="size-full"
     >
-      {reviewCardsQuery.isSuccess && (
+      {reviewCardsQuery.data && (
         <Toolbar
           loop={false}
           orientation="vertical"
@@ -154,7 +153,7 @@ function ReviewCards() {
           {reviewCardsQuery.isFetching && <Spinner className="h-8" />}
         </Toolbar>
       )}
-    </QueryView>
+    </InfiniteQueryView>
   );
 }
 
