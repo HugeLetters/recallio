@@ -1,7 +1,7 @@
 import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
 import { toast } from "@/interface/toast";
-import { FAILED_TO_FETCH_MESSAGE } from "@/error";
+import { FAILED_TO_FETCH_MESSAGE, getErrorMessage } from "@/error";
 import type { ApiRouter } from "@/server/api/router";
 import type { ExpectedError } from "@/server/error/trpc";
 import { isDev } from "@/utils";
@@ -32,7 +32,7 @@ export const trpc = createTRPCNext<ApiRouter>({
         queryCache: new QueryCache({
           onError(error) {
             console.error(error);
-            const message = error instanceof Error ? error.message : String(error);
+            const message = getErrorMessage(error);
             if (message !== FAILED_TO_FETCH_MESSAGE) {
               toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
             }

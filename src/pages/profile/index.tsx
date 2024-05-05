@@ -130,6 +130,7 @@ function ReviewCards() {
     },
   );
 
+  // todo - doesnt work if errored after first page, it shouldnt block view of previous entries
   return (
     <QueryView
       query={reviewCardsQuery}
