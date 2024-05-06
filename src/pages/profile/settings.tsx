@@ -3,6 +3,7 @@ import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider/icon";
 import { useCachedSession } from "@/auth/session/hooks";
 import { placeholderSession } from "@/auth/session/placeholder";
+import { useClient } from "@/browser";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
 import { Button } from "@/interface/button";
@@ -26,7 +27,7 @@ import { UserPicture } from "@/user/picture";
 import { USERNAME_LENGTH_MAX, USERNAME_LENGTH_MIN } from "@/user/validation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
@@ -66,6 +67,7 @@ const Page: NextPageWithLayout = function () {
       </Skeleton>
       <LinkedAccounts />
       <AppSettings />
+      <ServiceWorkerToggle />
       <Button
         className="ghost mt-2"
         onClick={() => {
@@ -346,6 +348,55 @@ function SettingToggle({ label, store }: SettingToggleProps) {
         </LabeledSwitch>
       </ToolbarButton>
     </div>
+  );
+}
+
+function ServiceWorkerToggle() {
+  const client = useClient();
+  if (client && (!("serviceWorker" in navigator) || window.serwist === undefined)) {
+    return null;
+  }
+
+  return <SerwiceWorkerToggleInner />;
+}
+
+function SerwiceWorkerToggleInner() {
+  const { data, refetch } = useQuery({
+    queryKey: ["sw-registration"],
+    queryFn() {
+      return navigator.serviceWorker.getRegistrations().then<boolean>((registrations) => {
+        const scriptUrl = new URL("recallio-sw.js", location.origin).href;
+        return registrations.some((registration) => registration.active?.scriptURL == scriptUrl);
+      });
+    },
+    initialData: false,
+  });
+
+  if (data) {
+    return (
+      <div className="rounded-lg bg-app-green-100 px-4 py-2">
+        <div className="flex h-11 flex-col justify-center">Offline access enabled</div>
+      </div>
+    );
+  }
+
+  return (
+    <LabeledSwitch
+      className="bg-app-green-100"
+      checked={data}
+      onCheckedChange={() => {
+        window.serwist
+          .register()
+          .then(() => window.serwist.active)
+          .then(() => refetch())
+          .catch(console.error);
+      }}
+    >
+      <div className="flex h-11 flex-col justify-center">
+        Enable partial offline access
+        <small className="block">Will use extra device storage</small>
+      </div>
+    </LabeledSwitch>
   );
 }
 
