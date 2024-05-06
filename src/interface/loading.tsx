@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/error";
 import { tw } from "@/styles/tw";
 import type { UseInfiniteQueryResult, UseQueryResult } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
@@ -9,6 +10,8 @@ const errorStyle = style.error!;
 type SkeletonProps = {
   isLoading: boolean;
   error?: boolean;
+  /** only takes effect if `SkeletonProps.error` is true */
+  errorMessage?: string;
   className?: string;
 };
 export function Skeleton({
@@ -16,26 +19,34 @@ export function Skeleton({
   className,
   error,
   children,
+  errorMessage,
 }: PropsWithChildren<SkeletonProps>) {
   if (!isLoading) return children;
 
   return (
-    <div className={tw("rounded-xl", className, rootStyle, error && errorStyle)}>
-      <div className="invisible">{children}</div>
+    <div className={tw("grid rounded-xl", className, rootStyle, error && errorStyle)}>
+      <div className="invisible col-start-1 row-start-1">{children}</div>
+      {/* todo - if yes, we shouldn't show the modal */}
+      {error && errorMessage && (
+        <div className="col-start-1 row-start-1 min-w-full break-words p-4 font-bold text-app-red-500">
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 }
 
-type QueryViewProps = {
-  query: Pick<UseQueryResult, "isLoading" | "isError">;
+type QueryViewProps = PropsWithChildren<{
+  query: Pick<UseQueryResult, "isLoading" | "isError" | "error">;
   className?: string;
-};
-export function QueryView({ query, className, children }: PropsWithChildren<QueryViewProps>) {
-  // todo - display error message :thinking:
+}>;
+export function QueryView({ query, className, children }: QueryViewProps) {
+  const message = query.isError ? getErrorMessage(query.error) : undefined;
   return (
     <Skeleton
       isLoading={query.isLoading || query.isError}
       error={query.isError}
+      errorMessage={message}
       className={className}
     >
       {children}
@@ -43,15 +54,11 @@ export function QueryView({ query, className, children }: PropsWithChildren<Quer
   );
 }
 
-type InfiniteQueryViewProps = {
-  query: Pick<UseInfiniteQueryResult, "isLoading" | "isError" | "data">;
+type InfiniteQueryViewProps = PropsWithChildren<{
+  query: Pick<UseInfiniteQueryResult, "isLoading" | "isError" | "error" | "data">;
   className?: string;
-};
-export function InfiniteQueryView({
-  query,
-  className,
-  children,
-}: PropsWithChildren<InfiniteQueryViewProps>) {
+}>;
+export function InfiniteQueryView({ query, className, children }: InfiniteQueryViewProps) {
   if (!query.data) {
     return (
       <QueryView
@@ -68,6 +75,7 @@ export function InfiniteQueryView({
         <Skeleton
           isLoading
           error
+          errorMessage={getErrorMessage(query.error)}
         />
       )}
     </>
