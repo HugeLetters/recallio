@@ -183,7 +183,10 @@ const Page: NextPageWithLayout = function () {
 
 Page.getLayout = (children) => {
   return (
-    <Layout header={{ title: "Scanner" }}>
+    <Layout
+      header={{ title: "Scanner" }}
+      full
+    >
       <Head>
         <title>scan</title>
       </Head>

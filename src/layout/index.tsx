@@ -6,11 +6,13 @@ import type { HeaderProps } from "./header";
 import { Header } from "./header";
 import { rootStore } from "./root";
 import { layoutScrollUpTracker } from "./scroll-up-tracker";
+import { tw } from "@/styles/tw";
 
 type LayoutProps = {
   header?: HeaderProps;
+  full?: boolean;
 };
-export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
+export function Layout({ header, full = false, children }: PropsWithChildren<LayoutProps>) {
   return (
     <div
       ref={rootStore.setRoot}
@@ -18,7 +20,7 @@ export function Layout({ children, header }: PropsWithChildren<LayoutProps>) {
     >
       <Header {...(header ?? { title: "Recallio", left: null, right: null })} />
       <main className="scrollbar-gutter w-full max-w-app grow self-center overflow-y-auto">
-        <div className="flex min-h-full p-4 pb-5 *:min-w-0">{children}</div>
+        <div className={tw("flex min-h-full *:min-w-0", !full && "p-4 pb-5")}>{children}</div>
         <TrackedScrollUpButton
           tracker={layoutScrollUpTracker}
           className="size-10"
