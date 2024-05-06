@@ -1,7 +1,7 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
 import { useSwipe } from "@/browser/swipe";
-import { DialogOverlay } from "@/components/ui/dialog";
+import { DialogOverlay } from "@/interface/dialog";
 import { rootStore } from "@/layout/root";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { useQueryToggleState } from "@/navigation/query/hooks";

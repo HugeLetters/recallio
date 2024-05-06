@@ -1,4 +1,4 @@
-import { Error } from "@/components/error";
+import { Error } from "@/interface/error";
 import type { NextPageWithLayout } from "@/layout";
 import { getQueryParam } from "@/navigation/query";
 import { useRouter } from "next/router";

@@ -1,6 +1,7 @@
 import { Store } from "@/state/store";
 import type { ReactNode } from "react";
 import { flushSync } from "react-dom";
+import { getSafeId } from "./id";
 
 export type ToastOptions = { id?: string; className?: string; duration?: number };
 export interface ToastData extends ToastOptions {
@@ -38,16 +39,16 @@ class ToastStackStore extends Store<ToastData[]> {
     toast: ReactNode,
     { duration = 5000, id = `${Math.random()}`, ...options }: ToastOptions,
   ) {
-    id = id.replaceAll(/\s+/g, "");
+    const safeId = getSafeId(id);
     const state = this.getSnapshot();
-    const activeToast = state.find((toast) => toast.id === id);
+    const activeToast = state.find((toast) => toast.id === safeId);
     if (activeToast) {
       this.updateActiveToast(activeToast);
     } else {
-      this.addNewToast({ content: toast, duration, ...options, id });
+      this.addNewToast({ content: toast, duration, ...options, id: safeId });
     }
 
-    return id;
+    return safeId;
   }
   removeToast(id: ToastData["id"]) {
     this.updateState((state) => state.filter((toast) => toast.id !== id));

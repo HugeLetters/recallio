@@ -1,7 +1,7 @@
 import { AuthGuard } from "@/auth/guard";
 import { ResizeProvider } from "@/browser/resize/provider";
-import { LoadingProvider } from "@/components/loading/indicator";
-import { ToastProvider } from "@/components/toast/provider";
+import { LoadingProvider } from "@/interface/loading/indicator";
+import { ToastProvider } from "@/interface/toast/provider";
 import type { NextPageWithLayout } from "@/layout";
 import { getBasicLayout } from "@/layout/basic";
 import { useQueryTabSync } from "@/state/tab-sync";

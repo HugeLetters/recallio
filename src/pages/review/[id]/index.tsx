@@ -1,9 +1,10 @@
-import { loadingTracker } from "@/components/loading/indicator";
-import { toast } from "@/components/toast";
-import { Button, ButtonLike } from "@/components/ui";
-import { DialogOverlay } from "@/components/ui/dialog";
-import { Star } from "@/components/ui/star";
 import { Image } from "@/image";
+import { Button, ButtonLike } from "@/interface/button";
+import { DialogOverlay } from "@/interface/dialog";
+import { QueryView } from "@/interface/loading";
+import { loadingTracker } from "@/interface/loading/indicator";
+import { Star } from "@/interface/star";
+import { toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { getQueryParam } from "@/navigation/query";
@@ -25,23 +26,28 @@ import RightIcon from "~icons/formkit/right";
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
+  const reviewQuery = trpc.user.review.getOne.useQuery(
+    { barcode: barcode ?? "" },
+    {
+      enabled: !!barcode,
+      staleTime: minutesToMs(5),
+    },
+  );
 
-  return barcode ? <Review barcode={barcode} /> : "Loading...";
-};
+  if (!barcode || !reviewQuery.isSuccess) {
+    return (
+      <QueryView
+        query={reviewQuery}
+        className="grow"
+      />
+    );
+  }
 
-Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
-export default Page;
-
-type ReviewProps = { barcode: string };
-function Review({ barcode }: ReviewProps) {
-  const reviewQuery = trpc.user.review.getOne.useQuery({ barcode }, { staleTime: minutesToMs(5) });
-
-  if (!reviewQuery.isSuccess) return "Loading...";
   const review = reviewQuery.data;
-
   if (!review) return <Redirect to={{ pathname: "/review/[id]/edit", query: { id: barcode } }} />;
+
   return (
-    <div className="flex w-full flex-col gap-4 p-4">
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-stretch gap-4">
         <AttachedImage image={review.image} />
         <Name
@@ -84,11 +90,12 @@ function Review({ barcode }: ReviewProps) {
         </Link>
       </ButtonLike>
       <DeleteButton barcode={barcode} />
-      {/* forces extra gap at the bottom */}
-      <div className="pb-2" />
     </div>
   );
-}
+};
+
+Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+export default Page;
 
 type AttachedImageProps = Pick<ReviewData, "image">;
 function AttachedImage({ image }: AttachedImageProps) {

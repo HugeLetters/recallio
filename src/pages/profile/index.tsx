@@ -1,11 +1,13 @@
 import { useCachedSession } from "@/auth/session/hooks";
-import { InfiniteScroll } from "@/components/list/infinite-scroll";
-import { Card, NoResults } from "@/components/list/product";
-import { Spinner } from "@/components/loading/spinner";
-import { HeaderSearchBar, useSearchQuery } from "@/components/search/search";
-import { SortDialog, useSortQuery } from "@/components/search/sort";
-import { ButtonLike } from "@/components/ui";
-import { Star } from "@/components/ui/star";
+import { placeholderSession } from "@/auth/session/placeholder";
+import { ButtonLike } from "@/interface/button";
+import { InfiniteScroll } from "@/interface/list/infinite-scroll";
+import { Card, NoResults } from "@/interface/list/product";
+import { InfiniteQueryView, Skeleton } from "@/interface/loading";
+import { Spinner } from "@/interface/loading/spinner";
+import { HeaderSearchBar, useSearchQuery } from "@/interface/search/search";
+import { SortDialog, useSortQuery } from "@/interface/search/sort";
+import { Star } from "@/interface/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
@@ -17,22 +19,17 @@ import { fetchNextPage } from "@/trpc/infinite-query";
 import { UserPicture } from "@/user/picture";
 import { minutesToMs } from "@/utils";
 import { Toolbar } from "@radix-ui/react-toolbar";
-import type { Session } from "next-auth";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import GroceriesIcon from "~icons/custom/groceries";
 import SettingsIcon from "~icons/solar/settings-linear";
 
 const Page: NextPageWithLayout = function () {
-  const { data } = useCachedSession();
-
-  return data ? (
-    <div className="flex w-full flex-col gap-6 p-4">
-      <ProfileInfo user={data.user} />
+  return (
+    <div className="flex grow flex-col gap-6">
+      <ProfileInfo />
       <Reviews />
     </div>
-  ) : (
-    "Loading"
   );
 };
 
@@ -55,20 +52,24 @@ Page.getLayout = (children) => {
 
 export default Page;
 
-type ProfileInfoProps = {
-  user: Session["user"];
-};
-function ProfileInfo({ user }: ProfileInfoProps) {
+function ProfileInfo() {
+  const { data } = useCachedSession();
+
+  const session = data ?? placeholderSession;
   return (
-    <div className="flex w-full items-center gap-3">
-      <div className="size-16">
-        <UserPicture
-          user={user}
-          priority
-        />
+    <Skeleton isLoading={!data}>
+      <div className="flex h-16 w-full items-center gap-3">
+        <div className="h-full">
+          <UserPicture
+            user={session.user}
+            priority
+          />
+        </div>
+        <span className="overflow-hidden text-ellipsis text-2xl font-bold">
+          {session.user.name}
+        </span>
       </div>
-      <span className="overflow-hidden text-ellipsis text-2xl font-bold">{user.name}</span>
-    </div>
+    </Skeleton>
   );
 }
 
@@ -79,7 +80,7 @@ function Reviews() {
   });
 
   return (
-    <div className="flex grow flex-col gap-3 pb-3">
+    <div className="flex grow flex-col gap-3">
       <div className="flex items-center justify-between gap-2 px-2">
         <h1 className="text-lg font-semibold">
           My reviews
@@ -130,13 +131,16 @@ function ReviewCards() {
   );
 
   return (
-    <Toolbar
-      loop={false}
-      orientation="vertical"
-      className="flex grow flex-col gap-2"
+    <InfiniteQueryView
+      query={reviewCardsQuery}
+      className="size-full"
     >
-      {reviewCardsQuery.isSuccess ? (
-        <>
+      {reviewCardsQuery.data && (
+        <Toolbar
+          loop={false}
+          orientation="vertical"
+          className="flex grow flex-col gap-2"
+        >
           <InfiniteScroll
             pages={reviewCardsQuery.data.pages}
             getPageValues={(page) => page.page}
@@ -146,12 +150,10 @@ function ReviewCards() {
           >
             {(value) => <ReviewCard review={value} />}
           </InfiniteScroll>
-          {reviewCardsQuery.isFetching ? <Spinner className="h-8" /> : null}
-        </>
-      ) : (
-        "Loading..."
+          {reviewCardsQuery.isFetching && <Spinner className="h-8" />}
+        </Toolbar>
       )}
-    </Toolbar>
+    </InfiniteQueryView>
   );
 }
 

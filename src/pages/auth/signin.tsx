@@ -1,5 +1,6 @@
 import { providerIcons } from "@/auth/provider/icon";
-import { Button, Input, WithLabel } from "@/components/ui";
+import { Button } from "@/interface/button";
+import { Input, WithLabel } from "@/interface/input";
 import type { NextPageWithLayout } from "@/layout";
 import { getQueryParam } from "@/navigation/query";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";

@@ -1,16 +1,18 @@
 import { ScrollUpButton } from "@/browser/scroll-up";
-import { InfiniteScroll } from "@/components/list/infinite-scroll";
-import { loadingTracker } from "@/components/loading/indicator";
-import { Spinner } from "@/components/loading/spinner";
-import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/components/search/search";
-import { logToastError, toast } from "@/components/toast";
-import { AutoresizableInput, Button, ButtonLike, Input } from "@/components/ui";
-import { DialogOverlay } from "@/components/ui/dialog";
-import { Star } from "@/components/ui/star";
-import { LabeledSwitch } from "@/components/ui/switch";
 import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
+import { Button, ButtonLike } from "@/interface/button";
+import { DialogOverlay } from "@/interface/dialog";
+import { AutoresizableInput, Input } from "@/interface/input";
+import { InfiniteScroll } from "@/interface/list/infinite-scroll";
+import { InfiniteQueryView, QueryView } from "@/interface/loading";
+import { loadingTracker } from "@/interface/loading/indicator";
+import { Spinner } from "@/interface/loading/spinner";
+import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/interface/search/search";
+import { Star } from "@/interface/star";
+import { LabeledSwitch } from "@/interface/switch";
+import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { getQueryParam } from "@/navigation/query";
@@ -65,28 +67,23 @@ import PlusIcon from "~icons/material-symbols/add-rounded";
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
   const barcode = getQueryParam(query.id);
-
-  return barcode ? <ReviewWrapper barcode={barcode} /> : "Loading...";
-};
-Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
-
-export default Page;
-
-type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
-function transformReview(data: ReviewData | null): ReviewForm | null {
-  if (!data) return data;
-  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
-}
-
-type ReviewWrapperProps = { barcode: string };
-function ReviewWrapper({ barcode }: ReviewWrapperProps) {
   const reviewQuery = trpc.user.review.getOne.useQuery(
-    { barcode },
-    { staleTime: Infinity, select: transformReview },
+    { barcode: barcode ?? "" },
+    {
+      enabled: !!barcode,
+      staleTime: Infinity,
+      select: transformReview,
+    },
   );
   const isPrivate = useStore(reviewPrivateDefaultStore);
-
-  if (!reviewQuery.isSuccess) return "Loading...";
+  if (!barcode || !reviewQuery.isSuccess) {
+    return (
+      <QueryView
+        query={reviewQuery}
+        className="grow"
+      />
+    );
+  }
 
   return (
     <Review
@@ -106,6 +103,15 @@ function ReviewWrapper({ barcode }: ReviewWrapperProps) {
       hasReview={!!reviewQuery.data}
     />
   );
+};
+Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+
+export default Page;
+
+type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
+function transformReview(data: ReviewData | null): ReviewForm | null {
+  if (!data) return data;
+  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
 }
 
 type ReviewProps = {
@@ -187,7 +193,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
 
   return (
     <form
-      className="flex w-full flex-col gap-4 p-4"
+      className="flex grow flex-col gap-4"
       onSubmit={submitReview}
     >
       <AttachedImage
@@ -245,8 +251,6 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
           </Link>
         </ButtonLike>
       )}
-      {/* forces extra gap at the bottom */}
-      <div className="pb-2" />
     </form>
   );
 }
@@ -638,7 +642,7 @@ function CategorySearch({
       <Toolbar.Root
         loop={false}
         orientation="vertical"
-        className="scrollbar-gutter flex grow flex-col gap-6 overflow-y-auto px-7 py-5"
+        className="scrollbar-gutter flex grow flex-col gap-4 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
           show
@@ -663,8 +667,11 @@ function CategorySearch({
             </Toolbar.Button>
           </label>
         )}
-        {categoriesQuery.isSuccess ? (
-          <>
+        <InfiniteQueryView
+          query={categoriesQuery}
+          className="grow"
+        >
+          {categoriesQuery.data && (
             <InfiniteScroll
               pages={categoriesQuery.data.pages}
               getPageValues={(page) => page}
@@ -705,11 +712,9 @@ function CategorySearch({
                 );
               }}
             </InfiniteScroll>
-            {categoriesQuery.isFetching ? <Spinner className="h-8" /> : null}
-          </>
-        ) : (
-          "Loading..."
-        )}
+          )}
+          {categoriesQuery.isFetching ? <Spinner className="h-8 shrink-0" /> : null}
+        </InfiniteQueryView>
       </Toolbar.Root>
       <Dialog.Close asChild>
         <Button

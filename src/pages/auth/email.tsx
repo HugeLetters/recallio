@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui";
+import { Button } from "@/interface/button";
 import type { NextPageWithLayout } from "@/layout";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import { useSession } from "next-auth/react";

@@ -1,4 +1,4 @@
-import { ButtonLike } from "@/components/ui";
+import { ButtonLike } from "@/interface/button";
 import type { NextPageWithLayout } from "@/layout";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import Link from "next/link";

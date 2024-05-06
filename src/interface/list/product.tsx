@@ -1,5 +1,5 @@
-import type { ToolbarLinkProps } from "@/components/ui/toolbar";
-import { ToolbarLink } from "@/components/ui/toolbar";
+import type { ToolbarLinkProps } from "@/interface/toolbar";
+import { ToolbarLink } from "@/interface/toolbar";
 import { ImagePreview } from "@/product/components";
 import type { StrictOmit } from "@/utils/object";
 import type { PropsWithChildren } from "react";

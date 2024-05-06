@@ -2,13 +2,17 @@ import { signOut } from "@/auth";
 import type { Provider } from "@/auth/provider";
 import { providerIcons } from "@/auth/provider/icon";
 import { useCachedSession } from "@/auth/session/hooks";
-import { loadingTracker } from "@/components/loading/indicator";
-import { logToastError, toast } from "@/components/toast";
-import { Button, Input, WithLabel } from "@/components/ui";
-import { DialogOverlay } from "@/components/ui/dialog";
-import { LabeledSwitch } from "@/components/ui/switch";
+import { placeholderSession } from "@/auth/session/placeholder";
+import { useClient } from "@/browser";
 import { compressImage } from "@/image/compress";
 import { ImagePickerButton } from "@/image/image-picker";
+import { Button } from "@/interface/button";
+import { DialogOverlay } from "@/interface/dialog";
+import { Input, WithLabel } from "@/interface/input";
+import { Skeleton } from "@/interface/loading";
+import { loadingTracker } from "@/interface/loading/indicator";
+import { LabeledSwitch } from "@/interface/switch";
+import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { useQueryToggleState } from "@/navigation/query/hooks";
@@ -23,7 +27,7 @@ import { UserPicture } from "@/user/picture";
 import { USERNAME_LENGTH_MAX, USERNAME_LENGTH_MIN } from "@/user/validation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
@@ -46,18 +50,24 @@ const Page: NextPageWithLayout = function () {
       });
   };
 
-  return data ? (
-    <div className="flex w-full flex-col items-stretch gap-3 p-4">
-      <UserImage
-        user={data.user}
-        sync={sync}
-      />
-      <UserName
-        username={data.user.name}
-        sync={sync}
-      />
+  const session = data ?? placeholderSession;
+  return (
+    <div className="flex grow flex-col gap-3">
+      <Skeleton isLoading={!data}>
+        <div className="space-y-3">
+          <UserImage
+            user={session.user}
+            sync={sync}
+          />
+          <UserName
+            username={session.user.name}
+            sync={sync}
+          />
+        </div>
+      </Skeleton>
       <LinkedAccounts />
       <AppSettings />
+      <ServiceWorkerToggle />
       <Button
         className="ghost mt-2"
         onClick={() => {
@@ -66,12 +76,8 @@ const Page: NextPageWithLayout = function () {
       >
         Sign Out
       </Button>
-      <DeleteProfile username={data.user.name} />
-      {/* forces a padding at the bottom */}
-      <div className="pb-2" />
+      <DeleteProfile />
     </div>
-  ) : (
-    "Loading"
   );
 };
 Page.getLayout = (children) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
@@ -271,7 +277,10 @@ function LinkedAccounts() {
           const isLinked = accounts?.includes(provider);
           return (
             // extra div prevents dividers from being rounded
-            <div key={provider}>
+            <div
+              key={provider}
+              className="min-w-0"
+            >
               <ToolbarButton asChild>
                 <LabeledSwitch
                   className="capitalize"
@@ -288,9 +297,9 @@ function LinkedAccounts() {
                     }
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-full w-7" />
-                    <span>{provider}</span>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Icon className="h-full w-7 shrink-0" />
+                    <span className="overflow-hidden overflow-ellipsis">{provider}</span>
                   </div>
                 </LabeledSwitch>
               </ToolbarButton>
@@ -342,8 +351,58 @@ function SettingToggle({ label, store }: SettingToggleProps) {
   );
 }
 
-type DeleteProfileProps = { username: string };
-function DeleteProfile({ username }: DeleteProfileProps) {
+function ServiceWorkerToggle() {
+  const client = useClient();
+  if (client && (!("serviceWorker" in navigator) || window.serwist === undefined)) {
+    return null;
+  }
+
+  return <SerwiceWorkerToggleInner />;
+}
+
+function SerwiceWorkerToggleInner() {
+  const { data, refetch } = useQuery({
+    queryKey: ["sw-registration"],
+    queryFn() {
+      return navigator.serviceWorker.getRegistrations().then<boolean>((registrations) => {
+        const scriptUrl = new URL("recallio-sw.js", location.origin).href;
+        return registrations.some((registration) => registration.active?.scriptURL == scriptUrl);
+      });
+    },
+    initialData: false,
+  });
+
+  if (data) {
+    return (
+      <div className="rounded-lg bg-app-green-100 px-4 py-2">
+        <div className="flex h-11 flex-col justify-center">Offline access enabled</div>
+      </div>
+    );
+  }
+
+  return (
+    <LabeledSwitch
+      className="bg-app-green-100"
+      checked={data}
+      onCheckedChange={() => {
+        window.serwist
+          .register()
+          .then(() => window.serwist.active)
+          .then(() => refetch())
+          .catch(console.error);
+      }}
+    >
+      <div className="flex h-11 flex-col justify-center">
+        Enable partial offline access
+        <small className="block">Will use extra device storage</small>
+      </div>
+    </LabeledSwitch>
+  );
+}
+
+function DeleteProfile() {
+  const { data } = useCachedSession();
+  const username = data?.user.name;
   const [isOpen, setIsOpen] = useQueryToggleState("delete-dialog");
   const utils = trpc.useUtils();
   const { mutate, isLoading } = trpc.user.deleteUser.useMutation({
@@ -359,8 +418,8 @@ function DeleteProfile({ username }: DeleteProfileProps) {
       utils.invalidate().catch(console.error);
     },
   });
-  useTracker(loadingTracker, isLoading);
 
+  useTracker(loadingTracker, isLoading);
   const confirmationPromp = `delete ${username}`;
 
   return (
@@ -381,7 +440,7 @@ function DeleteProfile({ username }: DeleteProfileProps) {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (isLoading) return;
+                  if (isLoading || username === undefined) return;
                   mutate();
                 }}
                 className="group"

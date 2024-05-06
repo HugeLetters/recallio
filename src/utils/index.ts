@@ -14,13 +14,4 @@ export function ignore() {
   return;
 }
 
-export function createTimer() {
-  let time = performance.now();
-  return function (label?: string) {
-    const t = performance.now();
-    console.log(`${label ?? "TIMER"}: ${t - time}`);
-    time = t;
-  };
-}
-
 export const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;

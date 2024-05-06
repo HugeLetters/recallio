@@ -1,0 +1,42 @@
+@use "sass:math";
+
+$length: 20rem;
+$deg: 135deg;
+$skewedLength: $length / math.cos($deg);
+
+@function breakpoint($p) {
+  @return $length * $p / 100;
+}
+
+.root {
+  --color1: theme("colors.neutral.200");
+  --color2: theme("colors.neutral.100");
+  background-image: repeating-linear-gradient(
+    $deg,
+    var(--color1) breakpoint(0) breakpoint(20),
+    var(--color2) breakpoint(45) breakpoint(55),
+    var(--color1) breakpoint(70) breakpoint(100)
+  );
+  background-size: -2 * $skewedLength;
+}
+
+.error {
+  --color1: theme("colors.app.red.100");
+  --color2: theme("colors.app.red.50");
+}
+
+@media not (prefers-reduced-motion) {
+  .root {
+    animation: moving-background 2s infinite linear;
+  }
+
+  .error {
+    animation-duration: 5s;
+  }
+}
+
+@keyframes moving-background {
+  to {
+    background-position-x: $skewedLength;
+  }
+}

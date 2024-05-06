@@ -72,12 +72,8 @@ type ToastSlotProps = {
   toastCount: number;
   toastIndex: number;
 };
-function ToastSlot({
-  toast: { content, id, className, duration },
-  isStacked,
-  toastCount,
-  toastIndex,
-}: ToastSlotProps) {
+function ToastSlot({ toast, isStacked, toastCount, toastIndex }: ToastSlotProps) {
+  const { content, id, className, duration } = toast;
   const isLastThree = toastCount - toastIndex <= 3;
   const isLast = toastCount - 1 === toastIndex;
   const toastOffset = isStacked ? `${(toastCount - toastIndex - 1) / 2}rem` : undefined;
