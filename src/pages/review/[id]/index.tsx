@@ -18,6 +18,7 @@ import { trpc } from "@/trpc";
 import { useInvalidateReviewAdjacentData } from "@/user/review";
 import { minutesToMs } from "@/utils";
 import * as Dialog from "@radix-ui/react-dialog";
+import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
@@ -48,6 +49,9 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div className="flex w-full flex-col gap-4">
+      <Head>
+        <title>review - {review.name}</title>
+      </Head>
       <div className="flex items-stretch gap-4">
         <AttachedImage image={review.image} />
         <Name
@@ -94,7 +98,14 @@ const Page: NextPageWithLayout = function () {
   );
 };
 
-Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children) => (
+  <Layout header={{ title: <BarcodeTitle /> }}>
+    <Head>
+      <title>review</title>
+    </Head>
+    {children}
+  </Layout>
+);
 export default Page;
 
 type AttachedImageProps = Pick<ReviewData, "image">;

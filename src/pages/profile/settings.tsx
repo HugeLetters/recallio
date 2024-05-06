@@ -30,6 +30,7 @@ import { Toolbar, ToolbarButton } from "@radix-ui/react-toolbar";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Session } from "next-auth";
 import { signIn } from "next-auth/react";
+import Head from "next/head";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 
@@ -80,7 +81,14 @@ const Page: NextPageWithLayout = function () {
     </div>
   );
 };
-Page.getLayout = (children) => <Layout header={{ title: "Settings" }}>{children}</Layout>;
+Page.getLayout = (children) => (
+  <Layout header={{ title: "Settings" }}>
+    <Head>
+      <title>settings</title>
+    </Head>
+    {children}
+  </Layout>
+);
 
 export default Page;
 

@@ -51,6 +51,7 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Radio from "@radix-ui/react-radio-group";
 import * as Toolbar from "@radix-ui/react-toolbar";
+import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import type { FormEvent, MutableRefObject } from "react";
@@ -86,25 +87,35 @@ const Page: NextPageWithLayout = function () {
   }
 
   return (
-    <Review
-      barcode={barcode}
-      review={
-        reviewQuery.data ?? {
-          name: "",
-          rating: 5,
-          pros: null,
-          cons: null,
-          comment: null,
-          categories: [],
-          image: null,
-          isPrivate,
+    <>
+      <Head>{reviewQuery.data && <title>edit - {reviewQuery.data.name}</title>}</Head>
+      <Review
+        barcode={barcode}
+        review={
+          reviewQuery.data ?? {
+            name: "",
+            rating: 5,
+            pros: null,
+            cons: null,
+            comment: null,
+            categories: [],
+            image: null,
+            isPrivate,
+          }
         }
-      }
-      hasReview={!!reviewQuery.data}
-    />
+        hasReview={!!reviewQuery.data}
+      />
+    </>
   );
 };
-Page.getLayout = (children) => <Layout header={{ title: <BarcodeTitle /> }}>{children}</Layout>;
+Page.getLayout = (children) => (
+  <Layout header={{ title: <BarcodeTitle /> }}>
+    <Head>
+      <title>edit</title>
+    </Head>
+    {children}
+  </Layout>
+);
 
 export default Page;
 

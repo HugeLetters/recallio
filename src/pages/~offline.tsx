@@ -1,6 +1,7 @@
 import { ButtonLike } from "@/interface/button";
 import type { NextPageWithLayout } from "@/layout";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";
+import Head from "next/head";
 import Link from "next/link";
 import OfflineIcon from "~icons/carbon/cloud-offline";
 
@@ -9,6 +10,9 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col items-center justify-center gap-3 p-4 text-center">
+      <Head>
+        <title>offline</title>
+      </Head>
       <Redirect to={redirect} />
       <OfflineIcon className="size-full px-10 text-neutral-400" />
       <div className="space-y-2 py-4">

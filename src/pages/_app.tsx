@@ -22,11 +22,26 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
   const { getLayout = getBasicLayout } = Component;
   const Page = <Component {...pageProps} />;
 
+  const description =
+    "Recallio is a web app which help you organize your groceries. Scan barcodes directly in the app to access your and others notes on products.";
+  const title = "recallio";
   return (
     <div className={tw("contents font-lato", lato.variable)}>
       <Providers session={session}>
         <Head>
-          <title>recallio</title>
+          <title>{title}</title>
+          <meta
+            name="description"
+            content={description}
+          />
+          <meta
+            name="keywords"
+            content="recallio, barcode, product, grocery, groceries, products"
+          />
+          <meta
+            name="color-scheme"
+            content="only light"
+          />
           <link
             rel="icon"
             href="/favicon.ico"
@@ -35,13 +50,24 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             rel="manifest"
             href="/manifest.webmanifest"
           />
+          <meta
+            property="og:title"
+            content={title}
+          />
+          <meta
+            property="og:type"
+            content="website"
+          />
+          <meta
+            property="og:description"
+            content={description}
+          />
         </Head>
         {getLayout(!Component.isPublic ? <AuthGuard>{Page}</AuthGuard> : Page)}
       </Providers>
     </div>
   );
 };
-export default trpc.withTRPC(MyApp);
 
 function Providers({ children, session }: { children: ReactNode; session: Session | null }) {
   useQueryTabSync();
@@ -60,3 +86,5 @@ declare module "react" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface CSSProperties extends Record<`--${string}`, string | undefined | number> {}
 }
+
+export default trpc.withTRPC(MyApp);

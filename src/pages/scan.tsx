@@ -22,6 +22,7 @@ import type { PropsWithChildren, RefObject } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
+import Head from "next/head";
 
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
@@ -180,7 +181,14 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (children) => {
-  return <Layout header={{ title: "Scanner" }}>{children}</Layout>;
+  return (
+    <Layout header={{ title: "Scanner" }}>
+      <Head>
+        <title>scan</title>
+      </Head>
+      {children}
+    </Layout>
+  );
 };
 
 export default Page;
