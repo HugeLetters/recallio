@@ -5,6 +5,7 @@ import type { NextPageWithLayout } from "@/layout";
 import { getQueryParam } from "@/navigation/query";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import { signIn, useSession } from "next-auth/react";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import Logo from "~icons/custom/logo";
 import AlertIcon from "~icons/jam/alert-f";
@@ -17,6 +18,9 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-app flex-col p-4">
+      <Head>
+        <title>sign-in</title>
+      </Head>
       {status === "authenticated" && <Redirect to={callbackUrl} />}
       {!!error && (
         <div className="flex w-fit items-center gap-2 self-center rounded-lg bg-red-800/10 px-2.5 py-4 text-red-800/80">

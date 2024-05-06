@@ -14,6 +14,7 @@ import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { minutesToMs } from "@/utils";
 import { Toolbar } from "@radix-ui/react-toolbar";
+import Head from "next/head";
 import { useRouter } from "next/router";
 
 const Page: NextPageWithLayout = function () {
@@ -34,6 +35,7 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div className="flex grow flex-col gap-4">
+      <Head>{filter && <title>search - {filter}</title>}</Head>
       <div className="flex items-center justify-between px-2">
         <span className="text-lg">Goods</span>
         <SortDialog optionList={sortOptionList} />
@@ -86,7 +88,14 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (children) => {
-  return <Layout header={{ header: <HeaderSearchBar title="Search" /> }}>{children}</Layout>;
+  return (
+    <Layout header={{ header: <HeaderSearchBar title="Search" /> }}>
+      <Head>
+        <title>search</title>
+      </Head>
+      {children}
+    </Layout>
+  );
 };
 export default Page;
 

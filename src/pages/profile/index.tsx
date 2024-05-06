@@ -19,6 +19,7 @@ import { fetchNextPage } from "@/trpc/infinite-query";
 import { UserPicture } from "@/user/picture";
 import { minutesToMs } from "@/utils";
 import { Toolbar } from "@radix-ui/react-toolbar";
+import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import GroceriesIcon from "~icons/custom/groceries";
@@ -47,7 +48,14 @@ Page.getLayout = (children) => {
       title="Profile"
     />
   );
-  return <Layout header={{ header }}>{children}</Layout>;
+  return (
+    <Layout header={{ header }}>
+      <Head>
+        <title>profile</title>
+      </Head>
+      {children}
+    </Layout>
+  );
 };
 
 export default Page;
@@ -131,29 +139,32 @@ function ReviewCards() {
   );
 
   return (
-    <InfiniteQueryView
-      query={reviewCardsQuery}
-      className="size-full"
-    >
-      {reviewCardsQuery.data && (
-        <Toolbar
-          loop={false}
-          orientation="vertical"
-          className="flex grow flex-col gap-2"
-        >
-          <InfiniteScroll
-            pages={reviewCardsQuery.data.pages}
-            getPageValues={(page) => page.page}
-            getKey={(value) => value.barcode}
-            getNextPage={fetchNextPage(reviewCardsQuery)}
-            fallback={<NoResults />}
+    <>
+      <Head>{filter && <title>profile - {filter}</title>}</Head>
+      <InfiniteQueryView
+        query={reviewCardsQuery}
+        className="size-full"
+      >
+        {reviewCardsQuery.data && (
+          <Toolbar
+            loop={false}
+            orientation="vertical"
+            className="flex grow flex-col gap-2"
           >
-            {(value) => <ReviewCard review={value} />}
-          </InfiniteScroll>
-          {reviewCardsQuery.isFetching && <Spinner className="h-8" />}
-        </Toolbar>
-      )}
-    </InfiniteQueryView>
+            <InfiniteScroll
+              pages={reviewCardsQuery.data.pages}
+              getPageValues={(page) => page.page}
+              getKey={(value) => value.barcode}
+              getNextPage={fetchNextPage(reviewCardsQuery)}
+              fallback={<NoResults />}
+            >
+              {(value) => <ReviewCard review={value} />}
+            </InfiniteScroll>
+            {reviewCardsQuery.isFetching && <Spinner className="h-8" />}
+          </Toolbar>
+        )}
+      </InfiniteQueryView>
+    </>
   );
 }
 

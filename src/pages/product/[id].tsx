@@ -15,6 +15,7 @@ import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
 import { UserPicture } from "@/user/picture";
 import { minutesToMs } from "@/utils";
+import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import RightIcon from "~icons/formkit/right";
@@ -37,6 +38,7 @@ const Page: NextPageWithLayout = function () {
 
   return (
     <div className="flex grow flex-col">
+      <Head>{summaryQuery.data && <title>product - {summaryQuery.data.name}</title>}</Head>
       <QueryView query={summaryQuery}>
         {summaryQuery.isSuccess && barcode ? (
           summaryQuery.data ? (
@@ -54,7 +56,14 @@ const Page: NextPageWithLayout = function () {
 };
 
 Page.getLayout = (children) => {
-  return <Layout header={{ title: "Product page" }}>{children}</Layout>;
+  return (
+    <Layout header={{ title: "Product" }}>
+      <Head>
+        <title>product</title>
+      </Head>
+      {children}
+    </Layout>
+  );
 };
 
 export default Page;
