@@ -1,4 +1,5 @@
 import { getErrorMessage } from "@/error";
+import { getSafeId } from "@/interface/toast/id";
 import { tw } from "@/styles/tw";
 import type { UseInfiniteQueryResult, UseQueryResult } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
@@ -26,9 +27,11 @@ export function Skeleton({
   return (
     <div className={tw("grid rounded-xl", className, rootStyle, error && errorStyle)}>
       <div className="invisible col-start-1 row-start-1">{children}</div>
-      {/* todo - if yes, we shouldn't show the modal */}
       {error && errorMessage && (
-        <div className="col-start-1 row-start-1 min-w-full break-words p-4 font-bold text-app-red-500">
+        <div
+          className="col-start-1 row-start-1 min-w-full break-words p-4 font-bold text-app-red-500"
+          data-error-id={getSafeId(errorMessage)}
+        >
           {errorMessage}
         </div>
       )}

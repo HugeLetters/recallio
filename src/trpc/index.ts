@@ -1,7 +1,8 @@
 import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
-import { toast } from "@/interface/toast";
 import { FAILED_TO_FETCH_MESSAGE, getErrorMessage } from "@/error";
+import { toast } from "@/interface/toast";
+import { getSafeId } from "@/interface/toast/id";
 import type { ApiRouter } from "@/server/api/router";
 import type { ExpectedError } from "@/server/error/trpc";
 import { isDev } from "@/utils";
@@ -34,7 +35,13 @@ export const trpc = createTRPCNext<ApiRouter>({
             console.error(error);
             const message = getErrorMessage(error);
             if (message !== FAILED_TO_FETCH_MESSAGE) {
-              toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
+              setTimeout(() => {
+                const isErrorDisplayed = !!document.querySelector(
+                  `div[data-error-id="${getSafeId(message)}"]`,
+                );
+                if (isErrorDisplayed) return;
+                toast.error(`Error while trying to retrieve data: ${message}`, { id: message });
+              });
             }
 
             signOutOnUnauthorizedError(error);
