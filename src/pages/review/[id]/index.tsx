@@ -144,6 +144,7 @@ function AttachedImage({ image }: AttachedImageProps) {
                   width={99999}
                   height={99999}
                   quality={100}
+                  priority
                   className="size-full object-contain"
                 />
               </Dialog.Close>

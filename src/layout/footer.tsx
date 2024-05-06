@@ -20,12 +20,9 @@ export function Footer() {
   const translate = useStore(scanTypeOffsetStore);
 
   return (
-    <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-sm text-neutral-400 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
-      <Toolbar.Root
-        asChild
-        role={undefined}
-      >
-        <nav className="grid w-full max-w-app grid-cols-[1fr,auto,1fr] justify-items-center">
+    <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-sm text-neutral-500 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
+      <nav className="w-full max-w-app">
+        <Toolbar.Root className="grid grid-cols-[1fr,auto,1fr] justify-items-center">
           <Flipper
             flipKey={pathname}
             spring={{ stiffness: 350, damping: 25 }}
@@ -38,6 +35,7 @@ export function Footer() {
               active={pathname === "/search"}
             />
             <ToolbarLink
+              aria-label="scan"
               href="/scan"
               className={tw(
                 "relative flex size-16 -translate-y-1/4 items-center justify-center overflow-hidden rounded-full p-4 transition duration-300",
@@ -69,8 +67,8 @@ export function Footer() {
               active={pathname === "/profile"}
             />
           </Flipper>
-        </nav>
-      </Toolbar.Root>
+        </Toolbar.Root>
+      </nav>
     </footer>
   );
 }

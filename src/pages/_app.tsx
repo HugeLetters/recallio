@@ -51,6 +51,10 @@ const MyApp = ({ Component, pageProps: { session, ...pageProps } }: AppPropsWith
             href="/manifest.webmanifest"
           />
           <meta
+            name="theme-color"
+            content="white"
+          />
+          <meta
             property="og:title"
             content={title}
           />
