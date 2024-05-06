@@ -242,7 +242,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
-              <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-400">
+              <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-500">
                 Are you sure you want to delete this review? Once deleted, this action cannot be
                 undone.
               </Dialog.Description>

@@ -14,7 +14,7 @@ const Page: NextPageWithLayout = function () {
         <title>offline</title>
       </Head>
       <Redirect to={redirect} />
-      <OfflineIcon className="size-full px-10 text-neutral-400" />
+      <OfflineIcon className="size-full px-10 text-neutral-300" />
       <div className="space-y-2 py-4">
         <p className="text-xl">This is an offline fallback page</p>
         <p className="">You should be redirected to another page shortly</p>

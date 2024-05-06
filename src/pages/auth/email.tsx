@@ -23,7 +23,7 @@ const Page: NextPageWithLayout = function () {
       {status === "authenticated" && <Redirect to={callbackUrl} />}
       <EmailIcon className="size-10" />
       <p className="text-2xl font-semibold">Authentication PIN code</p>
-      <div className="mt-2 text-balance text-xl font-medium text-neutral-400">
+      <div className="mt-2 text-balance text-xl font-medium text-neutral-500">
         <p>To complete sign-in process, we have sent you a PIN code to your email address.</p>
         <p>Please enter it in the field below.</p>
       </div>
@@ -54,7 +54,7 @@ const Page: NextPageWithLayout = function () {
             {SLOTS.map((slot) => (
               <div
                 key={slot}
-                className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-400/50 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green-500"
+                className="flex aspect-square items-center justify-center rounded-lg outline outline-1 outline-neutral-300 transition-[outline-color] group-focus-within/input:not-[:empty]:outline-app-green-500"
               >
                 {pin[slot]}
                 {slot === pin.length && (

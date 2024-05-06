@@ -34,7 +34,7 @@ export function Card({
           {label}
         </span>
         {!!subtext.length && (
-          <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-400">
+          <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs capitalize text-neutral-500">
             {subtext.join(", ")}
           </span>
         )}
