@@ -21,7 +21,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RightIcon from "~icons/formkit/right";
 
 const Page: NextPageWithLayout = function () {
@@ -219,19 +219,19 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   const timeoutRef = useRef<number>();
   const [isOpen, setIsOpen] = useQueryToggleState("delete-dialog");
 
+  useEffect(() => {
+    clearTimeout(timeoutRef.current);
+    if (!isOpen) {
+      setEnabled(false);
+      return;
+    }
+    timeoutRef.current = window.setTimeout(() => setEnabled(true), deleteTimeout);
+  }, [isOpen]);
+
   return (
     <Dialog.Root
       open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-
-        clearTimeout(timeoutRef.current);
-        if (!open) {
-          setEnabled(false);
-          return;
-        }
-        timeoutRef.current = window.setTimeout(() => setEnabled(true), deleteTimeout);
-      }}
+      onOpenChange={setIsOpen}
     >
       <Dialog.Trigger asChild>
         <Button className="destructive w-full">Delete review</Button>
