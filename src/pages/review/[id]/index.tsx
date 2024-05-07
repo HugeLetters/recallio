@@ -21,7 +21,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RightIcon from "~icons/formkit/right";
 
 const Page: NextPageWithLayout = function () {
@@ -144,6 +144,7 @@ function AttachedImage({ image }: AttachedImageProps) {
                   width={99999}
                   height={99999}
                   quality={100}
+                  priority
                   className="size-full object-contain"
                 />
               </Dialog.Close>
@@ -218,19 +219,19 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   const timeoutRef = useRef<number>();
   const [isOpen, setIsOpen] = useQueryToggleState("delete-dialog");
 
+  useEffect(() => {
+    clearTimeout(timeoutRef.current);
+    if (!isOpen) {
+      setEnabled(false);
+      return;
+    }
+    timeoutRef.current = window.setTimeout(() => setEnabled(true), deleteTimeout);
+  }, [isOpen]);
+
   return (
     <Dialog.Root
       open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-
-        clearTimeout(timeoutRef.current);
-        if (!open) {
-          setEnabled(false);
-          return;
-        }
-        timeoutRef.current = window.setTimeout(() => setEnabled(true), deleteTimeout);
-      }}
+      onOpenChange={setIsOpen}
     >
       <Dialog.Trigger asChild>
         <Button className="destructive w-full">Delete review</Button>
@@ -242,7 +243,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
               <Dialog.Title className="text-center text-2xl font-semibold">
                 Delete Review?
               </Dialog.Title>
-              <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-400">
+              <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-500">
                 Are you sure you want to delete this review? Once deleted, this action cannot be
                 undone.
               </Dialog.Description>

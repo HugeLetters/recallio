@@ -34,7 +34,7 @@ const Page: NextPageWithLayout = function () {
         <EmailSignIn callbackUrl={callbackUrl} />
         <div className="relative z-0 my-6 flex w-full justify-center">
           <hr className="absolute top-1/2 -z-10 w-full" />
-          <span className="bg-white px-4 text-neutral-400">Or</span>
+          <span className="bg-white px-4 text-neutral-500">Or</span>
         </div>
         <ProviderSignIn callbackUrl={callbackUrl} />
       </div>
@@ -73,7 +73,7 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
       </WithLabel>
       <Button
         type="submit"
-        className="font-semibold group-valid:primary group-invalid:disabled group-invalid:ghost group-invalid:text-neutral-400"
+        className="font-semibold group-valid:primary group-invalid:disabled group-invalid:ghost group-invalid:text-neutral-500"
       >
         Continue
       </Button>

@@ -456,7 +456,7 @@ function DeleteProfile() {
                 <Dialog.Title className="text-center text-2xl font-semibold">
                   Delete Profile?
                 </Dialog.Title>
-                <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-400">
+                <Dialog.Description className="basis-full text-balance text-center text-xl text-neutral-500">
                   Are you sure you want to delete your profile? Once deleted, this action cannot be
                   undone.
                 </Dialog.Description>

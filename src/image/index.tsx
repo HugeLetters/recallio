@@ -12,7 +12,8 @@ type ImageProps = ExtendPropety<NextImageProps, "src", Nullish>;
  * `children` props acts as a fallback when image couldn't be loaded
  */
 export function Image({ children, className, onLoad, ...props }: ImageProps) {
-  const [showFallback, setShowFallback] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const showFallback = !props.src || !hasLoaded;
 
   return (
     <>
@@ -21,7 +22,7 @@ export function Image({ children, className, onLoad, ...props }: ImageProps) {
         <NextImage
           {...props}
           onLoad={(e) => {
-            setShowFallback(false);
+            setHasLoaded(true);
             onLoad?.(e);
           }}
           className={tw(showFallback ? "invisible absolute size-0" : className)}

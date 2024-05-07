@@ -103,6 +103,7 @@ const Page: NextPageWithLayout = function () {
     return () => scanTypeStore.reset();
   }, []);
 
+  const buttonBg = <div className="rounded-xl bg-black/60" />;
   return (
     <div
       onPointerDown={swipeHandler}
@@ -171,9 +172,9 @@ const Page: NextPageWithLayout = function () {
           </ScanButton>
         </ScanGrid>
         <ScanGrid className="absolute inset-0 items-stretch">
-          <div className="rounded-xl bg-black/50" />
-          <div className="rounded-xl bg-black/50" />
-          <div className="rounded-xl bg-black/50" />
+          {buttonBg}
+          {buttonBg}
+          {buttonBg}
         </ScanGrid>
       </div>
     </div>
@@ -182,7 +183,10 @@ const Page: NextPageWithLayout = function () {
 
 Page.getLayout = (children) => {
   return (
-    <Layout header={{ title: "Scanner" }}>
+    <Layout
+      header={{ title: "Scanner" }}
+      full
+    >
       <Head>
         <title>scan</title>
       </Head>

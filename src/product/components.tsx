@@ -19,7 +19,7 @@ import MinusIcon from "~icons/material-symbols/remove-rounded";
 
 type CommentWrapperProps = { children: ReactNode[] };
 export function CommentWrapper({ children }: CommentWrapperProps) {
-  const separator = <Separator.Root className="col-span-2 h-px bg-neutral-400/20" />;
+  const separator = <Separator.Root className="col-span-2 h-px bg-neutral-200" />;
   const filtered = children.filter(Boolean);
   const lastIndex = filtered.length - 1;
 
@@ -162,7 +162,7 @@ export function CommentIcon({ type }: CommentIconProps) {
 }
 
 type Size = "md" | "sm";
-const sizeToRenderSize: Record<Size, number> = { md: 144, sm: 50 };
+const sizeToRenderSize: Record<Size, number> = { md: 96, sm: 48 };
 type ImagePreviewProps = { src: Nullish<string>; size: Size };
 export function ImagePreview({ src, size }: ImagePreviewProps) {
   const renderSize = sizeToRenderSize[size];
@@ -192,7 +192,7 @@ export const CategoryCard = forwardRef<HTMLButtonElement, CategoryCardProps>(fun
     <Slot
       ref={ref}
       className={tw(
-        "flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-400 outline-transparent focus-visible:outline-neutral-300",
+        "flex h-10 items-center gap-1 rounded-xl bg-neutral-400/15 px-3 py-1 capitalize text-neutral-500 outline-transparent focus-visible:outline-neutral-300",
         className,
       )}
       {...props}

@@ -71,7 +71,7 @@ const Page: NextPageWithLayout = function () {
                     <div className="flex h-5 items-center gap-0.5">
                       <Star highlight />
                       <span className="text-sm">{value.averageRating.toFixed(1)}</span>
-                      <span className="text-xs text-neutral-400">
+                      <span className="text-xs text-neutral-500">
                         ({value.reviewCount.toFixed(0)})
                       </span>
                     </div>

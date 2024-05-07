@@ -107,7 +107,7 @@ function Summary({ summary }: SummaryProps) {
             <div className="flex h-6 items-center gap-0.5">
               <Star highlight />
               <span>{rating.toFixed(1)}</span>
-              <span className="text-sm text-neutral-400">({reviewCount})</span>
+              <span className="text-sm text-neutral-500">({reviewCount})</span>
             </div>
           </div>
           <RightIcon className="size-7 shrink-0 self-center text-neutral-400" />
@@ -115,7 +115,7 @@ function Summary({ summary }: SummaryProps) {
       </div>
       <div className="flex flex-col gap-1">
         <span className="text-xs">Barcode</span>
-        <span className="h-6 text-neutral-400">{barcode}</span>
+        <span className="h-6 text-neutral-500">{barcode}</span>
       </div>
       {!!categories?.length && (
         <section className="flex flex-col gap-2 text-xs">
