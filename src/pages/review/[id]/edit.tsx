@@ -338,6 +338,7 @@ function Rating({ value, setValue }: Model<number>) {
       onValueChange={(val) => {
         setValue(+val);
       }}
+      aria-label="rating"
       // radio item renders an invisible absolute input - relative keeps it in place
       className="group relative flex justify-between gap-4 text-6xl"
     >
