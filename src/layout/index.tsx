@@ -1,4 +1,5 @@
 import { TrackedScrollUpButton } from "@/browser/scroll-up";
+import { tw } from "@/styles/tw";
 import type { NextPage } from "next";
 import type { PropsWithChildren, ReactNode } from "react";
 import { Footer } from "./footer";
@@ -6,7 +7,6 @@ import type { HeaderProps } from "./header";
 import { Header } from "./header";
 import { rootStore } from "./root";
 import { layoutScrollUpTracker } from "./scroll-up-tracker";
-import { tw } from "@/styles/tw";
 
 type LayoutProps = {
   header?: HeaderProps;
