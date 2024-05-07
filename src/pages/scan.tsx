@@ -299,6 +299,8 @@ function useScanTypeSwipe({
     },
     onSwipeEnd({ movement: { dx } }) {
       onSwipeStateChange?.(false);
+      target.current?.style.removeProperty("--offset");
+
       if (Math.abs(dx) < 35) return;
       const delta = Math.abs(dx) < 110 ? 1 : 2;
       const move = (dx < 0 ? 1 : -1) * delta;
@@ -309,7 +311,6 @@ function useScanTypeSwipe({
       if (newScanType !== oldScanType) {
         onScanTypeChange?.(newScanType);
       }
-      target.current?.style.removeProperty("--offset");
     },
   });
 }
