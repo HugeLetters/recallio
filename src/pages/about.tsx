@@ -30,6 +30,7 @@ const Page: NextPageWithLayout = () => {
       <HowTo />
       <Loading />
       <Scanner />
+      <Offline />
       <MadeBy />
     </Root>
   );
@@ -119,6 +120,33 @@ function Scanner() {
         <ExternalLink href="https://caniuse.com/mdn-api_barcodedetector">
           Supported platforms
         </ExternalLink>
+      </Content>
+    </Item>
+  );
+}
+
+function Offline() {
+  return (
+    <Item value="offline">
+      <Header>Offline access</Header>
+      <Content>
+        <p>
+          Enabling offline access in the settings will download app locally to your device. This
+          will allow you to navigate the app even when offline.
+        </p>
+        <p>
+          Additionally your reviews will be saved locally as well - you may access them by
+          navigating to a review page for a specific barcode.
+        </p>
+        <p>
+          However most of the data will be unavailable since it requires internet access. This
+          includes a list of your reviews on profile page.
+        </p>
+        <p>
+          You may edit data while offline - however if you exit the app before restoring connection
+          that data will be lost. The app will try to save your edits as soon as you restore online
+          access.
+        </p>
       </Content>
     </Item>
   );
