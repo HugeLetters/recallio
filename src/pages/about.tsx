@@ -4,9 +4,9 @@ import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { tw } from "@/styles/tw";
 import {
+  Item,
   Content as RContent,
   Header as RHeader,
-  Item as RItem,
   Root,
   Trigger,
 } from "@radix-ui/react-accordion";
@@ -233,11 +233,6 @@ function Content({ children }: ContentProps) {
       <div className="p-3 *:mb-1 last:*:mb-0">{children}</div>
     </RContent>
   );
-}
-
-type ItemProps = PropsWithChildren<{ value: string }>;
-function Item({ children, value }: ItemProps) {
-  return <RItem value={value}>{children}</RItem>;
 }
 
 type ExternalLinkProps = PropsWithChildren<{ href: string }>;
