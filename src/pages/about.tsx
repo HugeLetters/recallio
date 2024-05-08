@@ -212,7 +212,7 @@ type ContentProps = PropsWithChildren;
 function Content({ children }: ContentProps) {
   return (
     <RContent className={tw("bg-neutral-200", contentStyle)}>
-      <div className="p-3">{children}</div>
+      <div className="p-3 *:mb-1 last:*:mb-0">{children}</div>
     </RContent>
   );
 }
