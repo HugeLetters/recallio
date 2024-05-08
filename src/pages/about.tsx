@@ -177,16 +177,7 @@ function MadeBy() {
             designed by:
             <Author
               name="Azalia Kham"
-              socials={[
-                {
-                  label: "github",
-                  href: "https://github.com/HugeLetters",
-                },
-                {
-                  label: "telegram",
-                  href: "https://t.me/HugeLetters",
-                },
-              ]}
+              socials={[]}
             />
           </li>
         </ul>
@@ -201,23 +192,25 @@ function Author({ name, socials }: AuthorProps) {
   return (
     <div className="pl-2">
       {name}
-      <div className="pl-2">
-        socials:{" "}
-        {socials.map((social) => {
-          const isLast = social === last;
-          const link = (
-            <ExternalLink
-              key={social.label}
-              href={social.href}
-            >
-              {social.label}
-            </ExternalLink>
-          );
+      {!!socials.length && (
+        <div className="pl-2">
+          socials:{" "}
+          {socials.map((social) => {
+            const isLast = social === last;
+            const link = (
+              <ExternalLink
+                key={social.label}
+                href={social.href}
+              >
+                {social.label}
+              </ExternalLink>
+            );
 
-          if (isLast) return link;
-          return <Fragment key={social.label}>{link}, </Fragment>;
-        })}
-      </div>
+            if (isLast) return link;
+            return <Fragment key={social.label}>{link}, </Fragment>;
+          })}
+        </div>
+      )}
     </div>
   );
 }
