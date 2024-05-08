@@ -1,11 +1,12 @@
 .content {
   overflow: hidden;
+  animation-duration: 300ms;
 }
 .content[data-state="open"] {
-  animation: open 300ms ease-out;
+  animation-name: open;
 }
 .content[data-state="closed"] {
-  animation: close 300ms ease-out;
+  animation-name: close;
 }
 
 @keyframes open {
