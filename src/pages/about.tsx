@@ -172,12 +172,11 @@ function MadeBy() {
               ]}
             />
           </li>
-          {/* todo - awaiting azalia socials */}
           <li>
             designed by:
             <Author
               name="Azalia Kham"
-              socials={[]}
+              // todo - awaiting azalia socials
             />
           </li>
         </ul>
@@ -186,13 +185,13 @@ function MadeBy() {
   );
 }
 
-type AuthorProps = { name: string; socials: ReadonlyArray<{ href: string; label: string }> };
+type AuthorProps = { name: string; socials?: ReadonlyArray<{ href: string; label: string }> };
 function Author({ name, socials }: AuthorProps) {
-  const last = socials.at(-1);
+  const last = socials?.at(-1);
   return (
     <div className="pl-2">
       {name}
-      {!!socials.length && (
+      {!!socials?.length && (
         <div className="pl-2">
           socials:{" "}
           {socials.map((social) => {
