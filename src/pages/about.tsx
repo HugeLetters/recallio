@@ -18,8 +18,6 @@ import style from "./about.module.css";
 
 const contentStyle = style.content!;
 
-// ? todo - offline indicator
-
 const Page: NextPageWithLayout = () => {
   return (
     <Root

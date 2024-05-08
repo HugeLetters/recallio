@@ -359,7 +359,7 @@ function SettingToggle({ label, store }: SettingToggleProps) {
     <div>
       <ToolbarButton asChild>
         <LabeledSwitch
-          className="bg-app-green-100"
+          className="h-full bg-app-green-100"
           checked={value}
           onCheckedChange={store.setValue}
         >
