@@ -22,7 +22,7 @@ export function Footer() {
   return (
     <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-sm text-neutral-500 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
       <nav className="w-full max-w-app">
-        <Toolbar.Root className="grid grid-cols-[1fr,auto,1fr] justify-items-center">
+        <Toolbar.Root className="grid h-full grid-cols-[1fr,auto,1fr] justify-items-center">
           <Flipper
             flipKey={pathname}
             spring={{ stiffness: 350, damping: 25 }}
