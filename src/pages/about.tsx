@@ -18,6 +18,8 @@ import style from "./about.module.css";
 
 const contentStyle = style.content!;
 
+// todo - proof read
+
 const Page: NextPageWithLayout = () => {
   return (
     <Root
@@ -162,12 +164,16 @@ function MadeBy() {
               name="Eugene Perminov"
               socials={[
                 {
-                  label: "github",
-                  href: "https://github.com/HugeLetters",
+                  label: "linkedin",
+                  href: "https://www.linkedin.com/in/huge-letters/",
                 },
                 {
                   label: "telegram",
                   href: "https://t.me/HugeLetters",
+                },
+                {
+                  label: "github",
+                  href: "https://github.com/HugeLetters",
                 },
               ]}
             />
@@ -175,8 +181,17 @@ function MadeBy() {
           <li>
             designed by:
             <Author
-              name="Azalia Kham"
-              // todo - awaiting azalia socials
+              name="Azalia Khamatova"
+              socials={[
+                {
+                  label: "linkedin",
+                  href: "https://www.linkedin.com/in/azaliya-khamatova-b991a3272/",
+                },
+                {
+                  label: "telegram",
+                  href: "https://t.me/AzaliaKham",
+                },
+              ]}
             />
           </li>
         </ul>
