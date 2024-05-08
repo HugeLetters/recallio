@@ -1,0 +1,27 @@
+.content {
+  overflow: hidden;
+}
+.content[data-state="open"] {
+  animation: open 300ms ease-out;
+}
+.content[data-state="closed"] {
+  animation: close 300ms ease-out;
+}
+
+@keyframes open {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes close {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
