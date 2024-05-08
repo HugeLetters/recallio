@@ -82,7 +82,7 @@ function Loading() {
     <Item value="loading">
       <Header>Pending actions</Header>
       <Content>
-        <div className="float-right size-10 rounded-full bg-neutral-400/20 p-1">
+        <div className="float-right ml-1 size-10 rounded-full bg-neutral-400/20 p-1">
           <Spinner className="size-full contrast-200" />
         </div>
         <p>
