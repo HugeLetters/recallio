@@ -1,0 +1,28 @@
+.content {
+  overflow: hidden;
+  animation-duration: 300ms;
+}
+.content[data-state="open"] {
+  animation-name: open;
+}
+.content[data-state="closed"] {
+  animation-name: close;
+}
+
+@keyframes open {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes close {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}

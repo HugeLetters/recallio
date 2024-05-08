@@ -15,6 +15,7 @@ import { LabeledSwitch } from "@/interface/switch";
 import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { HeaderLink } from "@/layout/header";
 import { useQueryToggleState } from "@/navigation/query/hooks";
 import type { BooleanSettingStore } from "@/settings/boolean";
 import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
@@ -33,6 +34,7 @@ import { signIn } from "next-auth/react";
 import Head from "next/head";
 import { useState } from "react";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
+import InfoIcon from "~icons/iconamoon/information-circle-light";
 
 type Sync = (onUpdate: (session: Session | null) => void) => void;
 const Page: NextPageWithLayout = function () {
@@ -81,14 +83,23 @@ const Page: NextPageWithLayout = function () {
     </div>
   );
 };
-Page.getLayout = (children) => (
-  <Layout header={{ title: "Settings" }}>
-    <Head>
-      <title>settings</title>
-    </Head>
-    {children}
-  </Layout>
-);
+Page.getLayout = function (children) {
+  const right = (
+    <HeaderLink
+      Icon={InfoIcon}
+      aria-label="about"
+      href="/about"
+    />
+  );
+  return (
+    <Layout header={{ title: "Settings", right }}>
+      <Head>
+        <title>settings</title>
+      </Head>
+      {children}
+    </Layout>
+  );
+};
 
 export default Page;
 
@@ -348,7 +359,7 @@ function SettingToggle({ label, store }: SettingToggleProps) {
     <div>
       <ToolbarButton asChild>
         <LabeledSwitch
-          className="bg-app-green-100"
+          className="h-full bg-app-green-100"
           checked={value}
           onCheckedChange={store.setValue}
         >
