@@ -18,8 +18,6 @@ import style from "./about.module.css";
 
 const contentStyle = style.content!;
 
-// todo - proof read
-
 const Page: NextPageWithLayout = () => {
   return (
     <Root
@@ -41,15 +39,14 @@ function Info() {
     <Item value="info">
       <Header>What is Recallio</Header>
       <Content>
-        <p>Recallio is an app which sets out to help you with your groceries.</p>
-        <p>I've created this app to solve my personal problem with buying groceries.</p>
         <p>
-          That is that when I'm choosing a product I constantly forget if I've already tried it and
-          if I've even liked it or not.
+          Have you ever found yourself at a grocery aisle, unsure you've already tried a product or
+          if you've even liked it?
         </p>
+        <p>That's the exact problem I had which inspired me to create Recallio.</p>
         <p>
-          So I wanted to create something which would help me easily identify a product and find my
-          notes on it.
+          It's an app which helps you manage your grocery notes and easily find them just by
+          scanning a barcode on the label.
         </p>
       </Content>
     </Item>
@@ -61,18 +58,15 @@ function HowTo() {
     <Item value="how-to">
       <Header>How to use it</Header>
       <Content>
-        <p>
-          If you want to leave a review for a product open the scan page with a button at the bottom
-          center of the page.
-        </p>
+        <p>To leave a review for a product, press a button at the bottom center of the page.</p>
         <p>
           You can either scan the barcode directly in the app, upload an image of it or input
-          barcode UPC directly using the string usually written below the barcode.
+          barcode UPC directly using the label usually written below the barcode.
         </p>
-        <p>After a successful scan you will be redirected to the review page.</p>
+        <p>After a successful scan, you will be redirected to the review page.</p>
         <p>
-          If you don't have a review for this product yet you will be redirected to page where you
-          can create a new review for a product.
+          If you haven't reviewed this product yet, instead you will be redirected to a new review
+          page.
         </p>
       </Content>
     </Item>
@@ -88,7 +82,7 @@ function Loading() {
           <Spinner className="size-full contrast-200" />
         </div>
         <p>
-          Whenever you see this icon at the bottom right corner of the screen - it indicates that an
+          Whenever you see this icon in the bottom right corner of the screen - it means that an
           action is currently in progress.
         </p>
         <p>Please keep the page open until it disappears.</p>
@@ -104,17 +98,16 @@ function Scanner() {
       <Header>Scanning barcodes</Header>
       <Content>
         <p>
-          For best results keep the barcode straight in front of the camera and make sure it is well
-          lit.
+          For the best results keep the barcode straight in front of the camera and make sure it is
+          well-lit. The scanner works best with black and white barcodes.
         </p>
-        <p>The scanner works best with black and white barcodes.</p>
         <p>
-          Some platforms provide a native barcode detection solution which usually provides best
+          Some platforms provide a native barcode detection feature which usually yields optimal
           results.
         </p>
         <p>
-          The app will try to use native solution and if it's unsupported will fall back to a custom
-          one.
+          Recallio will attempt to use native detection first. If it's unsupported it will switch to
+          a custom one.
         </p>
         <p>You can check if your platform supports native barcode detection in the link below</p>
         <ExternalLink href="https://caniuse.com/mdn-api_barcodedetector">
@@ -131,12 +124,12 @@ function Offline() {
       <Header>Offline access</Header>
       <Content>
         <p>
-          Enabling offline access in the settings will download app locally to your device. This
-          will allow you to navigate the app even when offline.
+          Enabling offline access in the settings will download the app locally to your device. This
+          allows you to navigate the app even when offline.
         </p>
         <p>
-          Additionally your reviews will be saved locally as well - you may access them by
-          navigating to a review page for a specific barcode.
+          Your reviews will be saved locally as well - you may access them by navigating to a review
+          page for a specific barcode.
         </p>
         <p>
           However most of the data will be unavailable since it requires internet access. This
