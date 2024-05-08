@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { Spinner } from "@/interface/loading/spinner";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
@@ -17,7 +18,6 @@ import style from "./about.module.css";
 
 const contentStyle = style.content!;
 
-// todo - what is this app
 // ? todo - offline indicator
 
 const Page: NextPageWithLayout = () => {
@@ -26,12 +26,57 @@ const Page: NextPageWithLayout = () => {
       type="multiple"
       className="h-fit grow divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
     >
+      <Info />
+      <HowTo />
       <Loading />
       <Scanner />
       <MadeBy />
     </Root>
   );
 };
+
+function Info() {
+  return (
+    <Item value="info">
+      <Header>What is Recallio</Header>
+      <Content>
+        <p>Recallio is an app which sets out to help you with your groceries.</p>
+        <p>I've created this app to solve my personal problem with buying groceries.</p>
+        <p>
+          That is that when I'm choosing a product I constantly forget if I've already tried it and
+          if I've even liked it or not.
+        </p>
+        <p>
+          So I wanted to create something which would help me easily identify a product and find my
+          notes on it.
+        </p>
+      </Content>
+    </Item>
+  );
+}
+
+function HowTo() {
+  return (
+    <Item value="how-to">
+      <Header>How to use it</Header>
+      <Content>
+        <p>
+          If you want to leave a review for a product open the scan page with a button at the bottom
+          center of the page.
+        </p>
+        <p>
+          You can either scan the barcode directly in the app, upload an image of it or input
+          barcode UPC directly using the string usually written below the barcode.
+        </p>
+        <p>After a successful scan you will be redirected to the review page.</p>
+        <p>
+          If you don't have a review for this product yet you will be redirected to page where you
+          can create a new review for a product.
+        </p>
+      </Content>
+    </Item>
+  );
+}
 
 function Loading() {
   return (
@@ -67,8 +112,8 @@ function Scanner() {
           results.
         </p>
         <p>
-          The app will try to use native solution and if it{"'"}s unsupported will fall back to a
-          custom one.
+          The app will try to use native solution and if it's unsupported will fall back to a custom
+          one.
         </p>
         <p>You can check if your platform supports native barcode detection in the link below</p>
         <ExternalLink href="https://caniuse.com/mdn-api_barcodedetector">
