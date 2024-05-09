@@ -50,11 +50,13 @@ const config = {
     ],
   },
   /**
-   * @param {{plugins: unknown[]}} config
-   * @returns {typeof config}
+   * @param {import("webpack").Configuration} config
+   * @returns {import("webpack").Configuration}
    */
   webpack(config, ctx) {
+    config.plugins ??= [];
     config.plugins.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       unpluginIcons({
         compiler: "jsx",
         jsx: "react",
@@ -65,6 +67,7 @@ const config = {
         },
       }),
     );
+
     // can't run this during build because type-checking will fail before this plugin does its job
     // this plugin is executed in `prebuild` script instead
     if (ctx.dev) {
