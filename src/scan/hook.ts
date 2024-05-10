@@ -1,12 +1,10 @@
 import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
 import { useEffect, useRef, useState } from "react";
-import type { BarcodeScanResult } from ".";
-import { createReader } from ".";
 
-type UseBarcodeScannerOptions = { onScan: (result: BarcodeScanResult) => void };
+type UseBarcodeScannerOptions = { onScan: (result: string) => void };
 export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
-  const [videoReader] = useState(createReader);
+  const [videoReader] = useState(() => 1);
   const onScanStable = useStableValue(onScan);
   const videoRef = useRef<HTMLVideoElement>(null);
 

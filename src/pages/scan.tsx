@@ -1,13 +1,12 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { useSwipe } from "@/browser/swipe";
-import { logToastError, toast } from "@/interface/toast";
 import { ImagePicker } from "@/image/image-picker";
+import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
-import type { BarcodeScanResult } from "@/scan";
-import { scanFile, scanFromUrl } from "@/scan";
+import { scanBlob, scanFromUrl } from "@/scan";
 import { useBarcodeScanner } from "@/scan/hook";
 import type { ScanType } from "@/scan/store";
 import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
@@ -16,22 +15,21 @@ import { tw } from "@/styles/tw";
 import { consumeShareTarget } from "@/sw/share/db";
 import { SHARE_TARGET_ERROR_PARAM, SHARE_TARGET_PARAM } from "@/sw/share/url";
 import { Slot } from "@radix-ui/react-slot";
+import Head from "next/head";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import type { PropsWithChildren, RefObject } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
-import Head from "next/head";
 
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const goToReview = createGoToReview(router);
-  const goToReviewFromResult = createGoToReviewFromResult(router);
 
-  const { ref } = useBarcodeScanner({ onScan: goToReviewFromResult });
-  function scanImage(image: File) {
-    scanFile(image).then(goToReviewFromResult).catch(logToastError("Couldn't detect barcode"));
+  const { ref } = useBarcodeScanner({ onScan: goToReview });
+  function scanFile(image: File) {
+    scanBlob(image).then(goToReview).catch(logToastError("Couldn't detect barcode"));
   }
 
   useEffect(() => {
@@ -61,7 +59,7 @@ const Page: NextPageWithLayout = function () {
         }
 
         scanFromUrl(url)
-          .then(createGoToReviewFromResult(router))
+          .then(createGoToReview(router))
           .catch((e) => {
             console.error(e);
             handleError("Couldn't detect barcode");
@@ -145,7 +143,7 @@ const Page: NextPageWithLayout = function () {
               onChange={(e) => {
                 const image = e.target.files?.item(0);
                 if (!image) return;
-                scanImage(image);
+                scanFile(image);
                 e.target.value = "";
               }}
               onClick={() => scanTypeStore.select("upload")}
@@ -318,12 +316,5 @@ function useScanTypeSwipe({
 function createGoToReview(router: NextRouter) {
   return function (id: string) {
     router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
-  };
-}
-
-function createGoToReviewFromResult(router: NextRouter) {
-  const goToReview = createGoToReview(router);
-  return function (result: BarcodeScanResult) {
-    return goToReview(result.getText());
   };
 }

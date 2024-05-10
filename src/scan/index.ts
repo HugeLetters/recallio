@@ -1,26 +1,20 @@
-import type { Result } from "@zxing/library";
-import { BrowserMultiFormatReader } from "@zxing/library";
+import type { ReaderOptions } from "zxing-wasm/reader";
+import { getZXingModule, readBarcodesFromImageFile } from "zxing-wasm/reader";
 
-export type BarcodeScanResult = Result;
-export function createReader() {
-  const reader = new BrowserMultiFormatReader(undefined);
-  reader.timeBetweenDecodingAttempts = 1000;
-  return reader;
+const readerOptions: ReaderOptions = { maxNumberOfSymbols: 1 };
+export function scanBlob(image: Blob): Promise<string> {
+  return readBarcodesFromImageFile(image, readerOptions).then(([result]) => {
+    if (!result) {
+      throw new Error("No barcode detected.");
+    }
+    return result.text;
+  });
 }
 
 export function scanFromUrl(url: string) {
-  const reader = createReader();
-  return (
-    reader
-      .decodeFromImageUrl(url)
-      // we decode a second time on fail because xzing alternates between 2 scan modes on each decode
-      .catch(() => reader.decodeFromImageUrl(url))
-  );
+  return fetch(url)
+    .then((res) => res.blob())
+    .then(scanBlob);
 }
 
-export function scanFile(image: File) {
-  const url = URL.createObjectURL(image);
-  return scanFromUrl(url).finally(() => {
-    URL.revokeObjectURL(url);
-  });
 }
