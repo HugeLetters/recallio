@@ -51,7 +51,6 @@
     "@uploadthing/react": "=6.4.4",
     "@upstash/qstash": "^2.5.0",
     "@upstash/redis": "^1.30.0",
-    "@zxing/library": "^0.21.0",
     "drizzle-orm": "^0.30.9",
     "fast-json-stable-stringify": "^2.1.0",
     "idb": "^8.0.0",
@@ -72,7 +71,8 @@
     "unique-names-generator": "^4.7.1",
     "unplugin-icons": "^0.17.4",
     "uploadthing": "=6.9.0",
-    "zod": "^3.23.5"
+    "zod": "^3.23.5",
+    "zxing-wasm": "^1.2.9"
   },
   "devDependencies": {
     "@ast-grep/napi": "^0.19.4",
@@ -124,7 +124,8 @@
   "pnpm": {
     "patchedDependencies": {
       "next-auth@4.23.1": "patches/next-auth@4.23.1.patch",
-      "@radix-ui/react-toast@1.1.5": "patches/@radix-ui__react-toast@1.1.5.patch"
+      "@radix-ui/react-toast@1.1.5": "patches/@radix-ui__react-toast@1.1.5.patch",
+      "next@13.4.2": "patches/next@13.4.2.patch"
     }
   }
 }
