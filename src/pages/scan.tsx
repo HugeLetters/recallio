@@ -6,7 +6,6 @@ import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
-import { scanBlob, scanFromUrl } from "@/scan";
 import { useBarcodeScanner } from "@/scan/hook";
 import type { ScanType } from "@/scan/store";
 import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
@@ -27,9 +26,9 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const goToReview = createGoToReview(router);
 
-  const { ref } = useBarcodeScanner({ onScan: goToReview });
+  const { ref, scanner } = useBarcodeScanner({ onScan: goToReview });
   function scanFile(image: File) {
-    scanBlob(image).then(goToReview).catch(logToastError("Couldn't detect barcode"));
+    scanner.scanBlob(image).then(console.log).catch(logToastError("Couldn't detect barcode"));
   }
 
   useEffect(() => {
@@ -58,7 +57,8 @@ const Page: NextPageWithLayout = function () {
           return;
         }
 
-        scanFromUrl(url)
+        scanner
+          .scanUrl(url)
           .then(createGoToReview(router))
           .catch((e) => {
             console.error(e);
@@ -69,7 +69,7 @@ const Page: NextPageWithLayout = function () {
         console.error(e);
         handleError("Unexpected while handling shared image");
       });
-  }, [router]);
+  }, [scanner, router]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSwiped, setIsSwiped] = useState(false);
