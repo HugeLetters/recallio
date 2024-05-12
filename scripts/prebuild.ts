@@ -15,7 +15,7 @@ export default async function main() {
 
 async function migrateSchema() {
   await generateSchema();
-  await migrate();
+  await migrate().catch(migrate);
 }
 
 function generateRouteTypes() {
