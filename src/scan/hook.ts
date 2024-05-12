@@ -105,7 +105,9 @@ function createZoomHandler(video: HTMLVideoElement) {
       const { min, max } = zoomCapability;
       const normalizedZoom = clamp(min, min + (zoom / 100) * (max - min), max);
       const newConstraints: CameraConstraints = { zoom: normalizedZoom };
-      track.applyConstraints(newConstraints).catch(console.error);
+      track
+        .applyConstraints(newConstraints)
+        .catch(logToastError("Couldn't change zoom", { id: "scanner zoom change error" }));
     }
   };
 }
