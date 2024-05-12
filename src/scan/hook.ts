@@ -2,11 +2,12 @@ import { browser } from "@/browser";
 import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
 import { useEffect, useRef, useState } from "react";
-import { BarcodeDetectionError, BarcodeScanner } from ".";
+import { createBarcodeScanner } from "./scanner";
+import { BarcodeDetectionError } from "./scanner/error";
 
 type UseBarcodeScannerOptions = { onScan: (result: string) => void };
 export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
-  const [scanner] = useState(() => (browser ? new BarcodeScanner() : null));
+  const [scanner] = useState(() => (browser ? createBarcodeScanner() : null));
   const onScanStable = useStableValue(onScan);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -26,6 +27,7 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
           console.error(e);
         })
         .finally(() => {
+          // todo - this is the wrong way to time
           timeOut = window.setTimeout(scan, 500);
         });
     };

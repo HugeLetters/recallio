@@ -28,11 +28,11 @@ const Page: NextPageWithLayout = function () {
 
   const { ref, scanner } = useBarcodeScanner({ onScan: goToReview });
   function scanFile(image: File) {
-    scanner.scanBlob(image).then(console.log).catch(logToastError("Couldn't detect barcode"));
+    scanner?.scanBlob(image).then(goToReview).catch(logToastError("Couldn't detect barcode"));
   }
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || !scanner) return;
 
     const isShareTarget = getQueryParam(router.query[SHARE_TARGET_PARAM]) !== undefined;
     const didShareTargetError = getQueryParam(router.query[SHARE_TARGET_ERROR_PARAM]) !== undefined;
