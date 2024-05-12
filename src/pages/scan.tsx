@@ -123,7 +123,7 @@ const Page: NextPageWithLayout = function () {
         ref={extraMenuRef}
       >
         {scanType === "input" && <BarcodeInput goToReview={handleScan} />}
-        {scanType === "scan" && <ZoomSlider onChange={changeZoom ?? (() => void 0)} />}
+        {scanType === "scan" && changeZoom && <ZoomSlider onChange={changeZoom} />}
       </div>
       <div
         ref={controlsRef}
@@ -348,4 +348,3 @@ function createScanHandler(router: NextRouter) {
     router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
   };
 }
-
