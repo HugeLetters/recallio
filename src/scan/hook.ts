@@ -51,7 +51,7 @@ function attachCameraStream(video: HTMLVideoElement) {
   navigator.mediaDevices
     .getUserMedia({ video: { facingMode: "environment" }, audio: false })
     .then((stream) => {
-      if (!cleanedUp) return;
+      if (cleanedUp) return;
 
       video.srcObject = stream;
       if (video.paused) {
