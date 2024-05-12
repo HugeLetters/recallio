@@ -115,6 +115,7 @@ const Page: NextPageWithLayout = function () {
     >
       <video
         ref={ref}
+        playsInline
         inert={"true" as never as true}
         className="absolute inset-0 -z-10 size-full object-cover"
       />
