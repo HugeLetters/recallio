@@ -11,6 +11,7 @@ type ImageProps = ExtendPropety<NextImageProps, "src", Nullish>;
 /**
  * `children` props acts as a fallback when image couldn't be loaded
  */
+// todo - flashes on loaded image
 export function Image({ children, className, onLoad, ...props }: ImageProps) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const showFallback = !props.src || !hasLoaded;
