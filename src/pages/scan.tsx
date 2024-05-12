@@ -1,13 +1,11 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { useSwipe } from "@/browser/swipe";
-import { logToastError, toast } from "@/interface/toast";
 import { ImagePicker } from "@/image/image-picker";
+import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
-import type { BarcodeScanResult } from "@/scan";
-import { scanFile, scanFromUrl } from "@/scan";
 import { useBarcodeScanner } from "@/scan/hook";
 import type { ScanType } from "@/scan/store";
 import { scanTypeOffsetStore, scanTypeStore } from "@/scan/store";
@@ -15,27 +13,32 @@ import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import { consumeShareTarget } from "@/sw/share/db";
 import { SHARE_TARGET_ERROR_PARAM, SHARE_TARGET_PARAM } from "@/sw/share/url";
+import { Range, Root, Thumb, Track } from "@radix-ui/react-slider";
 import { Slot } from "@radix-ui/react-slot";
+import Head from "next/head";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import type { PropsWithChildren, RefObject } from "react";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
-import Head from "next/head";
 
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
-  const goToReview = createGoToReview(router);
-  const goToReviewFromResult = createGoToReviewFromResult(router);
+  const handleScan = createScanHandler(router);
 
-  const { ref } = useBarcodeScanner({ onScan: goToReviewFromResult });
-  function scanImage(image: File) {
-    scanFile(image).then(goToReviewFromResult).catch(logToastError("Couldn't detect barcode"));
+  const { ref, scanner, changeZoom } = useBarcodeScanner({
+    onScan: (barcode) => {
+      if (!barcode) return;
+      handleScan(barcode);
+    },
+  });
+  function scanFile(image: File) {
+    scanner?.scanBlob(image).then(handleScan).catch(logToastError("Couldn't detect barcode"));
   }
 
   useEffect(() => {
-    if (!router.isReady) return;
+    if (!router.isReady || !scanner) return;
 
     const isShareTarget = getQueryParam(router.query[SHARE_TARGET_PARAM]) !== undefined;
     const didShareTargetError = getQueryParam(router.query[SHARE_TARGET_ERROR_PARAM]) !== undefined;
@@ -60,8 +63,9 @@ const Page: NextPageWithLayout = function () {
           return;
         }
 
-        scanFromUrl(url)
-          .then(createGoToReviewFromResult(router))
+        scanner
+          .scanUrl(url)
+          .then(createScanHandler(router))
           .catch((e) => {
             console.error(e);
             handleError("Couldn't detect barcode");
@@ -71,15 +75,15 @@ const Page: NextPageWithLayout = function () {
         console.error(e);
         handleError("Unexpected while handling shared image");
       });
-  }, [router]);
+  }, [scanner, router]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSwiped, setIsSwiped] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
-  const barcodeInputRef = useRef<HTMLFormElement>(null);
+  const extraMenuRef = useRef<HTMLDivElement>(null);
   const swipeHandler = useScanTypeSwipe({
     target: controlsRef,
-    ignore: barcodeInputRef,
+    ignore: extraMenuRef,
     onScanTypeChange(scanType) {
       if (scanType !== "upload") return;
       fileInputRef.current?.click();
@@ -114,12 +118,13 @@ const Page: NextPageWithLayout = function () {
         inert={"true" as never as true}
         className="absolute inset-0 -z-10 size-full object-cover"
       />
-      {scanType === "input" && (
-        <BarcodeInput
-          ref={barcodeInputRef}
-          goToReview={goToReview}
-        />
-      )}
+      <div
+        className="w-full empty:hidden"
+        ref={extraMenuRef}
+      >
+        {scanType === "input" && <BarcodeInput goToReview={handleScan} />}
+        {scanType === "scan" && changeZoom && <ZoomSlider onChange={changeZoom} />}
+      </div>
       <div
         ref={controlsRef}
         style={{ "--translate": `calc(var(--offset, 0px) - 100% * ${baseOffset})` }}
@@ -145,7 +150,7 @@ const Page: NextPageWithLayout = function () {
               onChange={(e) => {
                 const image = e.target.files?.item(0);
                 if (!image) return;
-                scanImage(image);
+                scanFile(image);
                 e.target.value = "";
               }}
               onClick={() => scanTypeStore.select("upload")}
@@ -207,7 +212,7 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
   return (
     <Slot
       className={tw(
-        "shrink-0 rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+        "shrink-0 rounded-xl p-2 outline-none ring-black/60 ring-offset-2 transition-shadow focus-visible-within:ring-2",
         active && "focus-visible-within:ring-app-green-500",
       )}
     >
@@ -217,14 +222,10 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
 }
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
-const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
-  { goToReview },
-  ref,
-) {
+function BarcodeInput({ goToReview }: BarcodeInputProps) {
   return (
     <form
-      ref={ref}
-      className="w-full px-10"
+      className="px-10"
       onSubmit={(e) => {
         e.preventDefault();
         const barcode = String(new FormData(e.currentTarget).get("barcode"));
@@ -251,7 +252,30 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
       </div>
     </form>
   );
-});
+}
+
+type ZoomSliderProps = { onChange: (value: number) => void };
+function ZoomSlider({ onChange }: ZoomSliderProps) {
+  return (
+    <div className="mx-auto flex max-w-64 select-none items-baseline gap-1 rounded-lg bg-black/60 px-2 py-3">
+      <span className="text-white">Zoom</span>
+      <Root
+        className="relative flex h-6 grow touch-none items-center"
+        min={0}
+        max={100}
+        onValueChange={([value]) => {
+          if (value === undefined) return;
+          onChange(value);
+        }}
+      >
+        <Track className="relative h-2 grow rounded-full bg-white after:absolute after:-inset-y-4 after:inset-x-0">
+          <Range className="absolute h-full rounded-full bg-app-green-500" />
+        </Track>
+        <Thumb className="block size-5 rounded-full bg-white shadow-around sa-o-20 sa-r-1" />
+      </Root>
+    </div>
+  );
+}
 
 const baseSwipeData = { elastic: (x: number) => x, width: 0 };
 type UseScanTypeSwipeOptions = {
@@ -315,15 +339,12 @@ function useScanTypeSwipe({
   });
 }
 
-function createGoToReview(router: NextRouter) {
-  return function (id: string) {
-    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
-  };
-}
-
-function createGoToReviewFromResult(router: NextRouter) {
-  const goToReview = createGoToReview(router);
-  return function (result: BarcodeScanResult) {
-    return goToReview(result.getText());
+function createScanHandler(router: NextRouter) {
+  return function (barcode: string | null) {
+    if (barcode === null) {
+      toast.error("No barcode detected");
+      return;
+    }
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
   };
 }

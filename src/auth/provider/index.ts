@@ -1,5 +1,5 @@
 import type { NonEmptyArray } from "@/utils/array";
-import type { OAuthProviderType } from "next-auth/providers";
+import type { OAuthProviderType } from "next-auth/providers/oauth-types";
 
 export const providers = [
   "discord",

@@ -28,8 +28,10 @@ export function createTimer() {
   let time = performance.now();
   return function (label?: string) {
     const t = performance.now();
-    console.log(`${label ?? "TIMER"}: ${t - time}`);
+    const elapsed = t - time;
+    console.log(`${label ?? "TIMER"}: ${elapsed}`);
     time = t;
+    return elapsed;
   };
 }
 

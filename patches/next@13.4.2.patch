@@ -1,0 +1,14 @@
+diff --git a/dist/lib/typescript/writeConfigurationDefaults.js b/dist/lib/typescript/writeConfigurationDefaults.js
+index 1a1ee12ca15382384b44caab7efe29b7de8feeb8..1df709cb3ac9d7eb39abcb588a533314ddb47c3f 100644
+--- a/dist/lib/typescript/writeConfigurationDefaults.js
++++ b/dist/lib/typescript/writeConfigurationDefaults.js
+@@ -132,7 +132,8 @@ function getDesiredCompilerOptions(ts) {
+                 // will be filtered for new versions of TypeScript
+                 ts.ModuleResolutionKind.Node12,
+                 ts.ModuleResolutionKind.Node16,
+-                ts.ModuleResolutionKind.NodeNext
++                ts.ModuleResolutionKind.NodeNext,
++                ts.ModuleResolutionKind.Bundler,
+             ].filter((val)=>typeof val !== "undefined"),
+             value: "node",
+             reason: "to match webpack resolution"
