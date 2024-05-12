@@ -1,12 +1,11 @@
 import type { ReaderOptions } from "zxing-wasm/reader";
-import { getZXingModule } from "zxing-wasm/reader";
 import type { BarcodeScanner } from "./type";
 
-function preloadModule() {
-  getZXingModule().catch(console.error);
-}
-
 export class PolyfilBarcodeScanner implements BarcodeScanner {
+  constructor() {
+    preloadModule();
+  }
+
   scanBlob = (blob: Blob) => {
     return scanFile(blob).then(([result]) => result?.text ?? null);
   };
@@ -21,7 +20,7 @@ export class PolyfilBarcodeScanner implements BarcodeScanner {
   scanVideo(video: HTMLVideoElement) {
     const imageData = this.getVideoImageData?.(video);
     if (!imageData) {
-      return Promise.reject(new Error("No ImageData"));
+      return Promise.resolve(null);
     }
 
     return scanImageData(imageData).then(([result]) => result?.text ?? null);
@@ -48,10 +47,8 @@ function createVideoImageDataProducer() {
     desynchronized: true,
     willReadFrequently: true,
   });
-  if (!ctx) {
-    // todo - maybe throw?
-    return null;
-  }
+
+  if (!ctx) return null;
 
   return function (video: HTMLVideoElement) {
     const { videoWidth, videoHeight } = video;
@@ -62,4 +59,8 @@ function createVideoImageDataProducer() {
     ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
     return ctx.getImageData(0, 0, videoWidth, videoHeight);
   };
+}
+
+function preloadModule() {
+  import("zxing-wasm/reader").then(({ getZXingModule }) => getZXingModule()).catch(console.error);
 }
