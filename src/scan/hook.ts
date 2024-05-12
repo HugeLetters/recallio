@@ -1,6 +1,7 @@
 import { browser } from "@/browser";
 import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
+import { isDev } from "@/utils";
 import { useEffect, useRef, useState } from "react";
 import { createBarcodeScanner } from "./scanner";
 
@@ -15,25 +16,22 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
     if (!video || !scanner) return;
 
     const cleanupCamera = attachCameraStream(video);
-
-    const scan = function () {
-      scanner
-        .scanVideo(video)
-        .then(onScanStable.current)
-        .catch((e) => {
-          // todo - toast?
-          console.error(e);
-        })
-        .finally(() => {
-          // todo - this is the wrong way to time
-          timeOut = window.setTimeout(scan, 500);
-        });
-    };
-    let timeOut = window.setTimeout(scan, 500);
+    const cancelLoop = timedLoop(
+      () =>
+        scanner
+          .scanVideo(video)
+          .then(onScanStable.current)
+          .catch(
+            logToastError("Unexpected error occured during scan", {
+              id: "scanner unexpected error",
+            }),
+          ),
+      200,
+    );
 
     return () => {
       cleanupCamera();
-      clearTimeout(timeOut);
+      cancelLoop();
     };
   }, [scanner, onScanStable]);
 
@@ -70,5 +68,26 @@ function attachCameraStream(video: HTMLVideoElement) {
   return () => {
     cleanedUp = true;
     video.srcObject = null;
+  };
+}
+
+/**
+ * @returns cancel function
+ */
+function timedLoop(task: () => Promise<unknown>, period: number) {
+  const loop = function () {
+    const start = performance.now();
+    task().finally(() => {
+      const untilNextLoop = Math.max(0, period + start - performance.now());
+      if (isDev && untilNextLoop === 0) {
+        console.warn(`Task took longer than ${period}ms`);
+      }
+      timeout = window.setTimeout(loop, untilNextLoop);
+    });
+  };
+
+  let timeout = window.setTimeout(loop, period);
+  return () => {
+    clearTimeout(timeout);
   };
 }
