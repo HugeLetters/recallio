@@ -1,32 +1,21 @@
-import { BarcodeDetectionError } from "./error";
 import type { BarcodeScanner } from "./type";
 
 export class NativeBarcodeScanner implements BarcodeScanner {
   private readonly detector = new BarcodeDetector();
-  scanBlob = (blob: Blob): Promise<string> => {
+  scanBlob = (blob: Blob) => {
     return createImageBitmap(blob).then((bitmap) =>
-      this.detector.detect(bitmap).then(([result]) => {
-        if (!result) {
-          throw new BarcodeDetectionError("No barcode detected.");
-        }
-        return result.rawValue;
-      }),
+      this.detector.detect(bitmap).then(([result]) => result?.rawValue ?? null),
     );
   };
 
-  scanUrl(url: string): Promise<string> {
+  scanUrl(url: string) {
     return fetch(url)
       .then((res) => res.blob())
       .then(this.scanBlob);
   }
 
-  scanVideo(video: HTMLVideoElement): Promise<string> {
-    return this.detector.detect(video).then(([result]) => {
-      if (!result) {
-        throw new BarcodeDetectionError("No barcode detected.");
-      }
-      return result.rawValue;
-    });
+  scanVideo(video: HTMLVideoElement) {
+    return this.detector.detect(video).then(([result]) => result?.rawValue ?? null);
   }
 }
 

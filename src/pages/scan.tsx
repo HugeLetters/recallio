@@ -24,11 +24,11 @@ import SearchIcon from "~icons/iconamoon/search";
 
 const Page: NextPageWithLayout = function () {
   const router = useRouter();
-  const goToReview = createGoToReview(router);
+  const handleScan = createScanHandler(router);
 
-  const { ref, scanner } = useBarcodeScanner({ onScan: goToReview });
+  const { ref, scanner } = useBarcodeScanner({ onScan: handleScan });
   function scanFile(image: File) {
-    scanner?.scanBlob(image).then(goToReview).catch(logToastError("Couldn't detect barcode"));
+    scanner?.scanBlob(image).then(handleScan).catch(logToastError("Couldn't detect barcode"));
   }
 
   useEffect(() => {
@@ -59,7 +59,7 @@ const Page: NextPageWithLayout = function () {
 
         scanner
           .scanUrl(url)
-          .then(createGoToReview(router))
+          .then(createScanHandler(router))
           .catch((e) => {
             console.error(e);
             handleError("Couldn't detect barcode");
@@ -115,7 +115,7 @@ const Page: NextPageWithLayout = function () {
       {scanType === "input" && (
         <BarcodeInput
           ref={barcodeInputRef}
-          goToReview={goToReview}
+          goToReview={handleScan}
         />
       )}
       <div
@@ -313,8 +313,12 @@ function useScanTypeSwipe({
   });
 }
 
-function createGoToReview(router: NextRouter) {
-  return function (id: string) {
+function createScanHandler(router: NextRouter) {
+  return function (id: string | null) {
+    if (id === null) {
+      toast.error("No barcode detected");
+      return;
+    }
     router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
   };
 }

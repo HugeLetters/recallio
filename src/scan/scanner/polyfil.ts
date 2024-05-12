@@ -1,6 +1,5 @@
 import type { ReaderOptions } from "zxing-wasm/reader";
 import { getZXingModule } from "zxing-wasm/reader";
-import { BarcodeDetectionError } from "./error";
 import type { BarcodeScanner } from "./type";
 
 function preloadModule() {
@@ -8,34 +7,24 @@ function preloadModule() {
 }
 
 export class PolyfilBarcodeScanner implements BarcodeScanner {
-  scanBlob = (blob: Blob): Promise<string> => {
-    return scanFile(blob).then(([result]) => {
-      if (!result) {
-        throw new BarcodeDetectionError("No barcode detected.");
-      }
-      return result.text;
-    });
+  scanBlob = (blob: Blob) => {
+    return scanFile(blob).then(([result]) => result?.text ?? null);
   };
 
-  scanUrl(url: string): Promise<string> {
+  scanUrl(url: string) {
     return fetch(url)
       .then((res) => res.blob())
       .then(this.scanBlob);
   }
 
   private readonly getVideoImageData = createVideoImageDataProducer();
-  scanVideo(video: HTMLVideoElement): Promise<string> {
+  scanVideo(video: HTMLVideoElement) {
     const imageData = this.getVideoImageData?.(video);
     if (!imageData) {
       return Promise.reject(new Error("No ImageData"));
     }
 
-    return scanImageData(imageData).then(([result]) => {
-      if (!result) {
-        throw new BarcodeDetectionError("No barcode detected.");
-      }
-      return result.text;
-    });
+    return scanImageData(imageData).then(([result]) => result?.text ?? null);
   }
 }
 

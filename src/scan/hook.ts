@@ -3,9 +3,8 @@ import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
 import { useEffect, useRef, useState } from "react";
 import { createBarcodeScanner } from "./scanner";
-import { BarcodeDetectionError } from "./scanner/error";
 
-type UseBarcodeScannerOptions = { onScan: (result: string) => void };
+type UseBarcodeScannerOptions = { onScan: (result: string | null) => void };
 export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const [scanner] = useState(() => (browser ? createBarcodeScanner() : null));
   const onScanStable = useStableValue(onScan);
@@ -22,7 +21,6 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
         .scanVideo(video)
         .then(onScanStable.current)
         .catch((e) => {
-          if (e instanceof BarcodeDetectionError) return;
           // todo - toast?
           console.error(e);
         })
