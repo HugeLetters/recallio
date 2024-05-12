@@ -19,10 +19,7 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
     let cleanedUp = false;
 
     navigator.mediaDevices
-      .getUserMedia({
-        video: { facingMode: "environment" },
-        audio: false,
-      })
+      .getUserMedia({ video: { facingMode: "environment" }, audio: false })
       .then((stream) => {
         if (cleanedUp) return;
 
@@ -89,6 +86,7 @@ function timedLoop(task: () => Promise<unknown>, period: number) {
   };
 }
 
+type CameraConstraints = MediaTrackConstraints & { zoom?: number };
 type ZoomHandler = ReturnType<typeof createZoomHandler>;
 function createZoomHandler(video: HTMLVideoElement) {
   const stream = video.srcObject;
@@ -106,9 +104,7 @@ function createZoomHandler(video: HTMLVideoElement) {
 
       const { min, max } = zoomCapability;
       const normalizedZoom = clamp(min, min + (zoom / 100) * (max - min), max);
-      const newConstraints: MediaTrackConstraints & { zoom: number } = {
-        zoom: normalizedZoom,
-      };
+      const newConstraints: CameraConstraints = { zoom: normalizedZoom };
       track.applyConstraints(newConstraints).catch(console.error);
     }
   };
