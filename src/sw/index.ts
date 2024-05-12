@@ -29,6 +29,7 @@ const serwist = new Serwist({
     new PageDataCache(),
     new ShareTargetInterceptpr(),
   ],
+  disableDevLogs: true,
 });
 
 serwist.addEventListeners();

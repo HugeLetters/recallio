@@ -13,12 +13,13 @@ import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import { consumeShareTarget } from "@/sw/share/db";
 import { SHARE_TARGET_ERROR_PARAM, SHARE_TARGET_PARAM } from "@/sw/share/url";
+import { Range, Root, Thumb, Track } from "@radix-ui/react-slider";
 import { Slot } from "@radix-ui/react-slot";
 import Head from "next/head";
 import type { NextRouter } from "next/router";
 import { useRouter } from "next/router";
 import type { PropsWithChildren, RefObject } from "react";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import SearchIcon from "~icons/iconamoon/search";
 
@@ -26,7 +27,12 @@ const Page: NextPageWithLayout = function () {
   const router = useRouter();
   const handleScan = createScanHandler(router);
 
-  const { ref, scanner } = useBarcodeScanner({ onScan: handleScan });
+  const { ref, scanner, changeZoom } = useBarcodeScanner({
+    onScan: (barcode) => {
+      if (!barcode) return;
+      handleScan(barcode);
+    },
+  });
   function scanFile(image: File) {
     scanner?.scanBlob(image).then(handleScan).catch(logToastError("Couldn't detect barcode"));
   }
@@ -74,10 +80,10 @@ const Page: NextPageWithLayout = function () {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSwiped, setIsSwiped] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
-  const barcodeInputRef = useRef<HTMLFormElement>(null);
+  const extraMenuRef = useRef<HTMLDivElement>(null);
   const swipeHandler = useScanTypeSwipe({
     target: controlsRef,
-    ignore: barcodeInputRef,
+    ignore: extraMenuRef,
     onScanTypeChange(scanType) {
       if (scanType !== "upload") return;
       fileInputRef.current?.click();
@@ -112,12 +118,30 @@ const Page: NextPageWithLayout = function () {
         inert={"true" as never as true}
         className="absolute inset-0 -z-10 size-full object-cover"
       />
-      {scanType === "input" && (
-        <BarcodeInput
-          ref={barcodeInputRef}
-          goToReview={handleScan}
-        />
-      )}
+      <div
+        className="w-full empty:hidden"
+        ref={extraMenuRef}
+      >
+        {scanType === "input" && <BarcodeInput goToReview={handleScan} />}
+        {scanType === "scan" && changeZoom && (
+          <div className="mx-auto flex h-10 max-w-64 items-center rounded-lg bg-white p-2">
+            <Root
+              className="relative flex w-full touch-none select-none items-center"
+              min={0}
+              max={100}
+              onValueChange={([value]) => {
+                if (value === undefined) return;
+                changeZoom(value);
+              }}
+            >
+              <Track className="relative flex h-1 grow items-center rounded-full bg-neutral-800">
+                <Range className="absolute h-full rounded-full bg-neutral-500" />
+              </Track>
+              <Thumb className="block size-5 rounded-full bg-neutral-500" />
+            </Root>
+          </div>
+        )}
+      </div>
       <div
         ref={controlsRef}
         style={{ "--translate": `calc(var(--offset, 0px) - 100% * ${baseOffset})` }}
@@ -215,14 +239,10 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
 }
 
 type BarcodeInputProps = { goToReview: (barcode: string) => void };
-const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
-  { goToReview },
-  ref,
-) {
+function BarcodeInput({ goToReview }: BarcodeInputProps) {
   return (
     <form
-      ref={ref}
-      className="w-full px-10"
+      className="px-10"
       onSubmit={(e) => {
         e.preventDefault();
         const barcode = String(new FormData(e.currentTarget).get("barcode"));
@@ -249,7 +269,7 @@ const BarcodeInput = forwardRef<HTMLFormElement, BarcodeInputProps>(function _(
       </div>
     </form>
   );
-});
+}
 
 const baseSwipeData = { elastic: (x: number) => x, width: 0 };
 type UseScanTypeSwipeOptions = {
@@ -314,11 +334,12 @@ function useScanTypeSwipe({
 }
 
 function createScanHandler(router: NextRouter) {
-  return function (id: string | null) {
-    if (id === null) {
+  return function (barcode: string | null) {
+    if (barcode === null) {
       toast.error("No barcode detected");
       return;
     }
-    router.push({ pathname: "/review/[id]", query: { id } }).catch(console.error);
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
   };
 }
+

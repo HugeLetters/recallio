@@ -1,7 +1,7 @@
 import { browser } from "@/browser";
 import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
-import { isDev } from "@/utils";
+import { clamp, isDev } from "@/utils";
 import { useEffect, useRef, useState } from "react";
 import { createBarcodeScanner } from "./scanner";
 
@@ -10,12 +10,36 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const [scanner] = useState(() => (browser ? createBarcodeScanner() : null));
   const onScanStable = useStableValue(onScan);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [changeZoom, setChangeZoom] = useState<ZoomHandler>(null);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !scanner) return;
 
-    const cleanupCamera = attachCameraStream(video);
+    let cleanedUp = false;
+
+    navigator.mediaDevices
+      .getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      })
+      .then((stream) => {
+        if (cleanedUp) return;
+
+        video.srcObject = stream;
+        setChangeZoom(() => createZoomHandler(video));
+
+        if (video.paused) {
+          return video.play();
+        }
+      })
+      .catch(
+        logToastError(
+          "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
+          { id: "scanner start error" },
+        ),
+      );
+
     const cancelLoop = timedLoop(
       () =>
         scanner
@@ -30,7 +54,8 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
     );
 
     return () => {
-      cleanupCamera();
+      cleanedUp = true;
+      video.srcObject = null;
       cancelLoop();
     };
   }, [scanner, onScanStable]);
@@ -39,35 +64,7 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
     /** Attach this ref to an {@link HTMLVideoElement} */
     ref: videoRef,
     scanner,
-  };
-}
-
-/**
- * @returns cleanup function
- */
-function attachCameraStream(video: HTMLVideoElement) {
-  let cleanedUp = false;
-
-  navigator.mediaDevices
-    .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-    .then((stream) => {
-      if (cleanedUp) return;
-
-      video.srcObject = stream;
-      if (video.paused) {
-        return video.play();
-      }
-    })
-    .catch(
-      logToastError(
-        "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
-        { id: "scanner start error" },
-      ),
-    );
-
-  return () => {
-    cleanedUp = true;
-    video.srcObject = null;
+    changeZoom,
   };
 }
 
@@ -90,4 +87,40 @@ function timedLoop(task: () => Promise<unknown>, period: number) {
   return () => {
     clearTimeout(timeout);
   };
+}
+
+type ZoomHandler = ReturnType<typeof createZoomHandler>;
+function createZoomHandler(video: HTMLVideoElement) {
+  const stream = video.srcObject;
+  if (!(stream instanceof MediaStream)) return null;
+
+  const tracks = stream.getTracks();
+  const canZoom = tracks.some((track) => !!getTrackZoomCapability(track));
+  if (!canZoom) return null;
+
+  return (zoom: number) => {
+    const tracks = stream.getTracks();
+    for (const track of tracks) {
+      const zoomCapability = getTrackZoomCapability(track);
+      if (!zoomCapability) continue;
+
+      const { min, max } = zoomCapability;
+      const normalizedZoom = clamp(min, min + (zoom / 100) * (max - min), max);
+      const newConstraints: MediaTrackConstraints & { zoom: number } = {
+        zoom: normalizedZoom,
+      };
+      track.applyConstraints(newConstraints).catch(console.error);
+    }
+  };
+}
+
+type ZoomCapability = { min: number; max: number };
+function getTrackZoomCapability(track: MediaStreamTrack) {
+  const { zoom } = track.getCapabilities() as { zoom?: ZoomCapability };
+  if (!zoom) return null;
+
+  const { min, max } = zoom;
+  if (max <= min) return null;
+
+  return zoom;
 }
