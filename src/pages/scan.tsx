@@ -123,24 +123,7 @@ const Page: NextPageWithLayout = function () {
         ref={extraMenuRef}
       >
         {scanType === "input" && <BarcodeInput goToReview={handleScan} />}
-        {scanType === "scan" && changeZoom && (
-          <div className="mx-auto flex h-10 max-w-64 items-center rounded-lg bg-white p-2">
-            <Root
-              className="relative flex w-full touch-none select-none items-center"
-              min={0}
-              max={100}
-              onValueChange={([value]) => {
-                if (value === undefined) return;
-                changeZoom(value);
-              }}
-            >
-              <Track className="relative flex h-1 grow items-center rounded-full bg-neutral-800">
-                <Range className="absolute h-full rounded-full bg-neutral-500" />
-              </Track>
-              <Thumb className="block size-5 rounded-full bg-neutral-500" />
-            </Root>
-          </div>
-        )}
+        {scanType === "scan" && <ZoomSlider onChange={changeZoom ?? (() => void 0)} />}
       </div>
       <div
         ref={controlsRef}
@@ -229,7 +212,7 @@ function ScanButton({ children, active }: PropsWithChildren<ScanButtonProps>) {
   return (
     <Slot
       className={tw(
-        "shrink-0 rounded-xl p-2 outline-none ring-black/50 ring-offset-2 transition-shadow focus-visible-within:ring-2",
+        "shrink-0 rounded-xl p-2 outline-none ring-black/60 ring-offset-2 transition-shadow focus-visible-within:ring-2",
         active && "focus-visible-within:ring-app-green-500",
       )}
     >
@@ -268,6 +251,29 @@ function BarcodeInput({ goToReview }: BarcodeInputProps) {
         </button>
       </div>
     </form>
+  );
+}
+
+type ZoomSliderProps = { onChange: (value: number) => void };
+function ZoomSlider({ onChange }: ZoomSliderProps) {
+  return (
+    <div className="mx-auto flex max-w-64 select-none items-baseline gap-1 rounded-lg bg-black/60 px-2 py-3">
+      <span className="text-white">Zoom</span>
+      <Root
+        className="relative flex h-6 grow touch-none items-center"
+        min={0}
+        max={100}
+        onValueChange={([value]) => {
+          if (value === undefined) return;
+          onChange(value);
+        }}
+      >
+        <Track className="relative h-2 grow rounded-full bg-white after:absolute after:-inset-y-4 after:inset-x-0">
+          <Range className="absolute h-full rounded-full bg-app-green-500" />
+        </Track>
+        <Thumb className="block size-5 rounded-full bg-white shadow-around sa-o-20 sa-r-1" />
+      </Root>
+    </div>
   );
 }
 
