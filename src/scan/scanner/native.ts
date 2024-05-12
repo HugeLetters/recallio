@@ -1,4 +1,5 @@
 import type { BarcodeScanner } from "./type";
+import { isVideoReady } from "./util";
 
 export class NativeBarcodeScanner implements BarcodeScanner {
   private readonly detector = new BarcodeDetector();
@@ -15,6 +16,7 @@ export class NativeBarcodeScanner implements BarcodeScanner {
   }
 
   scanVideo(video: HTMLVideoElement) {
+    if (!isVideoReady(video)) return Promise.resolve(null);
     return this.detector.detect(video).then(([result]) => result?.rawValue ?? null);
   }
 }

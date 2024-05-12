@@ -26,7 +26,7 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
               id: "scanner unexpected error",
             }),
           ),
-      200,
+      500,
     );
 
     return () => {

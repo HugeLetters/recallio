@@ -1,5 +1,6 @@
 import type { ReaderOptions } from "zxing-wasm/reader";
 import type { BarcodeScanner } from "./type";
+import { isVideoReady } from "./util";
 
 export class PolyfilBarcodeScanner implements BarcodeScanner {
   constructor() {
@@ -51,9 +52,9 @@ function createVideoImageDataProducer() {
   if (!ctx) return null;
 
   return function (video: HTMLVideoElement) {
-    const { videoWidth, videoHeight } = video;
-    if (videoWidth * videoHeight === 0) return null;
+    if (!isVideoReady(video)) return null;
 
+    const { videoWidth, videoHeight } = video;
     canvas.width = videoWidth;
     canvas.height = videoHeight;
     ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
