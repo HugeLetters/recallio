@@ -46,6 +46,7 @@ export const toast = {
   },
 };
 
+// todo - prod error logs?
 export function logToastError(message: ReactNode, options?: PublicToastOptions) {
   return function (error: unknown) {
     console.error(error);

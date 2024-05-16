@@ -89,12 +89,15 @@ export function SortDialog({ optionList }: SortDialogProps) {
     const addedTransition = ["scale", "border-radius"]
       .map((property) => `${property} var(${durationCssVar})`)
       .join(", ");
-    root.style.transition = transition ? `${transition}, ${addedTransition}` : addedTransition;
+    root.style.setProperty(
+      "transition",
+      transition ? `${transition}, ${addedTransition}` : addedTransition,
+    );
 
     root.classList.add(rootClass);
 
     return () => {
-      root.style.transition = transition;
+      root.style.setProperty("transition", transition);
       root.classList.remove(rootClass);
       root.style.removeProperty(progressCssVar);
       root.style.removeProperty(durationCssVar);

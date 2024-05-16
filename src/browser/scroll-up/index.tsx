@@ -3,8 +3,7 @@ import { scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import type { TrackerStore } from "@/state/store/tracker";
 import { tw } from "@/styles/tw";
-import type { FC } from "react";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ArrowIcon from "~icons/formkit/right";
 
 type ScrollUpProps = {
@@ -15,11 +14,8 @@ type ScrollUpProps = {
 interface ScrollUpButtonProps extends ScrollUpProps {
   show: boolean;
 }
-export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
-  show,
-  threshold = 500,
-  className,
-}: ScrollUpButtonProps) {
+
+function ScrollUpButtonImpl({ show, threshold = 500, className }: ScrollUpButtonProps) {
   const root = useRef<HTMLDivElement>(null);
   const [isThershold, setIsThershold] = useState(false);
 
@@ -72,7 +68,13 @@ export const ScrollUpButton = ScrollUpButtonEnabledGuard(function ({
       </Transition>
     </div>
   );
-});
+}
+
+export function ScrollUpButton(props: ScrollUpButtonProps) {
+  const enabled = useStore(scrollUpButtonEnabledStore);
+  if (!enabled) return null;
+  return <ScrollUpButtonImpl {...props} />;
+}
 
 interface TrackedScrollUpButtonProps extends ScrollUpProps {
   tracker: TrackerStore;
@@ -80,17 +82,9 @@ interface TrackedScrollUpButtonProps extends ScrollUpProps {
 export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButtonProps) {
   const show = useStore(tracker);
   return (
-    <ScrollUpButton
+    <ScrollUpButtonImpl
       show={show}
       {...props}
     />
   );
-}
-
-function ScrollUpButtonEnabledGuard<P>(Component: FC<P>) {
-  return function _(props: P & React.JSX.IntrinsicAttributes) {
-    const enabled = useStore(scrollUpButtonEnabledStore);
-    if (!enabled) return null;
-    return <Component {...props} />;
-  };
 }

@@ -20,9 +20,13 @@ export function useQueryToggleState(queryKey: string) {
     };
   }, [value, queryKey, router]);
 
-  function setValue(open: boolean) {
-    setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
-  }
-
-  return [!!value, useCallback(setValue, [router, queryKey])] as const;
+  return [
+    !!value,
+    useCallback(
+      function (open: boolean) {
+        setQueryParam({ router, key: queryKey, value: open ? "true" : null, push: true });
+      },
+      [router, queryKey],
+    ),
+  ] as const;
 }

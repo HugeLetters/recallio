@@ -7,6 +7,7 @@ import { uploadthing } from "./api";
 import { fileDeleteQueueInsert } from "./delete-queue";
 
 // todo - smaller file size + export to compress module
+// todo - limit resolution too?
 export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
   .middleware(async ({ req, res }) => {
     const session = await getServerAuthSession({ req, res });

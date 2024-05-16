@@ -110,6 +110,7 @@
     "drizzle-kit": "^0.20.17",
     "eslint": "^8.57.0",
     "eslint-config-next": "^13.5.6",
+    "eslint-plugin-react-compiler": "0.0.0-experimental-53bb89e-20240515",
     "jscpd": "^3.5.10",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14",
