@@ -1,3 +1,5 @@
+import { hasProperty } from "@/utils/object";
+import type { Nullish } from "@/utils/type";
 import type { inferRouterError } from "@trpc/server";
 import type { TRPCResponse } from "@trpc/server/rpc";
 import type { ApiRouter } from "../router";
@@ -24,6 +26,7 @@ export function cachify(options: CacheControl) {
     return Object.assign(value, { [cacheControlSymbol]: options });
   };
 }
+
 function hasCacheControl(value: unknown): value is Record<typeof cacheControlSymbol, CacheControl> {
   return !!value && typeof value === "object" && cacheControlSymbol in value;
 }
@@ -54,11 +57,16 @@ const cacheControlResolver: CacheControlResolver = {
   },
 };
 
-export function mergeCacheControl(data: TRPCData[]) {
+type CacheHeaders = {
+  "Cache-Control": string;
+  /** This header is required by Vercel for s-maxage and swr */
+  "CDN-Cache-Control"?: string;
+};
+export function createCacheHeaders(data: TRPCData[]): Nullish<CacheHeaders> {
   let result: CacheControl | null = null;
 
   for (const response of data) {
-    if (!("result" in response)) {
+    if (!hasProperty(response, "result")) {
       return null;
     }
 
@@ -69,7 +77,7 @@ export function mergeCacheControl(data: TRPCData[]) {
 
     const cacheControl = data[cacheControlSymbol];
     if (!result) {
-      result = cacheControl;
+      result = { ...cacheControl };
       continue;
     }
 
@@ -79,7 +87,16 @@ export function mergeCacheControl(data: TRPCData[]) {
     result.swr = cacheControlResolver.swr(cacheControl.swr, result.swr);
   }
 
-  return result ? createCacheControlHeader(result) : result;
+  if (!result) return null;
+
+  const cacheControlHeader = createCacheControlHeader(result);
+  if (result.swr === undefined) return { "Cache-Control": cacheControlHeader };
+
+  const cdnCacheControlHeader = createCacheControlChunk("max-age", result.maxAge ?? 0);
+  return {
+    "Cache-Control": cacheControlHeader,
+    "CDN-Cache-Control": cdnCacheControlHeader,
+  };
 }
 
 function createCacheControlHeader(cacheControl: CacheControl) {
