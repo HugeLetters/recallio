@@ -1,7 +1,5 @@
 {
-  "id": "8b63b76b-43a2-43d7-8d70-ab06882b4b58",
-  "prevId": "ae827a7a-dd42-4c10-92b5-2f47f542ce4f",
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
   "tables": {
     "file_delete_queue": {
@@ -571,8 +569,9 @@
   },
   "enums": {},
   "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "8b63b76b-43a2-43d7-8d70-ab06882b4b58",
+  "prevId": "ae827a7a-dd42-4c10-92b5-2f47f542ce4f"
 }
