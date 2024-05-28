@@ -1,6 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
+  "id": "84fc61ad-cc9f-4e9e-8e68-271186d91f19",
+  "prevId": "8b63b76b-43a2-43d7-8d70-ab06882b4b58",
   "tables": {
     "file_delete_queue": {
       "name": "file_delete_queue",
@@ -23,6 +25,66 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "log": {
+      "name": "log",
+      "columns": {
+        "log": {
+          "name": "log",
+          "type": "text(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text(15)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "log_created_at_index": {
+          "name": "log_created_at_index",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "log_user_id_user_id_fk": {
+          "name": "log_user_id_user_id_fk",
+          "tableFrom": "log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -195,15 +257,15 @@
         "review_user_id_user_id_fk": {
           "name": "review_user_id_user_id_fk",
           "tableFrom": "review",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "restrict",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
         }
       },
       "compositePrimaryKeys": {
@@ -247,30 +309,30 @@
         "reviews_to_categories_category_category_name_fk": {
           "name": "reviews_to_categories_category_category_name_fk",
           "tableFrom": "reviews_to_categories",
+          "tableTo": "category",
           "columnsFrom": [
             "category"
           ],
-          "tableTo": "category",
           "columnsTo": [
             "name"
           ],
-          "onUpdate": "restrict",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "restrict"
         },
         "reviews_to_categories_barcode_user_id_review_barcode_user_id_fk": {
           "name": "reviews_to_categories_barcode_user_id_review_barcode_user_id_fk",
           "tableFrom": "reviews_to_categories",
+          "tableTo": "review",
           "columnsFrom": [
             "barcode",
             "user_id"
           ],
-          "tableTo": "review",
           "columnsTo": [
             "barcode",
             "user_id"
           ],
-          "onUpdate": "restrict",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
         }
       },
       "compositePrimaryKeys": {
@@ -386,15 +448,15 @@
         "account_user_id_user_id_fk": {
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "restrict",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
         }
       },
       "compositePrimaryKeys": {
@@ -453,15 +515,15 @@
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
-          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "restrict",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "restrict"
         }
       },
       "compositePrimaryKeys": {},
@@ -569,9 +631,8 @@
   },
   "enums": {},
   "_meta": {
+    "schemas": {},
     "tables": {},
     "columns": {}
-  },
-  "id": "8b63b76b-43a2-43d7-8d70-ab06882b4b58",
-  "prevId": "ae827a7a-dd42-4c10-92b5-2f47f542ce4f"
+  }
 }

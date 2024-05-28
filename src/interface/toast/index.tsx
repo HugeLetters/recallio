@@ -1,3 +1,4 @@
+import { logger } from "@/logger";
 import { tw } from "@/styles/tw";
 import type { StrictOmit } from "@/utils/object";
 import * as Toast from "@radix-ui/react-toast";
@@ -46,10 +47,9 @@ export const toast = {
   },
 };
 
-// todo - prod error logs?
 export function logToastError(message: ReactNode, options?: PublicToastOptions) {
   return function (error: unknown) {
-    console.error(error);
+    logger.error(error);
     toast.error(message, options);
   };
 }

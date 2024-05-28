@@ -1,5 +1,6 @@
 import { Button } from "@/interface/button";
 import type { NextPageWithLayout } from "@/layout";
+import { logger } from "@/logger";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
@@ -45,7 +46,7 @@ const Page: NextPageWithLayout = function () {
                 nextauth: ["callback", "email"],
               },
             })
-            .catch(console.error);
+            .catch(logger.error);
         }}
         className="group flex w-full max-w-[360px] flex-col items-center gap-3"
       >
