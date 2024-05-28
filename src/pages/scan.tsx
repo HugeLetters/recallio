@@ -273,7 +273,7 @@ function ZoomSlider({ onChange }: ZoomSliderProps) {
         <Track className="relative h-2 grow rounded-full bg-white after:absolute after:-inset-y-4 after:inset-x-0">
           <Range className="absolute h-full rounded-full bg-app-green-500" />
         </Track>
-        <Thumb className="block size-5 rounded-full bg-white shadow-around sa-o-20 sa-r-1" />
+        <Thumb className="block size-5 rounded-full bg-white outline-app-green-500 shadow-around sa-o-20 sa-r-1" />
       </Root>
     </div>
   );
