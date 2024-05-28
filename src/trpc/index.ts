@@ -8,7 +8,13 @@ import type { ExpectedError } from "@/server/error/trpc";
 import { isDev } from "@/utils";
 import { hasProperty, isObject } from "@/utils/object";
 import { MutationCache, QueryCache } from "@tanstack/react-query";
-import { TRPCClientError, httpBatchLink, loggerLink } from "@trpc/client";
+import {
+  TRPCClientError,
+  createTRPCProxyClient,
+  httpBatchLink,
+  loggerLink,
+  type CreateTRPCProxyClient,
+} from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
@@ -19,9 +25,7 @@ export const trpc = createTRPCNext<ApiRouter>({
         loggerLink({
           enabled: (opts) => isDev || (opts.direction === "down" && opts.result instanceof Error),
         }),
-        httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
-        }),
+        httpBatchLink({ url: `${getBaseUrl()}/api/trpc` }),
       ],
       queryClientConfig: {
         defaultOptions: {
@@ -70,5 +74,16 @@ function signOutOnUnauthorizedError(error: unknown) {
 }
 
 export type RouterInputs = inferRouterInputs<ApiRouter>;
-
 export type RouterOutputs = inferRouterOutputs<ApiRouter>;
+
+class TrpcLazy {
+  #client: CreateTRPCProxyClient<ApiRouter> | undefined;
+  get client() {
+    this.#client ??= createTRPCProxyClient<ApiRouter>({
+      links: [httpBatchLink({ url: `${getBaseUrl()}/api/trpc` })],
+    });
+
+    return this.#client;
+  }
+}
+export const trpcLazy = new TrpcLazy();
