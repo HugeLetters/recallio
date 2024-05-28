@@ -6,20 +6,18 @@ import { UploadThingError } from "uploadthing/server";
 import { uploadthing } from "./api";
 import { fileDeleteQueueInsert } from "./delete-queue";
 
-// todo - smaller file size + export to compress module
-// todo - limit resolution too?
-export const userImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
+export const userImageUploader = uploadthing({ image: { maxFileSize: "64KB", maxFileCount: 1 } })
   .middleware(async ({ req, res }) => {
     const session = await getServerAuthSession({ req, res });
     if (!session) {
       throw new UploadThingError("Unauthorized");
     }
+
     const userData = await db
       .select({ image: user.image })
       .from(user)
       .where(eq(user.id, session.user.id))
       .get();
-
     if (!userData) {
       throw new UploadThingError("User not found");
     }

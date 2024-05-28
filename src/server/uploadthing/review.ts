@@ -7,7 +7,7 @@ import { z } from "zod";
 import { uploadthing } from "./api";
 import { fileDeleteQueueInsert } from "./delete-queue";
 
-export const reviewImageUploader = uploadthing({ image: { maxFileSize: "512KB", maxFileCount: 1 } })
+export const reviewImageUploader = uploadthing({ image: { maxFileSize: "64KB", maxFileCount: 1 } })
   .input(z.object({ barcode: z.string() }))
   .middleware(async ({ req, res, input: { barcode } }) => {
     if (!barcode) {

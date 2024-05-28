@@ -117,7 +117,7 @@ function UserImage({ user, sync }: UserImageProps) {
     }
 
     setOptimistic(URL.createObjectURL(image), () => {
-      compressImage(image, 511 * 1024)
+      compressImage(image, { targetBytes: 63 * 1024, maxResolution: 512 })
         .then((compressedImage) => startUpload([compressedImage ?? image]))
         .catch(logToastError("Failed to upload the image.\nPlease try again."));
     });

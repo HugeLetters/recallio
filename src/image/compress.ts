@@ -1,10 +1,14 @@
 import { browser } from "@/browser";
 import { blobToFile } from "./blob";
 
-export async function compressImage(file: File, targetBytes: number): Promise<File | null> {
+type CompressionOptions = { targetBytes: number; maxResolution?: number };
+export async function compressImage(
+  file: File,
+  { targetBytes, maxResolution }: CompressionOptions,
+): Promise<File | null> {
   if (!browser) throw Error("This function is browser-only");
 
-  const drawImage = await createImageDrawer(file);
+  const drawImage = await createImageDrawer(file, maxResolution);
   const webpImage = await drawImage(1);
   if (!webpImage) return null;
   if (webpImage.size <= targetBytes) {
@@ -38,16 +42,21 @@ export async function compressImage(file: File, targetBytes: number): Promise<Fi
   return blobToFile(bestFit, file.name);
 }
 
-async function createImageDrawer(file: File) {
+async function createImageDrawer(file: File, maxResolution?: number) {
   const bitmap = await createImageBitmap(file);
+  const baseScale = maxResolution
+    ? Math.min(maxResolution / Math.max(bitmap.width, bitmap.height), 1)
+    : 1;
+
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw Error("Couldn't get canvas 2D context");
 
   return function (scale: number) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.width = bitmap.width * scale;
-    canvas.height = bitmap.height * scale;
+
+    canvas.width = bitmap.width * baseScale * scale;
+    canvas.height = bitmap.height * baseScale * scale;
 
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     return new Promise<Blob | null>((resolve) => {
