@@ -2,7 +2,7 @@ import { FAILED_TO_FETCH_MESSAGE, getErrorMessage } from "@/error";
 import { trpcLazy } from "@/trpc";
 
 export const logger = {
-  error(error: unknown) {
+  error: (error: unknown) => {
     console.error(error);
     if (process.env.NODE_ENV !== "production") return;
 

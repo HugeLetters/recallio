@@ -1,3 +1,4 @@
+import { logger } from "@/logger";
 import type { ReadResult, ReaderOptions } from "zxing-wasm/reader";
 import type { BarcodeScanner } from "./type";
 import { isVideoReady } from "./util";
@@ -63,7 +64,7 @@ function createVideoImageDataProducer() {
 }
 
 function preloadModule() {
-  import("zxing-wasm/reader").then(({ getZXingModule }) => getZXingModule()).catch(console.error);
+  import("zxing-wasm/reader").then(({ getZXingModule }) => getZXingModule()).catch(logger.error);
 }
 
 function grabFirstResult([result]: ReadResult[]) {

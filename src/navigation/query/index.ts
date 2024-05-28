@@ -1,3 +1,4 @@
+import { logger } from "@/logger";
 import { isArray } from "@/utils/array";
 import type { NextRouter } from "next/router";
 import type { Query } from "nextjs-routes";
@@ -23,8 +24,8 @@ export function setQueryParam({ key, router, push, value }: SetQueryParamOptions
   }
 
   if (push) {
-    router.push({ query: router.query }, undefined, { shallow: true }).catch(console.error);
+    router.push({ query: router.query }, undefined, { shallow: true }).catch(logger.error);
   } else {
-    router.replace({ query: router.query }, undefined, { shallow: true }).catch(console.error);
+    router.replace({ query: router.query }, undefined, { shallow: true }).catch(logger.error);
   }
 }

@@ -8,7 +8,6 @@ const clientErrorSchema = z.object({ message: z.string(), stack: z.string().opti
 const reportClientError = protectedProcedure
   .input(clientErrorSchema)
   .mutation(({ input, ctx: { session } }) => {
-    // todo - logs should rotate, no more than 500 messages
     return db
       .insert(logTable)
       .values({ log: createErrorLog(input), type: "error", user: session.user.id })

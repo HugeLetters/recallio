@@ -1,3 +1,4 @@
+import { logger } from "@/logger";
 import type { Nullish } from "@/utils/type";
 import { useRouter } from "next/router";
 import { route as serialize } from "nextjs-routes";
@@ -18,7 +19,7 @@ export function Redirect({ to }: RedirectProps) {
       return;
     }
 
-    router.replace(url as Route).catch(console.error);
+    router.replace(url as Route).catch(logger.error);
   }, [router.isReady, router, url]);
 
   return null;

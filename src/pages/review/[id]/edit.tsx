@@ -15,6 +15,7 @@ import { LabeledSwitch } from "@/interface/switch";
 import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { logger } from "@/logger";
 import { getQueryParam } from "@/navigation/query";
 import { useQueryToggleState } from "@/navigation/query/hooks";
 import {
@@ -281,7 +282,7 @@ function useSetOptimisticReview(barcode: string) {
     });
 
     if (location.pathname !== `/review/${barcode}/edit`) return;
-    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(logger.error);
   };
 }
 

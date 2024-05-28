@@ -24,7 +24,7 @@ async function readPages() {
   return Promise.all(
     pages.map((event) => {
       if (!event.isFile()) return;
-      return handleFileEvent(event.name, event.path).catch(console.error);
+      return handleFileEvent(event.name, event.parentPath).catch(console.error);
     }),
   );
 }

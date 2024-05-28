@@ -16,6 +16,7 @@ import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
+import { logger } from "@/logger";
 import { useQueryToggleState } from "@/navigation/query/hooks";
 import type { BooleanSettingStore } from "@/settings/boolean";
 import { reviewPrivateDefaultStore, scrollUpButtonEnabledStore } from "@/settings/boolean";
@@ -255,7 +256,7 @@ function LinkedAccounts() {
     onError(error, provider, prev) {
       logToastError(`Failed to link ${provider} account.\nPlease try again.`)(error);
       utils.user.account.getProviders.setData(undefined, prev);
-      utils.user.account.getProviders.invalidate().catch(console.error);
+      utils.user.account.getProviders.invalidate().catch(logger.error);
     },
   });
   useTracker(loadingTracker, isAdding, 0);
@@ -273,7 +274,7 @@ function LinkedAccounts() {
       onError(e, _, prev) {
         toast.error(`Failed to unlink account: ${e.message}`);
         utils.user.account.getProviders.setData(undefined, prev);
-        utils.user.account.getProviders.invalidate().catch(console.error);
+        utils.user.account.getProviders.invalidate().catch(logger.error);
       },
       onSuccess(deletedProvier, _, prev) {
         utils.user.account.getProviders.setData(
@@ -408,7 +409,7 @@ function SerwiceWorkerToggleInner() {
           .register()
           .then(() => window.serwist.active)
           .then(() => refetch())
-          .catch(console.error);
+          .catch(logger.error);
       }}
     >
       <div className="flex h-11 flex-col justify-center">
@@ -428,13 +429,13 @@ function DeleteProfile() {
     onSuccess() {
       setIsOpen(false);
       reviewPrivateDefaultStore.setValue(true);
-      signOut().catch(console.error);
+      signOut().catch(logger.error);
     },
     onError(e) {
       toast.error(`Failed to delete your profile: ${e.message}`);
     },
     onSettled() {
-      utils.invalidate().catch(console.error);
+      utils.invalidate().catch(logger.error);
     },
   });
 

@@ -3,18 +3,14 @@ import { getBaseUrl } from "@/browser";
 import { FAILED_TO_FETCH_MESSAGE, getErrorMessage } from "@/error";
 import { toast } from "@/interface/toast";
 import { getSafeId } from "@/interface/toast/id";
+import { logger } from "@/logger";
 import type { ApiRouter } from "@/server/api/router";
 import type { ExpectedError } from "@/server/error/trpc";
 import { isDev } from "@/utils";
 import { hasProperty, isObject } from "@/utils/object";
 import { MutationCache, QueryCache } from "@tanstack/react-query";
-import {
-  TRPCClientError,
-  createTRPCProxyClient,
-  httpBatchLink,
-  loggerLink,
-  type CreateTRPCProxyClient,
-} from "@trpc/client";
+import type { CreateTRPCProxyClient } from "@trpc/client";
+import { TRPCClientError, createTRPCProxyClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
@@ -36,7 +32,7 @@ export const trpc = createTRPCNext<ApiRouter>({
         },
         queryCache: new QueryCache({
           onError(error) {
-            console.error(error);
+            logger.error(error);
             const message = getErrorMessage(error);
             if (message !== FAILED_TO_FETCH_MESSAGE) {
               setTimeout(() => {
@@ -53,7 +49,7 @@ export const trpc = createTRPCNext<ApiRouter>({
         }),
         mutationCache: new MutationCache({
           onError(error) {
-            console.error(error);
+            logger.error(error);
             signOutOnUnauthorizedError(error);
           },
         }),
@@ -68,7 +64,7 @@ function signOutOnUnauthorizedError(error: unknown) {
   if (error instanceof TRPCClientError) {
     const data: unknown = error.data;
     if (isObject(data) && hasProperty(data, "code") && data.code === UNATHORIZED_CODE) {
-      signOut().catch(console.error);
+      signOut().catch(logger.error);
     }
   }
 }

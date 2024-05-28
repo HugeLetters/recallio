@@ -2,6 +2,7 @@ import { providerIcons } from "@/auth/provider/icon";
 import { Button } from "@/interface/button";
 import { Input, WithLabel } from "@/interface/input";
 import type { NextPageWithLayout } from "@/layout";
+import { logger } from "@/logger";
 import { getQueryParam } from "@/navigation/query";
 import { Redirect, useRedirectQuery } from "@/navigation/redirect";
 import { signIn, useSession } from "next-auth/react";
@@ -57,11 +58,9 @@ function EmailSignIn({ callbackUrl }: EmailSignInProps) {
         if (typeof email !== "string") return;
 
         e.preventDefault();
-        signIn("email", { email, callbackUrl, redirect: false }).catch(console.error);
+        signIn("email", { email, callbackUrl, redirect: false }).catch(logger.error);
 
-        router
-          .push({ pathname: "/auth/email", query: { callbackUrl, email } })
-          .catch(console.error);
+        router.push({ pathname: "/auth/email", query: { callbackUrl, email } }).catch(logger.error);
       }}
     >
       <WithLabel label="E-mail">
@@ -91,7 +90,7 @@ function ProviderSignIn({ callbackUrl }: ProviderSignInProps) {
           key={provider}
           aria-label={`sign in with ${provider}`}
           onClick={() => {
-            signIn(provider, { callbackUrl }).catch(console.error);
+            signIn(provider, { callbackUrl }).catch(logger.error);
           }}
         >
           <Icon className="mx-auto size-7" />
