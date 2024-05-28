@@ -1,5 +1,6 @@
 import { authRoutesPlugin } from "webpack/auth-routes.mjs";
 import fileCleanupCron from "./cron/file-cleanup";
+import logsCleanupCron from "./cron/logs-cleanup";
 import migrate from "./database/migration/apply";
 import generateSchema from "./database/migration/generate";
 import { execAsync } from "./utils";
@@ -9,6 +10,7 @@ export default async function main() {
     migrateSchema(),
     generateRouteTypes(),
     fileCleanupCron(),
+    logsCleanupCron(),
     authRoutesPlugin(false).apply(),
   ]);
 }
