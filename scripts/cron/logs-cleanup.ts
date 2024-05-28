@@ -1,6 +1,6 @@
 import { createCron } from "./create";
 
-const route = "api/file-cleanup";
+const route = "api/logs-cleanup";
 export default function main() {
   return createCron({
     route,
