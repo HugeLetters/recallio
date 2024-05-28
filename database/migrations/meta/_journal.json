@@ -1,1 +1,34 @@
-{"version":"5","dialect":"mysql","entries":[{"idx":0,"version":"5","when":1710689382291,"tag":"0000_clever_ghost_rider","breakpoints":true},{"idx":1,"version":"5","when":1712621366565,"tag":"0001_shiny_vanisher","breakpoints":true},{"idx":2,"version":"5","when":1712621399434,"tag":"0002_dapper_dexter_bennett","breakpoints":true}]}
+{
+  "version": "5",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1710689382291,
+      "tag": "0000_clever_ghost_rider",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1712621366565,
+      "tag": "0001_shiny_vanisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1712621399434,
+      "tag": "0002_dapper_dexter_bennett",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1716933130119,
+      "tag": "0003_nosy_ikaris",
+      "breakpoints": true
+    }
+  ]
+}
