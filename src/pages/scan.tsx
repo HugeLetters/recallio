@@ -145,6 +145,8 @@ const Page: NextPageWithLayout = function () {
         </ScanGrid>
         <ScanGrid className="relative z-20">
           <ScanButton active={scanType === "upload"}>
+            {/* todo - doesnt allow to capture a photo on android google chrome */}
+            {/* todo - ability to crop image */}
             <ImagePicker
               ref={fileInputRef}
               aria-label="Scan from file"
