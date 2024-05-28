@@ -32,7 +32,7 @@ function ImageWithSrc({ children, className, onLoad, ...props }: ImageWithSrcPro
           setHasLoaded(true);
           onLoad?.(e);
         }}
-        className={tw(hasLoaded ? className : "invisible absolute size-0")}
+        className={tw(showFallback ? "invisible absolute size-0" : className)}
       />
     </>
   );
