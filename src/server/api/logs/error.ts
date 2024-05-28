@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client";
-import { log, logMaxLength } from "@/server/database/schema/logs";
+import { logTable, logMaxLength } from "@/server/database/schema/logs";
 import { ignore } from "@/utils";
 import { z } from "zod";
 
@@ -10,7 +10,7 @@ const reportClientError = protectedProcedure
   .mutation(({ input, ctx: { session } }) => {
     // todo - logs should rotate, no more than 500 messages
     return db
-      .insert(log)
+      .insert(logTable)
       .values({ log: createErrorLog(input), type: "error", user: session.user.id })
       .then(ignore);
   });

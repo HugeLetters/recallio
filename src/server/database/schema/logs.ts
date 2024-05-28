@@ -3,7 +3,7 @@ import { user, userIdLength } from "./user";
 import { timestampColumn } from "./utils";
 
 export const logMaxLength = 512;
-export const log = sqliteTable(
+export const logTable = sqliteTable(
   "log",
   {
     log: text("log", { length: logMaxLength }).notNull(),
