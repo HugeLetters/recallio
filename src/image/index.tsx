@@ -20,7 +20,7 @@ export function Image({ children, ...props }: ImageProps) {
 type ImageWithSrcProps = NextImageProps;
 function ImageWithSrc({ children, className, onLoad, ...props }: ImageWithSrcProps) {
   const [hasLoaded, setHasLoaded] = useState(false);
-  const isDelayDone = useDelayed(20);
+  const isDelayDone = useDelayed(50);
   const showFallback = isDelayDone && !hasLoaded;
 
   return (
