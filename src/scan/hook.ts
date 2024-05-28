@@ -2,6 +2,7 @@ import { browser } from "@/browser";
 import { logToastError } from "@/interface/toast";
 import { useStableValue } from "@/state/stable";
 import { clamp, isDev } from "@/utils";
+import { hasTruthyProperty } from "@/utils/object";
 import { useEffect, useRef, useState } from "react";
 import { createBarcodeScanner } from "./scanner";
 
@@ -114,6 +115,8 @@ function createZoomHandler(video: HTMLVideoElement) {
 
 type ZoomCapability = { min: number; max: number };
 function getTrackZoomCapability(track: MediaStreamTrack) {
+  if (!hasTruthyProperty(track, "getCapabilities")) return null;
+
   const { zoom } = track.getCapabilities() as { zoom?: ZoomCapability };
   if (!zoom) return null;
 
