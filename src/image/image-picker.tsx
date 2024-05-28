@@ -22,7 +22,8 @@ export const ImagePicker = forwardRef<HTMLInputElement, ImageInputProps>(functio
       <input
         ref={ref}
         type="file"
-        accept="image/*"
+        // android chrome only allows using camera directly if you accept type other than image ¯\_(ツ)_/¯
+        accept="image/*,y/y"
         className="sr-only"
         {...inputAttributes}
       />

@@ -7,6 +7,7 @@ import { Star } from "@/interface/star";
 import { toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { logger } from "@/logger";
 import { getQueryParam } from "@/navigation/query";
 import { useQueryToggleState } from "@/navigation/query/hooks";
 import { Redirect } from "@/navigation/redirect";
@@ -202,7 +203,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
   const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {
       loading.enable();
-      return router.push("/profile").catch(console.error);
+      return router.push("/profile").catch(logger.error);
     },
     onError(e) {
       toast.error(`Couldn't delete the review: ${e.message}`);

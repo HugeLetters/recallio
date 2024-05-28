@@ -4,6 +4,7 @@ import { ImagePicker } from "@/image/image-picker";
 import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { logger } from "@/logger";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { BARCODE_LENGTH_MAX, BARCODE_LENGTH_MIN } from "@/product/validation";
 import { useBarcodeScanner } from "@/scan/hook";
@@ -72,7 +73,7 @@ const Page: NextPageWithLayout = function () {
           });
       })
       .catch((e) => {
-        console.error(e);
+        logger.error(e);
         handleError("Unexpected while handling shared image");
       });
   }, [scanner, router]);
@@ -275,7 +276,7 @@ function ZoomSlider({ onChange }: ZoomSliderProps) {
         <Track className="relative h-2 grow rounded-full bg-white after:absolute after:-inset-y-4 after:inset-x-0">
           <Range className="absolute h-full rounded-full bg-app-green-500" />
         </Track>
-        <Thumb className="block size-5 rounded-full bg-white shadow-around sa-o-20 sa-r-1" />
+        <Thumb className="block size-5 rounded-full bg-white outline-app-green-500 shadow-around sa-o-20 sa-r-1" />
       </Root>
     </div>
   );
@@ -349,6 +350,6 @@ function createScanHandler(router: NextRouter) {
       toast.error("No barcode detected");
       return;
     }
-    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(logger.error);
   };
 }

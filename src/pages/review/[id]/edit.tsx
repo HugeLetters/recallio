@@ -15,6 +15,7 @@ import { LabeledSwitch } from "@/interface/switch";
 import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
+import { logger } from "@/logger";
 import { getQueryParam } from "@/navigation/query";
 import { useQueryToggleState } from "@/navigation/query/hooks";
 import {
@@ -167,7 +168,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       }
 
       setOptimisticReview(review, URL.createObjectURL(image));
-      compressImage(image, 511 * 1024)
+      compressImage(image, { targetBytes: 63 * 1024, maxResolution: 512 })
         .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
         .catch(logToastError("Failed to upload the image.\nPlease try again."));
     }
@@ -281,7 +282,7 @@ function useSetOptimisticReview(barcode: string) {
     });
 
     if (location.pathname !== `/review/${barcode}/edit`) return;
-    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(console.error);
+    router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(logger.error);
   };
 }
 
