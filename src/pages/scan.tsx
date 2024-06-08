@@ -125,6 +125,7 @@ const Page: NextPageWithLayout = function () {
         className="w-full empty:hidden"
         ref={extraMenuRef}
       >
+        {/* todo - in/out transition? */}
         {scanType === "input" && <BarcodeInput goToReview={handleScan} />}
         {scanType === "scan" && changeZoom && <ZoomSlider onChange={changeZoom} />}
       </div>
@@ -147,7 +148,6 @@ const Page: NextPageWithLayout = function () {
         <ScanGrid className="relative z-20">
           <ScanButton active={scanType === "upload"}>
             {/* todo - doesnt allow to capture a photo on android google chrome */}
-            {/* todo - ability to crop image */}
             <ImagePicker
               ref={fileInputRef}
               aria-label="Scan from file"

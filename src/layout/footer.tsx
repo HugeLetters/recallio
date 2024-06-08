@@ -15,6 +15,7 @@ import ScanIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 
+// todo - make footer transparent when scrolling down?
 export function Footer() {
   const { pathname } = useRouter();
   const translate = useStore(scanTypeOffsetStore);
