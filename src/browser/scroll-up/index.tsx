@@ -3,14 +3,14 @@ import { scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import type { TrackerStore } from "@/state/store/tracker";
 import { tw } from "@/styles/tw";
-import type { RefObject } from "react";
+import type { Nullish } from "@/utils/type";
 import { useEffect } from "react";
 import ArrowIcon from "~icons/formkit/right";
 import { useScrollThreshold } from "./threshold";
 
 type ScrollUpProps = {
   threshold?: number;
-  targetRef: RefObject<HTMLElement>;
+  target: Nullish<HTMLElement>;
   className?: string;
 };
 
@@ -18,18 +18,17 @@ interface ScrollUpButtonProps extends ScrollUpProps {
   show: boolean;
 }
 
-function ScrollUpButtonImpl({ show, threshold = 500, targetRef, className }: ScrollUpButtonProps) {
+function ScrollUpButtonImpl({ show, threshold = 500, target, className }: ScrollUpButtonProps) {
   useEffect(() => {
-    const target = targetRef.current;
     if (!target) return;
 
     const position = target.style.position;
     target.style.setProperty("position", "relative");
     return () => {
-      target.style.position = position;
+      target.style.setProperty("position", position);
     };
-  }, [targetRef]);
-  const isThershold = useScrollThreshold({ target: targetRef, threshold });
+  }, [target]);
+  const isThershold = useScrollThreshold({ target, threshold, resetOnUp: true });
 
   return (
     <div className="absolute bottom-2 right-2">
@@ -44,7 +43,7 @@ function ScrollUpButtonImpl({ show, threshold = 500, targetRef, className }: Scr
                 type="button"
                 aria-label="Scroll to top of the section"
                 onClick={() => {
-                  targetRef?.current?.scrollTo({ top: 0, behavior: "smooth" });
+                  target?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 className="group clickable primary flex aspect-square size-full items-center justify-center rounded-full ring-1 ring-white shadow-around sa-o-25 sa-r-1"
               >

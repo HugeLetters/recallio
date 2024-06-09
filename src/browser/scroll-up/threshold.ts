@@ -1,27 +1,38 @@
-import type { RefObject } from "react";
+import type { Nullish } from "@/utils/type";
 import { useEffect, useState } from "react";
 
 type ScrollThresholdOptions = {
   threshold: number;
-  target: RefObject<HTMLElement>;
+  target: Nullish<HTMLElement>;
+  resetOnUp?: boolean;
 };
-export function useScrollThreshold({ target, threshold }: ScrollThresholdOptions) {
-  const [isThershold, setIsThershold] = useState(false);
+export function useScrollThreshold({
+  target,
+  threshold,
+  resetOnUp = false,
+}: ScrollThresholdOptions) {
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    const targetElement = target.current;
-    if (!targetElement) return;
+    if (!target) return;
 
+    let lastPos = target.scrollTop;
     const scrollHandler = function () {
-      setIsThershold(targetElement.scrollTop > threshold);
+      const scroll = target.scrollTop;
+      if (resetOnUp && lastPos > scroll) {
+        setIsActive(false);
+      } else {
+        setIsActive(scroll > threshold);
+      }
+      lastPos = scroll;
     };
     scrollHandler();
-    targetElement.addEventListener("scroll", scrollHandler);
+    target.addEventListener("scroll", scrollHandler);
 
     return () => {
-      targetElement.removeEventListener("scroll", scrollHandler);
+      target.removeEventListener("scroll", scrollHandler);
     };
-  }, [threshold, target]);
+  }, [threshold, target, resetOnUp]);
 
-  return isThershold;
+  return isActive;
 }

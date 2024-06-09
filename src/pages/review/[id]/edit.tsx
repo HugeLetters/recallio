@@ -661,7 +661,7 @@ function CategorySearch({
         className="scrollbar-gutter flex grow flex-col gap-4 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
-          targetRef={toolbar}
+          target={toolbar.current}
           show
           className="z-10 size-9 -translate-y-1"
         />
