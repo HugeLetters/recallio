@@ -1,6 +1,6 @@
 import { Transition } from "@/animation/transition";
 import { useClient } from "@/browser";
-import { rootStore } from "@/layout/root";
+import { layoutRootStore } from "@/layout/store";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { useStore } from "@/state/store";
 import type { Model } from "@/state/type";
@@ -26,7 +26,7 @@ export function HeaderSearchBar({ right, title }: HeaderSearchBarProps) {
   useEffect(() => {
     setSearch(searchParam);
   }, [searchParam]);
-  const overlayTarget = useStore(rootStore);
+  const overlayTarget = useStore(layoutRootStore);
 
   return (
     <div

@@ -2,7 +2,7 @@ import { createElasticStretchFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
 import { useSwipe } from "@/browser/swipe";
 import { DialogOverlay } from "@/interface/dialog";
-import { rootStore } from "@/layout/root";
+import { layoutRootStore } from "@/layout/store";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
 import { useQueryToggleState } from "@/navigation/query/hooks";
 import { useStore } from "@/state/store";
@@ -39,7 +39,7 @@ export function SortDialog({ optionList }: SortDialogProps) {
   const router = useRouter();
   const sortBy = useSortQuery(optionList);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const root = useStore(rootStore);
+  const root = useStore(layoutRootStore);
   const [isOpen, setIsOpen] = useQueryToggleState("sort-drawer");
   const swipeHandler = useSwipe({
     onSwipe({ movement: { dy } }) {
