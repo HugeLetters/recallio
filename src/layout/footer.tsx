@@ -20,11 +20,9 @@ import { layoutMainStore } from "./store";
 
 export function Footer() {
   const isLayoutLongScroll = useStore(layoutLongScrollTracker);
-  // todo - dont track scolling if not required
   const main = useStore(layoutMainStore);
   const isScrolled = useScrollThreshold({ threshold: 100, target: main, resetOnUp: true });
 
-  // todo - show footer after no scrolling for X time
   return (
     <footer
       className={tw(

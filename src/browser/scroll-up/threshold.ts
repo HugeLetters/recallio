@@ -31,6 +31,7 @@ export function useScrollThreshold({
 
     return () => {
       target.removeEventListener("scroll", scrollHandler);
+      setIsActive(false);
     };
   }, [threshold, target, resetOnUp]);
 

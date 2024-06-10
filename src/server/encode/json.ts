@@ -1,7 +1,7 @@
 import type { Option } from "@/utils/option";
 import { none, some } from "@/utils/option";
 
-export function encodeJSON<V>(value: V) {
+export function encodeJSON(value: unknown) {
   return Buffer.from(encodeURIComponent(JSON.stringify(value ?? null))).toString("base64");
 }
 

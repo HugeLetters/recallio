@@ -441,7 +441,6 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
   const src = value === null ? null : base64Image ?? savedImage;
   const isImagePresent = !!src || !!savedImage;
 
-  //  todo - ability to crop image
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative">
