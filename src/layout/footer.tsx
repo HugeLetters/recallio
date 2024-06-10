@@ -1,4 +1,5 @@
 import { Flipped } from "@/animation/flip";
+import { useScrollThreshold } from "@/browser/scroll-up/threshold";
 import type { Icon } from "@/image/icon";
 import { ToolbarLink } from "@/interface/toolbar";
 import type { ScanType } from "@/scan/store";
@@ -14,12 +15,24 @@ import UploadIcon from "~icons/custom/photo-upload";
 import BarcodeIcon from "~icons/custom/scan";
 import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
+import { layoutLongScrollTracker } from "./long-scroll-tracker";
+import { layoutMainStore } from "./store";
 
-// todo - make footer transparent when scrolling down?
 export function Footer() {
+  const isLayoutLongScroll = useStore(layoutLongScrollTracker);
+  // todo - dont track scolling if not required
+  const main = useStore(layoutMainStore);
+  const isScrolled = useScrollThreshold({ threshold: 100, target: main, resetOnUp: true });
 
+  // todo - show footer after no scrolling for X time
   return (
-    <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-neutral-500 shadow-around sa-o-15 sa-r-2 max-xl:text-sm xl:h-20">
+    <footer
+      className={tw(
+        "bottom-0 flex h-16 w-full shrink-0 justify-center bg-white text-neutral-500 shadow-around sa-o-15 sa-r-2 max-xl:text-sm xl:h-20",
+        isLayoutLongScroll ? "fixed transition-opacity duration-300" : "sticky",
+        isLayoutLongScroll && isScrolled && "pointer-events-none opacity-20",
+      )}
+    >
       <NavBar />
     </footer>
   );
