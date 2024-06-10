@@ -21,7 +21,7 @@ export function Footer() {
   const translate = useStore(scanTypeOffsetStore);
 
   return (
-    <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-sm text-neutral-500 shadow-around sa-o-15 sa-r-2 lg:h-20 lg:text-base">
+    <footer className="sticky bottom-0 flex h-16 shrink-0 justify-center bg-white text-neutral-500 shadow-around sa-o-15 sa-r-2 max-xl:text-sm xl:h-20">
       <nav className="w-full max-w-app">
         <Toolbar.Root className="grid h-full grid-cols-[1fr,auto,1fr] justify-items-center">
           <Flipper
@@ -89,7 +89,7 @@ function FooterLink({ active, Icon, label, href }: FooterItemProps) {
         active && "text-app-green-500",
       )}
     >
-      <Icon className="size-6 lg:size-7" />
+      <Icon className="size-6 xl:size-7" />
       <span className="relative">
         {label}
         <div className="absolute -inset-x-1 bottom-0 h-0.5 origin-left scale-x-0 rounded-full bg-current transition-transform group-focus-visible:scale-x-100" />
@@ -100,7 +100,7 @@ function FooterLink({ active, Icon, label, href }: FooterItemProps) {
           flipId="active-icon-bg"
           className="animate-scale-in"
         >
-          <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl lg:inset-x-2" />
+          <div className="absolute -inset-y-6 inset-x-4 -z-10 bg-app-green-150 blur-xl xl:inset-x-2" />
         </Flipped>
       )}
     </ToolbarLink>

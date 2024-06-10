@@ -69,7 +69,7 @@ interface TrackedScrollUpButtonProps extends ScrollUpProps {
 export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButtonProps) {
   const show = useStore(tracker);
   return (
-    <ScrollUpButtonImpl
+    <ScrollUpButton
       show={show}
       {...props}
     />
