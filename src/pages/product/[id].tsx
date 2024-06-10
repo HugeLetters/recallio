@@ -5,7 +5,7 @@ import { SortDialog, useSortQuery } from "@/interface/search/sort";
 import { Star } from "@/interface/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
-import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
+import { layoutLongScrollTracker } from "@/layout/long-scroll-tracker";
 import { getQueryParam } from "@/navigation/query";
 import { Redirect } from "@/navigation/redirect";
 import { CategoryCard, CommentSection, ImagePreview } from "@/product/components";
@@ -171,7 +171,7 @@ function Reviews({ reviewCount }: ReviewsProps) {
       },
     },
   );
-  useTracker(layoutScrollUpTracker, true);
+  useTracker(layoutLongScrollTracker, true);
 
   return (
     <>

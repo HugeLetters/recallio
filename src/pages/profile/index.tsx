@@ -11,7 +11,7 @@ import { Star } from "@/interface/star";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { HeaderLink } from "@/layout/header";
-import { layoutScrollUpTracker } from "@/layout/scroll-up-tracker";
+import { layoutLongScrollTracker } from "@/layout/long-scroll-tracker";
 import { useTracker } from "@/state/store/tracker/hooks";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
@@ -124,7 +124,7 @@ function ReviewCards() {
   const router = useRouter();
   const sortParam = useSortQuery(sortOptionList);
   const filter = useSearchQuery();
-  useTracker(layoutScrollUpTracker, true);
+  useTracker(layoutLongScrollTracker, true);
 
   const reviewCardsQuery = trpc.user.review.getSummaryList.useInfiniteQuery(
     {

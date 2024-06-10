@@ -6,7 +6,7 @@ import type { PropsWithChildren, ReactNode } from "react";
 import { Footer } from "./footer";
 import type { HeaderProps } from "./header";
 import { Header } from "./header";
-import { layoutScrollUpTracker } from "./scroll-up-tracker";
+import { layoutLongScrollTracker } from "./long-scroll-tracker";
 import { layoutMainStore, layoutRootStore } from "./store";
 
 type LayoutProps = {
@@ -37,7 +37,7 @@ function LayoutScrollUpButton() {
 
   return (
     <TrackedScrollUpButton
-      tracker={layoutScrollUpTracker}
+      tracker={layoutLongScrollTracker}
       target={main}
       className="z-50 size-10"
     />
