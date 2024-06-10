@@ -3,6 +3,7 @@ import type { NonEmptyArray } from "@/utils/array";
 import { isSome } from "@/utils/option";
 import { z } from "zod";
 
+// todo - own decoder/encoder
 const limitBaseSchema = z.number().int().min(1).max(100);
 const cursorBaseSchema = z
   .string({ invalid_type_error: "Pagination cursor has to be a string" })

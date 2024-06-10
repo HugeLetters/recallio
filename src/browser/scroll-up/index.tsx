@@ -28,7 +28,7 @@ function ScrollUpButtonImpl({ show, threshold = 500, target, className }: Scroll
       target.style.setProperty("position", position);
     };
   }, [target]);
-  const isThershold = useScrollThreshold({ target, threshold, resetOnUp: true });
+  const isScrollActive = useScrollThreshold({ target, threshold, resetOnUp: true });
 
   return (
     <div className="absolute bottom-2 right-2">
@@ -36,7 +36,7 @@ function ScrollUpButtonImpl({ show, threshold = 500, target, className }: Scroll
         inClassName="animate-slide-up"
         outClassName="animate-slide-up-reverse"
       >
-        {show && isThershold && (
+        {show && isScrollActive && (
           <div className={tw("fixed", className)}>
             <div className="-translate-x-full -translate-y-full">
               <button

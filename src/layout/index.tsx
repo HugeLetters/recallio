@@ -14,8 +14,6 @@ type LayoutProps = {
   full?: boolean;
 };
 export function Layout({ header, full = false, children }: PropsWithChildren<LayoutProps>) {
-  const main = useStore(layoutMainStore);
-
   return (
     <div
       ref={layoutRootStore.setRef}
@@ -27,14 +25,22 @@ export function Layout({ header, full = false, children }: PropsWithChildren<Lay
         className="scrollbar-gutter w-full max-w-app grow self-center overflow-y-auto"
       >
         <div className={tw("flex min-h-full *:min-w-0", !full && "p-4 pb-5")}>{children}</div>
-        <TrackedScrollUpButton
-          tracker={layoutScrollUpTracker}
-          className="size-10"
-          target={main}
-        />
+        <LayoutScrollUpButton />
       </main>
       <Footer />
     </div>
+  );
+}
+
+function LayoutScrollUpButton() {
+  const main = useStore(layoutMainStore);
+
+  return (
+    <TrackedScrollUpButton
+      tracker={layoutScrollUpTracker}
+      target={main}
+      className="z-50 size-10"
+    />
   );
 }
 
