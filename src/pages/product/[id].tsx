@@ -219,11 +219,11 @@ function ReviewCard({ review }: ReviewCardProps) {
         <div className="h-7">
           <UserPicture user={{ name: authorName, image: authorAvatar }} />
         </div>
-        <span>{authorName}</span>
-        <span className="ml-auto">{dateFormatter.format(new Date(updatedAt))}</span>
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap">{authorName}</span>
+        <span className="ml-auto shrink-0">{dateFormatter.format(new Date(updatedAt))}</span>
       </div>
       <div className="flex items-center justify-between">
-        <span className="overflow-hidden text-ellipsis">{name}</span>
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</span>
         <div className="shrink-0">
           <Rating value={rating} />
         </div>
