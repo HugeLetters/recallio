@@ -159,18 +159,21 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       saveReview(updatedReview);
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
 
-    function onReviewSave(review: StrictOmit<ReviewData, "image">) {
+    function onReviewSave(optimisticReview: StrictOmit<ReviewData, "image">) {
       if (!image) {
-        setOptimisticReview(review, image);
+        setOptimisticReview(optimisticReview, image);
         if (image === undefined) return invalidateReviewData();
 
         return deleteImage({ barcode });
       }
 
-      setOptimisticReview(review, URL.createObjectURL(image));
+      setOptimisticReview(optimisticReview, URL.createObjectURL(image));
       compressImage(image, { targetBytes: 63 * 1024, maxResolution: 512 })
         .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
-        .catch(logToastError("Failed to upload the image.\nPlease try again."));
+        .catch((e) => {
+          logToastError("Failed to upload the image.\nPlease try again.")(e);
+          setOptimisticReview(optimisticReview, review.image);
+        });
     }
   }
 
@@ -467,7 +470,16 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
       <ImagePickerButton
         isImageSet={!!value}
         onChange={(e) => {
-          setValue(e.target.files?.item(0));
+          const file = e.target.files?.item(0);
+
+          if (file && !file.type.startsWith("image/")) {
+            toast.error("Only image files are allowed");
+            e.target.value = "";
+            setValue(undefined);
+            return;
+          }
+
+          setValue(file);
         }}
       >
         {src ? "Change image" : "Upload image"}
@@ -635,6 +647,7 @@ function CategorySearch({
 
     append(lowercaseSearch);
   }
+  const toolbar = useRef<HTMLDivElement>(null);
 
   return (
     <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
@@ -653,11 +666,13 @@ function CategorySearch({
         />
       </div>
       <Toolbar.Root
+        ref={toolbar}
         loop={false}
         orientation="vertical"
         className="scrollbar-gutter flex grow flex-col gap-4 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
+          target={toolbar.current}
           show
           className="z-10 size-9 -translate-y-1"
         />

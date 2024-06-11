@@ -3,11 +3,14 @@ import { scrollUpButtonEnabledStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import type { TrackerStore } from "@/state/store/tracker";
 import { tw } from "@/styles/tw";
-import { useEffect, useRef, useState } from "react";
+import type { Nullish } from "@/utils/type";
+import { useEffect } from "react";
 import ArrowIcon from "~icons/formkit/right";
+import { useScrollThreshold } from "./threshold";
 
 type ScrollUpProps = {
   threshold?: number;
+  target: Nullish<HTMLElement>;
   className?: string;
 };
 
@@ -15,48 +18,32 @@ interface ScrollUpButtonProps extends ScrollUpProps {
   show: boolean;
 }
 
-function ScrollUpButtonImpl({ show, threshold = 500, className }: ScrollUpButtonProps) {
-  const root = useRef<HTMLDivElement>(null);
-  const [isThershold, setIsThershold] = useState(false);
-
+function ScrollUpButtonImpl({ show, threshold = 500, target, className }: ScrollUpButtonProps) {
   useEffect(() => {
-    const container = root.current?.parentElement;
-    if (!container) return;
+    if (!target) return;
 
-    const position = container.style.position;
-    container.style.position = "relative";
-
-    setIsThershold(container.scrollTop > threshold);
-    const scrollHandler = function () {
-      setIsThershold(container.scrollTop > threshold);
-    };
-    container.addEventListener("scroll", scrollHandler);
-
+    const position = target.style.position;
+    target.style.setProperty("position", "relative");
     return () => {
-      container.removeEventListener("scroll", scrollHandler);
-      container.style.position = position;
+      target.style.setProperty("position", position);
     };
-  }, [threshold]);
+  }, [target]);
+  const isScrollActive = useScrollThreshold({ target, threshold, resetOnUp: true });
 
   return (
-    <div
-      className="absolute bottom-2 right-2"
-      ref={root}
-    >
+    <div className="absolute bottom-2 right-2">
       <Transition
         inClassName="animate-slide-up"
         outClassName="animate-slide-up-reverse"
       >
-        {show && isThershold && (
+        {show && isScrollActive && (
           <div className={tw("fixed", className)}>
             <div className="-translate-x-full -translate-y-full">
               <button
                 type="button"
                 aria-label="Scroll to top of the section"
                 onClick={() => {
-                  const container = root.current?.parentElement;
-                  if (!container) return;
-                  container.scrollTo({ top: 0, behavior: "smooth" });
+                  target?.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 className="group clickable primary flex aspect-square size-full items-center justify-center rounded-full ring-1 ring-white shadow-around sa-o-25 sa-r-1"
               >
@@ -82,7 +69,7 @@ interface TrackedScrollUpButtonProps extends ScrollUpProps {
 export function TrackedScrollUpButton({ tracker, ...props }: TrackedScrollUpButtonProps) {
   const show = useStore(tracker);
   return (
-    <ScrollUpButtonImpl
+    <ScrollUpButton
       show={show}
       {...props}
     />

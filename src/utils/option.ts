@@ -1,5 +1,10 @@
-export type Some<T> = { readonly ok: true; value: T };
-export type None = { readonly ok: false };
+export type Some<T> = {
+  readonly ok: true;
+  readonly value: T;
+};
+export type None = {
+  readonly ok: false;
+};
 export type Option<T> = Some<T> | None;
 
 export const none: None = Object.freeze({ ok: false });

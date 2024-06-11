@@ -6,7 +6,7 @@ import { tw } from "@/styles/tw";
 import type { RouterOutputs } from "@/trpc";
 import { clamp } from "@/utils";
 import type { Nullish } from "@/utils/type";
-import * as Separator from "@radix-ui/react-separator";
+import { Root as Separator } from "@radix-ui/react-separator";
 import { Slot } from "@radix-ui/react-slot";
 import { useRouter } from "next/router";
 import type { ComponentPropsWithoutRef, PropsWithChildren, ReactNode } from "react";
@@ -19,7 +19,7 @@ import MinusIcon from "~icons/material-symbols/remove-rounded";
 
 type CommentWrapperProps = { children: ReactNode[] };
 export function CommentWrapper({ children }: CommentWrapperProps) {
-  const separator = <Separator.Root className="col-span-2 h-px bg-neutral-200" />;
+  const separator = <Separator className="col-span-2 h-px bg-neutral-200" />;
   const filtered = children.filter(Boolean);
   const lastIndex = filtered.length - 1;
 
