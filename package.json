@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pnpm cleanup && next dev -p 1853",
     "build": "pnpm rscript prebuild && next build",
-    "analyze": "ANALYZE=true next build",
+    "analyze": "ANALYZE=true pnpm bundle",
     "bundle": "NO_TSC=true next build --no-lint",
     "cleanup": "rm -rf .next",
     "start": "next start",

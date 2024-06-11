@@ -57,6 +57,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import type { FormEvent, MutableRefObject } from "react";
 import { useMemo, useRef, useState } from "react";
+// todo - remove RHF?
 import type { Control, UseFormRegisterReturn } from "react-hook-form";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
