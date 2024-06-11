@@ -90,7 +90,7 @@ async function updateRouteInfo(pathname, value) {
       const stringified = stringifyRouteTrie(trie);
       const fileContents = createRouteFile(stringified);
       format(fileContents, { ...prettierConfig, parser: "typescript" })
-        .then((contents) => writeFile("src/router/matcher.ts", contents))
+        .then((contents) => writeFile("src/server/router/matcher.ts", contents))
         .then(resolve)
         .catch(reject);
     }, 1000);
