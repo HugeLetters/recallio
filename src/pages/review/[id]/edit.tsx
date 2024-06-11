@@ -159,18 +159,21 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       saveReview(updatedReview);
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
 
-    function onReviewSave(review: StrictOmit<ReviewData, "image">) {
+    function onReviewSave(optimisticReview: StrictOmit<ReviewData, "image">) {
       if (!image) {
-        setOptimisticReview(review, image);
+        setOptimisticReview(optimisticReview, image);
         if (image === undefined) return invalidateReviewData();
 
         return deleteImage({ barcode });
       }
 
-      setOptimisticReview(review, URL.createObjectURL(image));
+      setOptimisticReview(optimisticReview, URL.createObjectURL(image));
       compressImage(image, { targetBytes: 63 * 1024, maxResolution: 512 })
         .then((compressedImage) => startUpload([compressedImage ?? image], { barcode }))
-        .catch(logToastError("Failed to upload the image.\nPlease try again."));
+        .catch((e) => {
+          logToastError("Failed to upload the image.\nPlease try again.")(e);
+          setOptimisticReview(optimisticReview, review.image);
+        });
     }
   }
 
