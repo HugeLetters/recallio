@@ -57,7 +57,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import type { FormEvent, MutableRefObject } from "react";
 import { useMemo, useRef, useState } from "react";
-// todo - remove RHF?
 import type { Control, UseFormRegisterReturn } from "react-hook-form";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import Checkmark from "~icons/custom/checkmark";
@@ -468,7 +467,16 @@ function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
       <ImagePickerButton
         isImageSet={!!value}
         onChange={(e) => {
-          setValue(e.target.files?.item(0));
+          const file = e.target.files?.item(0);
+
+          if (file && !file.type.startsWith("image/")) {
+            toast.error("Only image files are allowed");
+            e.target.value = "";
+            setValue(undefined);
+            return;
+          }
+
+          setValue(file);
         }}
       >
         {src ? "Change image" : "Upload image"}
