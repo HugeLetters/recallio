@@ -6,12 +6,20 @@ import type {
   Adapter,
   AdapterAccount,
   AdapterSession,
+  AdapterUser,
   VerificationToken,
 } from "next-auth/adapters";
 import type { Config } from "unique-names-generator";
 import { adjectives, animals, uniqueNamesGenerator } from "unique-names-generator";
 
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
+const userColumns = {
+  id: user.id,
+  name: user.name,
+  image: user.image,
+  email: user.email,
+  emailVerified: user.emailVerified,
+};
 export function DatabaseAdapter(): Adapter {
   return {
     createUser(data) {
@@ -28,7 +36,7 @@ export function DatabaseAdapter(): Adapter {
     },
     getUser(id) {
       return db
-        .select()
+        .select(userColumns)
         .from(user)
         .where(eq(user.id, id))
         .limit(1)
@@ -40,7 +48,7 @@ export function DatabaseAdapter(): Adapter {
     },
     getUserByEmail(email) {
       return db
-        .select()
+        .select(userColumns)
         .from(user)
         .where(eq(user.email, email))
         .limit(1)
@@ -55,7 +63,10 @@ export function DatabaseAdapter(): Adapter {
     },
     getSessionAndUser(sessionToken) {
       return db
-        .select()
+        .select({
+          session,
+          user: userColumns,
+        })
         .from(session)
         .where(eq(session.sessionToken, sessionToken))
         .innerJoin(user, eq(user.id, session.userId))
@@ -87,7 +98,7 @@ export function DatabaseAdapter(): Adapter {
     },
     getUserByAccount({ provider, providerAccountId }) {
       return db
-        .select({ user })
+        .select({ user: userColumns })
         .from(account)
         .where(
           and(eq(account.provider, provider), eq(account.providerAccountId, providerAccountId)),
@@ -147,8 +158,7 @@ export function DatabaseAdapter(): Adapter {
   };
 }
 
-type User = typeof user.$inferSelect;
-function userWithImageUrl(user: User): User {
+function userWithImageUrl(user: AdapterUser): AdapterUser {
   if (!user.image || URL.canParse(user.image)) return user;
   return { ...user, image: getFileUrl(user.image) };
 }
