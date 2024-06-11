@@ -35,7 +35,7 @@ next-env.d.ts
 *.tsbuildinfo
 
 @types
-/src/router/matcher.ts
+/src/server/router/matcher.ts
 /database/db.sqlite
 /database/db.sqlite-journal
 /public/recallio-sw.js

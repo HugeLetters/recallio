@@ -1,6 +1,6 @@
 import { sessionDataCookieName } from "@/auth/session/cookie/name";
 import { getSignInPath } from "@/auth/url";
-import { getRouteInfo } from "@/router/check";
+import { getRouteInfo } from "@/server/router/check";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
