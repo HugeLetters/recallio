@@ -55,6 +55,7 @@ export const getReviewList = protectedProcedure
     return db
       .select({
         id: review.id,
+        name: review.name,
         rating: review.rating,
         pros: review.pros,
         cons: review.cons,

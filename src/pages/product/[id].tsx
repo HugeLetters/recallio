@@ -210,9 +210,9 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   month: "short",
   year: "numeric",
 });
-function ReviewCard({
-  review: { authorAvatar, authorName, rating, pros, cons, comment, updatedAt },
-}: ReviewCardProps) {
+function ReviewCard({ review }: ReviewCardProps) {
+  const { name, authorAvatar, authorName, rating, pros, cons, comment, updatedAt } = review;
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -222,7 +222,12 @@ function ReviewCard({
         <span>{authorName}</span>
         <span className="ml-auto">{dateFormatter.format(new Date(updatedAt))}</span>
       </div>
-      <Rating value={rating} />
+      <div className="flex items-center justify-between">
+        <span className="overflow-hidden text-ellipsis">{name}</span>
+        <div className="shrink-0">
+          <Rating value={rating} />
+        </div>
+      </div>
       <CommentSection
         comment={comment}
         pros={pros}
