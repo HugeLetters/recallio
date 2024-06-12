@@ -28,7 +28,7 @@ declare module "next-auth" {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   pages: {
     signIn: "/auth/signin",
     signOut: "/profile/settings",
@@ -94,7 +94,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.LINKED_IN_CLIENT_SECRET,
     }),
   ],
-};
+} satisfies NextAuthOptions;
 
 export const getServerAuthSession = (ctx: {
   req: GetServerSidePropsContext["req"];
