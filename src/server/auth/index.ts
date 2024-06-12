@@ -18,20 +18,17 @@ import { DatabaseAdapter } from "./db-adapter";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-type DefaultUser = NonNullable<DefaultSession["user"]>;
 type DbUser = typeof user.$inferSelect;
 declare module "next-auth" {
-  interface User extends DefaultUser {
-    id: string;
+  interface User extends DbUser {
     name: string;
-    role: DbUser["role"];
   }
   interface Session extends DefaultSession {
     user: User;
   }
 }
 
-export const authOptions = {
+export const AuthOptions = {
   pages: {
     signIn: "/auth/signin",
     signOut: "/profile/settings",
@@ -100,5 +97,5 @@ export const authOptions = {
 } satisfies NextAuthOptions;
 
 export const getServerAuthSession = (ctx: Pick<GetServerSidePropsContext, "req" | "res">) => {
-  return getServerSession(ctx.req, ctx.res, authOptions);
+  return getServerSession(ctx.req, ctx.res, AuthOptions);
 };

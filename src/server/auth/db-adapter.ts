@@ -1,7 +1,7 @@
 import { db } from "@/server/database/client/serverless";
 import { account, session, user, verificationToken } from "@/server/database/schema/user";
 import { getFileUrl } from "@/server/uploadthing";
-import { and, eq, lt, or } from "drizzle-orm";
+import { and, eq, getTableColumns, lt, or } from "drizzle-orm";
 import type {
   Adapter,
   AdapterAccount,
@@ -13,14 +13,7 @@ import type { Config } from "unique-names-generator";
 import { adjectives, animals, uniqueNamesGenerator } from "unique-names-generator";
 
 const generatorConfig: Config = { dictionaries: [adjectives, animals], separator: "_", length: 2 };
-const userColumns = {
-  id: user.id,
-  name: user.name,
-  image: user.image,
-  email: user.email,
-  emailVerified: user.emailVerified,
-  role: user.role,
-};
+const userColumns = getTableColumns(user);
 export function DatabaseAdapter(): Adapter {
   return {
     createUser(data) {
