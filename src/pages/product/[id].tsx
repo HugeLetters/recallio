@@ -1,8 +1,10 @@
+import { useCachedSession } from "@/auth/session/hooks";
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
 import { InfiniteQueryView, QueryView } from "@/interface/loading";
 import { Spinner } from "@/interface/loading/spinner";
 import { SortDialog, useSortQuery } from "@/interface/search/sort";
 import { Star } from "@/interface/star";
+import { toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { layoutLongScrollTracker } from "@/layout/long-scroll-tracker";
@@ -10,6 +12,7 @@ import { getQueryParam } from "@/navigation/query";
 import { Redirect } from "@/navigation/redirect";
 import { CategoryCard, CommentSection, ImagePreview } from "@/product/components";
 import { useTracker } from "@/state/store/tracker/hooks";
+import { tw } from "@/styles/tw";
 import type { RouterInputs, RouterOutputs } from "@/trpc";
 import { trpc } from "@/trpc";
 import { fetchNextPage } from "@/trpc/infinite-query";
@@ -18,6 +21,8 @@ import { minutesToMs } from "@/utils";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useRef, useState } from "react";
+import type { PropsWithChildren } from "react";
 import RightIcon from "~icons/formkit/right";
 
 type SummaryData = NonNullable<RouterOutputs["product"]["getSummary"]>;
@@ -211,17 +216,31 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   year: "numeric",
 });
 function ReviewCard({ review }: ReviewCardProps) {
-  const { name, authorAvatar, authorName, rating, pros, cons, comment, updatedAt } = review;
+  const { name, authorAvatar, authorName, rating, pros, cons, comment, updatedAt, id } = review;
+  const { data: session } = useCachedSession();
+
+  const cardHeader = (
+    <div className="flex items-center gap-2">
+      <div className="h-7">
+        <UserPicture user={{ name: authorName, image: authorAvatar }} />
+      </div>
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{authorName}</span>
+      <span className="ml-auto shrink-0">{dateFormatter.format(new Date(updatedAt))}</span>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <div className="h-7">
-          <UserPicture user={{ name: authorName, image: authorAvatar }} />
-        </div>
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap">{authorName}</span>
-        <span className="ml-auto shrink-0">{dateFormatter.format(new Date(updatedAt))}</span>
-      </div>
+      {session?.user.role === "admin" ? (
+        <ShadowBan
+          username={authorName}
+          reviewId={id}
+        >
+          {cardHeader}
+        </ShadowBan>
+      ) : (
+        cardHeader
+      )}
       <div className="flex items-center justify-between">
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</span>
         <div className="shrink-0">
@@ -234,6 +253,49 @@ function ReviewCard({ review }: ReviewCardProps) {
         cons={cons}
       />
     </div>
+  );
+}
+
+type ShadowBanProps = { reviewId: string; username: string };
+function ShadowBan({ reviewId, username, children }: PropsWithChildren<ShadowBanProps>) {
+  const [taps, setTaps] = useState(3);
+  const timeoutRef = useRef(0);
+  const trpcUtils = trpc.useUtils();
+  const { mutate: banUser, isSuccess } = trpc.user.banUserByReview.useMutation({
+    onError(error) {
+      toast.error(error.message);
+      setTaps(3);
+    },
+    onSettled() {
+      trpcUtils.product.invalidate().catch(console.error);
+    },
+  });
+  const isBanned = taps <= 0 && isSuccess;
+
+  return (
+    <button
+      disabled={isBanned}
+      onClick={() => {
+        const updated = taps - 1;
+        setTaps(updated);
+        clearTimeout(timeoutRef.current);
+
+        if (updated <= 0) {
+          toast.info(`Banning user ${username}`);
+          banUser({ review: reviewId });
+          return;
+        }
+
+        toast.info(`${updated} more taps to ban ${username}`);
+        timeoutRef.current = window.setTimeout(() => {
+          setTaps(3);
+        }, 2000);
+      }}
+      style={{ opacity: isBanned ? undefined : taps / 3 }}
+      className={tw("transition-opacity", isBanned && "line-through")}
+    >
+      {children}
+    </button>
   );
 }
 
