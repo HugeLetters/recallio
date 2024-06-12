@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { adminProcedure, createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client/serverless";
 import { nonNullableSQL } from "@/server/database/query";
 import { review } from "@/server/database/schema/product";
@@ -9,10 +9,11 @@ import { createMaxMessage, createMinMessage, stringLikeSchema } from "@/server/v
 import { USERNAME_LENGTH_MAX, USERNAME_LENGTH_MIN } from "@/user/validation";
 import { ignore } from "@/utils";
 import type { NonEmptyArray } from "@/utils/array";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { accountRouter } from "./account";
 import { reviewRouter } from "./review";
+import { z } from "zod";
 
 const setName = protectedProcedure
   .input(
@@ -102,10 +103,33 @@ const deleteUser = protectedProcedure.mutation(({ ctx }) => {
     .catch(throwExpectedError("Failed to delete your account"));
 });
 
+const banUserByReview = adminProcedure
+  .input(z.object({ review: stringLikeSchema().min(1) }))
+  .mutation(({ input }) => {
+    return db
+      .transaction(async (tx) => {
+        const { id } = await tx
+          .update(user)
+          .set({ isBanned: true })
+          .where(
+            inArray(
+              user.id,
+              tx.select({ id: review.userId }).from(review).where(eq(review.id, input.review)),
+            ),
+          )
+          .returning({ id: user.id })
+          .get();
+
+        await tx.update(review).set({ isPrivate: true }).where(eq(review.userId, id));
+      })
+      .then(ignore);
+  });
+
 export const userRouter = createTRPCRouter({
   setName,
   deleteImage,
   deleteUser,
+  banUserByReview,
   account: accountRouter,
   review: reviewRouter,
 });
