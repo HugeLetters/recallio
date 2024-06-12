@@ -13,8 +13,7 @@ export function signOutOnUnauthorizedError(error: unknown) {
       isObject(data) &&
       hasProperty(data, "code") &&
       data.code === UNAUTHORIZED_CODE &&
-      hasProperty(data, "message") &&
-      data.message === UNAUTHORIZED_MESSAGE
+      error.message === UNAUTHORIZED_MESSAGE
     ) {
       signOut().catch(logger.error);
     }
