@@ -3,6 +3,7 @@ import { USERNAME_LENGTH_MAX } from "@/user/validation";
 import { index, int, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { AdapterAccount } from "next-auth/adapters";
 
+type UserRole = "admin";
 export const userIdLength = 255;
 export const user = sqliteTable("user", {
   id: text("id", { length: userIdLength }).notNull().primaryKey(),
@@ -11,6 +12,8 @@ export const user = sqliteTable("user", {
   emailVerified: timestampColumn("email_verified"),
   /** Stored either as URL or an UploadThing key */
   image: text("image", { length: 255 }),
+  role: text("role", { length: 15 }).$type<UserRole>(),
+  isBanned: int("is_banned", { mode: "boolean" }).notNull().default(false),
 });
 
 export const account = sqliteTable(
