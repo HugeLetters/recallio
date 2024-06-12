@@ -37,3 +37,10 @@ export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
   return next({ ctx: { session: ctx.session } });
 });
 
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== "admin") {
+    throw new ExpectedError({ code: UNAUTHORIZED_CODE, message: "User is not an admin" });
+  }
+
+  return next();
+});
