@@ -6,8 +6,8 @@ import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { ZodError } from "zod";
 
-export async function createTRPCContext({ req, res }: CreateNextContextOptions) {
-  const session = await getServerAuthSession({ req, res });
+export async function createTRPCContext(ctx: CreateNextContextOptions) {
+  const session = await getServerAuthSession(ctx);
   return { session };
 }
 

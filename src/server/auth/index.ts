@@ -1,6 +1,6 @@
 import { env } from "@/server/env/index.mjs";
 import type { GetServerSidePropsContext } from "next";
-import type { DefaultSession, NextAuthOptions } from "next-auth";
+import type { DefaultSession, NextAuthOptions, Session } from "next-auth";
 import { getServerSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
@@ -38,7 +38,7 @@ export const authOptions = {
   adapter: DatabaseAdapter(),
   callbacks: {
     session: ({ session, user }) => {
-      return Object.assign(session, { user });
+      return Object.assign<Session, Pick<Session, "user">>(session, { user });
     },
   },
   //! When adding a new provider don't forget to add a new host to allowed patterns for external images
@@ -96,9 +96,6 @@ export const authOptions = {
   ],
 } satisfies NextAuthOptions;
 
-export const getServerAuthSession = (ctx: {
-  req: GetServerSidePropsContext["req"];
-  res: GetServerSidePropsContext["res"];
-}) => {
+export const getServerAuthSession = (ctx: Pick<GetServerSidePropsContext, "req" | "res">) => {
   return getServerSession(ctx.req, ctx.res, authOptions);
 };
