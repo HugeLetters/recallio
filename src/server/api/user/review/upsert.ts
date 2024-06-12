@@ -61,6 +61,7 @@ export const upsert = protectedProcedure.input(upsertSchema).mutation(async ({ i
     userId: ctx.session.user.id,
     // override updatedAt value with current time
     updatedAt: new Date(),
+    isPrivate: ctx.session.user.isBanned || value.isPrivate,
   };
 
   return db
