@@ -1,4 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
+import { ButtonLike } from "@/interface/button";
 import { Spinner } from "@/interface/loading/spinner";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
@@ -14,23 +15,35 @@ import Head from "next/head";
 import type { PropsWithChildren } from "react";
 import { Fragment } from "react";
 import RightIcon from "~icons/formkit/right";
+import BugIcon from "~icons/material-symbols/bug-report-outline-rounded";
 import style from "./about.module.css";
 
 const contentStyle = style.content!;
 
 const Page: NextPageWithLayout = () => {
   return (
-    <Root
-      type="multiple"
-      className="h-fit grow divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
-    >
-      <Info />
-      <HowTo />
-      <Loading />
-      <Scanner />
-      <Offline />
-      <MadeBy />
-    </Root>
+    <div className="flex grow flex-col gap-2">
+      <Root
+        type="multiple"
+        className="divide-y-2 divide-neutral-400/15 overflow-hidden rounded-lg bg-neutral-100"
+      >
+        <Info />
+        <HowTo />
+        <Loading />
+        <Scanner />
+        <Offline />
+        <MadeBy />
+      </Root>
+      <ButtonLike className="primary text-center">
+        <a
+          href="mailto:recallio.contact@gmail.com"
+          target="_blank"
+          className="flex items-center justify-center gap-1"
+        >
+          <BugIcon className="text-2xl" /> Report a bug
+        </a>
+      </ButtonLike>
+    </div>
   );
 };
 
