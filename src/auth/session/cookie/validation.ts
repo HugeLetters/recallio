@@ -10,12 +10,6 @@ export function parseSession(value: unknown): Session | null {
   return value;
 }
 
-export function parseWithExpires(value: unknown): Pick<Session, "expires"> | null {
-  if (!isObject(value)) return null;
-  if (!hasStringProperty(value, "expires")) return null;
-  return value;
-}
-
 function assertUser(value: BaseObject): value is { user: Session["user"] } {
   if (!hasProperty(value, "user")) return false;
   if (!isObject(value.user)) return false;
@@ -30,7 +24,9 @@ function parseUser(value: BaseObject): Session["user"] | null {
   if (!hasStringProperty(value, "name")) return null;
   if (!hasOptionalStringProperty(value, "email")) return null;
   if (!hasOptionalStringProperty(value, "image")) return null;
-  return value;
+  if (!hasStringProperty(value, "role")) return null;
+
+  return value as never as Session["user"];
 }
 
 function hasStringProperty<K extends string>(
