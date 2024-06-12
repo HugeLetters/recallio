@@ -19,6 +19,7 @@ const userColumns = {
   image: user.image,
   email: user.email,
   emailVerified: user.emailVerified,
+  role: user.role,
 };
 export function DatabaseAdapter(): Adapter {
   return {

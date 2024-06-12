@@ -8,6 +8,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
 import { createTransport } from "nodemailer";
+import type { user } from "../database/schema/user";
 import { getEmailHtml, getEmailText } from "./PinEmail";
 import { DatabaseAdapter } from "./db-adapter";
 
@@ -18,10 +19,12 @@ import { DatabaseAdapter } from "./db-adapter";
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
 type DefaultUser = NonNullable<DefaultSession["user"]>;
+type DbUser = typeof user.$inferSelect;
 declare module "next-auth" {
   interface User extends DefaultUser {
     id: string;
     name: string;
+    role: DbUser["role"];
   }
   interface Session extends DefaultSession {
     user: User;
