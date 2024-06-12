@@ -1,10 +1,9 @@
 import { logger } from "@/logger";
-import type { Nullish } from "@/utils/type";
 import { useRouter } from "next/router";
-import { route as serialize } from "nextjs-routes";
 import { useEffect } from "react";
 import { getQueryParam } from "./query";
-import type { Route, StaticRoute } from "./type";
+import { asRoute, resolveRoute } from "./route";
+import type { Route } from "./type";
 
 type RedirectProps = { to: Route };
 export function Redirect({ to }: RedirectProps) {
@@ -28,16 +27,4 @@ export function Redirect({ to }: RedirectProps) {
 export function useRedirectQuery(param: string, fallback: Route) {
   const router = useRouter();
   return asRoute(getQueryParam(router.query[param]) ?? resolveRoute(fallback));
-}
-
-function resolveRoute(route: Route): string {
-  if (typeof route === "string") return route;
-  if ("pathname" in route) {
-    return serialize(route);
-  }
-  return serialize({ ...route, pathname: "/404" });
-}
-
-function asRoute<T extends Nullish<string>>(to: T) {
-  return to as Exclude<T, string> | Extract<StaticRoute, T>;
 }

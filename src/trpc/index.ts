@@ -1,18 +1,16 @@
-import { signOut } from "@/auth";
 import { getBaseUrl } from "@/browser";
 import { FAILED_TO_FETCH_MESSAGE, getErrorMessage } from "@/error";
 import { toast } from "@/interface/toast";
 import { getSafeId } from "@/interface/toast/id";
 import { logger } from "@/logger";
 import type { ApiRouter } from "@/server/api/router";
-import type { ExpectedError } from "@/server/error/trpc";
 import { isDev } from "@/utils";
-import { hasProperty, isObject } from "@/utils/object";
 import { MutationCache, QueryCache } from "@tanstack/react-query";
 import type { CreateTRPCProxyClient } from "@trpc/client";
-import { TRPCClientError, createTRPCProxyClient, httpBatchLink, loggerLink } from "@trpc/client";
+import { createTRPCProxyClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import { signOutOnUnauthorizedError } from "./auth";
 
 export const trpc = createTRPCNext<ApiRouter>({
   config() {
@@ -58,16 +56,6 @@ export const trpc = createTRPCNext<ApiRouter>({
   },
   ssr: false,
 });
-
-const UNATHORIZED_CODE: ExpectedError["code"] = "UNAUTHORIZED";
-function signOutOnUnauthorizedError(error: unknown) {
-  if (error instanceof TRPCClientError) {
-    const data: unknown = error.data;
-    if (isObject(data) && hasProperty(data, "code") && data.code === UNATHORIZED_CODE) {
-      signOut().catch(logger.error);
-    }
-  }
-}
 
 export type RouterInputs = inferRouterInputs<ApiRouter>;
 export type RouterOutputs = inferRouterOutputs<ApiRouter>;

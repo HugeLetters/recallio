@@ -284,7 +284,9 @@ function useSetOptimisticReview(barcode: string) {
       return { ...cache, ...review, image };
     });
 
-    if (location.pathname !== `/review/${barcode}/edit`) return;
+    if (location.pathname !== encodeURI(`/review/${barcode}/edit`)) {
+      return;
+    }
     router.push({ pathname: "/review/[id]", query: { id: barcode } }).catch(logger.error);
   };
 }

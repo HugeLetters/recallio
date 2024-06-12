@@ -1,6 +1,6 @@
 import { env } from "@/server/env/index.mjs";
 import type { GetServerSidePropsContext } from "next";
-import type { DefaultSession, NextAuthOptions } from "next-auth";
+import type { DefaultSession, NextAuthOptions, Session } from "next-auth";
 import { getServerSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import EmailProvider from "next-auth/providers/email";
@@ -8,6 +8,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
 import { createTransport } from "nodemailer";
+import type { user } from "../database/schema/user";
 import { getEmailHtml, getEmailText } from "./PinEmail";
 import { DatabaseAdapter } from "./db-adapter";
 
@@ -17,10 +18,9 @@ import { DatabaseAdapter } from "./db-adapter";
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-type DefaultUser = NonNullable<DefaultSession["user"]>;
+type DbUser = typeof user.$inferSelect;
 declare module "next-auth" {
-  interface User extends DefaultUser {
-    id: string;
+  interface User extends DbUser {
     name: string;
   }
   interface Session extends DefaultSession {
@@ -28,7 +28,7 @@ declare module "next-auth" {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+export const AuthOptions = {
   pages: {
     signIn: "/auth/signin",
     signOut: "/profile/settings",
@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
   adapter: DatabaseAdapter(),
   callbacks: {
     session: ({ session, user }) => {
-      return Object.assign(session, { user });
+      return Object.assign<Session, Pick<Session, "user">>(session, { user });
     },
   },
   //! When adding a new provider don't forget to add a new host to allowed patterns for external images
@@ -94,11 +94,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.LINKED_IN_CLIENT_SECRET,
     }),
   ],
-};
+} satisfies NextAuthOptions;
 
-export const getServerAuthSession = (ctx: {
-  req: GetServerSidePropsContext["req"];
-  res: GetServerSidePropsContext["res"];
-}) => {
-  return getServerSession(ctx.req, ctx.res, authOptions);
+export const getServerAuthSession = (ctx: Pick<GetServerSidePropsContext, "req" | "res">) => {
+  return getServerSession(ctx.req, ctx.res, AuthOptions);
 };

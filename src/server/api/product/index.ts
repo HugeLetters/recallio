@@ -94,7 +94,7 @@ export const productRouter = createTRPCRouter({
     )
     .query(({ input: { filter, cursor, limit } }) => {
       return db
-        .select()
+        .select({ name: category.name })
         .from(category)
         .where(
           and(like(category.name, `${filter}%`), cursor ? gt(category.name, cursor) : undefined),
