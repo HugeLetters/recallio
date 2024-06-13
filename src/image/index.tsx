@@ -17,6 +17,7 @@ export function Image({ children, ...props }: ImageProps) {
   return <ImageWithSrc {...props}>{children}</ImageWithSrc>;
 }
 
+// todo - show previous image when src changes before new one loads
 type ImageWithSrcProps = NextImageProps;
 function ImageWithSrc({ children, className, onLoad, ...props }: ImageWithSrcProps) {
   const [hasLoaded, setHasLoaded] = useState(false);

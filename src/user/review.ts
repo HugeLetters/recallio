@@ -1,7 +1,7 @@
 import { logToastError } from "@/interface/toast";
 import { trpc } from "@/trpc";
 
-export function useInvalidateReviewAdjacentData(barcode: string) {
+export function useInvalidateReviewData(barcode: string) {
   const utils = trpc.useUtils();
 
   return function () {

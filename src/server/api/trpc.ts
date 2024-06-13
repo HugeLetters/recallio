@@ -1,6 +1,6 @@
 import { getServerAuthSession } from "@/server/auth";
 import { ExpectedError, defaultErrorMessage } from "@/server/error/trpc";
-import { UNAUTHORIZED_CODE, UNAUTHORIZED_MESSAGE } from "@/trpc/auth";
+import { UNAUTHORIZED_CODE } from "@/trpc/auth";
 import type { TRPCError } from "@trpc/server";
 import { initTRPC } from "@trpc/server";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
@@ -31,7 +31,7 @@ export const publicProcedure = t.procedure;
 
 export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
   if (!ctx.session?.user) {
-    throw new ExpectedError({ code: UNAUTHORIZED_CODE, message: UNAUTHORIZED_MESSAGE });
+    throw new ExpectedError({ code: UNAUTHORIZED_CODE, message: "User is not authenticated" });
   }
 
   return next({ ctx: { session: ctx.session } });
@@ -39,7 +39,7 @@ export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
 
 export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.session.user.role !== "admin") {
-    throw new ExpectedError({ code: UNAUTHORIZED_CODE, message: "User is not an admin" });
+    throw new ExpectedError({ code: "FORBIDDEN", message: "User is not an admin" });
   }
 
   return next();

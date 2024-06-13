@@ -1,70 +1,34 @@
-import { ScrollUpButton } from "@/browser/scroll-up";
-import { useBlobUrl } from "@/image/blob";
 import { compressImage } from "@/image/compress";
-import { ImagePickerButton } from "@/image/image-picker";
 import { Button, ButtonLike } from "@/interface/button";
-import { DialogOverlay } from "@/interface/dialog";
-import { AutoresizableInput, Input } from "@/interface/input";
-import { InfiniteScroll } from "@/interface/list/infinite-scroll";
-import { InfiniteQueryView, QueryView } from "@/interface/loading";
+import { QueryView } from "@/interface/loading";
 import { loadingTracker } from "@/interface/loading/indicator";
-import { Spinner } from "@/interface/loading/spinner";
-import { DebouncedSearch, useSearchQuery, useSetSearchQuery } from "@/interface/search/search";
-import { Star } from "@/interface/star";
-import { LabeledSwitch } from "@/interface/switch";
+import type { ReviewForm } from "@/interface/review/edit";
+import { CommentSection, Name, Private, Rating, transformReview } from "@/interface/review/edit";
+import { CategoryList } from "@/interface/review/edit/category";
+import type { ImageState } from "@/interface/review/edit/image";
+import { AttachedImage, ImageAction } from "@/interface/review/edit/image";
 import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
 import { logger } from "@/logger";
 import { getQueryParam } from "@/navigation/query";
-import { useQueryToggleState } from "@/navigation/query/hooks";
-import {
-  BarcodeTitle,
-  CategoryCard,
-  CommentIcon,
-  CommentWrapper,
-  ImagePreview,
-} from "@/product/components";
+import { BarcodeTitle } from "@/product/components";
 import type { ReviewData } from "@/product/type";
-import {
-  CATEGORY_COUNT_MAX,
-  CATEGORY_LENGTH_MAX,
-  CATEGORY_LENGTH_MIN,
-  PRODUCT_COMMENT_LENGTH_MAX,
-  PRODUCT_NAME_LENGTH_MAX,
-  PRODUCT_NAME_LENGTH_MIN,
-  PRODUCT_RATING_MAX,
-} from "@/product/validation";
 import { reviewPrivateDefaultStore } from "@/settings/boolean";
 import { useStore } from "@/state/store";
 import { useTracker } from "@/state/store/tracker/hooks";
-import type { Model } from "@/state/type";
-import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
-import { fetchNextPage } from "@/trpc/infinite-query";
 import { useUploadThing } from "@/uploadthing";
-import { useInvalidateReviewAdjacentData } from "@/user/review";
-import type { StrictOmit, TransformProperty } from "@/utils/object";
-import { merge } from "@/utils/object";
+import { useInvalidateReviewData } from "@/user/review";
+import type { StrictOmit } from "@/utils/object";
 import { isSetEqual } from "@/utils/set";
 import type { Nullish } from "@/utils/type";
-import * as Checkbox from "@radix-ui/react-checkbox";
-import * as Dialog from "@radix-ui/react-dialog";
-import * as Radio from "@radix-ui/react-radio-group";
-import * as Toolbar from "@radix-ui/react-toolbar";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import type { FormEvent, MutableRefObject } from "react";
-import { useMemo, useRef, useState } from "react";
-import type { Control, UseFormRegisterReturn } from "react-hook-form";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import Checkmark from "~icons/custom/checkmark";
-import ResetIcon from "~icons/custom/reset";
-import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
-import CircledPlusIcon from "~icons/fluent/add-circle-28-regular";
-import SearchIcon from "~icons/iconamoon/search-light";
-import PlusIcon from "~icons/material-symbols/add-rounded";
+import type { FormEvent } from "react";
+import { useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 const Page: NextPageWithLayout = function () {
   const { query } = useRouter();
@@ -120,12 +84,6 @@ Page.getLayout = (children) => (
 
 export default Page;
 
-type ReviewForm = TransformProperty<ReviewData, "categories", Array<{ name: string }>>;
-function transformReview(data: ReviewData | null): ReviewForm | null {
-  if (!data) return data;
-  return merge(data, { categories: data.categories.map((x) => ({ name: x })) });
-}
-
 type ReviewProps = {
   review: ReviewForm;
   hasReview: boolean;
@@ -141,7 +99,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   } = useForm({ defaultValues: review });
 
   const setOptimisticReview = useSetOptimisticReview(barcode);
-  const onReviewUpdateSuccess = useRef<() => void>(() => void 0);
+  const onReviewUpdateSuccess = useRef((): void => undefined);
   function submitReview(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     handleSubmit((data) => {
@@ -160,9 +118,12 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
 
     function onReviewSave(optimisticReview: StrictOmit<ReviewData, "image">) {
-      if (!image) {
-        setOptimisticReview(optimisticReview, image);
-        if (image === undefined) return invalidateReviewData();
+      if (!(image instanceof File)) {
+        setOptimisticReview(optimisticReview, image === ImageAction.KEEP ? undefined : null);
+
+        if (image === ImageAction.KEEP) {
+          return invalidate();
+        }
 
         return deleteImage({ barcode });
       }
@@ -176,11 +137,9 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
         });
     }
   }
-
-  const invalidateReviewData = useInvalidateReview(barcode);
-  const [image, setImage] = useState<File | null>();
+  const invalidate = useInvalidateReview(barcode);
   const { mutate: deleteImage } = trpc.user.review.deleteImage.useMutation({
-    onSettled: invalidateReviewData,
+    onSettled: invalidate,
     onError(e) {
       toast.error(`Failed to delete image from review: ${e.message}`);
     },
@@ -190,21 +149,23 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       if (result.some((x) => !x.serverData)) {
         toast.error("Failed to upload the image");
       }
-      invalidateReviewData();
+      invalidate();
     },
     onUploadError(e) {
       toast.error(`Failed to upload the image: ${e.message}`);
-      invalidateReviewData();
+      invalidate();
     },
   });
   const { mutate: saveReview, isLoading } = trpc.user.review.upsert.useMutation({
     onSuccess: () => onReviewUpdateSuccess.current(),
     onError(e) {
       toast.error(`Error while trying to save the review: ${e.message}`);
-      invalidateReviewData();
+      invalidate();
     },
   });
   useTracker(loadingTracker, isLoading);
+
+  const [image, setImage] = useState<ImageState>(ImageAction.KEEP);
 
   return (
     <form
@@ -293,467 +254,24 @@ function useSetOptimisticReview(barcode: string) {
 
 function useInvalidateReview(barcode: string) {
   const utils = trpc.useUtils();
-  const invalidateReviewData = useInvalidateReviewAdjacentData(barcode);
+  const invalidateReviewData = useInvalidateReviewData(barcode);
 
   return function () {
     const optimisticImage = utils.user.review.getOne.getData({ barcode })?.image;
+
     utils.user.review.getOne
       .invalidate({ barcode })
       .catch(
         logToastError("Failed to update data from the server.\nReloading the page is advised."),
       )
       .finally(() => {
-        if (!optimisticImage) return;
+        if (!optimisticImage) {
+          return;
+        }
+
         URL.revokeObjectURL(optimisticImage);
       });
 
     invalidateReviewData();
   };
-}
-
-type NameProps = {
-  barcode: string;
-  register: UseFormRegisterReturn;
-};
-function Name({ barcode, register }: NameProps) {
-  const { data } = trpc.product.getNames.useQuery({ barcode }, { staleTime: Infinity });
-  const listId = "product-names";
-  return (
-    <label className="flex flex-col">
-      <span className="p-2 text-sm">Name</span>
-      <Input
-        {...register}
-        required
-        minLength={PRODUCT_NAME_LENGTH_MIN}
-        maxLength={PRODUCT_NAME_LENGTH_MAX}
-        placeholder={data?.[0] ?? "Name"}
-        autoComplete="off"
-        aria-label="Product name"
-        list={listId}
-      />
-      <datalist id={listId}>{data?.map((name) => <option key={name}>{name}</option>)}</datalist>
-    </label>
-  );
-}
-
-const ratingList = Array.from({ length: PRODUCT_RATING_MAX }, (_, i) => i + 1);
-function Rating({ value, setValue }: Model<number>) {
-  return (
-    <Radio.Root
-      value={value.toString()}
-      onValueChange={(val) => {
-        setValue(+val);
-      }}
-      aria-label="rating"
-      // radio item renders an invisible absolute input - relative keeps it in place
-      className="group relative flex justify-between gap-4 text-6xl"
-    >
-      <Radio.Item
-        value="0"
-        className="sr-only"
-      >
-        <Star />
-      </Radio.Item>
-      {ratingList.map((x) => (
-        <Radio.Item
-          key={x}
-          value={x.toString()}
-          onClick={() => {
-            if (x !== value) return;
-            setValue(0);
-          }}
-          className="outline-none"
-        >
-          <Star
-            highlight={x <= value}
-            className="stroke-transparent stroke-[0.5px] transition-colors group-focus-visible-within:stroke-app-gold-400"
-          />
-        </Radio.Item>
-      ))}
-    </Radio.Root>
-  );
-}
-
-type ProsConsCommentProps = {
-  registerPros: UseFormRegisterReturn;
-  registerCons: UseFormRegisterReturn;
-  registerComment: UseFormRegisterReturn;
-  review: Pick<ReviewForm, "pros" | "cons" | "comment">;
-};
-function CommentSection({
-  registerPros,
-  registerCons,
-  registerComment,
-  review,
-}: ProsConsCommentProps) {
-  return (
-    <CommentWrapper>
-      <label className="flex py-2">
-        <CommentIcon type="pros" />
-        <AutoresizableInput
-          rootClassName="grow pt-1.5"
-          initialContent={review.pros ?? ""}
-          {...registerPros}
-          placeholder="Pros"
-          maxLength={PRODUCT_COMMENT_LENGTH_MAX}
-        />
-      </label>
-      <label className="flex py-2">
-        <CommentIcon type="cons" />
-        <AutoresizableInput
-          rootClassName="grow pt-1.5"
-          initialContent={review.cons ?? ""}
-          {...registerCons}
-          placeholder="Cons"
-          maxLength={PRODUCT_COMMENT_LENGTH_MAX}
-        />
-      </label>
-      <label className="py-2">
-        <AutoresizableInput
-          rootClassName="pt-1.5"
-          initialContent={review.comment ?? ""}
-          {...registerComment}
-          placeholder="Comment"
-          maxLength={PRODUCT_COMMENT_LENGTH_MAX}
-        />
-      </label>
-    </CommentWrapper>
-  );
-}
-
-function Private({ value, setValue }: Model<boolean>) {
-  return (
-    <LabeledSwitch
-      className={tw(
-        "transition-colors duration-300",
-        value ? "bg-app-green-100" : "bg-neutral-200",
-      )}
-      checked={value}
-      onCheckedChange={setValue}
-    >
-      Private review
-    </LabeledSwitch>
-  );
-}
-
-// null - delete, undefined - keep as is
-type FileModel = Model<Nullish<File>>;
-interface AttachedImageProps extends FileModel {
-  savedImage: string | null;
-}
-function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
-  const base64Image = useBlobUrl(value);
-  const src = value === null ? null : base64Image ?? savedImage;
-  const isImagePresent = !!src || !!savedImage;
-
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative">
-        <ImagePreview
-          src={src}
-          size="md"
-        />
-        {isImagePresent && (
-          <button
-            type="button"
-            className={tw(
-              "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
-              src ? "text-app-red-500" : "text-neutral-950",
-            )}
-            onClick={() => {
-              setValue(src ? null : undefined);
-            }}
-            aria-label={src ? "Delete image" : "Reset image"}
-          >
-            {src ? <DeleteIcon /> : <ResetIcon />}
-          </button>
-        )}
-      </div>
-      <ImagePickerButton
-        isImageSet={!!value}
-        onChange={(e) => {
-          const file = e.target.files?.item(0);
-
-          if (file && !file.type.startsWith("image/")) {
-            toast.error("Only image files are allowed");
-            e.target.value = "";
-            setValue(undefined);
-            return;
-          }
-
-          setValue(file);
-        }}
-      >
-        {src ? "Change image" : "Upload image"}
-      </ImagePickerButton>
-    </div>
-  );
-}
-
-function categoryLimitErrorToast() {
-  return toast.error(`You can't add more than ${CATEGORY_COUNT_MAX} categories.`, {
-    id: "review-edit-category-limit",
-  });
-}
-type CategoryListProps = {
-  control: Control<ReviewForm>;
-};
-function CategoryList({ control }: CategoryListProps) {
-  const { replace, fields: categories } = useFieldArray({ control, name: "categories" });
-  const categorySet = useMemo<Set<string>>(
-    () => new Set(categories.map((x) => x.name)),
-    [categories],
-  );
-
-  function remove(value: string) {
-    replace(categories.filter((category) => category.name !== value));
-  }
-  function add(value: string) {
-    if (categorySet.has(value)) return;
-
-    const newCategories = [...categories, { name: value.toLowerCase() }];
-    replace(newCategories.sort((a, b) => (a.name > b.name ? 1 : -1)));
-  }
-
-  const [isOpen, setIsOpen] = useQueryToggleState("category-modal");
-  const setSearchQuery = useSetSearchQuery();
-  const debouncedQuery = useRef<number>();
-  const isAtCategoryLimit = categories.length >= CATEGORY_COUNT_MAX;
-
-  return (
-    <Dialog.Root
-      open={isOpen}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          setIsOpen(false);
-          window.clearTimeout(debouncedQuery.current);
-          setSearchQuery(null);
-          return;
-        }
-
-        if (isAtCategoryLimit) {
-          categoryLimitErrorToast();
-          return;
-        }
-
-        setIsOpen(true);
-      }}
-    >
-      <Toolbar.Root
-        className="flex flex-wrap gap-2 text-xs"
-        aria-label="Review categories"
-      >
-        <CategoryCard>
-          <Toolbar.Button asChild>
-            <Dialog.Trigger
-              aria-disabled={isAtCategoryLimit}
-              className="clickable aria-disabled:opacity-60"
-            >
-              <PlusIcon className="size-6" />
-              <span className="whitespace-nowrap py-2">Add category</span>
-            </Dialog.Trigger>
-          </Toolbar.Button>
-        </CategoryCard>
-        {categories.map(({ name }) => (
-          <CategoryCard key={name}>
-            <Toolbar.Button
-              className="clickable"
-              aria-label={`Delete category ${name}`}
-              onClick={(e) => {
-                remove(name);
-
-                // switch focus to next button
-                const next = e.currentTarget.nextSibling ?? e.currentTarget.previousSibling;
-                if (next instanceof HTMLElement) {
-                  next?.focus();
-                }
-              }}
-            >
-              <span>{name}</span>
-              <div className="flex h-6 items-center">
-                <DeleteIcon className="size-3" />
-              </div>
-            </Toolbar.Button>
-          </CategoryCard>
-        ))}
-      </Toolbar.Root>
-      <Dialog.Portal>
-        <DialogOverlay className="flex justify-center">
-          <Dialog.Content className="w-full max-w-app animate-fade-in data-[state=closed]:animate-fade-in-reverse">
-            <CategorySearch
-              enabled={isOpen}
-              canAddCategories={!isAtCategoryLimit}
-              append={add}
-              remove={remove}
-              includes={(value) => categorySet.has(value.toLowerCase())}
-              debounceRef={debouncedQuery}
-            />
-          </Dialog.Content>
-        </DialogOverlay>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-}
-
-type CategorySearchProps = {
-  enabled: boolean;
-  canAddCategories: boolean;
-  append: (value: string) => void;
-  remove: (value: string) => void;
-  includes: (value: string) => boolean;
-  debounceRef: MutableRefObject<number | undefined>;
-};
-function CategorySearch({
-  enabled,
-  canAddCategories,
-  append,
-  remove,
-  includes,
-  debounceRef,
-}: CategorySearchProps) {
-  const searchParam: string = useSearchQuery() ?? "";
-  const [search, setSearch] = useState(searchParam);
-  const lowercaseSearch = search.toLowerCase();
-  const categoriesQuery = trpc.product.getCategoryList.useInfiniteQuery(
-    { filter: searchParam, limit: 30 },
-    {
-      getNextPageParam(page) {
-        return page.at(-1);
-      },
-      enabled,
-      staleTime: Infinity,
-    },
-  );
-
-  const isSearchValid =
-    search.length >= CATEGORY_LENGTH_MIN && search.length <= CATEGORY_LENGTH_MAX;
-  // since it's displayed only at the top anyway it's enough to check only the first page for that match
-  const isSearchAdded = includes(lowercaseSearch);
-  const canAddSearch = canAddCategories && isSearchValid && !isSearchAdded;
-
-  function addCustomCategory() {
-    if (!isSearchValid) {
-      return toast.error(
-        `Category must be between ${CATEGORY_LENGTH_MIN} and ${CATEGORY_LENGTH_MAX} characters long.`,
-        { id: "review-edit-category-length" },
-      );
-    }
-    if (isSearchAdded) {
-      return toast.error("This category has already been added.", {
-        id: "review-edit-category-duplicate",
-      });
-    }
-    if (!canAddCategories) {
-      return categoryLimitErrorToast();
-    }
-
-    append(lowercaseSearch);
-  }
-  const toolbar = useRef<HTMLDivElement>(null);
-
-  return (
-    <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
-      <div className="flex w-full shrink-0 basis-14 items-center bg-white px-2 text-xl shadow-around sa-o-15 sa-r-2">
-        <SearchIcon className="size-7 shrink-0" />
-        <DebouncedSearch
-          value={search}
-          setValue={setSearch}
-          onSubmit={(e) => {
-            e.preventDefault();
-            // since this component is portalled submit event will propagate to the main form on this page
-            e.stopPropagation();
-            addCustomCategory();
-          }}
-          debounceRef={debounceRef}
-        />
-      </div>
-      <Toolbar.Root
-        ref={toolbar}
-        loop={false}
-        orientation="vertical"
-        className="scrollbar-gutter flex grow flex-col gap-4 overflow-y-auto px-7 py-5"
-      >
-        <ScrollUpButton
-          target={toolbar.current}
-          show
-          className="z-10 size-9 -translate-y-1"
-        />
-        {!!search && (
-          <label
-            className={tw(
-              "group flex cursor-pointer items-center justify-between py-1 text-left italic transition-opacity",
-              !canAddSearch && "opacity-30",
-            )}
-          >
-            <span className="shrink-0">
-              Add <span className="capitalize">{`"${lowercaseSearch}"`}</span>...
-            </span>
-            <Toolbar.Button
-              onClick={addCustomCategory}
-              aria-label={`Add ${lowercaseSearch} category`}
-              aria-disabled={!canAddSearch}
-            >
-              <CircledPlusIcon className="size-6 scale-125 text-neutral-400 transition-colors group-active:text-app-green-500" />
-            </Toolbar.Button>
-          </label>
-        )}
-        <InfiniteQueryView
-          query={categoriesQuery}
-          className="grow"
-        >
-          {categoriesQuery.data && (
-            <InfiniteScroll
-              pages={categoriesQuery.data.pages}
-              getPageValues={(page) => page}
-              getKey={(category) => category}
-              getNextPage={fetchNextPage(categoriesQuery)}
-            >
-              {(category) => {
-                if (category === lowercaseSearch) return;
-                return (
-                  <label className="flex w-full cursor-pointer justify-between capitalize">
-                    <span className="overflow-hidden text-ellipsis">{category}</span>
-                    <Toolbar.Button asChild>
-                      <Checkbox.Root
-                        className={tw(
-                          "group flex size-6 shrink-0 items-center justify-center rounded-sm border-2 border-neutral-400 bg-white outline-none",
-                          "focus-within:border-app-green-500 aria-disabled:border-neutral-200 focus-within:aria-disabled:border-app-green-300 data-[state=checked]:border-app-green-500 data-[state=checked]:focus-within:border-app-green-900",
-                          "transition-colors data-[state=checked]:bg-app-green-500",
-                        )}
-                        aria-disabled={!canAddCategories}
-                        checked={includes(category)}
-                        onCheckedChange={(checked) => {
-                          if (checked !== true) return remove(category);
-                          if (!canAddCategories) {
-                            return categoryLimitErrorToast();
-                          }
-                          append(category);
-                        }}
-                      >
-                        <Checkbox.Indicator
-                          forceMount
-                          className="p-1 text-white group-data-[state=unchecked]:scale-0 group-data-[state=checked]:transition-transform"
-                        >
-                          <Checkmark className="size-full" />
-                        </Checkbox.Indicator>
-                      </Checkbox.Root>
-                    </Toolbar.Button>
-                  </label>
-                );
-              }}
-            </InfiniteScroll>
-          )}
-          {categoriesQuery.isFetching ? <Spinner className="h-8 shrink-0" /> : null}
-        </InfiniteQueryView>
-      </Toolbar.Root>
-      <Dialog.Close asChild>
-        <Button
-          className="primary mx-5 mb-5 shadow-around sa-o-30 sa-r-2"
-          aria-label="Close"
-        >
-          OK
-        </Button>
-      </Dialog.Close>
-    </div>
-  );
 }

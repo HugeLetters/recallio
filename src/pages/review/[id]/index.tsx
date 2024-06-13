@@ -16,7 +16,7 @@ import type { ReviewData } from "@/product/type";
 import { useTrackerController } from "@/state/store/tracker/hooks";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
-import { useInvalidateReviewAdjacentData } from "@/user/review";
+import { useInvalidateReviewData } from "@/user/review";
 import { minutesToMs } from "@/utils";
 import * as Dialog from "@radix-ui/react-dialog";
 import Head from "next/head";
@@ -198,7 +198,7 @@ const deleteTimeout = 700;
 function DeleteButton({ barcode }: DeleteButtonProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
-  const invalidateReviewData = useInvalidateReviewAdjacentData(barcode);
+  const invalidateReviewData = useInvalidateReviewData(barcode);
   const loading = useTrackerController(loadingTracker);
   const { mutate } = trpc.user.review.deleteReview.useMutation({
     onMutate() {

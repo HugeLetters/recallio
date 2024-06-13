@@ -10,11 +10,11 @@ jobs:
     if: github.event.pull_request.draft==false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.2
         name: Setup workspace
-      - uses: pnpm/action-setup@v2.4.0
+      - uses: pnpm/action-setup@v4.0.0
         name: Setup pnpm
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4.1.0
         name: Setup node
         id: node
         with:
