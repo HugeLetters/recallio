@@ -6,6 +6,7 @@ import { hasTruthyProperty } from "@/utils/object";
 import { useEffect, useRef, useState } from "react";
 import { createBarcodeScanner } from "./scanner";
 
+// todo - USE REACT QUERY (?)
 type UseBarcodeScannerOptions = { onScan: (result: string | null) => void };
 export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const [scanner] = useState(() => (browser ? createBarcodeScanner() : null));
