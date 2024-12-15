@@ -18,23 +18,29 @@ export enum ImageAction {
 }
 
 export type ImageState = File | ImageAction;
-type FileModel = Model<ImageState>;
-interface AttachedImageProps extends FileModel {
-  savedImage: string | null;
+
+interface AttachedImageProps {
+  state: ImageState;
+  image: File | null;
+  setImage: (value: File) => void;
+  deleteImage: () => void;
+  resetImage: () => void;
+  crop: Model<CropDimensions | null>;
+  savedImage: ReviewForm["image"];
+  rawImage: File | null;
 }
-export function AttachedImage({ savedImage, value, setValue }: AttachedImageProps) {
-  const isImagePicked = value instanceof File;
+export function AttachedImage(p: AttachedImageProps) {
+  const rawImageSrc = useBlobUrl(p.rawImage ?? undefined);
+  const imageSrc = useBlobUrl(p.image ?? undefined) ?? rawImageSrc;
 
-  const fileSrc = useBlobUrl(isImagePicked ? value : undefined);
-  const src = value === ImageAction.DELETE ? null : fileSrc ?? savedImage;
-
-  const isImagePresent = !!src || !!savedImage;
+  const isImagePicked = p.state instanceof File;
+  const isImagePresent = !!imageSrc || !!p.savedImage;
 
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative">
         <ImagePreview
-          src={src}
+          src={imageSrc}
           size="md"
         />
         {isImagePresent && (
@@ -42,33 +48,42 @@ export function AttachedImage({ savedImage, value, setValue }: AttachedImageProp
             type="button"
             className={tw(
               "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
-              src ? "text-app-red-500" : "text-neutral-950",
+              imageSrc ? "text-app-red-500" : "text-neutral-950",
             )}
             onClick={() => {
-              setValue(src ? ImageAction.DELETE : ImageAction.KEEP);
+              if (imageSrc) {
+                p.deleteImage();
+              } else {
+                p.resetImage();
+              }
             }}
-            aria-label={src ? "Delete image" : "Reset image"}
+            aria-label={imageSrc ? "Delete image" : "Reset image"}
           >
-            {src ? <DeleteIcon /> : <ResetIcon />}
+            {imageSrc ? <DeleteIcon /> : <ResetIcon />}
           </button>
         )}
       </div>
       <ImagePickerButton
         isImageSet={isImagePicked}
         onChange={(e) => {
-          const file = e.target.files?.item(0);
+          const file = e.target.files?.item(0) ?? null;
 
-          if (file && !file.type.startsWith("image/")) {
-            toast.error("Only image files are allowed");
-            e.target.value = "";
-            setValue(ImageAction.KEEP);
+          if (!file) {
+            p.resetImage();
             return;
           }
 
-          setValue(file ?? ImageAction.KEEP);
+          if (!file.type.startsWith("image/")) {
+            toast.error("Only image files are allowed");
+            e.target.value = "";
+            p.resetImage();
+            return;
+          }
+
+          p.setImage(file);
         }}
       >
-        {src ? "Change image" : "Upload image"}
+        {imageSrc ? "Change image" : "Upload image"}
       </ImagePickerButton>
     </div>
   );
