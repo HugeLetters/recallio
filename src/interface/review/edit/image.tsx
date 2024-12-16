@@ -125,9 +125,9 @@ export function useReviewImage(src: ReviewForm["image"]) {
 
   const imageQuery = useAsyncState({
     domain: "modified_review_image",
-    // todo - fix using image as a key
-    dependencies: { image: rawImage, crop: cropArea },
-    async queryFn({ image, crop }) {
+    dependencies: { image: rawImage ? hashFile(rawImage) : null, crop: cropArea },
+    async queryFn({ crop }) {
+      const image = rawImage;
       if (!image) {
         return null;
       }
@@ -223,4 +223,8 @@ function useAsyncState<TInput, TOutput>({
     retry: 3,
     retryDelay: 0,
   });
+}
+
+function hashFile(file: File): string {
+  return `${file.name}:${file.type}:${file.size}:${file.lastModified}`;
 }
