@@ -7,7 +7,7 @@ import { ImagePreview } from "@/product/components";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 import type { ReviewForm } from ".";
@@ -30,7 +30,7 @@ interface AttachedImageProps {
   rawImage: File | null;
 }
 export function AttachedImage(p: AttachedImageProps) {
-  const rawImageSrc = useBlobUrl(p.rawImage ?? undefined);
+  const rawImageSrc = useBlobUrl(p.rawImage ?? undefined) ?? p.savedImage;
   const imageSrc = useBlobUrl(p.image ?? undefined) ?? rawImageSrc;
 
   const isImagePicked = p.state instanceof File;
@@ -93,10 +93,6 @@ export function AttachedImage(p: AttachedImageProps) {
 export function useReviewImage(src: ReviewForm["image"]) {
   const [rawValue, setRawValue] = useState<ImageState>(ImageAction.KEEP);
   const [cropArea, setCropArea] = useState<CropDimensions | null>(null);
-
-  useEffect(() => {
-    reset();
-  }, [src]);
 
   const { data: rawImageQueryData } = useAsyncState({
     domain: "review_image",
@@ -212,9 +208,13 @@ function useAsyncState<TInput, TOutput>({
 
   return useQuery({
     queryKey: ["__client", domain, dependencies] as const,
-    queryFn({ queryKey: [_, __, deps] }) {
-      client.removeQueries({ exact: false, queryKey: ["__client", domain], type: "inactive" });
-      return queryFn(deps);
+    async queryFn({ queryKey: [_, __, deps] }) {
+      const result = await queryFn(deps);
+      setTimeout(() => {
+        client.removeQueries({ exact: false, queryKey: ["__client", domain], type: "inactive" });
+      }, 500);
+
+      return result;
     },
     staleTime: Infinity,
     networkMode: "always",

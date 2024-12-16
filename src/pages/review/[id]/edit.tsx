@@ -173,7 +173,6 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       onSubmit={submitReview}
     >
       <AttachedImage
-        key={review.image}
         image={reviewImage.image}
         rawImage={reviewImage.rawImage}
         savedImage={review.image}
