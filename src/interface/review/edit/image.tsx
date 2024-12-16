@@ -125,6 +125,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
 
   const imageQuery = useAsyncState({
     domain: "modified_review_image",
+    // todo - fix using image as a key
     dependencies: { image: rawImage, crop: cropArea },
     async queryFn({ image, crop }) {
       if (!image) {
