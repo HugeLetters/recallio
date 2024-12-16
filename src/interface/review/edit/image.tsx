@@ -207,13 +207,12 @@ function useAsyncState<TInput, TOutput>({
   dependencies,
   queryFn,
 }: AsyncStateOptions<TInput, TOutput>) {
-  const key = ["__client", domain, dependencies] as const;
   const client = useQueryClient();
 
   return useQuery({
-    queryKey: key,
+    queryKey: ["__client", domain, dependencies] as const,
     queryFn({ queryKey: [_, __, deps] }) {
-      client.removeQueries({ exact: true, queryKey: key });
+      client.removeQueries({ exact: false, queryKey: ["__client", domain], type: "inactive" });
       return queryFn(deps);
     },
     staleTime: Infinity,
