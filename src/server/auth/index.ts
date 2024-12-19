@@ -54,10 +54,8 @@ export const AuthOptions = {
         },
       },
       from: env.NODEMAILER_EMAIL,
-      generateVerificationToken() {
-        return crypto.randomUUID().slice(0, 6).toUpperCase();
-      },
       maxAge: TOKEN_DURATION_MIN * 60,
+      generateVerificationToken: createTokenGenerator(),
       async sendVerificationRequest({ provider, identifier, token, url }) {
         // do not remove this await or you WILL be executed
         // this prevents vercel from finishing handling the request before an email is sent
@@ -99,4 +97,16 @@ export const AuthOptions = {
 
 export function getServerAuthSession(ctx: Pick<GetServerSidePropsContext, "req" | "res">) {
   return getServerSession(ctx.req, ctx.res, AuthOptions);
+}
+
+function createTokenGenerator(): () => string {
+  if (env.NEXT_PUBLIC_NODE_ENV === "development") {
+    return function () {
+      return "000000";
+    };
+  }
+
+  return function () {
+    return crypto.randomUUID().slice(0, 6).toUpperCase();
+  };
 }
