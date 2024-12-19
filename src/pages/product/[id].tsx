@@ -96,7 +96,7 @@ function Summary({ summary }: SummaryProps) {
           href={{
             pathname:
               reviewQuery.isSuccess && !reviewQuery.data ? "/review/[id]/edit" : "/review/[id]",
-            query: { id: barcode },
+            query: { id: barcode ?? "" },
           }}
           aria-label={
             reviewQuery.data
