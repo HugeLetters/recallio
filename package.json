@@ -116,7 +116,7 @@
     "prettier-plugin-tailwindcss": "^0.5.14",
     "tasuku": "^2.0.1",
     "tsx": "^4.11.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.7.2",
     "typescript-plugin-css-modules": "^5.1.0",
     "webpack": "^5.91.0"
   },
