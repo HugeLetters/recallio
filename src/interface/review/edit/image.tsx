@@ -34,7 +34,10 @@ export function AttachedImage(p: AttachedImageProps) {
   const imageSrc = useBlobUrl(p.image ?? undefined) ?? rawImageSrc;
 
   const isImagePicked = p.state instanceof File;
-  const isImagePresent = !!imageSrc || !!p.savedImage;
+
+  const canReset: boolean = p.state === ImageAction.DELETE && !!p.savedImage;
+  const canDelete: boolean = p.state !== ImageAction.DELETE && (!!p.image || !!p.savedImage);
+  const isActionAvailable = canReset || canDelete;
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -43,23 +46,23 @@ export function AttachedImage(p: AttachedImageProps) {
           src={imageSrc}
           size="md"
         />
-        {isImagePresent && (
+        {isActionAvailable && (
           <button
             type="button"
             className={tw(
               "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
-              imageSrc ? "text-app-red-500" : "text-neutral-950",
+              canDelete ? "text-app-red-500" : "text-neutral-950",
             )}
             onClick={() => {
-              if (imageSrc) {
+              if (canDelete) {
                 p.deleteImage();
               } else {
                 p.resetImage();
               }
             }}
-            aria-label={imageSrc ? "Delete image" : "Reset image"}
+            aria-label={canDelete ? "Delete image" : "Reset image"}
           >
-            {imageSrc ? <DeleteIcon /> : <ResetIcon />}
+            {canDelete ? <DeleteIcon /> : <ResetIcon />}
           </button>
         )}
       </div>
