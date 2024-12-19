@@ -59,7 +59,7 @@ export const AuthOptions = {
       },
       async sendVerificationRequest({ provider, identifier, token, url }) {
         // do not remove this await or you WILL be executed
-        // this prevents vercel from finishin handling the request before an email is sent
+        // this prevents vercel from finishing handling the request before an email is sent
         await createTransport(provider.server)
           .sendMail({
             to: identifier,
@@ -96,6 +96,6 @@ export const AuthOptions = {
   ],
 } satisfies NextAuthOptions;
 
-export const getServerAuthSession = (ctx: Pick<GetServerSidePropsContext, "req" | "res">) => {
+export function getServerAuthSession(ctx: Pick<GetServerSidePropsContext, "req" | "res">) {
   return getServerSession(ctx.req, ctx.res, AuthOptions);
-};
+}
