@@ -30,13 +30,15 @@ interface AttachedImageProps {
   rawImage: File | null;
 }
 export function AttachedImage(p: AttachedImageProps) {
-  const rawImageSrc = useBlobUrl(p.rawImage ?? undefined) ?? p.savedImage;
+  const isDeleting = p.state === ImageAction.DELETE;
+
+  const rawImageSrc = useBlobUrl(p.rawImage ?? undefined) ?? (!isDeleting ? p.savedImage : null);
   const imageSrc = useBlobUrl(p.image ?? undefined) ?? rawImageSrc;
 
   const isImagePicked = p.state instanceof File;
 
-  const canReset: boolean = p.state === ImageAction.DELETE && !!p.savedImage;
-  const canDelete: boolean = p.state !== ImageAction.DELETE && (!!p.image || !!p.savedImage);
+  const canReset: boolean = isDeleting && !!p.savedImage;
+  const canDelete: boolean = !isDeleting && (!!p.image || !!p.savedImage);
   const isActionAvailable = canReset || canDelete;
 
   return (
