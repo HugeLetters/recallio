@@ -11,6 +11,7 @@ import { createTransport } from "nodemailer";
 import type { user } from "../database/schema/user";
 import { getEmailHtml, getEmailText } from "./PinEmail";
 import { DatabaseAdapter } from "./db-adapter";
+import { TOKEN_DURATION_MIN } from "./token";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -53,17 +54,15 @@ export const AuthOptions = {
         },
       },
       from: env.NODEMAILER_EMAIL,
-      maxAge: 5 * 60, // 5 minutes
-      generateVerificationToken() {
-        return crypto.randomUUID().slice(0, 6).toUpperCase();
-      },
+      maxAge: TOKEN_DURATION_MIN * 60,
+      generateVerificationToken: createTokenGenerator(),
       async sendVerificationRequest({ provider, identifier, token, url }) {
         // do not remove this await or you WILL be executed
-        // this prevents vercel from finishin handling the request before an email is sent
+        // this prevents vercel from finishing handling the request before an email is sent
         await createTransport(provider.server)
           .sendMail({
             to: identifier,
-            from: provider.from,
+            from: { address: provider.from, name: "Recallio" },
             subject: "Sign in to Recallio app",
             html: getEmailHtml({ token, url }),
             text: getEmailText({ token, url }),
@@ -96,6 +95,18 @@ export const AuthOptions = {
   ],
 } satisfies NextAuthOptions;
 
-export const getServerAuthSession = (ctx: Pick<GetServerSidePropsContext, "req" | "res">) => {
+export function getServerAuthSession(ctx: Pick<GetServerSidePropsContext, "req" | "res">) {
   return getServerSession(ctx.req, ctx.res, AuthOptions);
-};
+}
+
+function createTokenGenerator(): () => string {
+  if (env.NEXT_PUBLIC_NODE_ENV === "development") {
+    return function () {
+      return "000000";
+    };
+  }
+
+  return function () {
+    return crypto.randomUUID().slice(0, 6).toUpperCase();
+  };
+}
