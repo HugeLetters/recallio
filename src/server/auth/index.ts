@@ -63,7 +63,7 @@ export const AuthOptions = {
         await createTransport(provider.server)
           .sendMail({
             to: identifier,
-            from: provider.from,
+            from: { address: provider.from, name: "Recallio" },
             subject: "Sign in to Recallio app",
             html: getEmailHtml({ token, url }),
             text: getEmailText({ token, url }),
