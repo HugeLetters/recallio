@@ -95,6 +95,7 @@ export function AttachedImage(p: AttachedImageProps) {
 }
 
 // todo - cleanup
+// ? todo - handle src changes
 export function useReviewImage(src: ReviewForm["image"]) {
   const [rawValue, setRawValue] = useState<ImageState>(ImageAction.KEEP);
   const [cropArea, setCropArea] = useState<CropDimensions | null>(null);
