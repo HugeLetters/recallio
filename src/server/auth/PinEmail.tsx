@@ -1,11 +1,12 @@
 import { Button } from "@react-email/button";
 import { Container } from "@react-email/container";
+import { Preview } from "@react-email/preview";
 import { render } from "@react-email/render";
 import { Row } from "@react-email/row";
 import { Tailwind } from "@react-email/tailwind";
-import { Preview } from "@react-email/preview";
 import { Text } from "@react-email/text";
 import config from "../../../tailwind.config";
+import { TOKEN_DURATION_MIN } from "./token";
 
 type EmailProps = { token: string; url: string };
 function Email({ token, url }: EmailProps) {
@@ -37,7 +38,7 @@ function Email({ token, url }: EmailProps) {
           style={{ color: "white" }}
           className="text-center text-lg"
         >
-          It will expire in 5 minutes
+          It will expire in {TOKEN_DURATION_MIN} minutes
         </Text>
         <Row className="w-fit">
           <Button
@@ -60,5 +61,5 @@ export function getEmailHtml(opts: EmailProps) {
 }
 
 export function getEmailText({ token, url }: EmailProps) {
-  return `Here's your authorization pin - ${token}\nOr you may use this link to sign in\n${url}`;
+  return `Here's your authorization pin - ${token}\nIt will expire in ${TOKEN_DURATION_MIN} minutes.\nOr you may use this link to sign in\n${url}`;
 }

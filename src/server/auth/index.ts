@@ -11,6 +11,7 @@ import { createTransport } from "nodemailer";
 import type { user } from "../database/schema/user";
 import { getEmailHtml, getEmailText } from "./PinEmail";
 import { DatabaseAdapter } from "./db-adapter";
+import { TOKEN_DURATION_MIN } from "./token";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -53,10 +54,10 @@ export const AuthOptions = {
         },
       },
       from: env.NODEMAILER_EMAIL,
-      maxAge: 5 * 60, // 5 minutes
       generateVerificationToken() {
         return crypto.randomUUID().slice(0, 6).toUpperCase();
       },
+      maxAge: TOKEN_DURATION_MIN * 60,
       async sendVerificationRequest({ provider, identifier, token, url }) {
         // do not remove this await or you WILL be executed
         // this prevents vercel from finishing handling the request before an email is sent
