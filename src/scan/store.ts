@@ -1,4 +1,5 @@
-import { DerivedStore, Store } from "@/state/store";
+import { Store } from "@/state/store";
+import { DerivedStore } from "@/state/store/derived";
 import type { TupleIndex } from "@/utils/array";
 import { indexOf } from "@/utils/array";
 
@@ -23,7 +24,7 @@ class ScanTypeStore extends Store<ScanType> {
 
 export const scanTypeStore = new ScanTypeStore("scan");
 /** Gives current offset of scan type value from the center in the range from 0 to 1. */
-export const scanTypeOffsetStore = new DerivedStore(
-  scanTypeStore,
-  (state) => ((indexOf(scanTypeList, state) ?? 2) - 1) / scanTypeList.length,
-);
+export const scanTypeOffsetStore = new DerivedStore(scanTypeStore, (state) => {
+  const scaneTypeIndex = indexOf(scanTypeList, state) ?? 2;
+  return (scaneTypeIndex - 1) / scanTypeList.length;
+});

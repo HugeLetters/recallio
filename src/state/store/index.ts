@@ -40,15 +40,6 @@ export function useStore<S>(store: ExternalStore<S>) {
   return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
 }
 
-export class DerivedStore<R, V> extends Store<V> {
-  constructor(store: Store<R>, derivation: (value: R) => V) {
-    super(derivation(store.getSnapshot()));
-    store.subscribe((state) => {
-      this.setState(derivation(state));
-    });
-  }
-}
-
 export type ExternalStore<T> = {
   readonly subscribe: Subscribe<T>;
   readonly getSnapshot: () => T;
