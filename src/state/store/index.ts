@@ -3,14 +3,19 @@ import { useSyncExternalStore } from "react";
 type Subscription<V> = (newState: V) => void;
 type Unsubscribe = () => void;
 type Subscribe<V> = (subscription: Subscription<V>) => Unsubscribe;
-export class Store<V> {
-  constructor(private state: V) {}
+export class Store<V> implements ExternalStore<V> {
   private subscriptions = new Set<Subscription<V>>();
+  private state;
+  constructor(state: V) {
+    this.state = state;
+  }
+
   private emitUpdate() {
     for (const subscription of this.subscriptions) {
       subscription(this.state);
     }
   }
+
   protected setState(value: V) {
     if (value === this.state) return;
     this.state = value;
@@ -19,25 +24,24 @@ export class Store<V> {
   protected updateState(updater: (prevState: V) => V) {
     this.setState(updater(this.state));
   }
-  subscribe: Subscribe<V> = (onStoreChange) => {
-    this.subscriptions.add(onStoreChange);
+
+  subscribe: Subscribe<V> = (subscription) => {
+    this.subscriptions.add(subscription);
     return () => {
-      this.subscriptions.delete(onStoreChange);
+      this.subscriptions.delete(subscription);
     };
   };
+
   getSnapshot = () => this.state;
-  getServerSnapshot = this.getSnapshot;
+  getServerSnapshot = () => this.getSnapshot();
 }
 
-export function useStore<S>(store: Store<S>) {
+export function useStore<S>(store: ExternalStore<S>) {
   return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
 }
 
-export class DerivedStore<R, V> extends Store<V> {
-  constructor(store: Store<R>, derivation: (value: R) => V) {
-    super(derivation(store.getSnapshot()));
-    store.subscribe((state) => {
-      this.setState(derivation(state));
-    });
-  }
-}
+export type ExternalStore<T> = {
+  readonly subscribe: Subscribe<T>;
+  readonly getSnapshot: () => T;
+  readonly getServerSnapshot: () => T;
+};

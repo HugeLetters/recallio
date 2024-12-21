@@ -16,6 +16,7 @@
     "jsx": "preserve",
     "incremental": true,
     "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     "verbatimModuleSyntax": true,
     "baseUrl": ".",
     "paths": {
