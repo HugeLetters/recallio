@@ -4,13 +4,18 @@ type Subscription<V> = (newState: V) => void;
 type Unsubscribe = () => void;
 type Subscribe<V> = (subscription: Subscription<V>) => Unsubscribe;
 export class Store<V> {
-  constructor(private state: V) {}
   private subscriptions = new Set<Subscription<V>>();
+  private state;
+  constructor(state: V) {
+    this.state = state;
+  }
+
   private emitUpdate() {
     for (const subscription of this.subscriptions) {
       subscription(this.state);
     }
   }
+
   protected setState(value: V) {
     if (value === this.state) return;
     this.state = value;
@@ -19,14 +24,16 @@ export class Store<V> {
   protected updateState(updater: (prevState: V) => V) {
     this.setState(updater(this.state));
   }
-  subscribe: Subscribe<V> = (onStoreChange) => {
-    this.subscriptions.add(onStoreChange);
+
+  subscribe: Subscribe<V> = (subscription) => {
+    this.subscriptions.add(subscription);
     return () => {
-      this.subscriptions.delete(onStoreChange);
+      this.subscriptions.delete(subscription);
     };
   };
+
   getSnapshot = () => this.state;
-  getServerSnapshot = this.getSnapshot;
+  getServerSnapshot = () => this.getSnapshot();
 }
 
 export function useStore<S>(store: Store<S>) {
