@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 type Subscription<V> = (newState: V) => void;
 type Unsubscribe = () => void;
 type Subscribe<V> = (subscription: Subscription<V>) => Unsubscribe;
-export class Store<V> {
+export class Store<V> implements ExternalStore<V> {
   private subscriptions = new Set<Subscription<V>>();
   private state;
   constructor(state: V) {
@@ -36,7 +36,7 @@ export class Store<V> {
   getServerSnapshot = () => this.getSnapshot();
 }
 
-export function useStore<S>(store: Store<S>) {
+export function useStore<S>(store: ExternalStore<S>) {
   return useSyncExternalStore(store.subscribe, store.getSnapshot, store.getServerSnapshot);
 }
 
@@ -48,3 +48,9 @@ export class DerivedStore<R, V> extends Store<V> {
     });
   }
 }
+
+export type ExternalStore<T> = {
+  readonly subscribe: Subscribe<T>;
+  readonly getSnapshot: () => T;
+  readonly getServerSnapshot: () => T;
+};
