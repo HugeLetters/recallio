@@ -180,7 +180,7 @@ function CategorySearch({
 
     append(lowercaseSearch);
   }
-  const toolbar = useRef<HTMLDivElement>(null);
+  const [toolbar, setToolbar] = useState<HTMLDivElement | null>(null);
 
   return (
     <div className="flex h-full flex-col bg-white shadow-around sa-o-20 sa-r-2.5">
@@ -199,13 +199,13 @@ function CategorySearch({
         />
       </div>
       <Toolbar.Root
-        ref={toolbar}
+        ref={setToolbar}
         loop={false}
         orientation="vertical"
         className="scrollbar-gutter flex grow flex-col gap-4 overflow-y-auto px-7 py-5"
       >
         <ScrollUpButton
-          target={toolbar.current}
+          target={toolbar}
           show
           className="z-10 size-9 -translate-y-1"
         />

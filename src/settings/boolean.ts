@@ -19,7 +19,7 @@ class BooleanSettingStore extends Store<boolean> {
     this.setState(value);
     localStorage.setItem(this.key, `${value}`);
   };
-  getServerSnapshot = () => this.initial;
+  override getServerSnapshot = () => this.initial;
 }
 
 function initializeStore(key: string, initial: boolean): boolean {
