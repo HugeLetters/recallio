@@ -1,8 +1,11 @@
 import { browser } from "@/browser";
-import { logToastError } from "@/interface/toast";
+import { QueryErrorHandler } from "@/error/query";
+import { logToastError, toast } from "@/interface/toast";
+import { asyncStateOptions } from "@/state/async";
 import { useStableValue } from "@/state/stable";
 import { clamp, isDev } from "@/utils";
 import { hasTruthyProperty } from "@/utils/object";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { createBarcodeScanner } from "./scanner";
 
@@ -15,54 +18,69 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [changeZoom, setChangeZoom] = useState<ZoomHandler>(null);
 
+  const client = useQueryClient();
+  const { data: stream = null } = useQuery({
+    ...asyncStateOptions({
+      client,
+      domain: "mediaDevices",
+      dependencies: undefined,
+      queryFn() {
+        if (!browser) {
+          return null;
+        }
+
+        return navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        });
+      },
+    }),
+    meta: {
+      error: new QueryErrorHandler(() => {
+        toast.error(
+          "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
+          { id: "scanner start error" },
+        );
+      }),
+    },
+  });
+
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !scanner) {
+    if (!video || !scanner || !stream) {
       return;
     }
 
-    let cleanedUp = false;
+    video.srcObject = stream;
+    if (video.paused) {
+      video.play().catch(console.error);
+    }
 
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" }, audio: false })
-      .then((stream) => {
-        if (cleanedUp) {
-          return;
-        }
-
-        video.srcObject = stream;
-        setChangeZoom(() => createZoomHandler(video));
-
-        if (video.paused) {
-          return video.play();
-        }
-      })
-      .catch(
-        logToastError(
-          "Coludn't start the scanner.\nMake sure camera access is granted and reload the page.",
-          { id: "scanner start error" },
-        ),
-      );
-
-    const cancelLoop = timedLoop(
-      () =>
-        scanner
-          .scanVideo(video)
-          .then(onScanStable.current)
-          .catch(
-            logToastError("Unexpected error occured during scan", {
-              id: "scanner unexpected error",
-            }),
-          ),
-      500,
-    );
+    const cancelLoop = timedLoop(() => {
+      return scanner
+        .scanVideo(video)
+        .then(onScanStable.current)
+        .catch(
+          logToastError("Unexpected error occured during scan", {
+            id: "scanner unexpected error",
+          }),
+        );
+    }, 500);
 
     return () => {
-      cleanedUp = true;
       video.srcObject = null;
       cancelLoop();
     };
-  }, [scanner, onScanStable]);
+  }, [scanner, stream, onScanStable]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+
+    setChangeZoom(() => createZoomHandler(video));
+  }, []);
 
   return {
     /** Attach this ref to an {@link HTMLVideoElement} */
