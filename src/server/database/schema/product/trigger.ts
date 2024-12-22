@@ -5,6 +5,8 @@ import { eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { productMeta, review } from ".";
 
+const excluded = alias(productMeta, "excluded");
+
 export const insertTrigger = new Trigger({
   name: "update_product_meta_on_new_review",
   type: "INSERT",
@@ -22,7 +24,7 @@ export const insertTrigger = new Trigger({
         target: productMeta.barcode,
         set: {
           publicReviewCount: sql`${productMeta.publicReviewCount} + 1`,
-          publicTotalRating: sql`${productMeta.publicTotalRating} + ${alias(productMeta, "excluded").publicTotalRating}`,
+          publicTotalRating: sql`${productMeta.publicTotalRating} + ${excluded.publicTotalRating}`,
         },
       }),
 });
