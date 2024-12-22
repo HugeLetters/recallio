@@ -97,6 +97,9 @@ Page.getLayout = (children) => {
     </Layout>
   );
 };
+
+Page.isPublic = true;
+
 export default Page;
 
 const sortOptionList = ["most popular", "least popular", "best rated", "worst rated"] as const;

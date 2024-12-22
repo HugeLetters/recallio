@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import {
@@ -19,7 +19,7 @@ import { z } from "zod";
 import { getReviewList } from "./review-list";
 import { getSummaryList } from "./summary-list";
 
-const getSummary = protectedProcedure
+const getSummary = publicProcedure
   .input(z.object({ barcode: createBarcodeSchema("Barcode is required to request product data") }))
   .query(({ input: { barcode } }) => {
     const categorySq = db
@@ -63,7 +63,7 @@ const getSummary = protectedProcedure
       .groupBy(review.barcode)
       .limit(1)
       .get()
-      .then((x) => x ?? null);
+      .then((summary) => summary ?? null);
   });
 
 export const productRouter = createTRPCRouter({
@@ -74,13 +74,12 @@ export const productRouter = createTRPCRouter({
     .input(z.object({ barcode: createBarcodeSchema() }))
     .query(({ input: { barcode } }): Promise<string[]> => {
       return getProductNames(barcode)
-        .then((cached) => {
+        .then(async (cached) => {
           if (cached) return cached;
 
-          return getScrapedProducts(barcode).then((products) => {
-            cacheProductNames(barcode, products).catch(console.error);
-            return products;
-          });
+          const products = await getScrapedProducts(barcode);
+          cacheProductNames(barcode, products).catch(console.error);
+          return products;
         })
         .catch(throwExpectedError("Failed to retrieve suggested product names."));
     }),

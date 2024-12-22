@@ -21,8 +21,8 @@ import { minutesToMs } from "@/utils";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useRef, useState } from "react";
 import type { PropsWithChildren } from "react";
+import { useRef, useState } from "react";
 import RightIcon from "~icons/formkit/right";
 
 type SummaryData = NonNullable<RouterOutputs["product"]["getSummary"]>;
@@ -71,6 +71,8 @@ Page.getLayout = (children) => {
   );
 };
 
+Page.isPublic = true;
+
 export default Page;
 
 type SummaryProps = {
@@ -80,9 +82,11 @@ function Summary({ summary }: SummaryProps) {
   const { categories, image, name, rating, reviewCount } = summary;
 
   const barcode = useBarcode();
+  const { data: session } = useCachedSession();
+  const shouldFetchUserReview = !!barcode && !!session;
   const reviewQuery = trpc.user.review.getOne.useQuery(
     { barcode: barcode ?? "" },
-    { enabled: !!barcode, staleTime: Infinity },
+    { enabled: shouldFetchUserReview, staleTime: Infinity },
   );
 
   return (

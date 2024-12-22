@@ -203,6 +203,8 @@ Page.getLayout = (children) => {
   );
 };
 
+Page.isPublic = true;
+
 export default Page;
 
 type ScanGrid2Props = { className?: string };

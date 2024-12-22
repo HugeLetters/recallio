@@ -1,4 +1,4 @@
-import { protectedProcedure } from "@/server/api/trpc";
+import { publicProcedure } from "@/server/api/trpc";
 import { cachify } from "@/server/api/utils/cache";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
@@ -21,7 +21,7 @@ const pagination = createPagination({
   sortBy: ["reviews", "rating"],
 });
 
-export const getSummaryList = protectedProcedure
+export const getSummaryList = publicProcedure
   .input(z.object({ filter: z.string().optional() }).merge(pagination.schema))
   .query(({ input: { limit, cursor, sort, filter } }) => {
     function getSortByColumn(): SQL<number> {
