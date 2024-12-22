@@ -1,4 +1,5 @@
 import { Trigger, breakpoint, createDropTriggerStatement } from "@/server/database/schema/trigger";
+import { unique } from "@/utils/array";
 import { filterMap, filterOut, mapFilter } from "@/utils/array/filter";
 import type { Query, SQL } from "drizzle-orm";
 import { sql } from "drizzle-orm";
@@ -7,20 +8,25 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { execAsync } from "scripts/utils";
 
-export default function main() {
-  const triggers = getTriggers();
+export default async function main() {
+  const [migration, filepath] = await Promise.all([
+    createMigrationContent(),
+    generateCustomMigrationFile(),
+  ]);
+
+  await writeFile(filepath, migration);
+  return `Created trigger migration file: ${filepath}`;
+}
+
+function createMigrationContent() {
+  const triggers = getTriggers().then((triggers) => triggers.map((trigger) => trigger.statement));
   const dropPreviousTriggers = getPreviousTriggers().then((triggers) =>
     triggers.map(createDropTriggerStatement),
   );
-  const migrationSql = Promise.all([dropPreviousTriggers, triggers]).then(
-    ([prevTriggers, triggers]) =>
-      createMigration(...prevTriggers, ...triggers.map((trigger) => trigger.statement)),
-  );
-  const migration = migrationSql.then(serializeQuery);
-  const migrationFilePath = generateCustomMigrationFile();
-  return Promise.all([migrationFilePath, migration]).then(([path, migration]) =>
-    writeFile(path, migration),
-  );
+
+  return Promise.all([dropPreviousTriggers, triggers])
+    .then(([prevTriggers, triggers]) => createMigrationQuery(...prevTriggers, ...triggers))
+    .then(serializeQuery);
 }
 
 const schemaDirectory = "./src/server/database/schema";
@@ -62,11 +68,12 @@ function getPreviousTriggers() {
           (match, b) => match ?? b,
         ),
       ),
-    );
+    )
+    .then(unique);
 }
 
 function generateCustomMigrationFile() {
-  return execAsync("pnpm drizzle-kit generate:sqlite --custom").then((stdout) => {
+  return execAsync("pnpm drizzle-kit generate --custom").then((stdout) => {
     const file = stdout.match(/Your SQL migration file.+migrations\/(.+\.sql)/)?.[1];
     if (!file) throw Error("Could not resolve migration file path");
     return resolve(migrationsDirectory, file);
@@ -74,7 +81,7 @@ function generateCustomMigrationFile() {
 }
 
 const sqlite = new SQLiteSyncDialect();
-function createMigration(...statements: Array<SQL>) {
+function createMigrationQuery(...statements: Array<SQL>) {
   return sqlite.sqlToQuery(sql.join(statements, breakpoint));
 }
 

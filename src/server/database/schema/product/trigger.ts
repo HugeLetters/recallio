@@ -5,6 +5,8 @@ import { eq, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
 import { productMeta, review } from ".";
 
+const excluded = alias(productMeta, "excluded");
+
 export const insertTrigger = new Trigger({
   name: "update_product_meta_on_new_review",
   type: "INSERT",
@@ -22,7 +24,7 @@ export const insertTrigger = new Trigger({
         target: productMeta.barcode,
         set: {
           publicReviewCount: sql`${productMeta.publicReviewCount} + 1`,
-          publicTotalRating: sql`${productMeta.publicTotalRating} + ${alias(productMeta, "excluded").publicTotalRating}`,
+          publicTotalRating: sql`${productMeta.publicTotalRating} + ${excluded.publicTotalRating}`,
         },
       }),
 });
@@ -48,20 +50,29 @@ export const updateTrigger = new Trigger({
   on: review,
   of: review.isPrivate,
   when: ({ newRow, oldRow }) => ne(newRow.isPrivate, oldRow.isPrivate),
-  do: ({ newRow }) =>
-    db
-      .update(productMeta)
-      .set({
-        publicReviewCount: caseWhen(
-          eq(newRow.isPrivate, false),
-          sql`${productMeta.publicReviewCount} + 1`,
-          sql`MAX(0, ${productMeta.publicReviewCount} - 1)`,
-        ),
-        publicTotalRating: caseWhen(
-          eq(newRow.isPrivate, false),
-          sql`${productMeta.publicTotalRating} + ${newRow.rating}`,
-          sql`MAX(0, ${productMeta.publicTotalRating} - ${newRow.rating})`,
-        ),
+  do: ({ newRow }) => {
+    const isPublic = eq(newRow.isPrivate, false);
+    return db
+      .insert(productMeta)
+      .values({
+        barcode: sql`${newRow.barcode}`,
+        publicReviewCount: caseWhen(isPublic, sql`1`, sql`0`),
+        publicTotalRating: caseWhen(isPublic, newRow.rating, sql`0`),
       })
-      .where(eq(productMeta.barcode, newRow.barcode)),
+      .onConflictDoUpdate({
+        target: productMeta.barcode,
+        set: {
+          publicReviewCount: caseWhen(
+            isPublic,
+            sql`${productMeta.publicReviewCount} + 1`,
+            sql`MAX(0, ${productMeta.publicReviewCount} - 1)`,
+          ),
+          publicTotalRating: caseWhen(
+            isPublic,
+            sql`${productMeta.publicTotalRating} + ${newRow.rating}`,
+            sql`MAX(0, ${productMeta.publicTotalRating} - ${newRow.rating})`,
+          ),
+        },
+      });
+  },
 });
