@@ -16,3 +16,7 @@ function daysToMilliseconds(days: number) {
 }
 
 const productNameDuration = daysToMilliseconds(30 * 6);
+
+export function updateProductNameScrapperCounter(name: string) {
+  return redis.incr(`scrapper-product:${name}`);
+}
