@@ -46,3 +46,7 @@ export function mostCommon(count: number) {
       .map(([v]) => v);
   };
 }
+
+export function unique<T>(array: Array<T>): Array<T> {
+  return [...new Set(array)];
+}
