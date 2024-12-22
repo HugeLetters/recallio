@@ -33,6 +33,7 @@ const Page: NextPageWithLayout = () => {
         <Scanner />
         <Offline />
         <MadeBy />
+        <PoweredBy />
       </Root>
       <ButtonLike className="primary text-center">
         <a
@@ -232,6 +233,33 @@ function Author({ name, socials }: AuthorProps) {
         </div>
       )}
     </div>
+  );
+}
+
+function PoweredBy() {
+  return (
+    <Item value="powered-by">
+      <Header>Powered by</Header>
+      <Content>
+        <div>
+          <div>this website uses these services for product name suggestions:</div>
+          <li className="flex flex-col gap-2 pl-3">
+            <ul>
+              <ExternalLink href="https://upcdatabase.org">upcdatabase.org</ExternalLink>
+            </ul>
+            <ul>
+              <ExternalLink href="https://www.upcdatabase.com">www.upcdatabase.com</ExternalLink>
+            </ul>
+            <ul>
+              <ExternalLink href="https://www.brocade.io">www.brocade.io</ExternalLink>
+            </ul>
+            <ul>
+              <ExternalLink href="https://go-upc.com">go-upc.com</ExternalLink>
+            </ul>
+          </li>
+        </div>
+      </Content>
+    </Item>
   );
 }
 
