@@ -3,20 +3,23 @@ import { isVideoReady } from "./util";
 
 export class NativeBarcodeScanner implements BarcodeScanner {
   private readonly detector = new BarcodeDetector();
-  scanBlob = (blob: Blob) => {
+  scanBlob(blob: Blob) {
     return createImageBitmap(blob).then((bitmap) =>
       this.detector.detect(bitmap).then(grabFirstResult),
     );
-  };
+  }
 
   scanUrl(url: string) {
     return fetch(url)
       .then((res) => res.blob())
-      .then(this.scanBlob);
+      .then((blob) => this.scanBlob(blob));
   }
 
   scanVideo(video: HTMLVideoElement) {
-    if (!isVideoReady(video)) return Promise.resolve(null);
+    if (!isVideoReady(video)) {
+      return Promise.resolve(null);
+    }
+
     return this.detector.detect(video).then(grabFirstResult);
   }
 }

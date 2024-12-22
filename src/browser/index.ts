@@ -1,10 +1,31 @@
 import { ignore } from "@/utils";
-import { useRef, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 export const browser = typeof window !== "undefined";
 
+export function useMediaQuery(query: MediaQueryList | null) {
+  const [matches, setMatches] = useState(() => query?.matches ?? false);
+
+  useEffect(() => {
+    if (!query) {
+      return;
+    }
+
+    function listener(e: MediaQueryListEvent) {
+      setMatches(e.matches);
+    }
+    query.addEventListener("change", listener);
+    return () => {
+      query.removeEventListener("change", listener);
+    };
+  }, [query]);
+
+  return matches;
+}
+
+const mouseQuery = browser ? matchMedia("(pointer:fine)") : null;
 export function useHasMouse() {
-  return useRef(browser ? matchMedia("(pointer:fine)").matches : false).current;
+  return useMediaQuery(mouseQuery);
 }
 
 function subscription() {

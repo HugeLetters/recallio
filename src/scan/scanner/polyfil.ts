@@ -8,14 +8,14 @@ export class PolyfilBarcodeScanner implements BarcodeScanner {
     preloadModule();
   }
 
-  scanBlob = (blob: Blob) => {
+  scanBlob(blob: Blob) {
     return scanFile(blob).then(grabFirstResult);
-  };
+  }
 
   scanUrl(url: string) {
     return fetch(url)
       .then((res) => res.blob())
-      .then(this.scanBlob);
+      .then((blob) => this.scanBlob(blob));
   }
 
   private readonly getVideoImageData = createVideoImageDataProducer();
@@ -50,10 +50,14 @@ function createVideoImageDataProducer() {
     willReadFrequently: true,
   });
 
-  if (!ctx) return null;
+  if (!ctx) {
+    return null;
+  }
 
   return function (video: HTMLVideoElement) {
-    if (!isVideoReady(video)) return null;
+    if (!isVideoReady(video)) {
+      return null;
+    }
 
     const { videoWidth, videoHeight } = video;
     canvas.width = videoWidth;
