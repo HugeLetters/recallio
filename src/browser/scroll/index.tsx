@@ -6,7 +6,7 @@ import { tw } from "@/styles/tw";
 import type { Nullish } from "@/utils/type";
 import { useEffect } from "react";
 import ArrowIcon from "~icons/formkit/right";
-import { useScrollDown } from "./down";
+import { useScrollUp } from "./up";
 
 type ScrollUpProps = {
   threshold?: number;
@@ -19,6 +19,8 @@ interface ScrollUpButtonProps extends ScrollUpProps {
 }
 
 function ScrollUpButtonImpl({ show, threshold = 500, target, className }: ScrollUpButtonProps) {
+  const isScrollActive = useScrollUp({ target, downThreshold: threshold });
+
   useEffect(() => {
     if (!target) return;
 
@@ -28,7 +30,6 @@ function ScrollUpButtonImpl({ show, threshold = 500, target, className }: Scroll
       target.style.setProperty("position", position);
     };
   }, [target]);
-  const isScrollActive = useScrollDown({ target, downThreshold: threshold, resetOnUp: true });
 
   return (
     <div className="absolute bottom-2 right-2">

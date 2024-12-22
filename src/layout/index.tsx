@@ -39,7 +39,7 @@ function LayoutScrollUpButton() {
     <TrackedScrollUpButton
       tracker={layoutLongScrollTracker}
       target={main}
-      className="z-50 size-10"
+      className="z-10 size-10 -translate-y-16"
     />
   );
 }
