@@ -1,20 +1,18 @@
 import type { Nullish } from "@/utils/type";
 import { useEffect, useState } from "react";
 
-type ScrollThresholdOptions = {
-  threshold: number;
+type ScrollDownOptions = {
+  downThreshold: number;
   target: Nullish<HTMLElement>;
   resetOnUp?: boolean;
 };
-export function useScrollThreshold({
-  target,
-  threshold,
-  resetOnUp = false,
-}: ScrollThresholdOptions) {
+export function useScrollDown({ target, downThreshold, resetOnUp = false }: ScrollDownOptions) {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    if (!target) return;
+    if (!target) {
+      return;
+    }
 
     let lastPos = target.scrollTop;
     const scrollHandler = function () {
@@ -22,7 +20,7 @@ export function useScrollThreshold({
       if (resetOnUp && lastPos > scroll) {
         setIsActive(false);
       } else {
-        setIsActive(scroll > threshold);
+        setIsActive(scroll > downThreshold);
       }
       lastPos = scroll;
     };
@@ -33,7 +31,7 @@ export function useScrollThreshold({
       target.removeEventListener("scroll", scrollHandler);
       setIsActive(false);
     };
-  }, [threshold, target, resetOnUp]);
+  }, [target, downThreshold, resetOnUp]);
 
   return isActive;
 }

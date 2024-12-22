@@ -1,4 +1,4 @@
-import { TrackedScrollUpButton } from "@/browser/scroll-up";
+import { TrackedScrollUpButton } from "@/browser/scroll";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import type { NextPage } from "next";

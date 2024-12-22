@@ -1,5 +1,5 @@
 import { Flipped } from "@/animation/flip";
-import { useScrollThreshold } from "@/browser/scroll-up/threshold";
+import { useScrollDown } from "@/browser/scroll/down";
 import type { Icon } from "@/image/icon";
 import { ToolbarLink } from "@/interface/toolbar";
 import type { ScanType } from "@/scan/store";
@@ -17,12 +17,12 @@ import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import { layoutLongScrollTracker } from "./long-scroll-tracker";
 import { layoutMainStore } from "./store";
-import { useScrollEnd } from "@/browser/scroll-up/end";
+import { useScrollEnd } from "@/browser/scroll/end";
 
 export function Footer() {
   const isLayoutLongScroll = useStore(layoutLongScrollTracker);
   const main = useStore(layoutMainStore);
-  const isScrolled = useScrollThreshold({ threshold: 100, target: main, resetOnUp: true });
+  const isScrolled = useScrollDown({ downThreshold: 100, target: main, resetOnUp: true });
   const isScrollEnd = useScrollEnd(main);
   const hideFooter = isScrolled || isScrollEnd;
 
