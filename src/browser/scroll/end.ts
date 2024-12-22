@@ -10,7 +10,7 @@ export function useScrollEnd(target: Nullish<HTMLElement>) {
     }
 
     const scrollHandler = function () {
-      setIsEnd(target.offsetHeight + target.scrollTop >= target.scrollHeight);
+      setIsEnd(target.offsetHeight + target.scrollTop >= target.scrollHeight - 1);
     };
 
     target.addEventListener("scroll", scrollHandler);
