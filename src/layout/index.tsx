@@ -1,4 +1,4 @@
-import { TrackedScrollUpButton } from "@/browser/scroll-up";
+import { TrackedScrollUpButton } from "@/browser/scroll";
 import { useStore } from "@/state/store";
 import { tw } from "@/styles/tw";
 import type { NextPage } from "next";
@@ -39,7 +39,7 @@ function LayoutScrollUpButton() {
     <TrackedScrollUpButton
       tracker={layoutLongScrollTracker}
       target={main}
-      className="z-50 size-10"
+      className="z-10 size-10 -translate-y-16"
     />
   );
 }

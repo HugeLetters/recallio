@@ -1,5 +1,5 @@
 import { Flipped } from "@/animation/flip";
-import { useScrollThreshold } from "@/browser/scroll-up/threshold";
+import { useScrollDown } from "@/browser/scroll/down";
 import type { Icon } from "@/image/icon";
 import { ToolbarLink } from "@/interface/toolbar";
 import type { ScanType } from "@/scan/store";
@@ -17,18 +17,21 @@ import SearchIcon from "~icons/iconamoon/search-light";
 import ProfileIcon from "~icons/ion/person-outline";
 import { layoutLongScrollTracker } from "./long-scroll-tracker";
 import { layoutMainStore } from "./store";
+import { useScrollEnd } from "@/browser/scroll/end";
 
 export function Footer() {
   const isLayoutLongScroll = useStore(layoutLongScrollTracker);
   const main = useStore(layoutMainStore);
-  const isScrolled = useScrollThreshold({ threshold: 100, target: main, resetOnUp: true });
+  const isScrolled = useScrollDown({ downThreshold: 100, target: main, resetOnUp: true });
+  const isScrollEnd = useScrollEnd(main);
+  const hideFooter = isScrolled || isScrollEnd;
 
   return (
     <footer
       className={tw(
         "bottom-0 flex h-16 w-full shrink-0 justify-center bg-white text-neutral-500 shadow-around sa-o-15 sa-r-2 max-xl:text-sm xl:h-20",
         isLayoutLongScroll ? "fixed transition-opacity duration-300" : "sticky",
-        isLayoutLongScroll && isScrolled && "pointer-events-none opacity-20",
+        isLayoutLongScroll && hideFooter && "pointer-events-none opacity-20",
       )}
     >
       <NavBar />

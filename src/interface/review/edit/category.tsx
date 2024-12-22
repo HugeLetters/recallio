@@ -1,4 +1,4 @@
-import { ScrollUpButton } from "@/browser/scroll-up";
+import { ScrollUpButton } from "@/browser/scroll";
 import { Button } from "@/interface/button";
 import { DialogOverlay } from "@/interface/dialog";
 import { InfiniteScroll } from "@/interface/list/infinite-scroll";
