@@ -4,6 +4,7 @@ import type { CropDimensions } from "@/image/utils";
 import { crop as cropImage } from "@/image/utils";
 import { toast } from "@/interface/toast";
 import { ImagePreview } from "@/product/components";
+import { asyncStateOptions } from "@/state/async";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -100,19 +101,24 @@ export function useReviewImage(src: ReviewForm["image"]) {
   const [rawValue, setRawValue] = useState<ImageState>(ImageAction.KEEP);
   const [cropArea, setCropArea] = useState<CropDimensions | null>(null);
 
-  const { data: rawImageQueryData } = useAsyncState({
-    domain: "review_image",
-    dependencies: src,
-    queryFn(src) {
-      if (src === null) {
-        return null;
-      }
+  const client = useQueryClient();
+  const { data: rawImageQueryData } = useQuery(
+    asyncStateOptions({
+      client,
+      domain: "review_image",
+      dependencies: src,
+      queryFn(src) {
+        if (src === null) {
+          return null;
+        }
 
-      return fetch(src)
-        .then((res) => res.blob())
-        .then((blob) => blobToFile(blob, src));
-    },
-  });
+        const file = fetch(src)
+          .then((res) => res.blob())
+          .then((blob) => blobToFile(blob, src));
+        return file;
+      },
+    }),
+  );
   function getRawImage(): File | null {
     switch (rawValue) {
       case ImageAction.KEEP:
@@ -125,31 +131,34 @@ export function useReviewImage(src: ReviewForm["image"]) {
   }
   const rawImage = getRawImage();
 
-  const imageQuery = useAsyncState({
-    domain: "modified_review_image",
-    dependencies: { image: rawImage ? hashFile(rawImage) : null, crop: cropArea },
-    async queryFn({ crop }) {
-      const image = rawImage;
-      if (!image) {
-        return null;
-      }
+  const imageQuery = useQuery(
+    asyncStateOptions({
+      client,
+      domain: "modified_review_image",
+      dependencies: { image: rawImage ? hashFile(rawImage) : null, crop: cropArea },
+      async queryFn({ crop }) {
+        const image = rawImage;
+        if (!image) {
+          return null;
+        }
 
-      let output = image;
+        let output = image;
 
-      if (crop) {
-        const source = output;
-        output = await cropImage({
-          image: source,
-          width: crop.width,
-          height: crop.height,
-          left: crop.left,
-          top: crop.top,
-        }).then((blob) => blobToFile(blob, source.name));
-      }
+        if (crop) {
+          const source = output;
+          output = await cropImage({
+            image: source,
+            width: crop.width,
+            height: crop.height,
+            left: crop.left,
+            top: crop.top,
+          }).then((blob) => blobToFile(blob, source.name));
+        }
 
-      return output;
-    },
-  });
+        return output;
+      },
+    }),
+  );
   const image: File | null = imageQuery.data ?? rawImage;
 
   function getValue(): ImageState {
@@ -197,38 +206,6 @@ export function useReviewImage(src: ReviewForm["image"]) {
       },
     },
   };
-}
-
-type AsyncStateOptions<TDeps, TOutput> = {
-  domain: string;
-  dependencies: TDeps;
-  queryFn: (input: TDeps) => TOutput | Promise<TOutput>;
-};
-
-function useAsyncState<TInput, TOutput>({
-  domain,
-  dependencies,
-  queryFn,
-}: AsyncStateOptions<TInput, TOutput>) {
-  const client = useQueryClient();
-
-  return useQuery({
-    queryKey: ["__client", domain, dependencies] as const,
-    async queryFn({ queryKey: [_, __, deps] }) {
-      const result = await queryFn(deps);
-      setTimeout(() => {
-        client.removeQueries({ exact: false, queryKey: ["__client", domain], type: "inactive" });
-      }, 500);
-
-      return result;
-    },
-    staleTime: Infinity,
-    networkMode: "always",
-    structuralSharing: false,
-    keepPreviousData: true,
-    retry: 3,
-    retryDelay: 0,
-  });
 }
 
 function hashFile(file: File): string {
