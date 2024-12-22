@@ -1,4 +1,4 @@
-import { protectedProcedure } from "@/server/api/trpc";
+import { publicProcedure } from "@/server/api/trpc";
 import type { Paginated } from "@/server/api/utils/pagination";
 import { createPagination } from "@/server/api/utils/pagination";
 import { db } from "@/server/database/client/serverless";
@@ -20,7 +20,7 @@ const pagination = createPagination({
 });
 
 type SortColumns = StrictExtract<keyof typeof review._.columns, "updatedAt" | "rating">;
-export const getReviewList = protectedProcedure
+export const getReviewList = publicProcedure
   .input(
     z
       .object({

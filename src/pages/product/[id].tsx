@@ -71,6 +71,8 @@ Page.getLayout = (children) => {
   );
 };
 
+Page.isPublic = true;
+
 export default Page;
 
 type SummaryProps = {
@@ -80,9 +82,11 @@ function Summary({ summary }: SummaryProps) {
   const { categories, image, name, rating, reviewCount } = summary;
 
   const barcode = useBarcode();
+  const { data: session } = useCachedSession();
+  const shouldFetchUserReview = !!barcode && !!session;
   const reviewQuery = trpc.user.review.getOne.useQuery(
     { barcode: barcode ?? "" },
-    { enabled: !!barcode, staleTime: Infinity },
+    { enabled: shouldFetchUserReview, staleTime: Infinity },
   );
 
   return (

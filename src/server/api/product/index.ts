@@ -1,4 +1,4 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/database/client/serverless";
 import { query } from "@/server/database/query/aggregate";
 import {
@@ -19,7 +19,7 @@ import { z } from "zod";
 import { getReviewList } from "./review-list";
 import { getSummaryList } from "./summary-list";
 
-const getSummary = protectedProcedure
+const getSummary = publicProcedure
   .input(z.object({ barcode: createBarcodeSchema("Barcode is required to request product data") }))
   .query(({ input: { barcode } }) => {
     const categorySq = db
