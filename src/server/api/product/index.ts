@@ -63,7 +63,7 @@ const getSummary = protectedProcedure
       .groupBy(review.barcode)
       .limit(1)
       .get()
-      .then((x) => x ?? null);
+      .then((summary) => summary ?? null);
   });
 
 export const productRouter = createTRPCRouter({
@@ -74,13 +74,12 @@ export const productRouter = createTRPCRouter({
     .input(z.object({ barcode: createBarcodeSchema() }))
     .query(({ input: { barcode } }): Promise<string[]> => {
       return getProductNames(barcode)
-        .then((cached) => {
+        .then(async (cached) => {
           if (cached) return cached;
 
-          return getScrapedProducts(barcode).then((products) => {
-            cacheProductNames(barcode, products).catch(console.error);
-            return products;
-          });
+          const products = await getScrapedProducts(barcode);
+          cacheProductNames(barcode, products).catch(console.error);
+          return products;
         })
         .catch(throwExpectedError("Failed to retrieve suggested product names."));
     }),
