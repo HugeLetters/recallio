@@ -17,14 +17,18 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !scanner) return;
+    if (!video || !scanner) {
+      return;
+    }
 
     let cleanedUp = false;
 
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "environment" }, audio: false })
       .then((stream) => {
-        if (cleanedUp) return;
+        if (cleanedUp) {
+          return;
+        }
 
         video.srcObject = stream;
         setChangeZoom(() => createZoomHandler(video));
@@ -93,17 +97,23 @@ type CameraConstraints = MediaTrackConstraints & { zoom?: number };
 type ZoomHandler = ReturnType<typeof createZoomHandler>;
 function createZoomHandler(video: HTMLVideoElement) {
   const stream = video.srcObject;
-  if (!(stream instanceof MediaStream)) return null;
+  if (!(stream instanceof MediaStream)) {
+    return null;
+  }
 
   const tracks = stream.getTracks();
   const canZoom = tracks.some((track) => !!getTrackZoomCapability(track));
-  if (!canZoom) return null;
+  if (!canZoom) {
+    return null;
+  }
 
   return (zoom: number) => {
     const tracks = stream.getTracks();
     for (const track of tracks) {
       const zoomCapability = getTrackZoomCapability(track);
-      if (!zoomCapability) continue;
+      if (!zoomCapability) {
+        continue;
+      }
 
       const { min, max } = zoomCapability;
       const normalizedZoom = clamp(min, min + (zoom / 100) * (max - min), max);
@@ -117,13 +127,19 @@ function createZoomHandler(video: HTMLVideoElement) {
 
 type ZoomCapability = { min: number; max: number };
 function getTrackZoomCapability(track: MediaStreamTrack) {
-  if (!hasTruthyProperty(track, "getCapabilities")) return null;
+  if (!hasTruthyProperty(track, "getCapabilities")) {
+    return null;
+  }
 
   const { zoom } = track.getCapabilities() as { zoom?: ZoomCapability };
-  if (!zoom) return null;
+  if (!zoom) {
+    return null;
+  }
 
   const { min, max } = zoom;
-  if (max <= min) return null;
+  if (max <= min) {
+    return null;
+  }
 
   return zoom;
 }
