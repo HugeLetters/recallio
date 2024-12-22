@@ -66,7 +66,7 @@ function getPreviousTriggers() {
 }
 
 function generateCustomMigrationFile() {
-  return execAsync("pnpm drizzle-kit generate:sqlite --custom").then((stdout) => {
+  return execAsync("pnpm drizzle-kit generate --custom").then((stdout) => {
     const file = stdout.match(/Your SQL migration file.+migrations\/(.+\.sql)/)?.[1];
     if (!file) throw Error("Could not resolve migration file path");
     return resolve(migrationsDirectory, file);
