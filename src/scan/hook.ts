@@ -52,6 +52,7 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
     }
 
     video.srcObject = stream;
+    setChangeZoom(() => createZoomHandler(video));
     if (video.paused) {
       video.play().catch(console.error);
     }
@@ -72,15 +73,6 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
       cancelLoop();
     };
   }, [scanner, stream, onScanStable]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) {
-      return;
-    }
-
-    setChangeZoom(() => createZoomHandler(video));
-  }, []);
 
   return {
     /** Attach this ref to an {@link HTMLVideoElement} */
