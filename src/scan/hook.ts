@@ -4,6 +4,7 @@ import { logToastError, toast } from "@/interface/toast";
 import { asyncStateOptions } from "@/state/async";
 import { useStableValue } from "@/state/stable";
 import { clamp, isDev } from "@/utils";
+import { filterOut } from "@/utils/array/filter";
 import { hasTruthyProperty } from "@/utils/object";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -19,18 +20,23 @@ export function useBarcodeScanner({ onScan }: UseBarcodeScannerOptions) {
   const [changeZoom, setChangeZoom] = useState<ZoomHandler>(null);
 
   const client = useQueryClient();
+
   const { data: stream = null } = useQuery({
     ...asyncStateOptions({
       client,
       domain: "mediaDevices",
       dependencies: undefined,
-      queryFn() {
+      async queryFn() {
         if (!browser) {
           return null;
         }
 
+        const devices = await getVideoDevices();
         return navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
+          video: {
+            facingMode: { ideal: "environment" },
+            deviceId: { ideal: devices.at(-1)?.deviceId },
+          },
           audio: false,
         });
       },
@@ -152,4 +158,16 @@ function getTrackZoomCapability(track: MediaStreamTrack) {
   }
 
   return zoom;
+}
+
+async function getVideoDevices() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+
+  return filterOut(devices, (device, bad) => {
+    if (device.kind === "videoinput") {
+      return device as InputDeviceInfo;
+    }
+
+    return bad;
+  });
 }
