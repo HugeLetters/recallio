@@ -11,6 +11,7 @@ import { createTRPCProxyClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { signOutOnUnauthorizedError } from "./auth";
+import { QueryErrorHandler } from "@/error/query";
 
 export const trpc = createTRPCNext<ApiRouter>({
   config() {
@@ -29,8 +30,13 @@ export const trpc = createTRPCNext<ApiRouter>({
           },
         },
         queryCache: new QueryCache({
-          onError(error) {
+          onError(error, query) {
             logger.error(error);
+            if (query.meta?.error instanceof QueryErrorHandler) {
+              query.meta.error.error(query);
+              return;
+            }
+
             const message = getErrorMessage(error);
             if (message !== FAILED_TO_FETCH_MESSAGE) {
               setTimeout(() => {
