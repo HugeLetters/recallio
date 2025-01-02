@@ -165,6 +165,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
 
         if (crop) {
           const source = output;
+          const bitmap = await createImageBitmap(source);
           output = await cropImage({
             image: bitmap,
             width: crop.width * bitmap.width,

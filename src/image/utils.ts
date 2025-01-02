@@ -8,15 +8,15 @@ export type CropDimensions = {
 };
 
 interface CropOptions extends CropDimensions {
-  image: Blob;
+  image: ImageBitmap;
 }
 
 export async function crop({ image, left, top, width, height }: CropOptions) {
-  const { bitmap, canvas, ctx } = await createDrawingContext(image);
+  const { canvas, ctx } = createDrawingContext();
   canvas.width = width;
   canvas.height = height;
 
-  ctx.drawImage(bitmap, -left, -top, bitmap.width, bitmap.height);
+  ctx.drawImage(image, -left, -top, image.width, image.height);
 
   const blob = await canvasToWebp(canvas);
   if (!blob) {

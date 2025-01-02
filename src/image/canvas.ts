@@ -1,5 +1,4 @@
-export async function createDrawingContext(file: Blob) {
-  const bitmap = await createImageBitmap(file);
+export function createDrawingContext() {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) {
@@ -7,7 +6,6 @@ export async function createDrawingContext(file: Blob) {
   }
 
   return {
-    bitmap,
     canvas,
     ctx,
   };
