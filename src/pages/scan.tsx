@@ -130,15 +130,15 @@ const Page: NextPageWithLayout = function () {
       </div>
       <div
         ref={controlsRef}
-        style={{ "--translate": `calc(var(--offset, 0px) - 100% * ${baseOffset})` }}
+        style={{ "--tx": `calc(var(--offset, 0px) - 100% * ${baseOffset})` }}
         className={tw(
-          "relative mb-8 translate-x-[var(--translate)] text-white",
+          "relative mb-8 translate-x-[--tx] text-white",
           !isSwiped && "transition-transform",
         )}
       >
         <ScanGrid
           className={tw(
-            "absolute inset-0 z-10 -translate-x-[var(--translate)]",
+            "absolute inset-0 z-10 -translate-x-[--tx]",
             !isSwiped && "transition-transform",
           )}
         >

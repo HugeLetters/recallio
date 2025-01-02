@@ -106,7 +106,7 @@ function CollapsibleComment({ overflow, children }: PropsWithChildren<Collapsibl
       }}
       style={{ "--duration": `${clamp(200, overflow * 2, 500)}ms` }}
       className={tw(
-        "relative grid transition-[grid-template-rows] duration-[var(--duration)]",
+        "relative grid transition-[grid-template-rows] duration-[--duration]",
         isCollapsed ? "cursor-pointer grid-rows-[0fr_0]" : "grid-rows-[1fr_1.25rem]",
       )}
     >
@@ -115,7 +115,7 @@ function CollapsibleComment({ overflow, children }: PropsWithChildren<Collapsibl
       </div>
       <div
         className={tw(
-          "pointer-events-none absolute bottom-0 h-7 w-full animate-fade-in bg-gradient-to-t from-white transition-opacity duration-[var(--duration)]",
+          "pointer-events-none absolute bottom-0 h-7 w-full animate-fade-in bg-gradient-to-t from-white transition-opacity duration-[--duration]",
           !isCollapsed && "opacity-0",
         )}
       />
@@ -127,7 +127,7 @@ function CollapsibleComment({ overflow, children }: PropsWithChildren<Collapsibl
           setIsCollapsed((x) => !x);
         }}
         className={tw(
-          "clickable flex size-5 origin-center translate-x-2 animate-fade-in items-center justify-center self-end justify-self-end rounded-full outline-none outline-1 outline-offset-0 outline-transparent duration-[var(--duration)] focus-visible-within:bg-black/10 focus-visible-within:outline-app-green-500",
+          "clickable flex size-5 origin-center translate-x-2 animate-fade-in items-center justify-center self-end justify-self-end rounded-full outline-none outline-1 outline-offset-0 outline-transparent duration-[--duration] focus-visible-within:bg-black/10 focus-visible-within:outline-app-green-500",
           isCollapsed && "translate-y-1 -rotate-180",
         )}
       >

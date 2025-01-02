@@ -123,8 +123,8 @@ function ScannerIcon() {
 
   return (
     <div
-      className="absolute grid h-full w-[300%] -translate-x-[var(--translate)] grid-cols-3 transition-transform duration-300"
-      style={{ "--translate": `${translate * 100}%` }}
+      className="absolute grid h-full w-[300%] -translate-x-[--tx] grid-cols-3 transition-transform duration-300"
+      style={{ "--tx": `${translate * 100}%` }}
     >
       {scanTypeList.map((scanType) => {
         const Icon = SCANNER_TYPE_ICON_MAP[scanType];
