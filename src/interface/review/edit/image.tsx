@@ -12,6 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useReducer, useState } from "react";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
+import CropIcon from "~icons/ph/crop-bold";
 import type { ReviewForm } from ".";
 
 export enum ImageAction {
@@ -39,9 +40,15 @@ export function AttachedImage(p: AttachedImageProps) {
 
   const isImagePicked = p.value instanceof File;
 
+  const isImageSet: boolean = !isDeleting && (!!p.image || !!p.savedImage);
   const canReset: boolean = isDeleting && !!p.savedImage;
-  const canDelete: boolean = !isDeleting && (!!p.image || !!p.savedImage);
+  const canDelete: boolean = isImageSet;
   const isActionAvailable = canReset || canDelete;
+
+  const [isCropping, setIsCropping] = useState(true);
+  function openCrop() {
+    setIsCropping(true);
+  }
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -54,7 +61,7 @@ export function AttachedImage(p: AttachedImageProps) {
           <button
             type="button"
             className={tw(
-              "absolute -right-2 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5",
+              "absolute -right-3 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 shadow-around sa-o-20 sa-r-1",
               canDelete ? "text-app-red-500" : "text-neutral-950",
             )}
             onClick={() => {
@@ -66,7 +73,17 @@ export function AttachedImage(p: AttachedImageProps) {
             }}
             aria-label={canDelete ? "Delete image" : "Reset image"}
           >
-            {canDelete ? <DeleteIcon /> : <ResetIcon />}
+            {canDelete ? <DeleteIcon className="size-full" /> : <ResetIcon className="size-full" />}
+          </button>
+        )}
+        {isImageSet && (
+          <button
+            type="button"
+            className="absolute -right-3 bottom-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1 text-neutral-950 shadow-around sa-o-20 sa-r-1"
+            onClick={openCrop}
+            aria-label="Crop image"
+          >
+            <CropIcon className="size-full" />
           </button>
         )}
       </div>
