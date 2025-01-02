@@ -1,3 +1,4 @@
+import { QueryErrorHandler } from "@/error/query";
 import { blobToFile, useBlobUrl } from "@/image/blob";
 import { ImagePickerButton } from "@/image/image-picker";
 import { crop as cropImage } from "@/image/utils";
@@ -149,8 +150,8 @@ export function useReviewImage(src: ReviewForm["image"]) {
   }
   const rawImage = getRawImage();
 
-  const imageQuery = useQuery(
-    asyncStateOptions({
+  const imageQuery = useQuery({
+    ...asyncStateOptions({
       client,
       domain: "modified_review_image",
       dependencies: { image: rawImage ? hashFile(rawImage) : null, crop: cropArea },
@@ -181,7 +182,12 @@ export function useReviewImage(src: ReviewForm["image"]) {
         return output;
       },
     }),
-  );
+    meta: {
+      error: new QueryErrorHandler(() => {
+        toast.error("Failed to update image");
+      }),
+    },
+  });
   const image: File | null = imageQuery.data ?? rawImage;
 
   function getValue(): ImageState {
