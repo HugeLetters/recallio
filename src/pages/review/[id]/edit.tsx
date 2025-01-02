@@ -117,7 +117,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
 
     function onReviewSave(optimisticReview: StrictOmit<ReviewData, "image">) {
-      const image = reviewImage.state;
+      const image = reviewImage.value;
       if (!(image instanceof File)) {
         setOptimisticReview(optimisticReview, image === ImageAction.KEEP ? undefined : null);
 
@@ -183,7 +183,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
           value: reviewImage.effects.crop.value,
           setValue: reviewImage.effects.crop.set,
         }}
-        state={reviewImage.state}
+        value={reviewImage.value}
       />
       <Name
         barcode={barcode}

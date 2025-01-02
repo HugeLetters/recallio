@@ -21,7 +21,7 @@ export enum ImageAction {
 export type ImageState = File | ImageAction;
 
 interface AttachedImageProps {
-  state: ImageState;
+  value: ImageState;
   image: File | null;
   setImage: (value: File) => void;
   deleteImage: () => void;
@@ -31,12 +31,12 @@ interface AttachedImageProps {
   rawImage: File | null;
 }
 export function AttachedImage(p: AttachedImageProps) {
-  const isDeleting = p.state === ImageAction.DELETE;
+  const isDeleting = p.value === ImageAction.DELETE;
 
   const rawImageSrc = useBlobUrl(p.rawImage ?? undefined) ?? (!isDeleting ? p.savedImage : null);
   const imageSrc = useBlobUrl(p.image ?? undefined) ?? rawImageSrc;
 
-  const isImagePicked = p.state instanceof File;
+  const isImagePicked = p.value instanceof File;
 
   const canReset: boolean = isDeleting && !!p.savedImage;
   const canDelete: boolean = !isDeleting && (!!p.image || !!p.savedImage);
@@ -172,7 +172,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
       }
     }
   }
-  const state = getValue();
+  const value = getValue();
 
   function reset() {
     setRawValue(ImageAction.KEEP);
@@ -180,7 +180,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
   }
 
   return {
-    state,
+    value,
     rawImage,
     image,
     setImage(this: void, image: File) {
