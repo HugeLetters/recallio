@@ -1,6 +1,5 @@
 import { blobToFile, useBlobUrl } from "@/image/blob";
 import { ImagePickerButton } from "@/image/image-picker";
-import type { CropDimensions } from "@/image/utils";
 import { crop as cropImage } from "@/image/utils";
 import { toast } from "@/interface/toast";
 import { ImagePreview } from "@/product/components";
@@ -28,7 +27,7 @@ interface AttachedImageProps {
   setImage: (value: File) => void;
   deleteImage: () => void;
   resetImage: () => void;
-  crop: Model<CropDimensions | null>;
+  crop: Model<CropCoordinates | null>;
   savedImage: ReviewForm["image"];
   rawImage: File | null;
 }
@@ -166,10 +165,14 @@ export function useReviewImage(src: ReviewForm["image"]) {
         if (crop) {
           const source = output;
           const bitmap = await createImageBitmap(source);
+
+          const widthRatio = crop.right - crop.left;
+          const heightRatio = crop.bottom - crop.top;
+
           output = await cropImage({
             image: bitmap,
-            width: crop.width * bitmap.width,
-            height: crop.height * bitmap.height,
+            width: widthRatio * bitmap.width,
+            height: heightRatio * bitmap.height,
             left: crop.left * bitmap.width,
             top: crop.top * bitmap.height,
           }).then((blob) => blobToFile(blob, source.name));
@@ -229,22 +232,28 @@ export function useReviewImage(src: ReviewForm["image"]) {
   };
 }
 
-type CropArea = CropDimensions | null;
-function cropAreaReducer(_prevValue: CropArea, newValue: CropArea): CropDimensions | null {
+type CropCoordinates = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
+type CropArea = CropCoordinates | null;
+function cropAreaReducer(_prevValue: CropArea, newValue: CropArea): CropArea {
   if (newValue === null) {
     return null;
   }
 
-  if (newValue.left <= 0 && newValue.top <= 0 && newValue.width >= 1 && newValue.height >= 1) {
+  if (newValue.left <= 0 && newValue.top <= 0 && newValue.right >= 1 && newValue.bottom >= 1) {
     return null;
   }
 
-  // todo - refine clamps: h/w are bound by l/t
+  // todo - refine clamps: r/b are bound by l/t
   return {
     left: clamp(0, newValue.left, 1),
+    right: clamp(0, newValue.right, 1),
     top: clamp(0, newValue.top, 1),
-    height: clamp(0, newValue.height, 1),
-    width: clamp(0, newValue.width, 1),
+    bottom: clamp(0, newValue.bottom, 1),
   };
 }
 
