@@ -1,10 +1,8 @@
 import { env } from "@/server/env/index.mjs";
 import { verifySignature } from "@upstash/qstash/dist/nextjs";
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiHandler } from "next";
 
-export function createCronHandler(
-  innerHandler: (req: NextApiRequest, res: NextApiResponse) => Promise<unknown>,
-) {
+export function createCronHandler<T = unknown>(innerHandler: NextApiHandler<T>) {
   if (env.NEXT_PUBLIC_NODE_ENV === "development") return innerHandler;
 
   return verifySignature(innerHandler, {
