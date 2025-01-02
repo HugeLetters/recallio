@@ -146,7 +146,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   });
   const { startUpload } = useUploadThing("reviewImage", {
     onClientUploadComplete(result) {
-      if (result.some((x) => !x.serverData)) {
+      if (result.some((data) => data.serverData !== null)) {
         toast.error("Failed to upload the image");
       }
       invalidate();

@@ -28,19 +28,23 @@ export const userImageUploader = uploadthing({ image: { maxFileSize: "64KB", max
     };
   })
   .onUploadError(({ error }) => console.error(error))
-  .onUploadComplete(({ file, metadata: { userId, userImageKey } }): Promise<boolean> => {
-    return Promise.resolve()
-      .then<unknown>(() => {
-        const updateUser = db.update(user).set({ image: file.key }).where(eq(user.id, userId));
-        if (!userImageKey) return updateUser;
-        const deleteImage = fileDeleteQueueInsert(db, [{ fileKey: userImageKey }]);
-        return db.batch([updateUser, deleteImage]);
-      })
-      .then(() => true)
+  .onUploadComplete(({ file, metadata: { userId, userImageKey } }) => {
+    const dbTask = (() => {
+      const updateUser = db.update(user).set({ image: file.key }).where(eq(user.id, userId));
+      if (!userImageKey) {
+        return updateUser;
+      }
+
+      const deleteImage = fileDeleteQueueInsert(db, [{ fileKey: userImageKey }]);
+      return db.batch([updateUser, deleteImage]);
+    })();
+
+    return dbTask
+      .then(() => undefined)
       .catch((e) => {
         console.error(e);
         return fileDeleteQueueInsert(db, [{ fileKey: file.key }])
           .catch(console.error)
-          .then(() => false);
+          .then(() => ({ error: "upload error" }));
       });
   });
