@@ -7,8 +7,9 @@ import { ImagePreview } from "@/product/components";
 import { asyncStateOptions } from "@/state/async";
 import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
+import { clamp } from "@/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 import type { ReviewForm } from ".";
@@ -99,7 +100,7 @@ export function AttachedImage(p: AttachedImageProps) {
 // ? todo - handle src changes
 export function useReviewImage(src: ReviewForm["image"]) {
   const [rawValue, setRawValue] = useState<ImageState>(ImageAction.KEEP);
-  const [cropArea, setCropArea] = useState<CropDimensions | null>(null);
+  const [cropArea, setCropArea] = useReducer(cropAreaReducer, null);
 
   const client = useQueryClient();
   const { data: rawImageQueryData } = useQuery(
@@ -114,6 +115,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
 
         const file = fetch(src)
           .then((res) => res.blob())
+          // todo - change name
           .then((blob) => blobToFile(blob, src));
         return file;
       },
@@ -147,11 +149,11 @@ export function useReviewImage(src: ReviewForm["image"]) {
         if (crop) {
           const source = output;
           output = await cropImage({
-            image: source,
-            width: crop.width,
-            height: crop.height,
-            left: crop.left,
-            top: crop.top,
+            image: bitmap,
+            width: crop.width * bitmap.width,
+            height: crop.height * bitmap.height,
+            left: crop.left * bitmap.width,
+            top: crop.top * bitmap.height,
           }).then((blob) => blobToFile(blob, source.name));
         }
 
@@ -193,6 +195,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
     },
     reset,
     effects: {
+      /** Values between `0` and `1` */
       crop: {
         value: cropArea,
         set(this: void, area: typeof cropArea) {
@@ -205,6 +208,25 @@ export function useReviewImage(src: ReviewForm["image"]) {
         },
       },
     },
+  };
+}
+
+type CropArea = CropDimensions | null;
+function cropAreaReducer(_prevValue: CropArea, newValue: CropArea): CropDimensions | null {
+  if (newValue === null) {
+    return null;
+  }
+
+  if (newValue.left <= 0 && newValue.top <= 0 && newValue.width >= 1 && newValue.height >= 1) {
+    return null;
+  }
+
+  // todo - refine clamps: h/w are bound by l/t
+  return {
+    left: clamp(0, newValue.left, 1),
+    top: clamp(0, newValue.top, 1),
+    height: clamp(0, newValue.height, 1),
+    width: clamp(0, newValue.width, 1),
   };
 }
 
