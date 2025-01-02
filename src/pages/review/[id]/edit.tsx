@@ -179,10 +179,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
         setImage={reviewImage.setImage}
         deleteImage={reviewImage.delete}
         resetImage={reviewImage.reset}
-        crop={{
-          value: reviewImage.effects.crop.value,
-          setValue: reviewImage.effects.crop.set,
-        }}
+        crop={reviewImage.effects.crop}
         value={reviewImage.value}
       />
       <Name

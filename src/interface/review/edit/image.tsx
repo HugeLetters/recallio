@@ -5,7 +5,6 @@ import { crop as cropImage } from "@/image/utils";
 import { toast } from "@/interface/toast";
 import { ImagePreview } from "@/product/components";
 import { asyncStateOptions } from "@/state/async";
-import type { Model } from "@/state/type";
 import { tw } from "@/styles/tw";
 import { clamp } from "@/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +27,7 @@ interface AttachedImageProps {
   setImage: (value: File) => void;
   deleteImage: () => void;
   resetImage: () => void;
-  crop: Model<CropCoordinates | null>;
+  crop: CropModel;
   savedImage: ReviewForm["image"];
   rawImage: File | null;
 }
@@ -115,16 +114,16 @@ export function AttachedImage(p: AttachedImageProps) {
 
 // todo - cleanup
 // ? todo - handle src changes
-export function useReviewImage(src: ReviewForm["image"]) {
-  const [rawValue, setRawValue] = useState<ImageState>(ImageAction.KEEP);
-  const [cropArea, setCropArea] = useReducer(cropAreaReducer, null);
-
+export function useReviewImage(source: ReviewForm["image"]) {
   const client = useQueryClient();
-  const { data: rawImageQueryData } = useQuery(
+
+  const [rawValue, setRawValue] = useState<ImageState>(ImageAction.KEEP);
+
+  const { data: sourceImage } = useQuery(
     asyncStateOptions({
       client,
       domain: "review_image",
-      dependencies: src,
+      dependencies: source,
       queryFn(src) {
         if (src === null) {
           return null;
@@ -132,16 +131,16 @@ export function useReviewImage(src: ReviewForm["image"]) {
 
         const file = fetch(src)
           .then((res) => res.blob())
-          // todo - change name
           .then((blob) => blobToFile(blob, src));
         return file;
       },
     }),
   );
+
   function getRawImage(): File | null {
     switch (rawValue) {
       case ImageAction.KEEP:
-        return rawImageQueryData ?? null;
+        return sourceImage ?? null;
       case ImageAction.DELETE:
         return null;
       default:
@@ -150,6 +149,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
   }
   const rawImage = getRawImage();
 
+  const [cropArea, dispatchCropArea] = useReducer(cropAreaReducer, null);
   const imageQuery = useQuery({
     ...asyncStateOptions({
       client,
@@ -196,6 +196,10 @@ export function useReviewImage(src: ReviewForm["image"]) {
       case ImageAction.DELETE:
         return rawValue;
       default: {
+        if (image === sourceImage) {
+          return ImageAction.KEEP;
+        }
+
         rawValue satisfies File;
         return image ?? ImageAction.KEEP;
       }
@@ -205,7 +209,7 @@ export function useReviewImage(src: ReviewForm["image"]) {
 
   function reset() {
     setRawValue(ImageAction.KEEP);
-    setCropArea(null);
+    dispatchCropArea({ type: "RESET" });
   }
 
   return {
@@ -214,29 +218,39 @@ export function useReviewImage(src: ReviewForm["image"]) {
     image,
     setImage(this: void, image: File) {
       setRawValue(image);
-      setCropArea(null);
+      dispatchCropArea({ type: "RESET" });
     },
     delete(this: void) {
       setRawValue(ImageAction.DELETE);
-      setCropArea(null);
+      dispatchCropArea({ type: "RESET" });
     },
     reset,
     effects: {
       /** Values between `0` and `1` */
       crop: {
         value: cropArea,
-        set(this: void, area: typeof cropArea) {
-          setCropArea(area);
+        dispatch(action: CropAction) {
+          dispatchCropArea(action);
 
-          if (area === null || rawImage === null) {
-            return;
+          if (rawImage !== null) {
+            setRawValue(rawImage);
           }
-          setRawValue(rawImage);
         },
       },
     },
   };
 }
+
+type CropResizeDirection = "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
+type CropResizeAction = {
+  type: "RESIZE";
+  direction: CropResizeDirection;
+  value: number;
+};
+type CropResetAction = {
+  type: "RESET";
+};
+type CropAction = CropResizeAction | CropResetAction;
 
 type CropCoordinates = {
   left: number;
@@ -245,27 +259,58 @@ type CropCoordinates = {
   bottom: number;
 };
 type CropArea = CropCoordinates | null;
-function cropAreaReducer(_prevValue: CropArea, newValue: CropArea): CropArea {
-  if (newValue === null) {
-    return null;
+export type CropModel = ReturnType<typeof useReviewImage>["effects"]["crop"];
+
+const CROP_AREA_THRESHOLD = 0.01;
+const DEFAULT_CROP_AREA: CropCoordinates = {
+  left: 0,
+  right: 1,
+  top: 0,
+  bottom: 1,
+};
+
+function cropAreaReducer(current: CropArea, action: CropAction): CropArea {
+  switch (action.type) {
+    case "RESET":
+      return null;
+    case "RESIZE": {
+      const result = cropAreaResizeReducer(current ?? DEFAULT_CROP_AREA, action);
+
+      if (result.left <= 0 && result.top <= 0 && result.right >= 1 && result.bottom >= 1) {
+        return null;
+      }
+
+      return result;
+    }
+    default:
+      return current;
   }
+}
 
-  if (newValue.left <= 0 && newValue.top <= 0 && newValue.right >= 1 && newValue.bottom >= 1) {
-    return null;
+function cropAreaResizeReducer(
+  current: CropCoordinates,
+  action: CropResizeAction,
+): CropCoordinates {
+  switch (action.direction) {
+    case "LEFT": {
+      const left = clamp(0, action.value, current.right - CROP_AREA_THRESHOLD);
+      return { ...current, left };
+    }
+    case "RIGHT": {
+      const right = clamp(current.left + CROP_AREA_THRESHOLD, action.value, 1);
+      return { ...current, right };
+    }
+    case "TOP": {
+      const top = clamp(0, action.value, current.bottom - CROP_AREA_THRESHOLD);
+      return { ...current, top };
+    }
+    case "BOTTOM": {
+      const bottom = clamp(current.top + CROP_AREA_THRESHOLD, action.value, 1);
+      return { ...current, bottom };
+    }
+    default:
+      return current;
   }
-
-  const left = clamp(0, newValue.left, 1);
-  const right = clamp(left + 0.01, newValue.right, 1);
-
-  const top = clamp(0, newValue.top, 1);
-  const bottom = clamp(top + 0.01, newValue.bottom, 1);
-
-  return {
-    left,
-    right,
-    top,
-    bottom,
-  };
 }
 
 function hashFile(file: File): string {
