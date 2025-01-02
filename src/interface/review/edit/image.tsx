@@ -254,12 +254,17 @@ function cropAreaReducer(_prevValue: CropArea, newValue: CropArea): CropArea {
     return null;
   }
 
-  // todo - refine clamps: r/b are bound by l/t
+  const left = clamp(0, newValue.left, 1);
+  const right = clamp(left + 0.01, newValue.right, 1);
+
+  const top = clamp(0, newValue.top, 1);
+  const bottom = clamp(top + 0.01, newValue.bottom, 1);
+
   return {
-    left: clamp(0, newValue.left, 1),
-    right: clamp(0, newValue.right, 1),
-    top: clamp(0, newValue.top, 1),
-    bottom: clamp(0, newValue.bottom, 1),
+    left,
+    right,
+    top,
+    bottom,
   };
 }
 
