@@ -162,7 +162,7 @@ export function CommentIcon({ type }: CommentIconProps) {
 }
 
 type Size = "md" | "sm";
-const sizeToRenderSize: Record<Size, number> = { md: 96, sm: 48 };
+const sizeToRenderSize: Record<Size, number> = { md: 192, sm: 48 };
 type ImagePreviewProps = { src: Nullish<string>; size: Size };
 export function ImagePreview({ src, size }: ImagePreviewProps) {
   const renderSize = sizeToRenderSize[size];
