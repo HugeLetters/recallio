@@ -261,7 +261,7 @@ type CropCoordinates = {
 type CropArea = CropCoordinates | null;
 export type CropModel = ReturnType<typeof useReviewImage>["effects"]["crop"];
 
-const CROP_AREA_THRESHOLD = 0.01;
+const CROP_AREA_THRESHOLD = 0.1;
 const DEFAULT_CROP_AREA: CropCoordinates = {
   left: 0,
   right: 1,
