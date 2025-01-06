@@ -3,9 +3,8 @@ import { useRef } from "react";
 import { useDrag } from "./drag";
 
 type Movement = { dx: number; dy: number };
-interface OnSwipeStartData {
-  swipeTarget: HTMLElement;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface OnSwipeStartData {}
 interface OnSwipeEndData extends OnSwipeStartData {
   movement: Movement;
 }
@@ -28,7 +27,6 @@ export function useSwipe({
   ignore,
 }: UseSwipeOptions): PointerEventHandler<HTMLElement> {
   const origin = useRef<Movement | null>(null);
-  const swipeTarget = useRef<HTMLElement | null>(null);
 
   return useDrag({
     ignore,
@@ -36,15 +34,12 @@ export function useSwipe({
       if (!onSwipe) {
         return;
       }
-      if (!swipeTarget.current) {
-        return;
-      }
 
       origin.current ??= { dx: 0, dy: 0 };
       const dx = e.clientX - origin.current.dx;
       const dy = e.clientY - origin.current.dy;
 
-      onSwipe({ movement: { dx, dy }, swipeTarget: swipeTarget.current });
+      onSwipe({ movement: { dx, dy } });
     },
     onDragStart(e) {
       origin.current = {
@@ -52,14 +47,10 @@ export function useSwipe({
         dy: e.clientY,
       };
 
-      swipeTarget.current = e.currentTarget;
-      onSwipeStart?.({ swipeTarget: swipeTarget.current });
+      onSwipeStart?.({});
     },
     onDragEnd(e) {
       if (!onSwipeEnd) {
-        return;
-      }
-      if (!swipeTarget.current) {
         return;
       }
 
@@ -67,7 +58,7 @@ export function useSwipe({
       const dx = e.clientX - origin.current.dx;
       const dy = e.clientY - origin.current.dy;
 
-      onSwipeEnd({ movement: { dx, dy }, swipeTarget: swipeTarget.current });
+      onSwipeEnd({ movement: { dx, dy } });
     },
   });
 }
