@@ -44,10 +44,6 @@ export function AttachedImage(p: AttachedImageProps) {
   const canDelete: boolean = isImageSet;
   const isActionAvailable = canReset || canDelete;
 
-  const [isCropping, setIsCropping] = useState(true);
-  function openCrop() {
-    setIsCropping(true);
-  }
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -56,11 +52,12 @@ export function AttachedImage(p: AttachedImageProps) {
           src={imageSrc}
           size="md"
         />
+
         {isActionAvailable && (
           <button
             type="button"
             className={tw(
-              "absolute -right-3 top-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1.5 shadow-around sa-o-20 sa-r-1",
+              "absolute -right-3 top-0 size-6 rounded-full bg-neutral-100 p-1.5 shadow-around sa-o-20 sa-r-1",
               canDelete ? "text-app-red-500" : "text-neutral-950",
             )}
             onClick={() => {
@@ -75,17 +72,19 @@ export function AttachedImage(p: AttachedImageProps) {
             {canDelete ? <DeleteIcon className="size-full" /> : <ResetIcon className="size-full" />}
           </button>
         )}
+
         {isImageSet && (
-          <button
-            type="button"
-            className="absolute -right-3 bottom-0 flex aspect-square size-6 items-center justify-center rounded-full bg-neutral-100 p-1 text-neutral-950 shadow-around sa-o-20 sa-r-1"
-            onClick={openCrop}
-            aria-label="Crop image"
-          >
-            <CropIcon className="size-full" />
-          </button>
+          <Dialog.Root>
+            <Dialog.Trigger
+              className="absolute -right-3 bottom-0 size-6 rounded-full bg-neutral-100 p-1 text-neutral-950 shadow-around sa-o-20 sa-r-1"
+              aria-label="Crop image"
+            >
+              <CropIcon className="size-full" />
+            </Dialog.Trigger>
+          </Dialog.Root>
         )}
       </div>
+
       <ImagePickerButton
         isImageSet={isImagePicked}
         onChange={(e) => {
