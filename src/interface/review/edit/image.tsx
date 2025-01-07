@@ -112,6 +112,7 @@ export function AttachedImage(p: AttachedImageProps) {
   );
 }
 
+
 // todo - cleanup
 // ? todo - handle src changes
 export function useReviewImage(source: ReviewForm["image"]) {
@@ -245,12 +246,20 @@ type CropResizeDirection = "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
 type CropResizeAction = {
   type: "RESIZE";
   direction: CropResizeDirection;
+  /** Absolute coordinate of the edge from `0` to `1` */
+  value: number;
+};
+type CropMoveDirection = "VERTICAL" | "HORIZONTAL";
+type CropMoveAction = {
+  type: "MOVE";
+  direction: CropMoveDirection;
+  /** Absolute coordinate of the center from `0` to `1` */
   value: number;
 };
 type CropResetAction = {
   type: "RESET";
 };
-type CropAction = CropResizeAction | CropResetAction;
+type CropAction = CropResizeAction | CropMoveAction | CropResetAction;
 
 type CropCoordinates = {
   left: number;
@@ -282,6 +291,13 @@ function cropAreaReducer(current: CropArea, action: CropAction): CropArea {
 
       return result;
     }
+    case "MOVE": {
+      if (current === null) {
+        return null;
+      }
+
+      return cropAreaMoveReducer(current, action);
+    }
     default:
       return current;
   }
@@ -307,6 +323,45 @@ function cropAreaResizeReducer(
     case "BOTTOM": {
       const bottom = clamp(current.top + CROP_AREA_THRESHOLD, action.value, 1);
       return { ...current, bottom };
+    }
+    default:
+      return current;
+  }
+}
+
+function cropAreaMoveReducer(current: CropCoordinates, action: CropMoveAction): CropCoordinates {
+  switch (action.direction) {
+    case "HORIZONTAL": {
+      const center = (current.right + current.left) / 2;
+      const movemenet = action.value - center;
+
+      const left = current.left + movemenet;
+      if (left < 0) {
+        return { ...current, left: 0, right: current.right - current.left };
+      }
+
+      const right = current.right + movemenet;
+      if (right > 1) {
+        return { ...current, right: 1, left: 1 + current.left - current.right };
+      }
+
+      return { ...current, left, right };
+    }
+    case "VERTICAL": {
+      const center = (current.top + current.bottom) / 2;
+      const movemenet = action.value - center;
+
+      const top = current.top + movemenet;
+      if (top < 0) {
+        return { ...current, top: 0, bottom: current.bottom - current.top };
+      }
+
+      const bottom = current.bottom + movemenet;
+      if (bottom > 1) {
+        return { ...current, bottom: 1, top: 1 + current.top - current.bottom };
+      }
+
+      return { ...current, top, bottom };
     }
     default:
       return current;
