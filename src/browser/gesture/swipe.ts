@@ -3,17 +3,15 @@ import { useRef } from "react";
 import { useDrag } from "./drag";
 
 type Movement = { dx: number; dy: number };
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface OnSwipeStartData {}
-interface OnSwipeEndData extends OnSwipeStartData {
+interface OnSwipeEndData {
   movement: Movement;
 }
-interface OnSwipeData extends OnSwipeStartData {
+interface OnSwipeData {
   movement: Movement;
 }
 type UseSwipeOptions = {
   onSwipe?: (data: OnSwipeData) => void;
-  onSwipeStart?: (data: OnSwipeStartData) => void;
+  onSwipeStart?: () => void;
   onSwipeEnd?: (data: OnSwipeEndData) => void;
   ignore?: RefObject<Element>;
 };
@@ -47,7 +45,7 @@ export function useSwipe({
         dy: e.clientY,
       };
 
-      onSwipeStart?.({});
+      onSwipeStart?.();
     },
     onDragEnd(e) {
       if (!onSwipeEnd) {
