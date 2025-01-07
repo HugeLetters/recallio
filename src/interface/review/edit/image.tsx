@@ -222,7 +222,11 @@ export function useReviewImage(source: ReviewForm["image"]) {
       dispatchCropArea({ type: "RESET" });
     },
     delete(this: void) {
-      setRawValue(ImageAction.DELETE);
+      if (source === null) {
+        setRawValue(ImageAction.KEEP);
+      } else {
+        setRawValue(ImageAction.DELETE);
+      }
       dispatchCropArea({ type: "RESET" });
     },
     reset,
