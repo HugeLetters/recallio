@@ -371,6 +371,18 @@ function cropAreaMoveReducer(current: CropCoordinates, action: CropMoveAction): 
   }
 }
 
+function cropAreaSetter(dispatch: Dispatch<CropAction>, value: CropArea) {
+  if (!value) {
+    dispatch({ type: "RESET" });
+    return;
+  }
+
+  dispatch({ type: "RESIZE", direction: "LEFT", value: value.left });
+  dispatch({ type: "RESIZE", direction: "RIGHT", value: value.right });
+  dispatch({ type: "RESIZE", direction: "TOP", value: value.top });
+  dispatch({ type: "RESIZE", direction: "BOTTOM", value: value.bottom });
+}
+
 function hashFile(file: File): string {
   return `${file.name}:${file.type}:${file.size}:${file.lastModified}`;
 }
