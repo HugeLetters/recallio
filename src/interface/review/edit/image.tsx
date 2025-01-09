@@ -41,6 +41,7 @@ export function AttachedImage(p: AttachedImageProps) {
 
   const isImageSet: boolean = !isDeleting && (!!p.image || !!p.savedImage);
   const canReset: boolean = isDeleting && !!p.savedImage;
+  const canEdit: boolean = isImageSet;
   const canDelete: boolean = isImageSet;
   const isActionAvailable = canReset || canDelete;
 
@@ -73,16 +74,16 @@ export function AttachedImage(p: AttachedImageProps) {
           </button>
         )}
 
-        {isImageSet && (
-          <Dialog.Root>
+        <Dialog.Root>
+          {canEdit && (
             <Dialog.Trigger
               className="absolute -right-3 bottom-0 size-6 rounded-full bg-neutral-100 p-1 text-neutral-950 shadow-around sa-o-20 sa-r-1"
               aria-label="Crop image"
             >
               <CropIcon className="size-full" />
             </Dialog.Trigger>
-          </Dialog.Root>
-        )}
+          )}
+        </Dialog.Root>
       </div>
 
       <ImagePickerButton
