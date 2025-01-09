@@ -279,7 +279,7 @@ function CropPreview(p: CropPreviewProps) {
             "--r": `${(1 - p.crop.right) * 100}%`,
             "--b": `${(1 - p.crop.bottom) * 100}%`,
           }}
-          className="absolute inset-0 active:cursor-grabbing"
+          className="pointer-events-none absolute inset-0 active:pointer-events-auto active:cursor-grabbing"
         >
           <div className="absolute inset-0 overflow-hidden">
             <div
@@ -323,7 +323,7 @@ function CropHandle(p: CropCornerProps) {
       tabIndex={-1}
       type="button"
       onPointerDown={p.onDrag}
-      className="block size-3 cursor-grab outline-none ring-1 ring-black/80 ring-offset-1 ring-offset-white/60 active:cursor-grabbing"
+      className="pointer-events-auto block size-3 cursor-grab outline-none ring-1 ring-black/80 ring-offset-1 ring-offset-white/60 active:cursor-grabbing"
     />
   );
 }
