@@ -1,14 +1,25 @@
+import { useDrag } from "@/browser/gesture/drag";
 import { QueryErrorHandler } from "@/error/query";
+import { Image } from "@/image";
 import { blobToFile, useBlobUrl } from "@/image/blob";
 import { ImagePickerButton } from "@/image/image-picker";
 import { crop as cropImage } from "@/image/utils";
+import { Button } from "@/interface/button";
+import { DialogOverlay } from "@/interface/dialog";
 import { toast } from "@/interface/toast";
 import { ImagePreview } from "@/product/components";
 import { asyncStateOptions } from "@/state/async";
 import { tw } from "@/styles/tw";
 import { clamp } from "@/utils";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useReducer, useState } from "react";
+import type {
+  ChangeEvent,
+  Dispatch,
+  PointerEventHandler,
+  PointerEvent as ReactPointerEvent,
+} from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import ResetIcon from "~icons/custom/reset";
 import DeleteIcon from "~icons/fluent-emoji-high-contrast/cross-mark";
 import CropIcon from "~icons/ph/crop-bold";
@@ -45,6 +56,38 @@ export function AttachedImage(p: AttachedImageProps) {
   const canDelete: boolean = isImageSet;
   const isActionAvailable = canReset || canDelete;
 
+  function setImage(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.item(0) ?? null;
+
+    if (!file) {
+      p.resetImage();
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      e.target.value = "";
+      p.resetImage();
+      return;
+    }
+
+    p.setImage(file);
+  }
+
+  const [tempCrop, dispatchTempCrop] = useReducer(cropAreaReducer, p.crop.value);
+  const tempCropCoordinates: CropCoordinates = tempCrop ?? DEFAULT_CROP_AREA;
+
+  useEffect(() => {
+    cropAreaSetter(dispatchTempCrop, p.crop.value);
+  }, [p.crop.value]);
+
+  function commitCrop() {
+    cropAreaSetter(p.crop.dispatch, tempCrop);
+  }
+
+  function syncTempCrop() {
+    cropAreaSetter(dispatchTempCrop, p.crop.value);
+  }
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -74,7 +117,13 @@ export function AttachedImage(p: AttachedImageProps) {
           </button>
         )}
 
-        <Dialog.Root>
+        <Dialog.Root
+          onOpenChange={(open) => {
+            if (!open) {
+              syncTempCrop();
+            }
+          }}
+        >
           {canEdit && (
             <Dialog.Trigger
               className="absolute -right-3 bottom-0 size-6 rounded-full bg-neutral-100 p-1 text-neutral-950 shadow-around sa-o-20 sa-r-1"
@@ -83,28 +132,40 @@ export function AttachedImage(p: AttachedImageProps) {
               <CropIcon className="size-full" />
             </Dialog.Trigger>
           )}
+
+          <Dialog.Portal>
+            <DialogOverlay className="flex items-center justify-center backdrop-blur-sm">
+              <Dialog.Content className="flex w-full max-w-app animate-fade-in flex-col gap-4 rounded-3xl bg-white p-5 data-[state=closed]:animate-fade-in-reverse">
+                {rawImageSrc && (
+                  <CropPreview
+                    imageSrc={rawImageSrc}
+                    crop={tempCropCoordinates}
+                    dispatchCrop={dispatchTempCrop}
+                  />
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Dialog.Close asChild>
+                    <Button className="ghost">Cancel</Button>
+                  </Dialog.Close>
+                  <Dialog.Close asChild>
+                    <Button
+                      className="primary"
+                      onClick={commitCrop}
+                    >
+                      Crop
+                    </Button>
+                  </Dialog.Close>
+                </div>
+              </Dialog.Content>
+            </DialogOverlay>
+          </Dialog.Portal>
         </Dialog.Root>
       </div>
 
       <ImagePickerButton
         isImageSet={isImagePicked}
-        onChange={(e) => {
-          const file = e.target.files?.item(0) ?? null;
-
-          if (!file) {
-            p.resetImage();
-            return;
-          }
-
-          if (!file.type.startsWith("image/")) {
-            toast.error("Only image files are allowed");
-            e.target.value = "";
-            p.resetImage();
-            return;
-          }
-
-          p.setImage(file);
-        }}
+        onChange={setImage}
       >
         {imageSrc ? "Change image" : "Upload image"}
       </ImagePickerButton>
@@ -112,6 +173,160 @@ export function AttachedImage(p: AttachedImageProps) {
   );
 }
 
+type DragStart = {
+  x: number;
+  y: number;
+};
+type CropPreviewProps = {
+  imageSrc: string;
+  crop: CropCoordinates;
+  dispatchCrop: Dispatch<CropAction>;
+};
+function CropPreview(p: CropPreviewProps) {
+  const dragStartRef = useRef<DragStart | null>(null);
+  function getDragStart(): DragStart {
+    const value = dragStartRef.current;
+    if (value !== null) {
+      return value;
+    }
+
+    const freshValue = { x: 0, y: 0 };
+    dragStartRef.current = freshValue;
+    return freshValue;
+  }
+
+  function setDragOffset(e: ReactPointerEvent<HTMLElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    dragStartRef.current = { x, y };
+  }
+
+  const cropContainer = useRef<HTMLDivElement>(null);
+  function crateDragCropHandler(cb: (x: number, y: number) => void) {
+    return function (e: PointerEvent) {
+      const container = cropContainer.current;
+      if (!container) {
+        return;
+      }
+
+      const rect = container.getBoundingClientRect();
+      const dragStart = getDragStart();
+      const x = (e.clientX - rect.x - dragStart.x) / rect.width;
+      const y = (e.clientY - rect.y - dragStart.y) / rect.height;
+      return cb(x, y);
+    };
+  }
+
+  const topLeftDrag = useDrag({
+    onDragStart: setDragOffset,
+    onDrag: crateDragCropHandler((x, y) => {
+      p.dispatchCrop({ type: "RESIZE", direction: "LEFT", value: x });
+      p.dispatchCrop({ type: "RESIZE", direction: "TOP", value: y });
+    }),
+  });
+  const topRightDrag = useDrag({
+    onDragStart: setDragOffset,
+    onDrag: crateDragCropHandler((x, y) => {
+      p.dispatchCrop({ type: "RESIZE", direction: "RIGHT", value: x });
+      p.dispatchCrop({ type: "RESIZE", direction: "TOP", value: y });
+    }),
+  });
+  const bottomLeftDrag = useDrag({
+    onDragStart: setDragOffset,
+    onDrag: crateDragCropHandler((x, y) => {
+      p.dispatchCrop({ type: "RESIZE", direction: "LEFT", value: x });
+      p.dispatchCrop({ type: "RESIZE", direction: "BOTTOM", value: y });
+    }),
+  });
+  const bottomRightDrag = useDrag({
+    onDragStart: setDragOffset,
+    onDrag: crateDragCropHandler((x, y) => {
+      p.dispatchCrop({ type: "RESIZE", direction: "RIGHT", value: x });
+      p.dispatchCrop({ type: "RESIZE", direction: "BOTTOM", value: y });
+    }),
+  });
+
+  const moveDrag = useDrag({
+    onDragStart: setDragOffset,
+    onDrag: crateDragCropHandler((x, y) => {
+      p.dispatchCrop({ type: "MOVE", direction: "HORIZONTAL", value: x });
+      p.dispatchCrop({ type: "MOVE", direction: "VERTICAL", value: y });
+    }),
+  });
+
+  // todo - fix tall images
+  return (
+    <div className="grid select-none place-items-center">
+      <div
+        className="relative"
+        ref={cropContainer}
+      >
+        <Image
+          src={p.imageSrc}
+          width={99999}
+          height={99999}
+          quality={100}
+          priority
+          alt=""
+          className="object-contain"
+        />
+
+        <div
+          style={{
+            "--l": `${p.crop.left * 100}%`,
+            "--t": `${p.crop.top * 100}%`,
+            "--r": `${(1 - p.crop.right) * 100}%`,
+            "--b": `${(1 - p.crop.bottom) * 100}%`,
+          }}
+          className="absolute inset-0 active:cursor-grabbing"
+        >
+          <div className="absolute inset-0 overflow-hidden">
+            <div
+              style={{
+                "--shadow": "0 0 0 9999px rgba(0, 0, 0, 0.4)",
+              }}
+              className="absolute bottom-[--b] left-[--l] right-[--r] top-[--t] shadow-[shadow:--shadow]"
+            />
+          </div>
+
+          <div className="absolute bottom-[--b] left-[--l] right-[--r] top-[--t] grid ring-1 ring-black/80 ring-offset-1 ring-offset-white/60">
+            <div className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2">
+              <CropHandle onDrag={topLeftDrag} />
+            </div>
+            <div className="absolute right-0 top-0 -translate-y-1/2 translate-x-1/2">
+              <CropHandle onDrag={topRightDrag} />
+            </div>
+            <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2">
+              <CropHandle onDrag={bottomLeftDrag} />
+            </div>
+            <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2">
+              <CropHandle onDrag={bottomRightDrag} />
+            </div>
+
+            <div className="absolute place-self-center">
+              <CropHandle onDrag={moveDrag} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type CropCornerProps = {
+  onDrag: PointerEventHandler;
+};
+function CropHandle(p: CropCornerProps) {
+  return (
+    <button
+      tabIndex={-1}
+      type="button"
+      onPointerDown={p.onDrag}
+      className="block size-3 cursor-grab outline-none ring-1 ring-black/80 ring-offset-1 ring-offset-white/60 active:cursor-grabbing"
+    />
+  );
+}
 
 // todo - cleanup
 // ? todo - handle src changes
@@ -234,7 +449,7 @@ export function useReviewImage(source: ReviewForm["image"]) {
       /** Values between `0` and `1` */
       crop: {
         value: cropArea,
-        dispatch(action: CropAction) {
+        dispatch(this: void, action: CropAction) {
           dispatchCropArea(action);
 
           if (rawImage !== null) {
