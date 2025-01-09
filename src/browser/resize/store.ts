@@ -1,5 +1,5 @@
-import type { StableValue } from "@/state/stable";
-import { useStableValue } from "@/state/stable";
+import type { StableValue } from "@/state";
+import { useStableValue } from "@/state";
 import { useEffect } from "react";
 
 type ResizeListener = () => void;

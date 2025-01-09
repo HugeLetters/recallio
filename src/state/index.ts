@@ -7,3 +7,8 @@ export function useStableValue<V>(value: V): StableValue<V> {
   synced.current = value;
   return synced;
 }
+
+export type Model<T> = {
+  value: T;
+  setValue: (value: T) => void;
+};

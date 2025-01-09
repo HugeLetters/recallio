@@ -2,7 +2,7 @@ import { browser } from "@/browser";
 import { QueryErrorHandler } from "@/error/query";
 import { logToastError, toast } from "@/interface/toast";
 import { asyncStateOptions } from "@/state/async";
-import { useStableValue } from "@/state/stable";
+import { useStableValue } from "@/state";
 import { clamp, isDev } from "@/utils";
 import { filterOut } from "@/utils/array/filter";
 import { hasTruthyProperty } from "@/utils/object";
