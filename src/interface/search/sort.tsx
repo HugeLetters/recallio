@@ -1,6 +1,6 @@
 import { createElasticStretchFunction } from "@/animation/elastic";
 import { Flipped } from "@/animation/flip";
-import { useSwipe } from "@/browser/swipe";
+import { useSwipe } from "@/browser/gesture/swipe";
 import { DialogOverlay } from "@/interface/dialog";
 import { layoutRootStore } from "@/layout/store";
 import { getQueryParam, setQueryParam } from "@/navigation/query";
@@ -124,12 +124,12 @@ export function SortDialog({ optionList }: SortDialogProps) {
           {/* main content zoom out idea taken from here - https://www.vaul-svelte.com/ */}
           <Dialog.Content
             ref={dialogRef}
-            style={{ "--translate": `calc(var(--offset, 0px) + ${overDragLimit}px)` }}
-            className="max-w-app grow translate-y-[var(--translate)] transition-transform motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
+            style={{ "--ty": `calc(var(--offset, 0px) + ${overDragLimit}px)` }}
+            className="max-w-app grow translate-y-[--ty] transition-transform motion-safe:animate-slide-up data-[state=closed]:motion-safe:animate-slide-up-reverse"
           >
             <div
               // this prevents reflow on children when css vars are changed on dialog content
-              style={{ "--translate": 1, "--offset": 1 }}
+              style={{ "--ty": 1, "--offset": 1 }}
               className="rounded-t-xl bg-white p-5 pb-10"
             >
               <button

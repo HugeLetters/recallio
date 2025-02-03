@@ -9,7 +9,7 @@ import {
   PRODUCT_NAME_LENGTH_MIN,
   PRODUCT_RATING_MAX,
 } from "@/product/validation";
-import type { Model } from "@/state/type";
+import type { Model } from "@/state";
 import { tw } from "@/styles/tw";
 import { trpc } from "@/trpc";
 import type { TransformProperty } from "@/utils/object";

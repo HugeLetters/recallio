@@ -44,7 +44,8 @@ export async function compressImage(
 }
 
 async function createImageDrawer(file: File, maxResolution?: number) {
-  const { bitmap, canvas, ctx } = await createDrawingContext(file);
+  const bitmap = await createImageBitmap(file);
+  const { canvas, ctx } = createDrawingContext();
   const baseScale = maxResolution
     ? Math.min(maxResolution / Math.max(bitmap.width, bitmap.height), 1)
     : 1;

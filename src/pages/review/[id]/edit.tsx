@@ -5,8 +5,7 @@ import { loadingTracker } from "@/interface/loading/indicator";
 import type { ReviewForm } from "@/interface/review/edit";
 import { CommentSection, Name, Private, Rating, transformReview } from "@/interface/review/edit";
 import { CategoryList } from "@/interface/review/edit/category";
-import type { ImageState } from "@/interface/review/edit/image";
-import { AttachedImage, ImageAction } from "@/interface/review/edit/image";
+import { AttachedImage, ImageAction, useReviewImage } from "@/interface/review/edit/image";
 import { logToastError, toast } from "@/interface/toast";
 import type { NextPageWithLayout } from "@/layout";
 import { Layout } from "@/layout";
@@ -27,7 +26,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import type { FormEvent } from "react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 const Page: NextPageWithLayout = function () {
@@ -118,6 +117,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
     })(e).catch(logToastError("Error while trying to submit the review.\nPlease try again."));
 
     function onReviewSave(optimisticReview: StrictOmit<ReviewData, "image">) {
+      const image = reviewImage.value;
       if (!(image instanceof File)) {
         setOptimisticReview(optimisticReview, image === ImageAction.KEEP ? undefined : null);
 
@@ -146,7 +146,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   });
   const { startUpload } = useUploadThing("reviewImage", {
     onClientUploadComplete(result) {
-      if (result.some((x) => !x.serverData)) {
+      if (result.some((data) => data.serverData !== null)) {
         toast.error("Failed to upload the image");
       }
       invalidate();
@@ -165,7 +165,7 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
   });
   useTracker(loadingTracker, isLoading);
 
-  const [image, setImage] = useState<ImageState>(ImageAction.KEEP);
+  const reviewImage = useReviewImage(review.image);
 
   return (
     <form
@@ -173,10 +173,14 @@ function Review({ barcode, review, hasReview }: ReviewProps) {
       onSubmit={submitReview}
     >
       <AttachedImage
-        key={review.image}
+        image={reviewImage.image}
+        rawImage={reviewImage.rawImage}
         savedImage={review.image}
-        value={image}
-        setValue={setImage}
+        setImage={reviewImage.setImage}
+        deleteImage={reviewImage.delete}
+        resetImage={reviewImage.reset}
+        crop={reviewImage.effects.crop}
+        value={reviewImage.value}
       />
       <Name
         barcode={barcode}

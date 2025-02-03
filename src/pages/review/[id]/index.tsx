@@ -266,7 +266,7 @@ function DeleteButton({ barcode }: DeleteButtonProps) {
                   style={{ "--duration": `${deleteTimeout}ms` }}
                   className={tw(
                     "relative overflow-hidden bg-app-red-500 font-semibold text-white",
-                    "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[var(--duration)] group-data-[state=closed]:after:content-none",
+                    "after:absolute after:inset-0 after:origin-right after:animate-expand-x-reverse after:bg-white/50 after:animate-duration-[--duration] group-data-[state=closed]:after:content-none",
                     enabled ? "after:content-none" : "disabled",
                   )}
                 >

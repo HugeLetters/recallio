@@ -34,23 +34,24 @@ export const reviewImageUploader = uploadthing({ image: { maxFileSize: "64KB", m
   .onUploadError(({ error }) => {
     console.error(error);
   })
-  .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }): Promise<boolean> => {
-    return Promise.resolve()
-      .then<unknown>(() => {
-        const updateReview = db
-          .update(review)
-          .set({ imageKey: file.key, updatedAt: new Date() })
-          .where(and(eq(review.userId, userId), eq(review.barcode, barcode)));
-        if (!oldImageKey) return updateReview;
+  .onUploadComplete(({ file, metadata: { barcode, userId, oldImageKey } }) => {
+    const dbTask = (() => {
+      const updateReview = db
+        .update(review)
+        .set({ imageKey: file.key, updatedAt: new Date() })
+        .where(and(eq(review.userId, userId), eq(review.barcode, barcode)));
+      if (!oldImageKey) return updateReview;
 
-        const imageDelete = fileDeleteQueueInsert(db, [{ fileKey: oldImageKey }]);
-        return db.batch([updateReview, imageDelete]);
-      })
-      .then(() => true)
+      const imageDelete = fileDeleteQueueInsert(db, [{ fileKey: oldImageKey }]);
+      return db.batch([updateReview, imageDelete]);
+    })();
+
+    return dbTask
+      .then(() => undefined)
       .catch((e) => {
         console.error(e);
         return fileDeleteQueueInsert(db, [{ fileKey: file.key }])
           .catch(console.error)
-          .then(() => false);
+          .then(() => ({ error: " upload error" }));
       });
   });

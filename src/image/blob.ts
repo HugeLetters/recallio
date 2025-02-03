@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 export function blobToFile(blob: Blob, name: string) {
   const fileExt = blob.type.match(/.+\/(.+$)/)?.at(1) ?? "webp";
   const newFileName = name.includes(".")
-    ? name.replace(/(.+\.).+$/, `$1${fileExt}`)
+    ? name.replace(/\..+$/, `.${fileExt}`)
     : `${name}.${fileExt}`;
+
   return new File([blob], newFileName, { type: "image/" });
 }
 

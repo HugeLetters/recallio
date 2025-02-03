@@ -13,11 +13,13 @@ type ImageProps = ExtendPropety<NextImageProps, "src", Nullish>;
  * `children` props acts as a fallback when image couldn't be loaded or src is not present
  */
 export function Image({ children, ...props }: ImageProps) {
-  if (!hasTruthyProperty(props, "src")) return children;
+  if (!hasTruthyProperty(props, "src")) {
+    return children;
+  }
+
   return <ImageWithSrc {...props}>{children}</ImageWithSrc>;
 }
 
-// todo - show previous image when src changes before new one loads
 type ImageWithSrcProps = NextImageProps;
 function ImageWithSrc({ children, className, onLoad, ...props }: ImageWithSrcProps) {
   const [hasLoaded, setHasLoaded] = useState(false);

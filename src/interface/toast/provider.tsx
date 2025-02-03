@@ -125,9 +125,9 @@ function ToastSlot({ toast, isStacked, toastCount, toastIndex }: ToastSlotProps)
         className={tw(
           className,
           "group h-fit w-full overflow-hidden rounded-xl shadow-around sa-o-15 sa-r-1",
-          "data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:opacity-[var(--opacity)] data-[swipe=move]:transition-none",
-          "data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=end]:opacity-[var(--opacity)]",
-          isStacked && "-bottom-[var(--offset)] -left-[var(--offset)]",
+          "data-[swipe=move]:translate-x-[--radix-toast-swipe-move-x] data-[swipe=move]:opacity-[--opacity] data-[swipe=move]:transition-none",
+          "data-[swipe=end]:translate-x-[--radix-toast-swipe-end-x] data-[swipe=end]:opacity-[--opacity]",
+          isStacked && "-bottom-[--offset] -left-[--offset]",
           isStacked && !isLast && "pointer-events-none absolute h-full",
           isStacked && !isLastThree && "opacity-0",
           !isLastThree && "transition-opacity duration-300",
@@ -152,7 +152,7 @@ function ToastSlot({ toast, isStacked, toastCount, toastIndex }: ToastSlotProps)
               style={{ "--duration": `${duration}ms` }}
               className={tw(
                 "absolute bottom-0 h-1 w-full origin-left bg-black/10",
-                "animate-expand-x-reverse animate-duration-[var(--duration)] animate-function-linear animation-fill-mode-forward",
+                "animate-expand-x-reverse animate-duration-[--duration] animate-function-linear animation-fill-mode-forward",
                 "transition-opacity duration-300 group-data-[state=closed]:opacity-0",
                 !isStacked && "opacity-0",
                 "animation-play-state-pause group-data-[timer=play]:animation-play-state-play",
