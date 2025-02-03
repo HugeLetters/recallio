@@ -290,7 +290,15 @@ function CategorySearch({
 }
 
 function categoryLimitErrorToast() {
-  return toast.error(`You can't add more than ${CATEGORY_COUNT_MAX} categories.`, {
-    id: "review-edit-category-limit",
-  });
+  return toast.error(
+    <div>
+      <div>
+        You can{"'"}t add more than {CATEGORY_COUNT_MAX}&nbsp;categories.
+      </div>
+      <div>Remove some other category first.</div>
+    </div>,
+    {
+      id: "review-edit-category-limit",
+    },
+  );
 }
