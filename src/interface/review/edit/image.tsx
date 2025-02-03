@@ -1,6 +1,5 @@
 import { useDrag } from "@/browser/gesture/drag";
 import { QueryErrorHandler } from "@/error/query";
-import { Image } from "@/image";
 import { blobToFile, useBlobUrl } from "@/image/blob";
 import { ImagePickerButton } from "@/image/image-picker";
 import { crop as cropImage } from "@/image/utils";
@@ -255,23 +254,49 @@ function CropPreview(p: CropPreviewProps) {
     }),
   });
 
-  // todo - fix tall images
+  const maxHeight = 384;
+  function syncContainerSize(img: HTMLImageElement) {
+    const { naturalWidth: width, naturalHeight: height } = img;
+    const naturalRatio = width / height;
+
+    const container = cropContainer.current;
+    if (!container) {
+      return;
+    }
+
+    container.style.aspectRatio = `${width} / ${height}`;
+
+    container.style.width = "100%";
+    container.style.height = "";
+
+    const actualRatio = container.clientWidth / container.clientHeight;
+    const hStretch = Math.abs(actualRatio / naturalRatio - 1) <= 0.02;
+
+    if (hStretch) {
+      return;
+    }
+
+    container.style.height = `${maxHeight}px`;
+    container.style.width = "";
+  }
+
   return (
     <div className="grid select-none place-items-center">
       <div
         className="relative"
+        style={{ maxHeight }}
         ref={cropContainer}
       >
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={p.imageSrc}
-          width={99999}
-          height={99999}
-          quality={100}
-          priority
           alt=""
-          className="object-contain"
+          className="size-full object-contain"
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            syncContainerSize(img);
+          }}
         />
-
         <div
           style={{
             "--l": `${p.crop.left * 100}%`,
@@ -328,7 +353,6 @@ function CropHandle(p: CropCornerProps) {
   );
 }
 
-// todo - cleanup
 export function useReviewImage(source: ReviewForm["image"]) {
   const client = useQueryClient();
 
