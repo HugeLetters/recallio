@@ -1,37 +1,28 @@
-# Camera access
+# About
+
+## In short
+
+You go to a grocery store, scan the barcode and see if you have a review for this product already - and if not, you can leave a new review.
+
+<video src="./assets/scan_showcase.mp4" width="240"></video>
+
+## A bit more context
+
+I frequently had a problem at grocery stores when looking at products where I couldn't remember if I've tried them before and if I did how much I've liked them - so to solve that problem I made this app. 
+With it you can find a product page by scanning its barcode with a camera, then leave a review or find an existing one, mark the review as private, add tags to reviews, search through your own reviews or search through other public reviews.
+
+# Useful info for development
+
+## Camera access
 
 For local development - most browsers don't allow access to camera through `navigator.mediaDevices.getUserMedia()` in unsecure context.
 You can bypass this through either testing on `localhost` or setting your dev server ip address as secure in unsafe chrome flags.
 
-# Database
+## Services used
 
-I use Planetscale which doesn't use foreign keys - so don't use them and rely on Drizzle-ORM relations.
+- [Turso](https://turso.tech) - Database, SQLite
+- [Uploadthing](https://uploadthing.com/) - File uploads
+- [Upstash](https://upstash.com/) - Redis, Message Queue
+- [Vercel](https://vercel.com/) - Deployment
 
-# Create T3 App
-
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
-
-## What's next? How do I make an app with this?
-
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
-
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
-
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+This project initially was created using a [T3 Stack](https://create.t3.gg/) template.
