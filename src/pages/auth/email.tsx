@@ -50,7 +50,7 @@ const Page: NextPageWithLayout = function () {
         }}
         className="group flex w-full max-w-[360px] flex-col items-center gap-3"
       >
-        <label className="group/input my-6 w-full cursor-text">
+        <label className="group/input relative my-6 w-full cursor-text">
           <div className="grid w-full grid-cols-6 justify-center gap-2.5 uppercase">
             {SLOTS.map((slot) => (
               <div
@@ -77,7 +77,7 @@ const Page: NextPageWithLayout = function () {
             aria-label="Your authentication pin"
             autoFocus
             autoComplete="off"
-            className="sr-only"
+            className="absolute inset-0 opacity-0"
           />
         </label>
         <div className="w-full px-1">
