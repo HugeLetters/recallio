@@ -4,7 +4,7 @@
 
 You go to a grocery store, scan the barcode and see if you have a review for this product already - and if not, you can leave a new review.
 
-<video src="./assets/scan_showcase.mp4" width="240"></video>
+![Demo](./assets/scan_showcase.gif)
 
 ## A bit more context
 
